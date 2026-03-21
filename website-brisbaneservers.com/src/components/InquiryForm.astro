@@ -1,0 +1,166 @@
+---
+import SemanticText from './SemanticText.astro';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  industryField?: boolean;
+  locationField?: boolean;
+  preferenceField?: boolean;
+  defaultIndustry?: string;
+  id?: string;
+}
+
+const { 
+  title = "Questions about your industry? Need clarity on what's feasible?",
+  subtitle = "Informal questions are welcome. You don't need to be the expert—we are.",
+  industryField = true,
+  locationField = false,
+  preferenceField = false,
+  defaultIndustry = '',
+  id = 'inquiry-section'
+} = Astro.props;
+---
+
+<section class="inquiry-section" id={id}>
+  <div class="phi-lateral-angular-3"></div>
+  <div class="container">
+    <div class="inquiry-form">
+      <h2 class="inquiry-form-title">
+        <SemanticText text={title} semanticLevel="high" isParent={true} />
+      </h2>
+      {subtitle && (
+        <p class="inquiry-form-subtitle">
+          <SemanticText text={subtitle} semanticLevel="medium" isChild={true} />
+        </p>
+      )}
+      
+      <form 
+        action="mailto:connect@brisbaneservers.com" 
+        method="post" 
+        enctype="text/plain"
+        aria-label="Inquiry form"
+        novalidate
+      >
+        <div class="form-group">
+          <label for="name">
+            Your Name {defaultIndustry ? '(optional)' : '(first name is fine)'}
+          </label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            placeholder={defaultIndustry ? 'John' : 'John'}
+            aria-describedby="name-hint"
+            autocomplete="name"
+          />
+          <span id="name-hint" class="sr-only">Enter your first name or full name</span>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">
+            Email <span class="required-indicator" aria-label="required">*</span>
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="How we'll respond" 
+            required 
+            aria-required="true"
+            aria-describedby="email-error email-hint"
+            autocomplete="email"
+          />
+          <span id="email-hint" class="sr-only">Enter a valid email address where we can reach you</span>
+          <span id="email-error" class="form-error" role="alert" aria-live="polite"></span>
+        </div>
+        
+        {industryField && (
+          <div class="form-group">
+            <label for="industry">Industry / Business Type</label>
+            {defaultIndustry ? (
+              <input 
+                type="text" 
+                id="industry" 
+                name="industry" 
+                value={defaultIndustry} 
+                readonly 
+                class="form-input--readonly"
+                aria-readonly="true"
+              />
+            ) : (
+              <select id="industry" name="industry" aria-describedby="industry-hint">
+                <option value="">Select an industry...</option>
+                <option value="Professional Services">Professional Services</option>
+                <option value="Retail & E-commerce">Retail & E-commerce</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Hospitality">Hospitality</option>
+                <option value="Construction & Trades">Construction & Trades</option>
+                <option value="Finance & Accounting">Finance & Accounting</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Other">Other</option>
+              </select>
+            )}
+            <span id="industry-hint" class="sr-only">Select the industry that best describes your business</span>
+          </div>
+        )}
+
+        {locationField && (
+          <div class="form-group">
+            <label for="location">Business Location (optional)</label>
+            <input 
+              type="text" 
+              id="location" 
+              name="location" 
+              placeholder="e.g., Brisbane, QLD"
+              autocomplete="address-level2"
+            />
+          </div>
+        )}
+
+        {preferenceField && (
+          <div class="form-group">
+            <label for="preference">Consultation Preference</label>
+            <select id="preference" name="preference" aria-describedby="preference-hint">
+              <option value="online">Online Consultation</option>
+              <option value="physical">Physical Meeting (Brisbane)</option>
+              <option value="no-preference">No Preference</option>
+            </select>
+            <span id="preference-hint" class="sr-only">Choose your preferred consultation method</span>
+          </div>
+        )}
+        
+        <div class="form-group">
+          <label for="message">
+            {defaultIndustry ? "What you're thinking about" : "What you're thinking"}
+          </label>
+          <textarea 
+            id="message" 
+            name="message" 
+            rows="6"
+            placeholder={defaultIndustry 
+              ? "Tell us about your firm's challenges or what you're curious about..."
+              : "Tell us what you're thinking—even if it's just 'I heard about AI, is it actually useful?' or 'I have a half-formed idea about my business...'"
+            }
+            aria-describedby="message-hint"
+          ></textarea>
+          <span id="message-hint" class="sr-only">Share your questions, ideas, or challenges with us</span>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" aria-describedby="submit-hint">
+          <i class="fas fa-paper-plane" aria-hidden="true"></i> 
+          <span>{defaultIndustry ? 'Start the Conversation' : preferenceField ? 'Request Consultation' : 'Start the Conversation'}</span>
+        </button>
+        <span id="submit-hint" class="sr-only">Submit your inquiry and we'll get back to you</span>
+        
+        <p class="form-disclaimer" role="note">
+          {defaultIndustry 
+            ? "We're experts in professional services technology—informal questions welcome."
+            : "We're the experts—you don't need to be. Informal questions are welcome."
+          }
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+

@@ -1,0 +1,165 @@
+---
+import '../styles/global.css';
+import '../styles/symmetry-harmony.css';
+import '../styles/geometric-detailing.css';
+import '../styles/floral-pattern.css';
+import '../styles/tartan-pattern.css';
+import '../styles/banach-fixed-point.css';
+import '../styles/site-framework.css';
+import CookieConsent from '../components/CookieConsent.astro';
+import favicon from '../favicon.png';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Absolute image URL for Open Graph / Twitter (defaults to `/og-default.png` on site origin). */
+  ogImage?: string;
+  /** When true, adds robots noindex and omits OG/Twitter images and JSON-LD for sensitive routes (e.g. portal). */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = "Access to truth in technology for Australian businesses. Brisbane Servers provides tailored insights, industry-specific guidance, and reality-based tech solutions for SMEs.",
+  ogImage,
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = Astro.site ?? new URL('https://brisbaneservers.com');
+const canonicalURL = new URL(Astro.url.pathname, siteUrl);
+/** Default social preview: South Bank / riverfront in `public/og-default.png`. Alternate: `og-nature.png`. */
+const OG_DEFAULT_PATH = '/og-default.png';
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
+const defaultShareImage = new URL(OG_DEFAULT_PATH, siteUrl).href;
+const shareImage = ogImage ?? defaultShareImage;
+const useDefaultOgDimensions = !ogImage;
+
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      name: 'Brisbane Servers',
+      url: siteUrl.origin,
+      description,
+    },
+    {
+      '@type': 'Organization',
+      name: 'Brisbane Servers',
+      url: siteUrl.origin,
+      email: 'support@brisbaneservers.com',
+      parentOrganization: { '@type': 'Organization', name: 'BIGPONS' },
+    },
+  ],
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=0.5, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#0A74DA" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    {/* Cache control for Chrome */}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/png" href={favicon.src} />
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonicalURL.href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Brisbane Servers" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL.href} />
+    {!noindex && <meta property="og:image" content={shareImage} />}
+    {!noindex && useDefaultOgDimensions && (
+      <>
+        <meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} />
+        <meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} />
+      </>
+    )}
+    {!noindex && (
+      <meta
+        property="og:image:alt"
+        content="Brisbane Servers — Brisbane River & South Bank–inspired brand imagery."
+      />
+    )}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {!noindex && <meta name="twitter:image" content={shareImage} />}
+    <title>{title}</title>
+    {!noindex && <script type="application/ld+json" set:html={jsonLd} />}
+    {/* Immediate cleanup script - runs before any cached scripts */}
+    <script is:inline>
+      // Force cleanup immediately - Chrome cache workaround
+      (function() {
+        'use strict';
+        function cleanup() {
+          try {
+            if (document.body) {
+              document.body.style.overflow = '';
+              document.body.style.pointerEvents = '';
+            }
+            // Close modals
+            var modals = document.querySelectorAll('.modal');
+            for (var i = 0; i < modals.length; i++) {
+              modals[i].setAttribute('aria-hidden', 'true');
+              modals[i].style.display = 'none';
+              modals[i].style.pointerEvents = 'none';
+            }
+            // Remove overlays
+            var overlays = document.querySelectorAll('.modal-overlay');
+            for (var i = 0; i < overlays.length; i++) {
+              overlays[i].style.display = 'none';
+              overlays[i].style.pointerEvents = 'none';
+            }
+            // Close info card
+            var infoCard = document.getElementById('info-card');
+            if (infoCard) {
+              infoCard.classList.remove('active', 'railed');
+              infoCard.setAttribute('aria-hidden', 'true');
+              infoCard.style.pointerEvents = 'none';
+            }
+          } catch(e) {}
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', cleanup);
+        } else {
+          cleanup();
+        }
+        window.addEventListener('load', cleanup);
+      })();
+    </script>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </noscript>
+  </head>
+  <body>
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <slot />
+    <CookieConsent />
+  </body>
+</html>
+
+<script>
+  import '../scripts/main.ts';
+</script>
+

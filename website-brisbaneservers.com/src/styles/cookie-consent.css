@@ -1,0 +1,169 @@
+/**
+ * Cookie Consent Banner - Zoom-Aware Styling
+ * 
+ * Ensures cookie banner text scales synchronously with browser zoom
+ * All sizing uses rem-based design tokens for consistent scaling
+ */
+
+/* Cookie Consent Banner - Fixed Position with Zoom Compensation */
+.cookie-consent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: var(--bg-elevated);
+  border-top: var(--phi-line-width) solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-lg);
+  transform-origin: bottom center;
+  display: none;
+  /* All rem-based values scale automatically with zoom compensation */
+}
+
+.cookie-consent.show {
+  display: block;
+  animation: cookieSlideUp 0.3s ease-out;
+}
+
+@keyframes cookieSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cookie-consent-content {
+  max-width: calc(var(--space-base) * 75); /* 75rem - scales with zoom */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md); /* Rem-based gap - scales with zoom */
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .cookie-consent-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.cookie-consent-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.cookie-text {
+  font-size: var(--text-base); /* Rem-based - scales with zoom */
+  line-height: calc(1em * var(--phi)); /* Phi-based line height */
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .cookie-text {
+    text-align: left;
+  }
+}
+
+.cookie-policy-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-decoration-thickness: var(--phi-line-width);
+  text-underline-offset: calc(var(--space-xs) * var(--phi-inv));
+  transition: color var(--transition);
+}
+
+.cookie-policy-link:hover {
+  color: var(--primary-dark);
+}
+
+.cookie-consent-actions {
+  display: flex;
+  gap: var(--space-md); /* Rem-based gap - scales with zoom */
+  flex-shrink: 0;
+}
+
+.cookie-btn {
+  padding: var(--space-sm) var(--space-lg); /* Rem-based - scales with zoom */
+  font-size: var(--text-base); /* Rem-based - scales with zoom */
+  font-weight: var(--font-weight-medium);
+  line-height: calc(1em * var(--phi));
+  border: var(--phi-line-width) solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition);
+  min-width: calc(var(--space-base) * 6); /* Scales with zoom */
+  white-space: nowrap;
+}
+
+.cookie-btn-accept {
+  background: var(--primary-color);
+  color: white;
+}
+
+.cookie-btn-accept:hover {
+  background: var(--primary-dark);
+  box-shadow: var(--shadow-md);
+}
+
+.cookie-btn-decline {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.cookie-btn-decline:hover {
+  background: var(--bg-secondary);
+  border-color: var(--primary-color);
+}
+
+/* Zoom Compensation Integration */
+html.zoom-compensated .cookie-consent,
+html[data-zoom-level] .cookie-consent {
+  /* Inherits scaling from html transform */
+  /* All rem-based values scale automatically */
+}
+
+/* Mobile adjustments for zoom scenarios */
+@media (max-width: 480px) {
+  .cookie-consent {
+    padding: var(--space-md);
+  }
+
+  .cookie-consent-content {
+    gap: var(--space-sm);
+  }
+
+  .cookie-text {
+    font-size: var(--text-sm); /* Smaller on mobile, still scales with zoom */
+  }
+
+  .cookie-btn {
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--text-sm); /* Smaller on mobile, still scales with zoom */
+    min-width: calc(var(--space-base) * 5);
+  }
+
+  .cookie-consent-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cookie-btn {
+    width: 100%;
+  }
+}
+
+
+
+
+
+

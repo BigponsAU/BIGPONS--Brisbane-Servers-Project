@@ -1,0 +1,196 @@
+---
+import SemanticText from './SemanticText.astro';
+
+/**
+ * Card Component Props
+ * 
+ * @interface Props
+ * @property {string} title - The card title text (required)
+ * @property {string} description - The card description text (required)
+ * @property {string} [icon] - Font Awesome icon class (e.g., 'fas fa-check')
+ * @property {string} [href] - Optional link URL. If provided, card becomes a link
+ * @property {string} [industry] - Industry filter category for filtering
+ * @property {'high' | 'medium' | 'normal'} [semanticLevel='medium'] - Semantic text emphasis level
+ * @property {'small' | 'medium' | 'large' | 'featured'} [size='medium'] - Card size variant
+ * @property {'standard' | 'wide' | 'tall' | 'asymmetric'} [layout='standard'] - Card layout variant
+ * @property {boolean} [emphasis=false] - Whether to apply emphasis styling
+ */
+interface Props {
+  title: string;
+  description: string;
+  icon?: string;
+  href?: string;
+  industry?: string;
+  semanticLevel?: 'high' | 'medium' | 'normal';
+  size?: 'small' | 'medium' | 'large' | 'featured';
+  layout?: 'standard' | 'wide' | 'tall' | 'asymmetric';
+  emphasis?: boolean;
+}
+
+const { 
+  title = 'Card Title', 
+  description = '', 
+  icon, 
+  href, 
+  industry,
+  semanticLevel = 'medium',
+  size = 'medium',
+  layout = 'standard',
+  emphasis = false
+} = Astro.props;
+
+const Tag = href ? 'a' : 'div';
+const cardClass = [
+  'card',
+  industry ? 'resource-item' : '',
+  `card-${size}`,
+  `card-${layout}`,
+  emphasis ? 'card-emphasis' : ''
+].filter(Boolean).join(' ');
+
+const dataAttr = industry ? { 'data-industry': industry } : {};
+---
+
+<Tag 
+  class={cardClass} 
+  href={href} 
+  {...dataAttr}
+  role={href ? undefined : 'article'}
+  aria-label={href ? `${title}. ${description}` : undefined}
+>
+  {icon && (
+    <div class="card-icon" aria-hidden="true">
+      <i class={icon}></i>
+    </div>
+  )}
+  <h3 class="card-title">
+    <SemanticText text={title || 'Card Title'} semanticLevel={semanticLevel} isParent={true} />
+  </h3>
+  {description && (
+    <p class="card-description" set:html={description} />
+  )}
+  <slot />
+</Tag>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-elevated);
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    transition: var(--transition);
+    text-decoration: none;
+    color: inherit;
+    border: var(--phi-line-width) solid var(--border-light);
+    box-shadow: var(--card-shadow);
+  }
+
+  .card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(calc(var(--space-xs) * var(--phi-inv) * -1));
+  }
+
+  .card:focus {
+    outline: var(--phi-line-width) solid var(--primary-color);
+    outline-offset: var(--phi-line-width);
+  }
+
+  /* Typography standardized across all card variations */
+  .card-title {
+    font-size: calc(var(--text-lg) * var(--size-card-title));
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+    line-height: calc(1em * var(--phi));
+  }
+
+  .card-description {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    color: var(--text-secondary);
+    line-height: calc(1em * var(--phi));
+    margin: 0;
+  }
+
+  .card-icon {
+    font-size: var(--icon-lg);
+    color: var(--primary-color);
+    margin-bottom: var(--space-md);
+  }
+
+  /* Size variations - use component tokens */
+  .card-small {
+    padding: var(--card-padding-sm);
+  }
+
+  .card-small .card-title {
+    font-size: var(--text-base);
+  }
+
+  .card-medium {
+    padding: var(--card-padding);
+  }
+
+  .card-large {
+    padding: var(--card-padding-lg);
+  }
+
+  .card-large .card-title {
+    font-size: var(--text-xl);
+  }
+
+  .card-featured {
+    padding: var(--card-padding-xl);
+    border: calc(var(--phi-line-width) * var(--importance-medium)) solid var(--primary-color);
+  }
+
+  .card-featured .card-title {
+    font-size: var(--text-2xl);
+  }
+
+  /* Layout variations - positions can vary for Gestalt cohesion */
+  .card-standard {
+    /* Default vertical layout */
+  }
+
+  .card-wide {
+    grid-column: span 2;
+  }
+
+  .card-tall {
+    grid-row: span 2;
+  }
+
+  .card-asymmetric {
+    /* Can be positioned differently in grid */
+  }
+
+  /* Emphasis variation for hierarchy */
+  .card-emphasis {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-primary);
+    border-radius: var(--phi-radius-atypical-b);
+  }
+
+  .card-emphasis .card-title {
+    color: var(--primary-dark);
+  }
+
+  /* Card gap for grids - uses Sierpinski pattern */
+  .card + .card {
+    margin-top: 0;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .card-wide {
+      grid-column: span 1;
+    }
+
+    .card-tall {
+      grid-row: span 1;
+    }
+  }
+</style>

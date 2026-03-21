@@ -1,0 +1,452 @@
+/**
+ * Geometric Detailing Refactor
+ * 
+ * Enhanced geometric patterns with symmetry/harmony principles:
+ * - Symmetrical phi lines (bilateral pairs)
+ * - Harmonic angular laterals
+ * - Radial symmetry patterns
+ * - Diagonal square patterns (√2-based)
+ */
+
+/* ===== SYMMETRICAL PHI LINES ===== */
+
+/* Bilateral Phi Line Pairs */
+.phi-line-symmetrical {
+    position: relative;
+}
+
+/* Left/Right symmetrical phi lines */
+.phi-line-symmetrical::before,
+.phi-line-symmetrical::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: var(--phi-line-width);
+    height: 100%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-4),
+        transparent 100%
+    );
+    opacity: var(--phi-line-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.phi-line-symmetrical::before {
+    left: var(--phi-ratio-inv);
+    /* Left line at 38.2% */
+}
+
+.phi-line-symmetrical::after {
+    right: var(--phi-ratio-inv);
+    /* Right line at 38.2% from right (61.8% from left) */
+    /* Creates bilateral symmetry */
+}
+
+/* Top/Bottom symmetrical phi laterals */
+.phi-lateral-symmetrical {
+    position: relative;
+}
+
+.phi-lateral-symmetrical::before,
+.phi-lateral-symmetrical::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--phi-line-width);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-4),
+        transparent 100%
+    );
+    opacity: calc(var(--phi-lateral-opacity) * 0.5);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.phi-lateral-symmetrical::before {
+    top: var(--phi-ratio-inv);
+    /* Top lateral at 38.2% */
+}
+
+.phi-lateral-symmetrical::after {
+    bottom: var(--phi-ratio-inv);
+    /* Bottom lateral at 38.2% from bottom */
+    /* Creates bilateral symmetry */
+}
+
+/* ===== HARMONIC ANGULAR LATERALS ===== */
+
+/* Harmonic combinations of angular laterals */
+.phi-lateral-harmonic {
+    position: relative;
+}
+
+/* Harmonic angular 1 + 2 combination (38.2° + 61.8°) */
+.phi-lateral-harmonic-1-2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(
+            var(--phi-azimuth-1),
+            transparent 0%,
+            transparent calc(var(--phi-ratio-inv) * 100% - 1px),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%),
+            transparent calc(var(--phi-ratio-inv) * 100% + 2px)
+        ),
+        linear-gradient(
+            var(--phi-azimuth-2),
+            transparent 0%,
+            transparent calc(var(--phi-ratio) * 100% - 1px),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+            transparent calc(var(--phi-ratio) * 100% + 2px)
+        );
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* Harmonic angular 3 + 4 combination (23.6° + 76.4°) */
+.phi-lateral-harmonic-3-4::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(
+            var(--phi-azimuth-3),
+            transparent 0%,
+            transparent calc(var(--phi-ratio-inv) * 100% - 1px),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%),
+            transparent calc(var(--phi-ratio-inv) * 100% + 2px)
+        ),
+        linear-gradient(
+            var(--phi-azimuth-4),
+            transparent 0%,
+            transparent calc(var(--phi-ratio) * 100% - 1px),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+            transparent calc(var(--phi-ratio) * 100% + 2px)
+        );
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* All four angular laterals for full azimuth coverage */
+.phi-lateral-harmonic-full::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%),
+        linear-gradient(var(--phi-azimuth-3), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-4), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%);
+    opacity: calc(var(--phi-azimuth-opacity) * 0.7);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* ===== RADIAL SYMMETRY PATTERNS ===== */
+
+/* Radial phi spiral pattern */
+.phi-spiral-radial {
+    position: relative;
+    overflow: hidden;
+}
+
+.phi-spiral-radial::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    background: 
+        radial-gradient(
+            circle at center,
+            transparent 0%,
+            transparent calc(var(--phi-ratio-inv) * 50%),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 50% + 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) calc(var(--phi-ratio) * 50%),
+            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 50% + 1px),
+            transparent calc(var(--phi-ratio) * 50% + 2px)
+        );
+    opacity: var(--phi-tangent-opacity);
+    pointer-events: none;
+    z-index: 0;
+    animation: phi-spiral-rotate 20s linear infinite;
+}
+
+@keyframes phi-spiral-rotate {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Multiple radial spirals for complex patterns */
+.phi-spiral-radial-multiple {
+    position: relative;
+}
+
+.phi-spiral-radial-multiple::before,
+.phi-spiral-radial-multiple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: var(--phi-line-width) solid transparent;
+    border-top-color: rgba(var(--primary-color-rgb), var(--opacity-subtle));
+    border-right-color: rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5));
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+    animation: phi-spiral-rotate 15s linear infinite;
+}
+
+.phi-spiral-radial-multiple::after {
+    width: 200%;
+    height: 200%;
+    animation-duration: 25s;
+    animation-direction: reverse;
+    border-top-color: rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5));
+    border-right-color: rgba(var(--primary-color-rgb), var(--opacity-subtle));
+}
+
+/* ===== DIAGONAL SQUARE PATTERNS ===== */
+
+/* √2-based diagonal grid */
+.diagonal-square-grid {
+    position: relative;
+    background-image: 
+        repeating-linear-gradient(
+            var(--diag-angle-1),
+            transparent 0,
+            transparent calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.3)) calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.3)) var(--grid-cell-square)
+        ),
+        repeating-linear-gradient(
+            var(--diag-angle-2),
+            transparent 0,
+            transparent calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.3)) calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.3)) var(--grid-cell-square)
+        );
+    background-size: var(--grid-cell-diag) var(--grid-cell-diag-v);
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Diagonal square + phi spiral combination */
+.diagonal-phi-combined {
+    position: relative;
+}
+
+.diagonal-phi-combined::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent 0,
+            transparent calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.2)) calc(var(--grid-cell-square) - 1px),
+            rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.2)) var(--grid-cell-square)
+        );
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.diagonal-phi-combined::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        ellipse 150% 100% at var(--phi-ratio) 50%,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        transparent 100%
+    );
+    opacity: var(--phi-tangent-opacity);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* ===== PATTERN COMBINATIONS ===== */
+
+/* Symmetrical phi lines + harmonic angular laterals */
+.pattern-combined-symmetrical-harmonic {
+    position: relative;
+}
+
+.pattern-combined-symmetrical-harmonic::before {
+    /* Symmetrical phi lines */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--phi-ratio-inv);
+    right: var(--phi-ratio-inv);
+    width: var(--phi-line-width);
+    height: 100%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        transparent 100%
+    );
+    opacity: var(--phi-line-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.pattern-combined-symmetrical-harmonic::after {
+    /* Harmonic angular laterals */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%);
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* Radial + angular pattern overlays */
+.pattern-combined-radial-angular {
+    position: relative;
+}
+
+.pattern-combined-radial-angular::before {
+    /* Radial spiral */
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        circle at center,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-ratio-inv),
+        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-ratio),
+        transparent 100%
+    );
+    opacity: var(--phi-tangent-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.pattern-combined-radial-angular::after {
+    /* Angular laterals */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(var(--phi-azimuth-3), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-4), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%);
+    opacity: var(--phi-azimuth-opacity);
+    pointer-events: none;
+    z-index: 0;
+    background-blend-mode: multiply;
+}
+
+/* ===== LANCZOS SCALING INTEGRATION ===== */
+
+/* Apply Lanczos scaling to geometric patterns */
+.phi-line-vertical,
+.phi-lateral-horizontal,
+.phi-lateral-angular-1,
+.phi-lateral-angular-2,
+.phi-lateral-angular-3,
+.phi-lateral-angular-4 {
+    /* Use Lanczos-scaled width/opacity when available */
+    width: var(--lanczos-phi-line-width, var(--phi-line-width));
+    opacity: var(--lanczos-angular-opacity, var(--phi-azimuth-opacity));
+}
+
+/* ===== RESPONSIVE GEOMETRIC PATTERNS ===== */
+
+@media (max-width: 768px) {
+    /* Simplify patterns on mobile */
+    .phi-lateral-harmonic-full::before {
+        /* Reduce to two angular laterals on mobile */
+        background: 
+            linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
+            linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%);
+    }
+    
+    .diagonal-square-grid {
+        /* Simpler diagonal pattern on mobile */
+        background-image: 
+            repeating-linear-gradient(
+                45deg,
+                transparent 0,
+                transparent calc(var(--grid-cell-square) * 2 - 1px),
+                rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.2)) calc(var(--grid-cell-square) * 2 - 1px),
+                rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.2)) calc(var(--grid-cell-square) * 2)
+            );
+    }
+}
+
+/* ===== SECTION EDGE CURVE (φ-weighted ellipse, viewport-relative) ===== */
+.section-edge-curve-bottom {
+    clip-path: ellipse(
+        135% calc(var(--phi-ratio-inv) * 28%) at 50% 100%
+    );
+}
+
+.section-edge-curve-top {
+    clip-path: ellipse(
+        135% calc(var(--phi-ratio-inv) * 28%) at 50% 0%
+    );
+}
+

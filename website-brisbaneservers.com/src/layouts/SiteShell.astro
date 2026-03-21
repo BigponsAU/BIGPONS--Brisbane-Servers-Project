@@ -1,0 +1,54 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  noindex?: boolean;
+  currentPath?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  shellVariant?: 'marketing' | 'portal';
+  mainClass?: string;
+  mainId?: string;
+  showFooter?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  noindex = false,
+  currentPath = '',
+  breadcrumbs = [],
+  shellVariant = 'marketing',
+  mainClass = '',
+  mainId = 'main-content',
+  showFooter = true,
+} = Astro.props;
+
+const shellClassName = ['site-shell', `site-shell--${shellVariant}`].join(' ');
+const mainClassName = ['site-main', mainClass].filter(Boolean).join(' ');
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  noindex={noindex}
+>
+  <div class={shellClassName}>
+    <Header currentPath={currentPath} breadcrumbs={breadcrumbs} />
+    <main id={mainId} class={mainClassName} role="main">
+      <slot />
+    </main>
+    {showFooter && <Footer />}
+  </div>
+</BaseLayout>

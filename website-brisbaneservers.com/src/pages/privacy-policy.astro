@@ -1,0 +1,69 @@
+---
+import '../styles/legal-pages.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SemanticText from '../components/SemanticText.astro';
+
+const currentPath = '/privacy-policy';
+---
+
+<BaseLayout
+  title="Privacy Policy - Brisbane Servers"
+  description="How Brisbane Servers handles personal information, cookies, and analytics on this website. A BIGPONS technology project."
+>
+  <Header currentPath={currentPath} />
+
+  <main id="main-content" class="main-phi-chassis legal-page" role="main">
+    <section class="section section-tartan-accent phi-line-symmetrical">
+      <div class="container phi-measure-prose">
+        <h1 class="section-title">
+          <SemanticText text="Privacy Policy" semanticLevel="high" isParent={true} />
+        </h1>
+        <p class="section-description legal-meta">
+          <SemanticText
+            text="Last updated: March 2026. Brisbane Servers is operated as part of BIGPONS (ABN 93 297 393 962). This page summarises how we approach privacy on this site; it is not personal legal advice."
+            semanticLevel="normal"
+          />
+        </p>
+
+        <h2 class="h3 legal-h2">Information we may collect</h2>
+        <p class="text-content">
+          Depending on how you use the site or portal, we may process information you provide (for example, when you submit a form or create an account), technical data such as IP address and browser type, and usage data to keep the service secure and reliable.
+        </p>
+
+        <h2 class="h3 legal-h2">Cookies and similar technologies</h2>
+        <p class="text-content">
+          We use cookies and local storage where needed for essential site operation, remembering preferences (such as cookie consent), and understanding aggregate traffic. You can control cookies through your browser settings and through the cookie banner when it appears.
+        </p>
+
+        <h2 class="h3 legal-h2">Third parties</h2>
+        <p class="text-content">
+          Some features may rely on trusted third-party services (for example, hosting or analytics). Those providers process data under their own terms and privacy policies, in addition to the practices described here.
+        </p>
+
+        <h2 class="h3 legal-h2">Retention and security</h2>
+        <p class="text-content">
+          We retain information only as long as needed for the purposes described, legal obligations, or dispute resolution. We apply reasonable technical and organisational measures to protect data; no online service can guarantee absolute security.
+        </p>
+
+        <h2 class="h3 legal-h2">Your choices</h2>
+        <p class="text-content">
+          Where applicable, you may request access to or correction of personal information we hold, or raise a concern by contacting us using the details on the site. For Australian Privacy Principles queries, we will respond in line with applicable law.
+        </p>
+
+        <h2 class="h3 legal-h2">Contact</h2>
+        <p class="text-content">
+          Questions about this policy: <a href="mailto:support@brisbaneservers.com">support@brisbaneservers.com</a>
+        </p>
+
+        <p class="text-content legal-nav">
+          <a href="/terms-of-service">Terms of Service</a>
+          · <a href="/">Home</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

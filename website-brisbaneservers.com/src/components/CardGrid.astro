@@ -1,0 +1,99 @@
+---
+interface Props {
+  progressive?: boolean;
+  layout?: 'grid' | 'masonry' | 'stacked' | 'asymmetric';
+  columns?: number;
+  class?: string;
+  style?: string;
+}
+
+const { 
+  progressive = false, 
+  layout = 'grid',
+  columns = 3,
+  class: className = '',
+  style: inlineStyle = '',
+} = Astro.props;
+
+const gridClass = [
+  'card-grid',
+  progressive ? 'progressive' : '',
+  `card-grid-${layout}`,
+  className
+].filter(Boolean).join(' ');
+
+const gridStyle = [
+  layout === 'grid' ? `--grid-columns: ${columns}` : '',
+  inlineStyle,
+].filter(Boolean).join('; ');
+---
+
+<div class={gridClass} style={gridStyle}>
+  <slot />
+</div>
+
+<style>
+  .card-grid {
+    display: grid;
+    gap: var(--space-xl);
+    width: 100%;
+  }
+
+  /* Standard grid layout */
+  .card-grid-grid {
+    grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+  }
+
+  @media (max-width: 1024px) {
+    .card-grid-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-lg);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .card-grid-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+  }
+
+  /* Masonry layout - allows card size variation */
+  .card-grid-masonry {
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-column-masonry), 1fr));
+    grid-auto-rows: auto;
+    gap: var(--space-xl);
+  }
+
+  /* Stacked layout - vertical flow */
+  .card-grid-stacked {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  /* Asymmetric layout - allows featured cards and variations */
+  .card-grid-asymmetric {
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-column-asymmetric), 1fr));
+    grid-auto-flow: dense;
+    gap: var(--space-xl);
+  }
+
+  /* Progressive loading support */
+  .card-grid.progressive .card {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+  }
+
+  .card-grid.progressive .card:nth-child(1) { animation-delay: 0.1s; }
+  .card-grid.progressive .card:nth-child(2) { animation-delay: 0.2s; }
+  .card-grid.progressive .card:nth-child(3) { animation-delay: 0.3s; }
+  .card-grid.progressive .card:nth-child(4) { animation-delay: 0.4s; }
+  .card-grid.progressive .card:nth-child(5) { animation-delay: 0.5s; }
+  .card-grid.progressive .card:nth-child(6) { animation-delay: 0.6s; }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+</style>

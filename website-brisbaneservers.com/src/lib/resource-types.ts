@@ -1,0 +1,48 @@
+/**
+ * Normative resource shape — see docs/project/RESOURCE_CONTRACT.md
+ */
+
+export type Visibility = 'public' | 'private' | 'starter';
+
+export type ProcessingStatus = 'ready' | 'queued' | 'ocr' | 'embedding' | 'failed';
+
+export interface Resource {
+  id: string;
+  industry: string;
+  topic: string;
+  title: string;
+  description: string;
+  content: string;
+  generatedAt: string;
+  generatedBy?: string;
+  ownerId?: string;
+  version: number;
+  status: 'draft' | 'published' | 'archived';
+  isStarterBlock?: boolean;
+  visibility?: Visibility;
+  metadata?: {
+    wordCount?: number;
+    semanticLevel?: 'high' | 'medium' | 'normal';
+    voiceScore?: number;
+  };
+  /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
+  embeddingModel?: string;
+  /** Bump when re-running embed pipeline */
+  embeddingVersion?: number;
+  /** Deterministic chunk keys for this resource */
+  chunkIds?: string[];
+  /** Ingest / pipeline state for hub UI */
+  processingStatus?: ProcessingStatus;
+  sourceRef?: {
+    kind: 'upload' | 'paste';
+    filename?: string;
+    mimeType?: string;
+  };
+}
+
+export function isPublicResource(resource: Resource): boolean {
+  if (resource.status !== 'published') {
+    return false;
+  }
+  return resource.visibility === undefined || resource.visibility === 'public';
+}

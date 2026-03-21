@@ -1,0 +1,632 @@
+/**
+ * BANACH FIXED-POINT DESIGN – Main site visuals inspired by portal tartan/rail
+ *
+ * SCOPE: HOME PAGE ONLY (main.main-home). Not applied site-wide.
+ *
+ * Banach fixed-point theorem: a contraction on a complete space has a unique
+ * fixed point; iterations converge to it. Visual metaphor: concentric circles
+ * (phi-scaled radii) converging to a single anchor; rail/trail as "paths"
+ * toward that fixed point. Tartan accents unify with portal design.
+ *
+ * Colour emphasis: outer → inner = iteration steps converging (purple → blue → white).
+ */
+
+/* Banach convergence colour palette (outer iteration → inner fixed point) */
+:root {
+  --banach-outer: rgba(139, 92, 246, 0.45);   /* Purple – early iteration */
+  --banach-mid: rgba(59, 130, 246, 0.5);     /* Blue – mid convergence */
+  --banach-inner: rgba(255, 255, 255, 0.25); /* Light – near fixed point */
+  --banach-focus: rgba(255, 255, 255, 0.95); /* Fixed point centre */
+  --banach-glow-primary: rgba(10, 116, 218, 0.7);
+  --banach-glow-purple: rgba(139, 92, 246, 0.5);
+  /* White-background UI: stronger visibility */
+  --banach-on-white-purple: rgba(139, 92, 246, 0.22);
+  --banach-on-white-blue: rgba(59, 130, 246, 0.2);
+  --banach-on-white-primary: rgba(10, 116, 218, 0.25);
+  --banach-bg-tint-start: rgba(139, 92, 246, 0.07);
+  --banach-bg-tint-end: rgba(10, 116, 218, 0.08);
+}
+
+/* ============================================
+   FIXED-POINT ANCHOR – Convergence motif (coloured rings)
+   ============================================ */
+
+/* Banach hero elements: only on home page (inside main.main-home) */
+.hero .fixed-point-anchor,
+.hero .hero-tartan-overlay {
+  display: none;
+}
+.main-home .hero .fixed-point-anchor,
+.main-home .hero .hero-tartan-overlay {
+  display: block;
+}
+
+.fixed-point-anchor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  /* Above hero gradient, below content */
+}
+
+/* Concentric circles: outer purple → mid blue → inner light (convergence) */
+.fixed-point-anchor::before,
+.fixed-point-anchor::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: fixedPointPulse 4s ease-in-out infinite;
+}
+
+/* Outer ring – purple (first iteration) */
+.fixed-point-anchor::before {
+  width: calc(100px * var(--phi));
+  height: calc(100px * var(--phi));
+  border: 2px solid var(--banach-outer);
+  box-shadow:
+    0 0 20px var(--banach-glow-purple),
+    inset 0 0 20px rgba(139, 92, 246, 0.08);
+  opacity: 0.85;
+}
+
+/* Middle ring – blue (converging) */
+.fixed-point-anchor::after {
+  width: calc(100px * var(--phi) * var(--phi));
+  height: calc(100px * var(--phi) * var(--phi));
+  border: 2px solid var(--banach-mid);
+  box-shadow:
+    0 0 16px var(--banach-glow-primary),
+    inset 0 0 12px rgba(59, 130, 246, 0.06);
+  opacity: 0.75;
+  animation-delay: 0.5s;
+}
+
+/* Outermost ring – purple (first iteration, convergence start) */
+.fixed-point-ring-outer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(260px, 42vw);
+  height: min(260px, 42vw);
+  border: 2px solid var(--banach-outer);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 24px var(--banach-glow-purple);
+  opacity: 0.7;
+  animation: fixedPointPulse 4s ease-in-out infinite 1s;
+  pointer-events: none;
+}
+
+/* Centre dot – fixed point (unique attractor) */
+.fixed-point-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--banach-focus);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 16px var(--banach-glow-primary),
+    0 0 24px var(--banach-glow-purple),
+    inset 0 0 6px rgba(255, 255, 255, 0.8);
+  z-index: 1;
+  animation: fixedPointDotGlow 3s ease-in-out infinite;
+}
+
+@keyframes fixedPointDotGlow {
+  0%, 100% {
+    box-shadow: 0 0 16px var(--banach-glow-primary), 0 0 24px var(--banach-glow-purple), inset 0 0 6px rgba(255, 255, 255, 0.8);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 24px var(--banach-glow-primary), 0 0 32px var(--banach-glow-purple), inset 0 0 8px rgba(255, 255, 255, 0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes fixedPointPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+}
+
+/* Hero: fixed point bottom-right (convergence focal) */
+.hero .fixed-point-anchor {
+  right: 15%;
+  bottom: 20%;
+  width: 0;
+  height: 0;
+}
+
+.hero .fixed-point-anchor::before {
+  width: min(120px, 20vw);
+  height: min(120px, 20vw);
+}
+
+.hero .fixed-point-anchor::after {
+  width: min(200px, 32vw);
+  height: min(200px, 32vw);
+}
+
+/* ============================================
+   HERO TARTAN OVERLAY – Coloured convergence tartan (purple/blue/white)
+   ============================================ */
+
+.hero-tartan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    /* Horizontal – primary band */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent calc(var(--path-2) * 1px - 1px),
+      rgba(255, 255, 255, 0.07) calc(var(--path-2) * 1px - 1px),
+      rgba(255, 255, 255, 0.07) calc(var(--path-2) * 1px),
+      transparent calc(var(--path-2) * 1px),
+      transparent calc(var(--path-1) * 1px - 1px),
+      rgba(139, 92, 246, 0.12) calc(var(--path-1) * 1px - 1px),
+      rgba(139, 92, 246, 0.12) calc(var(--path-1) * 1px),
+      transparent calc(var(--path-1) * 1px)
+    ),
+    /* Vertical – blue convergence band */
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(var(--path-2) * 1px - 1px),
+      rgba(59, 130, 246, 0.08) calc(var(--path-2) * 1px - 1px),
+      rgba(59, 130, 246, 0.08) calc(var(--path-2) * 1px),
+      transparent calc(var(--path-2) * 1px),
+      transparent calc(var(--path-1) * 1px - 1px),
+      rgba(255, 255, 255, 0.1) calc(var(--path-1) * 1px - 1px),
+      rgba(255, 255, 255, 0.1) calc(var(--path-1) * 1px),
+      transparent calc(var(--path-1) * 1px)
+    ),
+    /* Diagonal – blend */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent calc(var(--path-3) * 1px - 1px),
+      rgba(10, 116, 218, 0.06) calc(var(--path-3) * 1px - 1px),
+      rgba(10, 116, 218, 0.06) calc(var(--path-3) * 1px),
+      transparent calc(var(--path-3) * 1px)
+    );
+  background-size:
+    100% calc(var(--path-1) * 24px),
+    calc(var(--path-1) * 24px) 100%,
+    calc(var(--path-1) * 36px) calc(var(--path-1) * 36px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.9;
+  mix-blend-mode: overlay;
+}
+
+/* ============================================
+   JOINED BACKING – One continuous design across all sections
+   ============================================ */
+
+.main-home .banach-joined-backing {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  /* No second full gutter; rails use φ·inset below to align with chassis rhythm */
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Sections sit above the shared backing */
+.main-home .banach-joined-backing > .section {
+  position: relative;
+  z-index: 1;
+}
+
+/* Continuous left rail – full height; inset φ·gutter so banding matches section chassis & hero */
+.main-home .banach-rail-continuous {
+  position: absolute;
+  left: max(
+    calc(var(--layout-padding-inline) * var(--phi-inv)),
+    var(--safe-area-inset-left)
+  );
+  top: 0;
+  bottom: 0;
+  width: clamp(2.25rem, calc(var(--space-xl) * var(--phi-inv)), 3rem);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-home .banach-rail-continuous::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--banach-on-white-purple) var(--path-2),
+    #8b5cf6 var(--path-1),
+    var(--primary-color) calc(var(--path-1) + var(--path-2) * 0.5),
+    var(--primary-dark) calc(var(--path-1) + var(--path-2)),
+    transparent 100%
+  );
+  border-radius: 2px;
+}
+
+.main-home .banach-rail-continuous::after {
+  content: '';
+  position: absolute;
+  /* Inset scales with rail width (was fixed 12px → clipped on narrow rails at zoom) */
+  left: clamp(0.5rem, 32%, 0.875rem);
+  top: var(--path-2);
+  height: calc(100% * var(--phi-inverse));
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--banach-on-white-blue) var(--path-3),
+    var(--primary-color) calc(var(--path-3) * 2),
+    transparent calc(var(--path-3) * 3),
+    transparent 100%
+  );
+  opacity: 0.9;
+  border-radius: 1px;
+}
+
+@media (min-width: 769px) {
+  .main-home .banach-rail-continuous {
+    opacity: 1;
+  }
+}
+
+/* Continuous right trail – φ·inset from edge (mirror rail) */
+.main-home .banach-trail-continuous {
+  position: absolute;
+  right: max(
+    calc(var(--layout-padding-inline) * var(--phi-inv)),
+    var(--safe-area-inset-right)
+  );
+  top: 0;
+  bottom: 0;
+  width: clamp(2.75rem, calc(var(--space-xl) * var(--phi)), 3.5rem);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-home .banach-trail-continuous::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--banach-on-white-purple) var(--path-2),
+    #8b5cf6 var(--path-1),
+    #3b82f6 calc(var(--path-1) + var(--path-2) * 0.3),
+    var(--primary-color) calc(var(--path-1) + var(--path-2) * 0.5),
+    transparent calc(var(--path-1) + var(--path-2)),
+    transparent 100%
+  );
+  border-radius: 2px;
+}
+
+.main-home .banach-trail-continuous::after {
+  content: '';
+  position: absolute;
+  right: clamp(0.625rem, 36%, 1rem);
+  top: var(--path-1);
+  height: calc(100% * var(--phi-inverse) * var(--phi-inverse));
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--primary-color) var(--path-3),
+    var(--primary-dark) calc(var(--path-3) * 2),
+    transparent calc(var(--path-3) * 3),
+    transparent 100%
+  );
+  opacity: 0.85;
+  border-radius: 1px;
+}
+
+@media (min-width: 769px) {
+  .main-home .banach-trail-continuous {
+    opacity: 1;
+  }
+}
+
+/* Shared tartan/convergence backing – z-index 0 under sections (z-index 1 + opaque fills), so it reads in inter-section gaps / edges, not across full section faces. Stronger tartan: .banach-overlay-tartan */
+.main-home .banach-backing-tartan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    105deg,
+    var(--banach-bg-tint-start) 0%,
+    transparent 22%,
+    transparent 78%,
+    var(--banach-bg-tint-end) 100%
+  );
+}
+
+.main-home .banach-backing-tartan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent calc(var(--path-2) * 3px - 1px),
+      rgba(139, 92, 246, 0.045) calc(var(--path-2) * 3px - 1px),
+      rgba(139, 92, 246, 0.045) calc(var(--path-2) * 3px),
+      transparent calc(var(--path-2) * 3px),
+      transparent calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.055) calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.055) calc(var(--path-1) * 4px),
+      transparent calc(var(--path-1) * 4px)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(var(--path-2) * 3px - 1px),
+      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 3px - 1px),
+      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 3px),
+      transparent calc(var(--path-2) * 3px),
+      transparent calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.05) calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.05) calc(var(--path-1) * 4px),
+      transparent calc(var(--path-1) * 4px)
+    );
+  background-size:
+    100% calc(var(--path-1) * 28px),
+    calc(var(--path-1) * 28px) 100%;
+  opacity: 0.95;
+}
+
+/* ============================================
+   OPTION 2 – Overlay pattern on top (connects content, visible)
+   ============================================ */
+
+.main-home .banach-overlay-tartan {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent calc(var(--path-2) * 4px - 1px),
+      rgba(139, 92, 246, 0.16) calc(var(--path-2) * 4px - 1px),
+      rgba(139, 92, 246, 0.16) calc(var(--path-2) * 4px),
+      transparent calc(var(--path-2) * 4px),
+      transparent calc(var(--path-1) * 6px - 1px),
+      rgba(var(--primary-color-rgb), 0.14) calc(var(--path-1) * 6px - 1px),
+      rgba(var(--primary-color-rgb), 0.14) calc(var(--path-1) * 6px),
+      transparent calc(var(--path-1) * 6px)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(var(--path-2) * 4px - 1px),
+      rgba(59, 130, 246, 0.12) calc(var(--path-2) * 4px - 1px),
+      rgba(59, 130, 246, 0.12) calc(var(--path-2) * 4px),
+      transparent calc(var(--path-2) * 4px),
+      transparent calc(var(--path-1) * 6px - 1px),
+      rgba(var(--primary-color-rgb), 0.13) calc(var(--path-1) * 6px - 1px),
+      rgba(var(--primary-color-rgb), 0.13) calc(var(--path-1) * 6px),
+      transparent calc(var(--path-1) * 6px)
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent calc(var(--path-3) * 5px - 1px),
+      rgba(139, 92, 246, 0.09) calc(var(--path-3) * 5px - 1px),
+      rgba(139, 92, 246, 0.09) calc(var(--path-3) * 5px),
+      transparent calc(var(--path-3) * 5px)
+    );
+  background-size:
+    100% calc(var(--path-1) * 36px),
+    calc(var(--path-1) * 36px) 100%,
+    calc(var(--path-1) * 40px) calc(var(--path-1) * 40px);
+  mix-blend-mode: normal;
+  opacity: 0.58;
+}
+
+/* ============================================
+   OPTION 3 – Gaps between sections (backing visible in gutters)
+   ============================================ */
+
+.main-home .banach-joined-backing > .section {
+  margin-bottom: var(--space-xl);
+}
+
+.main-home .banach-joined-backing > .section:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 769px) {
+  .main-home .banach-joined-backing > .section {
+    margin-bottom: var(--space-2xl);
+  }
+}
+
+/* ============================================
+   WHITE-BACKGROUND UI – Section colour (works with joined backing)
+   ============================================ */
+
+/* Sections keep their background; tartan accent joins the backing */
+.main-home .banach-joined-backing .section.section-tartan-accent {
+  background-color: var(--bg-secondary) !important;
+  position: relative;
+  z-index: 1;
+}
+
+.main-home .banach-joined-backing .section.section-tartan-accent.section--bg-surface {
+  background-color: var(--surface) !important;
+}
+
+.main-home .banach-joined-backing .section.section-tartan-accent.section--bg-primary-light {
+  background-color: var(--primary-light) !important;
+}
+
+/* Per-section tint removed when using joined backing – backing provides the tint */
+.main-home .banach-joined-backing .section.section-tartan-accent::after {
+  display: none;
+}
+
+/* Home page cards: tartan overlay on hover (portal-style) */
+.main-home .section .card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card hover: convergence tartan (purple + primary bands) */
+.main-home .section .card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent calc(var(--path-2) * 2px - 1px),
+      rgba(139, 92, 246, 0.06) calc(var(--path-2) * 2px - 1px),
+      rgba(139, 92, 246, 0.06) calc(var(--path-2) * 2px),
+      transparent calc(var(--path-2) * 2px),
+      transparent calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.08) calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.08) calc(var(--path-1) * 3px),
+      transparent calc(var(--path-1) * 3px)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(var(--path-2) * 2px - 1px),
+      rgba(59, 130, 246, 0.05) calc(var(--path-2) * 2px - 1px),
+      rgba(59, 130, 246, 0.05) calc(var(--path-2) * 2px),
+      transparent calc(var(--path-2) * 2px),
+      transparent calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.07) calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.07) calc(var(--path-1) * 3px),
+      transparent calc(var(--path-1) * 3px)
+    );
+  background-size:
+    100% calc(var(--path-1) * 24px),
+    calc(var(--path-1) * 24px) 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.main-home .section .card:hover::after {
+  opacity: 1;
+}
+
+.main-home .section .card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   SECTION TARTAN BORDER – Joined band between sections
+   ============================================ */
+
+/* Section top border: purple + primary bands (home page only) */
+.main-home .section-tartan-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent calc(var(--path-2) * 8px - 1px),
+    rgba(139, 92, 246, 0.45) calc(var(--path-2) * 8px - 1px),
+    rgba(139, 92, 246, 0.45) calc(var(--path-2) * 8px),
+    transparent calc(var(--path-2) * 8px),
+    transparent calc(var(--path-1) * 12px - 1px),
+    rgba(var(--primary-color-rgb), 0.55) calc(var(--path-1) * 12px - 1px),
+    rgba(var(--primary-color-rgb), 0.55) calc(var(--path-1) * 12px),
+    transparent calc(var(--path-1) * 12px)
+  );
+  opacity: 1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Card tartan hover – portal resource-item-tartan style */
+.card-tartan-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-tartan-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent calc(var(--path-2) * 2px - 1px),
+      rgba(139, 92, 246, 0.05) calc(var(--path-2) * 2px - 1px),
+      rgba(139, 92, 246, 0.05) calc(var(--path-2) * 2px),
+      transparent calc(var(--path-2) * 2px),
+      transparent calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.07) calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.07) calc(var(--path-1) * 3px),
+      transparent calc(var(--path-1) * 3px)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(var(--path-2) * 2px - 1px),
+      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 2px - 1px),
+      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 2px),
+      transparent calc(var(--path-2) * 2px),
+      transparent calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.06) calc(var(--path-1) * 3px - 1px),
+      rgba(var(--primary-color-rgb), 0.06) calc(var(--path-1) * 3px),
+      transparent calc(var(--path-1) * 3px)
+    );
+  background-size:
+    100% calc(var(--path-1) * 24px),
+    calc(var(--path-1) * 24px) 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.card-tartan-hover:hover::after {
+  opacity: 1;
+}
+
+.card-tartan-hover > * {
+  position: relative;
+  z-index: 1;
+}

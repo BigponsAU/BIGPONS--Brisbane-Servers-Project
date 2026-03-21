@@ -1,0 +1,33 @@
+{
+  "name": "brisbane-servers-website",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "npx tsx scripts/pre-build-check.ts",
+    "build": "astro build",
+    "build:cpanel": "npm run prebuild && astro build --config astro.config.cpanel.mjs && npm run postbuild",
+    "postbuild": "npx tsx scripts/post-build-verify.ts",
+    "preview": "astro preview",
+    "validate-tokens": "npx tsx scripts/validate-tokens.ts",
+    "check-scaling": "npx tsx scripts/check-token-scaling.ts",
+    "audit:css-vars": "npx tsx scripts/audit-css-vars.ts",
+    "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
+  },
+  "dependencies": {
+    "astro": "^5.15.4",
+    "@astrojs/cloudflare": "^12.0.0",
+    "@astrojs/node": "^9.0.0",
+    "sql.js": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "glob": "^10.3.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  }
+}
+
+
+

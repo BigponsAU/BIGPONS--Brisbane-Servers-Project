@@ -1,0 +1,175 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+
+const currentPath = '/contribute';
+---
+
+<BaseLayout
+  title="Contribute - Brisbane Servers"
+  description="Join our community: share your experience, earn tokens, and help improve industry resources. Your contributions are checked against our voice profile and shown alongside a community note."
+>
+  <Header currentPath={currentPath} />
+  <main id="main-content" class="main-phi-chassis" role="main">
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Resources', href: '/resources' },
+      { label: 'Contribute' }
+    ]} />
+
+    <section class="contribute-hero section phi-line-symmetrical">
+      <div class="container">
+        <h1 class="contribute-title">Contribute to Community Resources</h1>
+        <p class="contribute-lead">
+          Share your experience, get your perspective validated against our base voice profile, and earn tokens that can unlock future benefits.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="contribute-blocks">
+          <div class="contribute-block">
+            <h2>Why contribute?</h2>
+            <p>Your real-world experience helps other businesses. We combine your input with our voice framework so the result stays accurate, on-brand, and useful. You stay credited; the community gets a single, trusted view.</p>
+          </div>
+          <div class="contribute-block">
+            <h2>How the pipeline works</h2>
+            <p><strong>Your submission (A)</strong> is what you write. Our system compares it to a <strong>base voice profile</strong> and, where needed, produces a <strong>community note (B/C)</strong>—a corrected or expanded version. Both are shown side by side on topic pages so readers see your view and the curated summary. Moderators can approve or adjust before anything goes live.</p>
+          </div>
+          <div class="contribute-block">
+            <h2>Benefits</h2>
+            <ul>
+              <li><strong>Tokens</strong> — Valuable contributions earn tokens (stored in a single ledger). We plan to use these for things like server runtime or discounts.</li>
+              <li><strong>Visibility</strong> — Your contribution and the community note appear on the topic page with clear attribution.</li>
+              <li><strong>Portal access</strong> — Log in to the portal to see your contributions, token balance, and history.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contribute-cta">
+      <div class="container">
+        <h2 class="contribute-cta-title">Get started</h2>
+        <p class="contribute-cta-lead">Create an account to contribute from any topic page, or log in if you already have one.</p>
+        <div class="auth-cards">
+          <div class="auth-card">
+            <h3>Register</h3>
+            <form id="register-form" class="auth-form">
+              <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
+              <label><span>Password (min 8 characters)</span><input type="password" name="password" required minlength="8" autocomplete="new-password" /></label>
+              <button type="submit" class="btn btn-primary">Create account</button>
+              <p id="register-status" class="auth-status" aria-live="polite"></p>
+            </form>
+          </div>
+          <div class="auth-card">
+            <h3>Log in</h3>
+            <form id="login-form" class="auth-form">
+              <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
+              <label><span>Password</span><input type="password" name="password" required autocomplete="current-password" /></label>
+              <button type="submit" class="btn btn-secondary">Log in</button>
+              <p id="login-status" class="auth-status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+        <p class="contribute-portal-link">
+          Already use the portal? <a href="/portal">Open Resource Portal</a>
+        </p>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<script>
+  const registerForm = document.getElementById('register-form') as HTMLFormElement;
+  const loginForm = document.getElementById('login-form') as HTMLFormElement;
+  const registerStatus = document.getElementById('register-status');
+  const loginStatus = document.getElementById('login-status');
+
+  function setStatus(el: HTMLElement | null, msg: string, isError = false) {
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? 'var(--error-color, #c00)' : 'var(--text-secondary)';
+  }
+
+  registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(registerForm);
+    setStatus(registerStatus, 'Creating account…');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus(registerStatus, 'Account created. Redirecting to portal…');
+        if (data.token) localStorage.setItem('authToken', data.token);
+        window.location.href = '/portal';
+      } else {
+        setStatus(registerStatus, data.error || 'Registration failed', true);
+      }
+    } catch {
+      setStatus(registerStatus, 'Network error. Try again.', true);
+    }
+  });
+
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(loginForm);
+    setStatus(loginStatus, 'Logging in…');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus(loginStatus, 'Logged in. Redirecting to portal…');
+        if (data.token) localStorage.setItem('authToken', data.token);
+        window.location.href = '/portal';
+      } else {
+        setStatus(loginStatus, data.error || 'Login failed', true);
+      }
+    } catch {
+      setStatus(loginStatus, 'Network error. Try again.', true);
+    }
+  });
+</script>
+
+<style>
+  .contribute-hero { padding-top: var(--space-2xl); }
+  .contribute-title { font-size: var(--text-3xl); margin-bottom: var(--space-md); }
+  .contribute-lead { font-size: var(--text-lg); color: var(--text-secondary); max-width: var(--measure-prose); }
+  .contribute-blocks { display: grid; gap: var(--space-xl); margin-top: var(--space-xl); }
+  .contribute-block {
+    padding: var(--space-lg);
+    background: var(--surface-elevated);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+  }
+  .contribute-block h2 { margin-top: 0; margin-bottom: var(--space-sm); }
+  .contribute-block ul { margin-bottom: 0; padding-left: var(--space-lg); }
+  .contribute-cta { background: var(--surface-subtle); }
+  .contribute-cta-title { margin-bottom: var(--space-sm); }
+  .contribute-cta-lead { color: var(--text-secondary); margin-bottom: var(--space-xl); }
+  .auth-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl); }
+  .auth-card {
+    padding: var(--space-xl);
+    background: var(--surface-elevated);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-light);
+  }
+  .auth-card h3 { margin-top: 0; margin-bottom: var(--space-md); }
+  .auth-form { display: flex; flex-direction: column; gap: var(--space-md); }
+  .auth-form label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--text-sm); }
+  .auth-form input { padding: var(--space-sm); border-radius: var(--border-radius-sm); border: 1px solid var(--border-light); }
+  .auth-status { font-size: var(--text-sm); margin-top: var(--space-sm); margin-bottom: 0; }
+  .contribute-portal-link { margin-top: var(--space-xl); font-size: var(--text-sm); }
+</style>

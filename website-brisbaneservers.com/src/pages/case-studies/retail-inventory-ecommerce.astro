@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Hero from '../../components/Hero.astro';
+import Card from '../../components/Card.astro';
+import CardGrid from '../../components/CardGrid.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import InquiryForm from '../../components/InquiryForm.astro';
+import SemanticText from '../../components/SemanticText.astro';
+
+const currentPath = '/case-studies/retail-inventory-ecommerce';
+---
+
+<BaseLayout 
+  title="Retail: Inventory & E-commerce Integration - Case Study - Brisbane Servers"
+  description="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation."
+>
+  <Header currentPath={currentPath} />
+  
+  <main id="main-content" class="main-phi-chassis" role="main">
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Projects', href: '/projects' },
+      { label: 'Case Studies', href: '/projects' },
+      { label: 'Retail: Inventory & E-commerce Integration' }
+    ]} />
+    
+    <Hero 
+      title="Retail: Inventory & E-commerce Integration"
+      subtitle="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation."
+    />
+
+    <section class="section phi-line-symmetrical">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="phi-lateral-angular-2"></div>
+      <div class="container">
+        <div class="case-study-content">
+          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--phi-radius-atypical-a); border-left: max(3px, calc(var(--phi-stroke-md) * 2)) solid var(--primary-color);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+              <div>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Retail & E-commerce</p>
+              </div>
+              <div>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location:</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Brisbane, QLD</p>
+              </div>
+              <div>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Business Size:</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Small Business</p>
+              </div>
+              <div>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Implementation:</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Grant-Assisted</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-intro-phi">
+            <h2 class="section-title">
+              <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+            </h2>
+            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+              <SemanticText text={`A small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence. 
+
+As the business grew, this manual process became unsustainable. Stock levels were frequently incorrect, leading to overselling online or missing sales opportunities in-store. The business needed an automated solution that could:
+- Track inventory in real-time across physical and online channels
+- Automatically update stock levels when sales occurred
+- Provide accurate reporting for purchasing decisions
+- Integrate with their existing e-commerce platform
+- Be cost-effective for a small business budget`} semanticLevel="normal" isChild={true} />
+            </div>
+          </div>
+
+          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
+            <h2 class="section-title">
+              <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+            </h2>
+            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+              <SemanticText text={`We assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:
+
+Phase 1: Core Inventory System
+- Implemented a cloud-based inventory management system
+- Set up barcode scanning for efficient stock tracking
+- Configured automated stock level alerts
+
+Phase 2: E-commerce Integration
+- Integrated inventory system with existing e-commerce platform
+- Automated stock synchronization between channels
+- Real-time inventory updates for online customers
+
+Phase 3: Reporting & Analytics
+- Custom reporting dashboard for purchasing decisions
+- Sales trend analysis
+- Inventory turnover metrics
+
+The solution was designed to scale with the business while remaining cost-effective through grant assistance.`} semanticLevel="normal" isChild={true} />
+            </div>
+          </div>
+
+          <h2 class="section-title" style="margin-top: var(--space-4xl);">
+            <SemanticText text="Results" semanticLevel="high" isParent={true} />
+          </h2>
+          <CardGrid columns={2} style="margin-top: var(--space-xl);">
+            <Card
+              title="Time Savings"
+              description="Reduced inventory management time from 8 hours per week to 1 hour per week. Owner can focus on growing the business instead of data entry."
+              icon="fas fa-clock"
+            />
+            <Card
+              title="Accuracy Improvement"
+              description="Stock level accuracy increased from 75% to 98%. Eliminated overselling and missed sales opportunities."
+              icon="fas fa-check-circle"
+            />
+            <Card
+              title="Cost Efficiency"
+              description="Grant assistance covered 60% of implementation costs. Monthly operational savings exceed system costs."
+              icon="fas fa-dollar-sign"
+            />
+            <Card
+              title="Scalability"
+              description="System designed to handle 3x current inventory levels without additional infrastructure costs."
+              icon="fas fa-chart-line"
+            />
+          </CardGrid>
+
+          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
+            <h2 class="section-title">
+              <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+            </h2>
+            <div class="section-description">
+              <SemanticText text="Cloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance." semanticLevel="normal" isChild={true} />
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
+            <h3 style="margin-bottom: var(--space-md);">Lessons Learned</h3>
+            <p style="margin: 0; line-height: 1.8;">
+              <SemanticText text={`This project demonstrated that small businesses can successfully implement enterprise-grade solutions when properly planned and grant-assisted. The key was understanding the business's immediate needs while building a foundation for future growth. Phased implementation allowed the business to adapt gradually without disrupting operations.`} semanticLevel="normal" isChild={true} />
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <InquiryForm 
+      title="Interested in Similar Solutions?"
+      subtitle="We can help assess your business needs and identify grant opportunities for digital transformation."
+      defaultIndustry="Retail & E-commerce"
+    />
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .case-study-content {
+    max-width: var(--measure-article);
+    margin: 0 auto;
+  }
+</style>

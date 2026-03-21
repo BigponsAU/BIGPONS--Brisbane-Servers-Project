@@ -1,0 +1,742 @@
+/**
+ * DESIGN TOKENS - SIERPINSKI PATTERN IMPLEMENTATION
+ * 
+ * This file implements a Sierpinski-style (recursive/self-similar) design token system
+ * where tokens reference other tokens in a hierarchical pattern ("value of value").
+ * 
+ * Token Hierarchy:
+ * 1. Base tokens (fundamental values: phi, base units)
+ * 2. Derived tokens (calculated from base: spacing, typography)
+ * 3. Component tokens (specific to components: card-padding, button-size)
+ * 4. Pattern tokens (design patterns: phi-lines, azimuth angles)
+ * 
+ * All tokens follow the pattern: token references token references token...
+ */
+
+:root {
+  /* ============================================
+     BASE TOKENS - Fundamental Values
+     ============================================ */
+  
+  /* Golden Ratio Constants */
+  --phi: 1.618033988749895;
+  --phi-inverse: 0.618033988749895;
+  --phi-inv: 0.618033988749895;
+  --phi-mod: 1.618033988749895;
+  /* Animation / transform hooks (inline or script may override; default 0) */
+  --phi-phase: 0;
+  
+  /* Phi Path Variables for Tartan Design */
+  --path-1: calc(100% / var(--phi)); /* Primary alignment path */
+  --path-2: calc(100% / calc(var(--phi) * var(--phi))); /* Secondary path */
+  --path-3: calc(100% / calc(var(--phi) * var(--phi) * var(--phi))); /* Tertiary path */
+  
+  /* Square Diagonal Constants */
+  --sqrt2: 1.414213562;
+  --sqrt2-inv: 0.707106781;
+  --sqrt2-half: 0.707106781;
+  --sqrt2-double: 2.828427124;
+  
+  /* Combined Phi-√2 Ratios */
+  --phi-sqrt2-product: 2.288245611;
+  --phi-sqrt2-quotient: 1.144122806;
+  --sqrt2-phi-quotient: 0.874032049;
+  
+  /* Diagonal Angles - Combining √2 (45°) with Phi Angles */
+  --diag-angle-1: 83.2deg;
+  --diag-angle-2: 106.8deg;
+  --diag-angle-3: 68.6deg;
+  --diag-angle-4: 121.4deg;
+  
+  /* Base Units */
+  --base: 1rem;
+  /**
+   * Phi-congruent fluid rhythm: one root scales type + space together.
+   * Preferred value uses φ⁻²≈0.382 (vmin) and φ⁻³≈0.236 (vw) so shrink/grow tracks golden subdivisions.
+   * Viewport multipliers (set in global.css breakpoints) keep harmony on small/large displays.
+   */
+  --phi-rhythm-root: clamp(
+    0.875rem,
+    calc(0.72rem + 0.382vmin + 0.236vw),
+    1.125rem
+  );
+  --font-base: calc(var(--phi-rhythm-root) * var(--viewport-font-multiplier));
+  --space-base: calc(var(--phi-rhythm-root) * var(--viewport-spacing-multiplier));
+  
+  /* Layout zoom: native browser zoom scales rem/em; do not multiply layout again via JS */
+  --browser-zoom: 1;
+  --zoom-scale: 1;
+  --inverse-zoom: 1;
+  /* Header offset below fixed bar — rem so it tracks content when zooming (avoids px/rem clash) */
+  --site-header-clearance: clamp(4.25rem, 5rem, 6rem);
+  
+  /* Viewport Properties */
+  --viewport-width: 100vw;
+  --viewport-height: 100vh;
+  --viewport-aspect-ratio: calc(100vw / 100vh);
+  --viewport-pixel-ratio: 1;
+  --viewport-orientation: landscape;
+  --vbase: calc(1vh + 1vw);
+  
+  /* Safe Area Insets */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  
+  /* Viewport Size Categories */
+  --is-mobile: 0;
+  --is-tablet: 0;
+  --is-desktop: 1;
+  --is-ultra-wide: 0;
+  
+  /* Viewport Multipliers */
+  --viewport-spacing-multiplier: 1;
+  --viewport-font-multiplier: 1;
+  
+  /* ============================================
+     PHI DERIVATIVE VARIATIONS
+     ============================================ */
+  
+  --phi-sqrt: 1.272;
+  --phi-cubed: 4.236;
+  --phi-half: 0.809;
+  --phi-quarter: 0.4045;
+  --phi-two-thirds: 1.079;
+  --phi-three-quarters: 1.2135;
+  --phi-one-point-five: 2.427;
+  
+  /* Congruence Phi Symmetry */
+  --congruence-phi-1: calc(var(--phi) * var(--phi-inv));
+  --congruence-phi-2: calc(var(--phi) * var(--phi-inv) * var(--phi));
+  
+  /* Tucker's Coefficient of Factor Congruence with Phi Symmetry */
+  /* Tucker's coefficient measures factor congruence (similarity between factors) */
+  /* Applied with phi symmetry for harmonious element relationships */
+  --tucker-congruence-phi: calc(var(--phi) * var(--phi-inv) * var(--phi-sqrt));
+  /* Approximate value: 1.618 * 0.618 * 1.272 ≈ 1.244 */
+  --tucker-congruence-phi-inv: calc(1 / var(--tucker-congruence-phi));
+  --tucker-congruence-phi-sqrt: calc(var(--tucker-congruence-phi) * var(--phi-sqrt));
+  
+  /* Additional Phi Variations for Element-Specific Sizing */
+  --phi-one-third: 0.539;
+  --phi-fourths: 1.2135;
+  --phi-five-fourths: 2.0225;
+  --phi-three-halves: 2.427;
+  --phi-four-thirds: 2.157;
+  --phi-five-sixths: 1.348;
+  
+  /* Text-Length-Aware Phi Tokens */
+  /* Short text (<100 chars): Tighter spacing, smaller sizing */
+  --phi-text-short: var(--phi-quarter);
+  --phi-text-short-line-height: calc(var(--phi) * var(--phi-inv));
+  --phi-text-short-spacing: var(--phi-half);
+  
+  /* Medium text (100-200 chars): Base phi sizing */
+  --phi-text-medium: var(--phi);
+  --phi-text-medium-line-height: var(--phi);
+  --phi-text-medium-spacing: var(--phi);
+  
+  /* Long text (>200 chars): Larger sizing, adjusted line-height */
+  --phi-text-long: var(--phi-sqrt);
+  --phi-text-long-line-height: calc(var(--phi) * var(--phi-sqrt));
+  --phi-text-long-spacing: calc(var(--phi) * var(--phi-sqrt));
+  
+  /* ============================================
+     GOLDEN RATIO POSITIONING
+     ============================================ */
+  
+  --phi-ratio: 61.8%;
+  --phi-ratio-inv: 38.2%;
+  
+  /* Phi Spiral Points */
+  --phi-spiral-1: 0%;
+  --phi-spiral-2: var(--phi-ratio-inv);
+  --phi-spiral-3: var(--phi-ratio);
+  --phi-spiral-4: calc(var(--phi-ratio) + var(--phi-ratio-inv) * var(--phi-inv));
+  --phi-spiral-5: calc(var(--phi-ratio) + var(--phi-ratio-inv));
+  
+  /* ============================================
+     COLOR SYSTEM - Base Colors
+     ============================================ */
+  
+  /* Primary Colors */
+  --primary-color: #0A74DA;
+  --primary-color-rgb: 10, 116, 218;
+  --primary-dark: #0855A8;
+  --primary-light: #F0F7FF;
+  --primary-ultra-light: #FAFCFF;
+  
+  /* Portal Primary Colors (for tartan design compatibility) */
+  --portal-primary: var(--primary-color);
+  --portal-primary-rgb: var(--primary-color-rgb);
+  --portal-primary-light: #3B9EFF;
+  --portal-primary-lighter: #6BB5FF;
+  
+  /* Semantic Color Mappings */
+  --color-success: var(--primary-color);
+  --color-success-light: var(--primary-light);
+  --color-success-dark: var(--primary-dark);
+  
+  --color-warning: var(--primary-dark);
+  --color-warning-light: var(--primary-light);
+  --color-warning-dark: var(--primary-dark);
+  
+  --color-error: var(--primary-dark);
+  --color-error-light: var(--primary-light);
+  --color-error-dark: var(--primary-dark);
+  
+  --color-neutral: #6B7280;
+  --color-neutral-light: #F3F4F6;
+  --color-neutral-dark: #4B5563;
+  
+  /* Legacy Color Mappings */
+  --color-wisdom: var(--primary-dark);
+  --color-wisdom-light: var(--primary-light);
+  --color-wisdom-dark: var(--primary-dark);
+  --color-wisdom-ultra-light: var(--primary-ultra-light);
+  
+  --color-calm: var(--primary-color);
+  --color-calm-light: var(--primary-light);
+  --color-calm-dark: var(--primary-dark);
+  
+  /* Text Colors */
+  --text-primary: #1A1A1A;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  
+  /* Background Colors */
+  --bg-primary: var(--primary-ultra-light);
+  --bg-secondary: #FAFBFC;
+  --bg-tertiary: #F8F9FA;
+  --bg-accent: linear-gradient(135deg, var(--primary-ultra-light) 0%, #F0F7FF 100%);
+  --bg-elevated: #FFFFFF;
+  
+  /* Surface Colors */
+  --background: var(--bg-secondary);
+  --surface: var(--bg-tertiary);
+  --surface-elevated: var(--bg-elevated);
+  --surface-accent: var(--bg-primary);
+  /* Bands and muted panels (legacy name in Astro pages + portal fallback) */
+  --surface-subtle: var(--bg-secondary);
+  --dark-surface: #1A1A1A;
+  
+  /* Border Colors */
+  --border: #E2E8F0;
+  --border-light: #EDF2F7;
+  /* Softer than --border; used for dashed placeholders / low-emphasis outlines */
+  --border-subtle: var(--border-light);
+  
+  /* ============================================
+     ORIGINAL BRISBANE SERVERS COLOR PALETTE
+     ============================================ */
+  
+  /* Dark Gradient Background Colors */
+  --original-bg-start: #1a0b2e; /* Deep indigo/purple */
+  --original-bg-end: #16213e; /* Darker blue */
+  --original-bg-gradient: linear-gradient(135deg, var(--original-bg-start) 0%, var(--original-bg-end) 100%);
+  
+  /* Purple Accent Colors */
+  --original-purple: #8b5cf6; /* Vibrant purple for text and glow */
+  --original-purple-light: #a78bfa;
+  --original-purple-dark: #6d28d9;
+  --original-purple-glow: rgba(139, 92, 246, 0.6); /* Purple glow for connections */
+  --original-purple-glow-rgb: 139, 92, 246;
+  
+  /* Blue Node Colors */
+  --original-blue-node: #3b82f6; /* Blue for node backgrounds */
+  --original-blue-node-light: #60a5fa;
+  --original-blue-node-dark: #2563eb;
+  --original-blue-node-rgb: 59, 130, 246;
+  
+  /* Purple/Pink Gradient for Buttons */
+  --original-gradient-purple-pink: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  
+  /* Text Colors for Dark Background */
+  --original-text-white: #ffffff;
+  --original-text-light: #e5e7eb;
+  --original-text-muted: #9ca3af;
+  
+  /* ============================================
+     OPACITY SYSTEM
+     ============================================ */
+  
+  --opacity-subtle: 0.03;
+  --opacity-soft: 0.08;
+  --opacity-medium: 0.15;
+  --opacity-strong: 0.3;
+  --opacity-full: 1;
+  --opacity-light: var(--opacity-soft);
+  
+  /* ============================================
+     SHADOW SYSTEM
+     ============================================ */
+  
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-primary: 0 10px 25px -5px rgba(10, 116, 218, 0.25);
+  --shadow-primary-lg: 0 20px 40px -10px rgba(10, 116, 218, 0.3);
+  
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  
+  /* Radius steps = space_base × φ powers (clamped so mobile/tiny bases stay usable) */
+  --radius-sm: clamp(0.375rem, calc(var(--space-base) * var(--phi-quarter)), 0.625rem);
+  --border-radius: clamp(0.5rem, calc(var(--space-base) * var(--phi-half)), 0.875rem);
+  --radius-md: clamp(0.625rem, calc(var(--space-base) * var(--phi-inv)), 1.125rem);
+  --radius-lg: clamp(0.75rem, calc(var(--space-base) * var(--phi-sqrt)), 1.375rem);
+
+  /* Armature: stroke + radius aliases (viewport/zoom scale via --space-base) */
+  --phi-stroke-hairline: max(1px, calc(var(--space-base) * var(--phi-inv) * 0.25));
+  --phi-stroke-md: max(2px, calc(var(--space-base) * var(--phi-inv) * 0.5));
+  --phi-radius-sm: var(--radius-sm);
+  --phi-radius-md: var(--radius-md);
+  --phi-radius-lg: var(--radius-lg);
+  /* Legacy name used in inline Astro styles (same as --phi-radius-sm) */
+  --border-radius-sm: var(--phi-radius-sm);
+  /* Asymmetric corners — dynamic-symmetry “atypical” edges (TL TR BR BL) */
+  --phi-radius-atypical-a: var(--radius-sm) var(--radius-lg) var(--radius-md) var(--radius-sm);
+  --phi-radius-atypical-b: var(--radius-lg) var(--radius-sm) var(--radius-sm) var(--radius-md);
+  --phi-radius-atypical-cta: var(--radius-md) var(--radius-sm) var(--radius-md) var(--radius-lg);
+  
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  
+  /* Standard transitions with phi-based timing */
+  --transition: all 0.618s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.382s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 1.618s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Lanczos-quality transitions - cubic-bezier approximations of Lanczos kernel */
+  /* These provide smooth, high-quality interpolation similar to Lanczos resampling */
+  /* Cubic-bezier values approximate the Lanczos kernel's smooth interpolation curve */
+  --transition-lanczos: all 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Smooth Lanczos-quality transition - approximates Lanczos kernel smoothing */
+  --transition-lanczos-fast: all 0.382s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Fast Lanczos-quality transition */
+  --transition-lanczos-slow: all 1.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Slow Lanczos-quality transition */
+  
+  /* Lanczos-quality transitions for specific properties */
+  --transition-lanczos-opacity: opacity 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos-transform: transform 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos-spacing: margin 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos-color: color 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* ============================================
+     TYPOGRAPHY SCALE - Derived from Base
+     ============================================ */
+  
+  --text-xs: calc(var(--font-base) * 0.75);
+  --text-sm: calc(var(--font-base) * 0.875);
+  --text-base: var(--font-base);
+  --text-lg: calc(var(--font-base) * var(--phi));
+  --text-xl: calc(var(--font-base) * var(--phi) * var(--phi));
+  --text-2xl: calc(var(--font-base) * var(--phi) * var(--phi) * var(--phi));
+  --text-3xl: calc(var(--font-base) * var(--phi) * var(--phi) * var(--phi) * var(--phi));
+  
+  /* Practical Typography Scale */
+  --text-lg-practical: clamp(1.125rem, calc(var(--font-base) * 1.125), 1.5rem);
+  --text-xl-practical: clamp(1.25rem, calc(var(--font-base) * 1.25), 1.75rem);
+  --text-2xl-practical: clamp(1.5rem, calc(var(--font-base) * 1.5), 2rem);
+  --text-3xl-practical: clamp(1.875rem, calc(var(--font-base) * 1.875), 2.5rem);
+  --text-4xl-practical: clamp(2.25rem, calc(var(--font-base) * 2.25), 3rem);
+  --text-5xl-practical: clamp(3rem, calc(var(--font-base) * 3), 4rem);
+  
+  /* Heading Typography */
+  --font-h1: calc(var(--font-base) * var(--phi) * var(--phi));
+  --font-h2: calc(var(--font-base) * var(--phi));
+  --font-h3: calc(var(--font-base) * var(--phi-sqrt));
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  /* ============================================
+     SPACING SCALE - Derived from Base
+     ============================================ */
+  
+  --space-1: calc(var(--space-base) * var(--phi) * 0.5);
+  --space-2: calc(var(--space-1) * var(--phi));
+  --space-xs: clamp(0.25rem, calc(var(--space-base) * var(--phi-quarter) * 0.5), 0.5rem);
+  --space-sm: clamp(0.5rem, calc(var(--space-base) * var(--phi-quarter) * 0.75), 1rem);
+  --space-md: clamp(0.75rem, calc(var(--space-base) * var(--phi-half) * 0.5), 1.5rem);
+  --space-lg: clamp(1rem, calc(var(--space-base) * 0.5), 2rem);
+  --space-xl: clamp(1.618rem, calc(var(--space-base) * var(--phi) * 0.5), calc(2rem * var(--phi)));
+  --space-2xl: clamp(2.618rem, calc(var(--space-base) * var(--phi) * var(--phi) * 0.5), calc(4rem * var(--phi)));
+  --space-3xl: clamp(4.236rem, calc(var(--space-base) * var(--phi-cubed) * 0.5), calc(6rem * var(--phi)));
+  --space-4xl: clamp(6.854rem, calc(var(--space-base) * var(--phi-cubed) * var(--phi) * 0.5), calc(8rem * var(--phi)));
+  --space-5xl: clamp(11.09rem, calc(var(--space-base) * var(--phi-cubed) * var(--phi) * var(--phi) * 0.5), calc(12rem * var(--phi)));
+  --space-6xl: clamp(17.944rem, calc(var(--space-base) * var(--phi-cubed) * var(--phi) * var(--phi) * var(--phi) * 0.5), calc(16rem * var(--phi)));
+  
+  /* Diagonal Spacing Scale */
+  --space-diag-xs: clamp(0.18vh, calc(var(--vbase) * var(--sqrt2-inv) * 0.25), 0.35vw);
+  --space-diag-sm: clamp(0.35vh, calc(var(--vbase) * var(--sqrt2-inv) * 0.5), 0.7vw);
+  --space-diag-md: clamp(0.5vh, calc(var(--vbase) * var(--sqrt2-inv) * 0.75), 1vw);
+  --space-diag-lg: clamp(0.7vh, calc(var(--vbase) * var(--sqrt2-inv)), 1.4vw);
+  --space-diag-xl: clamp(1vh, calc(var(--vbase) * var(--sqrt2)), 2vw);
+  --space-diag-2xl: clamp(1.4vh, calc(var(--vbase) * var(--sqrt2) * var(--sqrt2)), 2.8vw);
+  
+  /* ============================================
+     MAX MARGIN/PADDING TOKENS - Zoom-Aware with Phi Scaling
+     ============================================ */
+  
+  /* Base max values using phi-based calculations */
+  /* These scale with zoom via --zoom-scale and --browser-zoom tokens */
+  --max-margin-base: calc(var(--space-4xl) * var(--phi));
+  --max-padding-base: calc(var(--space-4xl) * var(--phi));
+  
+  /* Section-specific max margin/padding - Sierpinski pattern */
+  /* Only left/right padding scales with zoom, not top/bottom */
+  --section-max-margin: calc(var(--max-margin-base) * var(--zoom-scale));
+  --section-max-padding-horizontal: calc(var(--max-padding-base) * var(--zoom-scale));
+  /* Horizontal padding scales with zoom */
+  --section-max-padding-vertical: calc(var(--max-padding-base) * var(--phi-inv));
+  /* Vertical padding does NOT scale with zoom - fixed value */
+  
+  /* Section max margin/padding with phi variations */
+  --section-max-margin-left: calc(var(--section-max-margin) * var(--phi-inv));
+  --section-max-margin-right: calc(var(--section-max-margin) * var(--phi-inv));
+  --section-max-padding-left: calc(var(--section-max-padding-horizontal) * var(--phi-inv));
+  --section-max-padding-right: calc(var(--section-max-padding-horizontal) * var(--phi-inv));
+  
+  /* Even sections - slightly different max values */
+  --section-even-max-margin: calc(var(--section-max-margin) * var(--phi-sqrt));
+  --section-even-max-padding-horizontal: calc(var(--section-max-padding-horizontal) * var(--phi-sqrt));
+  --section-even-max-padding-vertical: calc(var(--section-max-padding-vertical) * var(--phi-sqrt));
+  
+  /* Odd sections - base max values */
+  --section-odd-max-margin: var(--section-max-margin);
+  --section-odd-max-padding-horizontal: var(--section-max-padding-horizontal);
+  --section-odd-max-padding-vertical: var(--section-max-padding-vertical);
+  
+  /* Container max margin/padding - derived from section tokens */
+  --container-max-margin: calc(var(--section-max-margin) * var(--phi-inv));
+  --container-max-padding-horizontal: calc(var(--section-max-padding-horizontal) * var(--phi-inv));
+  /* Horizontal padding scales with zoom */
+  --container-max-padding-vertical: calc(var(--section-max-padding-vertical) * var(--phi-inv));
+  /* Vertical padding does NOT scale with zoom - fixed value */
+  --container-max-padding: var(--container-max-padding-vertical);
+  /* Backward compatibility - defaults to vertical (non-scaling) */
+  
+  /* Responsive max values that scale with viewport and zoom */
+  --section-max-margin-responsive: clamp(
+    calc(var(--space-2xl) * var(--zoom-scale)),
+    calc(4vw * var(--zoom-scale)),
+    calc(var(--section-max-margin) * var(--zoom-scale))
+  );
+  --section-max-padding-responsive: clamp(
+    calc(var(--space-2xl) * var(--zoom-scale)),
+    calc(4vw * var(--zoom-scale)),
+    calc(var(--section-max-padding-horizontal) * var(--zoom-scale))
+  );
+  
+  /* ============================================
+     GRID SYSTEM
+     ============================================ */
+  
+  --grid-cell-diag: calc(100vw / var(--sqrt2));
+  --grid-cell-diag-v: calc(100vh / var(--sqrt2));
+  --grid-cell-square: calc(100vw / var(--sqrt2) / var(--sqrt2));
+  --phi-grid-cell-v: calc(100vh / var(--phi));
+  --phi-grid-cell-h: calc(100vw / var(--phi));
+  
+  /* ============================================
+     GRADIENT STOPS
+     ============================================ */
+  
+  --gradient-stop-1: 0%;
+  --gradient-stop-2: 38.2%;
+  --gradient-stop-3: 61.8%;
+  --gradient-stop-4: 100%;
+  
+  /* ============================================
+     PHI-BASED DESIGN ELEMENTS
+     ============================================ */
+  
+  /* Phi Lines */
+  --phi-line-width: clamp(0.5px, calc(0.0625rem * var(--phi-inv)), 2px);
+  --phi-line-opacity: 0.3;
+  
+  /* Phi Tangents */
+  --phi-tangent-radius: calc(100vh * var(--phi-ratio));
+  --phi-tangent-opacity: 0.2;
+  
+  /* Phi Laterals */
+  --phi-lateral-position-v: var(--phi-ratio);
+  --phi-lateral-position-h: var(--phi-ratio-inv);
+  --phi-lateral-opacity: var(--opacity-strong);
+  
+  /* Angular/Azimuth Phi Laterals */
+  --phi-azimuth-1: 38.2deg;
+  --phi-azimuth-2: 61.8deg;
+  --phi-azimuth-3: 23.6deg;
+  --phi-azimuth-4: 76.4deg;
+  --phi-azimuth-opacity: 0.15;
+  --phi-azimuth-1-rad: calc(38.2deg * 0.0174533);
+  --phi-azimuth-2-rad: calc(61.8deg * 0.0174533);
+  --phi-azimuth-3-rad: calc(23.6deg * 0.0174533);
+  --phi-azimuth-4-rad: calc(76.4deg * 0.0174533);
+  
+  /* ============================================
+     LANCZOS FILTERING VARIABLES
+     ============================================ */
+  
+  /* Lanczos-filtered geometric pattern properties */
+  /* These are set dynamically by LanczosScalingManager via JavaScript */
+  /* Fallback values for when JavaScript hasn't loaded */
+  --lanczos-phi-line-width: var(--phi-line-width);
+  --lanczos-angular-opacity: var(--phi-azimuth-opacity);
+  --lanczos-pattern-scale: 1;
+  --lanczos-quality: 1;
+  --lanczos-wave-frequency: 1;
+  
+  /* Fourier-filtered azimuth angles - maintain geometric integrity during zoom */
+  /* These are set dynamically by LanczosScalingManager with Fourier filtering */
+  --fourier-azimuth-1: var(--phi-azimuth-1);
+  --fourier-azimuth-2: var(--phi-azimuth-2);
+  --fourier-azimuth-3: var(--phi-azimuth-3);
+  --fourier-azimuth-4: var(--phi-azimuth-4);
+  
+  /* Use Lanczos-filtered values when available, fallback to base values */
+  /* Phi line width: prefer Lanczos-filtered, fallback to base */
+  --phi-line-width-filtered: var(--lanczos-phi-line-width, var(--phi-line-width));
+  
+  /* Angular lateral opacity: prefer Lanczos-filtered, fallback to base */
+  --phi-azimuth-opacity-filtered: var(--lanczos-angular-opacity, var(--phi-azimuth-opacity));
+  
+  /* Pattern scale: use Lanczos-filtered scale for geometric patterns */
+  --pattern-scale-filtered: var(--lanczos-pattern-scale, 1);
+  
+  /* Wave frequency: use Lanczos-filtered frequency for wave functions */
+  --wave-frequency-filtered: var(--lanczos-wave-frequency, 1);
+  
+  /* Use Fourier-filtered azimuth angles when available, fallback to base */
+  --phi-azimuth-1-filtered: var(--fourier-azimuth-1, var(--phi-azimuth-1));
+  --phi-azimuth-2-filtered: var(--fourier-azimuth-2, var(--phi-azimuth-2));
+  --phi-azimuth-3-filtered: var(--fourier-azimuth-3, var(--phi-azimuth-3));
+  --phi-azimuth-4-filtered: var(--fourier-azimuth-4, var(--phi-azimuth-4));
+  
+  /* ============================================
+     IMPORTANCE-BASED SIZING
+     ============================================ */
+  
+  --importance-critical: calc(var(--phi) * var(--phi) * var(--phi));
+  --importance-high: calc(var(--phi) * var(--phi));
+  --importance-medium: var(--phi);
+  --importance-normal: 1;
+  --importance-low: var(--phi-inv);
+  --importance-minimal: calc(var(--phi-inv) * var(--phi-inv));
+  
+  /* Size Multipliers */
+  --size-hero-title: var(--importance-critical);
+  --size-section-title: var(--importance-high);
+  --size-card-title: var(--importance-medium);
+  --size-body-text: var(--importance-normal);
+  --size-caption: var(--importance-low);
+  --size-disclaimer: var(--importance-minimal);
+  
+  /* Color Intensity by Importance */
+  --color-intensity-critical: 1;
+  --color-intensity-high: var(--opacity-strong);
+  --color-intensity-medium: var(--opacity-medium);
+  --color-intensity-normal: var(--opacity-soft);
+  --color-intensity-low: var(--opacity-light);
+  
+  /* ============================================
+     ACCENT SYSTEM
+     ============================================ */
+  
+  --accent-primary: var(--primary-color);
+  --accent-primary-bg: rgba(10, 116, 218, var(--color-intensity-medium));
+  --accent-wisdom: var(--primary-dark);
+  --accent-wisdom-bg: rgba(8, 85, 168, var(--color-intensity-normal));
+  --accent-calm: var(--primary-color);
+  --accent-calm-bg: rgba(10, 116, 218, var(--color-intensity-normal));
+  /* Palette maps “success” to primary; used in section accent gradients */
+  --accent-success-bg: var(--accent-primary-bg);
+  
+  /* ============================================
+     GRADIENTS
+     ============================================ */
+  
+  --gradient-primary: linear-gradient(135deg, 
+    var(--primary-ultra-light) 0%, 
+    var(--primary-light) 50%,
+    var(--primary-ultra-light) 100%
+  );
+  --gradient-wisdom-subtle: var(--gradient-primary);
+  
+  /* ============================================
+     COMPONENT TOKENS - Button Sizes
+     ============================================ */
+  
+  --btn-sm: var(--space-md) var(--space-lg);
+  --btn-md: var(--space-md) var(--space-xl);
+  --btn-lg: var(--space-lg) var(--space-2xl);
+  
+  /* ============================================
+     COMPONENT TOKENS - Icon Sizes
+     ============================================ */
+  
+  --icon-sm: calc(var(--font-base) * 1);
+  --icon-md: calc(var(--font-base) * var(--phi-sqrt));
+  --icon-lg: calc(var(--font-base) * var(--phi));
+  --icon-xl: calc(var(--font-base) * var(--phi) * var(--phi));
+  
+  /* ============================================
+     HARMONIC SYSTEM
+     ============================================ */
+  
+  --harmonic-phase-base: 0;
+  --harmonic-tension: var(--phi-inv);
+  --harmonic-frequency: var(--phi);
+  
+  /* ============================================
+     SEMANTIC SYSTEM
+     ============================================ */
+  
+  --semantic-phase: 0;
+  --semantic-inheritance: 1;
+  --semantic-color-intensity: var(--color-intensity-high);
+  --semantic-primary: var(--primary-color);
+  --semantic-wisdom: var(--primary-dark);
+  --semantic-calm: var(--primary-color);
+  
+  /* ============================================
+     BLOCK PERMUTATIONS
+     ============================================ */
+  
+  --permutation-azimuth: 38.2deg;
+  --permutation-phi-ratio: 0.618;
+  --permutation-cipher-intensity: 0.8;
+  
+  /* ============================================
+     COMPONENT-SPECIFIC TOKENS
+     ============================================ */
+  
+  /* Card Tokens */
+  --card-padding: var(--space-lg);
+  --card-padding-sm: var(--space-md);
+  --card-padding-lg: var(--space-xl);
+  --card-padding-xl: var(--space-2xl);
+  --card-gap: calc(var(--card-padding) * var(--phi-inv));
+  --card-border-radius: var(--phi-radius-md);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
+  
+  /* Form Tokens */
+  --form-padding: var(--space-2xl);
+  --form-gap: var(--space-lg);
+  --form-input-padding: var(--space-md);
+  --form-border-radius: var(--border-radius);
+  --form-border-color: var(--border);
+  --form-bg: var(--surface-elevated);
+  --form-max-width: calc(var(--space-6xl) * var(--phi-inv) * var(--phi));
+  
+  /* Navigation Tokens */
+  --nav-padding: var(--space-md);
+  --nav-gap: var(--space-xl);
+  --nav-height: calc(var(--space-lg) * var(--phi));
+  
+  /* Grid Tokens */
+  --grid-gap: var(--space-xl);
+  --grid-gap-sm: var(--space-lg);
+  --grid-gap-lg: var(--space-2xl);
+  --grid-min-column-masonry: calc(var(--space-5xl) * var(--phi) * var(--phi-inv));
+  --grid-min-column-asymmetric: calc(var(--space-5xl) * var(--phi));
+  
+  /* Header Tokens */
+  --header-padding: var(--space-md);
+  --header-logo-size: calc(var(--space-lg) * var(--phi));
+  
+  /* Footer Tokens */
+  --footer-padding: var(--space-xl);
+  --footer-gap: var(--space-xl);
+  --footer-logo-size: calc(var(--space-xl) * var(--phi));
+  
+  /* Hero Tokens */
+  --hero-padding: var(--space-5xl);
+  --hero-gap: var(--space-lg);
+  --hero-title-size: var(--size-hero-title);
+  --hero-subtitle-size: var(--text-xl-practical);
+  /* Golden split: minor text (value copy) φ⁻² | major visual φ⁻¹ — same logic as OG banding & hero SVG framing */
+  --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
+  --hero-visual-span: var(--phi-inv);
+  /* Section chassis: slack outside .container splits φ⁻² : φ⁻¹ (minor toward start, major toward end) */
+  --phi-chassis-wing-minor: 0.382;
+  --phi-chassis-wing-major: 0.618;
+  /* Cap vh with rem so hero height does not explode/collapse vs typography at extreme zoom */
+  --hero-min-height: clamp(32rem, 80dvh, 52rem);
+  --hero-inner-min-height: clamp(28rem, 70dvh, 48rem);
+  /* Lateral gutters: rem-only so they track browser zoom with typography (vw + rem fought at Ctrl±). */
+  --layout-padding-inline: clamp(
+    calc(var(--space-md) * var(--phi-inv)),
+    calc(var(--space-lg) * var(--phi-inv)),
+    calc(var(--space-xl) * var(--phi))
+  );
+  --layout-padding-block-tight: clamp(
+    calc(var(--space-lg) * var(--phi-inv)),
+    calc(var(--space-xl) * var(--phi-inv)),
+    calc(var(--space-2xl) * var(--phi-inv))
+  );
+  --layout-section-padding-y: clamp(
+    calc(var(--space-xl) * var(--phi-inv)),
+    calc(var(--space-2xl) * var(--phi-inv)),
+    var(--section-max-padding-vertical)
+  );
+  --layout-section-padding-y-alt: clamp(
+    calc(var(--space-xl) * var(--phi-sqrt)),
+    calc(var(--space-2xl) * var(--phi-inv)),
+    var(--section-even-max-padding-vertical)
+  );
+
+  /* Content band: vw − gutters (zoom-stable) ∩ soft φ rem cap — ultrawide margin is φ-derived, not arbitrary */
+  --container-gutter-sum: calc(
+    2 *
+      max(
+        var(--layout-padding-inline),
+        var(--safe-area-inset-left),
+        var(--safe-area-inset-right)
+      )
+  );
+  --container-max-width: min(
+    100%,
+    calc(100vw - var(--container-gutter-sum)),
+    calc(74rem * var(--phi))
+  );
+  --container-max-width-wide: min(
+    100%,
+    calc(100vw - var(--container-gutter-sum)),
+    calc(80rem * var(--phi))
+  );
+
+  /* Line-length caps — φ-friendly measures; 100% defers to parent (.container) width */
+  --measure-prose: min(46.25rem, 100%);
+  --measure-narrow: min(37.5rem, 100%);
+  /* Long-form article / case study column (~900px at 16px root) */
+  --measure-article: min(56.25rem, 100%);
+
+  /* Section bands span the full content column; inner .container caps readable width */
+  --section-inline-size: 100%;
+
+  /* Portal / admin (portal.astro) — rem caps scale with root; 100% avoids overflow */
+  --portal-login-max: min(28.125rem, 100%);
+  --portal-header-search-max: min(31.25rem, 100%);
+  --portal-modal-max: min(50rem, 100%);
+  --portal-modal-wide-max: min(75rem, 100%);
+  --portal-modal-tablet-max: min(43.75rem, 100%);
+  --portal-profiles-helm-max: min(50rem, 100%);
+  --portal-notification-stack-max: min(25rem, 100%);
+  --portal-thumb-max: min(12.5rem, 100%);
+}
+

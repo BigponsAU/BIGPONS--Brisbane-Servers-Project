@@ -1,0 +1,210 @@
+# Environment Variables Configuration
+
+This document describes all environment variables used in the Brisbane Servers monorepo.
+
+## Quick Start
+
+Create a `.env` file in the `voice-framework` directory (or set environment variables in your system) with the following variables:
+
+```bash
+PORT=3001
+ALLOWED_ORIGINS=http://localhost:3000
+NODE_ENV=development
+```
+
+## Environment Variables
+
+### `PORT`
+
+**Type**: Number  
+**Default**: `3001`  
+**Location**: `voice-framework/dashboard/server.ts`
+
+The port on which the voice framework dashboard API server will run.
+
+**Example**:
+```bash
+PORT=3001
+```
+
+---
+
+### `ALLOWED_ORIGINS`
+
+**Type**: String (comma-separated)  
+**Default**: `http://localhost:3000`  
+**Location**: `voice-framework/dashboard/middleware/security.ts`
+
+Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing). The website runs on port 3000 by default, so `http://localhost:3000` is automatically allowed in development mode even if not specified.
+
+**Format**: Comma-separated list of URLs
+
+**Development Example**:
+```bash
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+**Production Example**:
+```bash
+ALLOWED_ORIGINS=https://example.com,https://www.example.com,https://api.example.com
+```
+
+**Note**: Requests with no origin (like mobile apps or curl requests) are automatically allowed.
+
+---
+
+### `NODE_ENV`
+
+**Type**: String  
+**Default**: `development`  
+**Options**: `development`, `production`, `test`  
+**Location**: Multiple files (error handling, logging)
+
+Controls the environment mode, which affects error handling, logging, and security settings.
+
+#### Development Mode (`NODE_ENV=development`)
+- More verbose error messages with stack traces
+- Detailed logging for debugging
+- Relaxed security for local development
+
+#### Production Mode (`NODE_ENV=production`)
+- Minimal error messages (no stack traces to prevent information leakage)
+- Optimized logging
+- Strict security settings
+
+**Example**:
+```bash
+NODE_ENV=development
+```
+
+---
+
+### `PUBLIC_SITE_URL`
+
+**Type**: String (absolute URL; trailing slash is trimmed at build time)  
+**Default**: `https://brisbaneservers.com`  
+**Location**: `website-brisbaneservers.com/astro.config.mjs` (`site`), canonical links, `/sitemap.xml`
+
+Sets Astro’s `site` origin so canonical URLs, Open Graph/Twitter `og:url`, and the generated sitemap use the correct hostname. Use your real production domain in production; for preview or staging deploys, set this to that deploy’s public URL so metadata and XML stay consistent. The production value is also set in [`cloudflare/wrangler.toml`](../../cloudflare/wrangler.toml) under `[env.production].vars` for Wrangler-based deploys; override in the Cloudflare Pages UI per environment as needed.
+
+**Example (staging)**:
+```bash
+PUBLIC_SITE_URL=https://staging.example.com
+```
+
+---
+
+### Semantic platform (website)
+
+| Variable | Purpose |
+|----------|---------|
+| `RESOURCE_STORAGE` | `json` (default) or `sqlite` for local sql.js store |
+| `EMBEDDING_PROVIDER` | `hash` (default without key) or `openai` |
+| `OPENAI_API_KEY` | Embeddings + optional RAG quality |
+| `OPENAI_EMBEDDING_MODEL` | e.g. `text-embedding-3-small` |
+
+See [SEMANTIC_RUNBOOK.md](../operations/SEMANTIC_RUNBOOK.md).
+
+---
+
+## Usage in Code
+
+### Dashboard Server Port
+```typescript
+const PORT = process.env.PORT || 3001;
+```
+
+### CORS Configuration
+```typescript
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:3000'];
+```
+
+### Error Handling
+```typescript
+if (process.env.NODE_ENV === 'development' && error instanceof Error) {
+  // Include stack traces in development
+}
+```
+
+---
+
+## Setting Environment Variables
+
+### Option 1: `.env` File (Recommended for Development)
+
+Create a `.env` file in the `voice-framework` directory:
+
+```bash
+# voice-framework/.env
+PORT=3001
+ALLOWED_ORIGINS=http://localhost:3000
+NODE_ENV=development
+```
+
+**Note**: Make sure `.env` is in your `.gitignore` to avoid committing sensitive configuration.
+
+### Option 2: System Environment Variables
+
+Set environment variables in your system:
+
+**Windows (PowerShell)**:
+```powershell
+$env:PORT=3001
+$env:ALLOWED_ORIGINS="http://localhost:3000"
+$env:NODE_ENV="development"
+```
+
+**Linux/macOS (Bash)**:
+```bash
+export PORT=3001
+export ALLOWED_ORIGINS="http://localhost:3000"
+export NODE_ENV="development"
+```
+
+### Option 3: Package.json Scripts
+
+You can also set environment variables in your `package.json` scripts:
+
+```json
+{
+  "scripts": {
+    "dashboard": "NODE_ENV=development PORT=3001 node dist/dashboard/server.js"
+  }
+}
+```
+
+---
+
+## Production Deployment
+
+For production deployment, ensure:
+
+1. **Set `NODE_ENV=production`** for optimized performance and security
+2. **Configure `ALLOWED_ORIGINS`** with your actual production domains
+3. **Set `PORT`** if you need a different port than 3001
+4. **Set `PUBLIC_SITE_URL`** on the Astro/Cloudflare website build to your live site origin (canonical URLs and `/sitemap.xml`)
+5. **Use a process manager** (PM2, systemd, etc.) to manage environment variables
+6. **Never commit `.env` files** to version control
+
+---
+
+## Troubleshooting
+
+### Port Already in Use
+If you see `Port 3001 is already in use`, either:
+- Stop the process using that port
+- Set `PORT` to a different value
+
+### CORS Errors
+If you see CORS errors, ensure:
+- `ALLOWED_ORIGINS` includes your frontend URL
+- URLs in `ALLOWED_ORIGINS` match exactly (including protocol and port)
+- No trailing slashes in URLs
+
+### Error Messages Not Showing Details
+If error messages lack details, check:
+- `NODE_ENV` is set to `development` for detailed errors
+- In production, errors are intentionally minimal
+

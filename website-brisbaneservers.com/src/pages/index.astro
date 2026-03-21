@@ -1,0 +1,385 @@
+---
+import SiteShell from '../layouts/SiteShell.astro';
+import Hero from '../components/Hero.astro';
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
+import SearchBar from '../components/SearchBar.astro';
+import InquiryForm from '../components/InquiryForm.astro';
+import SemanticText from '../components/SemanticText.astro';
+import { industries } from '../data/industries';
+import { createFallback } from '../utils/error-handling';
+
+const currentPath = '/';
+
+const safeIndustries = industries && Array.isArray(industries) ? industries : [];
+const industriesFallback = createFallback([]);
+const displayIndustries = industriesFallback(safeIndustries);
+const featuredIndustries = displayIndustries.slice(0, 4);
+
+const valuePoints = [
+  {
+    title: 'Strategy before spend',
+    description: 'Pressure-test opportunities before committing budget, vendors, or internal time.'
+  },
+  {
+    title: 'Australian business context',
+    description: 'Recommendations shaped by local market conditions, compliance realities, and funding pathways.'
+  },
+  {
+    title: 'Implementation that sticks',
+    description: 'Move from advice to delivery with practical rollout, documentation, and ongoing support.'
+  },
+  {
+    title: 'Value-based positioning',
+    description: 'Every recommendation ties back to operational efficiency, risk reduction, or measurable growth.'
+  }
+];
+
+const engagementSteps = [
+  {
+    title: 'Assess the business reality',
+    description: 'We map your current stack, team capacity, process bottlenecks, and the financial context around the decision.'
+  },
+  {
+    title: 'Prioritise the right solution',
+    description: 'We compare options against value, implementation risk, compliance needs, and time-to-impact instead of vendor hype.'
+  },
+  {
+    title: 'Implement with confidence',
+    description: 'You get a practical rollout path, documented recommendations, and support after launch as the business evolves.'
+  }
+];
+
+const differentiators = [
+  {
+    title: 'Business context first',
+    description: 'The recommendation has to fit your team, budget, and operating model, not just the feature list.'
+  },
+  {
+    title: 'Evidence over abstraction',
+    description: 'We structure decisions around documented trade-offs, proven patterns, and the outcome you actually want.'
+  },
+  {
+    title: 'Support beyond the initial brief',
+    description: 'From implementation planning to post-launch adjustments, we stay useful after the strategy phase.'
+  }
+];
+---
+
+<SiteShell
+  title="Brisbane Servers | Value-First Technology Consulting"
+  description="Brisbane Servers helps Australian businesses make better technology decisions with practical strategy, implementation support, and industry-specific guidance."
+  currentPath={currentPath}
+  mainClass="main-home main-phi-chassis"
+>
+  <Hero
+    eyebrow="Technology consulting for Australian businesses"
+    title="Make better technology decisions with a clearer value case"
+    subtitle="Brisbane Servers helps Australian SMEs cut through noise, prioritise the right systems, and implement practical solutions that improve operations, reduce friction, and support growth."
+    ctaText="Explore Services"
+    ctaHref="#services-overview"
+    secondaryCtaText="Start a Conversation"
+    secondaryCtaHref="#inquiry-section"
+    highlights={[
+      'Value-based recommendations instead of vendor-led upsells',
+      'Brisbane-based guidance for Australian operating conditions',
+      'Support from strategy through implementation and refinement'
+    ]}
+  />
+
+  <section class="section section--bg-surface">
+    <div class="container">
+      <div class="home-value-strip">
+        {valuePoints.map((point) => (
+          <article class="home-value-item">
+            <strong>{point.title}</strong>
+            <p>{point.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-intro-phi">
+        <div>
+          <p class="home-section-kicker">How we create value</p>
+          <h2 class="section-title">
+            <SemanticText text="A sharper process for high-stakes technology decisions" semanticLevel="high" isParent={true} />
+          </h2>
+        </div>
+        <p class="section-description">
+          <SemanticText text="Most teams do not need more information. They need the right framing, a realistic path to implementation, and confidence that the decision will create measurable business value." semanticLevel="normal" isChild={true} />
+        </p>
+      </div>
+
+      <div class="home-proof-grid stack-2xl">
+        <article class="home-proof-panel">
+          <h3>What you get from the engagement</h3>
+          <ul class="home-proof-list">
+            <li>Clear prioritisation around cost, risk, time-to-impact, and operational fit.</li>
+            <li>Guidance shaped by industry needs, compliance realities, and available funding pathways.</li>
+            <li>Documented recommendations you can act on internally or use to brief suppliers with confidence.</li>
+          </ul>
+          <div class="home-proof-note">
+            <strong>Built for Australian operators</strong>
+            Brisbane Servers is designed for businesses that need practical direction, clear trade-offs, and useful implementation support.
+          </div>
+        </article>
+
+        <article class="home-proof-panel">
+          <h3>How the work typically unfolds</h3>
+          <div class="home-proof-steps">
+            {engagementSteps.map((step) => (
+              <div class="home-proof-step">
+                <div>
+                  <h4>{step.title}</h4>
+                  <p>{step.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="services-overview" class="section section--bg-surface">
+    <div class="container">
+      <div class="section-intro-phi">
+        <div>
+          <p class="home-section-kicker">Services</p>
+          <h2 class="section-title">
+            <SemanticText text="Support across strategy, delivery, and ongoing improvement" semanticLevel="high" isParent={true} />
+          </h2>
+        </div>
+        <p class="section-description">
+          <SemanticText text="Clarify the decision, implement the right solution, and stay supported once it is live. The service model is designed to keep momentum from strategy through delivery." semanticLevel="normal" isChild={true} />
+        </p>
+      </div>
+
+      <CardGrid layout="grid" columns={3} class="home-service-grid">
+        <Card
+          title="Consulting & Discovery"
+          description="Work through competing priorities, technology choices, bottlenecks, and business constraints before anything expensive gets approved."
+          icon="fas fa-compass"
+          size="medium"
+        />
+        <Card
+          title="Implementation & Delivery"
+          description="Translate strategy into deployment plans, system builds, automation work, and practical rollout support that teams can actually adopt."
+          icon="fas fa-gears"
+          size="medium"
+        />
+        <Card
+          title="Support & Optimisation"
+          description="Refine what is working, address what is not, and keep the stack aligned with the way the business changes over time."
+          icon="fas fa-life-ring"
+          size="medium"
+        />
+      </CardGrid>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-intro-phi">
+        <div>
+          <p class="home-section-kicker">Industry positioning</p>
+          <h2 class="section-title">
+            <SemanticText text="Guidance that reflects how your sector actually operates" semanticLevel="high" isParent={true} />
+          </h2>
+        </div>
+        <p class="section-description">
+          <SemanticText text="Different industries carry different compliance, workflow, and customer expectations. Our guidance reflects those differences so recommendations are relevant from day one." semanticLevel="normal" isChild={true} />
+        </p>
+      </div>
+
+      <CardGrid layout="grid" columns={4}>
+        {featuredIndustries.length > 0 ? (
+          featuredIndustries.map((industry) => (
+            <Card
+              title={industry?.name || 'Industry'}
+              description={industry?.description || 'Learn more about our solutions for this industry.'}
+              icon={industry?.icon || 'fas fa-industry'}
+              href={industry?.slug ? `/resources/${industry.slug}` : '/resources'}
+              size="small"
+            />
+          ))
+        ) : (
+          <Card
+            title="Industry-specific resources"
+            description="Explore practical guidance tailored to the way Australian industries buy, implement, and support technology."
+            icon="fas fa-industry"
+            href="/resources"
+            size="medium"
+          />
+        )}
+      </CardGrid>
+
+      <div class="home-search-panel stack-2xl">
+        <p class="home-search-panel__lead">Not sure where to start? Search the resource library by topic, challenge, or industry.</p>
+        <SearchBar />
+      </div>
+
+      <div class="cta-row">
+        <a href="/resources" class="btn btn-secondary">
+          Browse All Resources
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--bg-primary-light">
+    <div class="container">
+      <div class="section-intro-phi">
+        <div>
+          <p class="home-section-kicker">Why Brisbane Servers</p>
+          <h2 class="section-title">
+            <SemanticText text="Positioned around business outcomes, not generic tech language" semanticLevel="high" isParent={true} />
+          </h2>
+        </div>
+        <p class="section-description">
+          <SemanticText text="Expect clearer decisions, faster prioritisation, and a more grounded implementation path shaped by the realities of Australian business operations." semanticLevel="normal" isChild={true} />
+        </p>
+      </div>
+
+      <div class="home-credentials-grid stack-2xl">
+        {differentiators.map((item) => (
+          <article class="home-credential-panel">
+            <strong>{item.title}</strong>
+            <p>{item.description}</p>
+          </article>
+        ))}
+      </div>
+
+      <div class="home-contact-panel stack-2xl">
+        <p class="home-section-kicker">Talk to us</p>
+        <h3>Bring us the problem, the project, or the stack you are unsure about.</h3>
+        <p>
+          We can help you evaluate the opportunity, define the right scope, and avoid spending on tools that do not align with the value you need back.
+        </p>
+        <div class="home-split-actions">
+          <a href="#inquiry-section" class="btn btn-primary">Start a Conversation</a>
+          <a href="/about" class="btn btn-secondary">About Brisbane Servers</a>
+        </div>
+      </div>
+
+      <CardGrid layout="grid" columns={3}>
+        <Card
+          title="Phone"
+          description="<strong>+61 490 478 864</strong><br>Consultations available by appointment"
+          icon="fas fa-phone"
+          size="medium"
+        />
+        <Card
+          title="Email"
+          description="<strong>support@brisbaneservers.com</strong><br>Support and project enquiries<br><strong>connect@brisbaneservers.com</strong><br>General enquiries"
+          icon="fas fa-envelope"
+          size="medium"
+        />
+        <Card
+          title="Location"
+          description="<strong>Brisbane, Queensland</strong><br>Supporting businesses across Australia<br>Online and in-person consultations"
+          icon="fas fa-map-marker-alt"
+          size="medium"
+        />
+      </CardGrid>
+    </div>
+  </section>
+
+  <InquiryForm id="inquiry-section" />
+</SiteShell>
+
+<style>
+  .home-value-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(var(--space-md), 2vw, var(--space-xl));
+  }
+
+  .home-value-item {
+    padding: clamp(var(--space-lg), 2vw, var(--space-xl));
+    border-radius: var(--site-panel-radius);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--site-panel-shadow);
+  }
+
+  .home-value-item strong {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-size: clamp(1.05rem, 1rem + 0.25vw, 1.2rem);
+    color: var(--primary-dark);
+  }
+
+  .home-value-item p,
+  .home-proof-panel p,
+  .home-credential-panel p,
+  .home-proof-step p,
+  .home-contact-panel p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.72;
+  }
+
+  .home-proof-panel h3,
+  .home-proof-step h4,
+  .home-contact-panel h3 {
+    margin-bottom: var(--space-sm);
+    color: var(--primary-dark);
+  }
+
+  .home-proof-step h4 {
+    margin-top: 0;
+  }
+
+  .home-proof-note {
+    margin-top: var(--space-xl);
+    padding: clamp(var(--space-md), 1.8vw, var(--space-lg));
+    border-left: 4px solid var(--primary-color);
+    border-radius: var(--site-panel-radius);
+    background: rgba(10, 116, 218, 0.06);
+  }
+
+  .home-proof-note strong,
+  .home-credential-panel strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--primary-dark);
+  }
+
+  .home-search-panel {
+    padding: clamp(var(--space-lg), 2vw, var(--space-xl));
+    border-radius: var(--site-panel-radius);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: var(--site-panel-shadow);
+  }
+
+  .home-search-panel__lead {
+    margin: 0 0 var(--space-lg);
+    color: var(--text-secondary);
+  }
+
+  .home-contact-panel {
+    padding: clamp(var(--space-lg), 2vw, var(--space-xl));
+    border-radius: var(--site-panel-radius);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: var(--site-panel-shadow);
+  }
+
+  @media (max-width: 1024px) {
+    .home-value-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .home-value-strip {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,261 @@
+/**
+ * Floral Design Pattern System
+ * 
+ * Replicates manuscript-style floral border and margin coupling patterns
+ * Creates organic, flowing decorative elements that frame content sections
+ */
+
+/* ===== FLORAL BORDER PATTERNS ===== */
+
+/* Base floral border - organic flowing pattern */
+.floral-border {
+    position: relative;
+    padding: var(--space-xl);
+    /* Space for floral decoration */
+}
+
+.floral-border::before,
+.floral-border::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Top floral border - flowing vine pattern */
+.floral-border-top::before {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--space-lg);
+    background-image: 
+        /* Floral vine pattern using SVG-like curves */
+        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+    background-size: 20% 100%;
+    background-repeat: repeat-x;
+    background-position: 0 0;
+    opacity: var(--opacity-soft);
+}
+
+/* Bottom floral border */
+.floral-border-bottom::after {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--space-lg);
+    background-image: 
+        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+    background-size: 20% 100%;
+    background-repeat: repeat-x;
+    background-position: 0 0;
+    opacity: var(--opacity-soft);
+}
+
+/* Left floral border - vertical vine */
+.floral-border-left::before {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--space-lg);
+    background-image: 
+        radial-gradient(ellipse 40% 60% at 50% 10%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 30%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 70%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 50% 90%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+    background-size: 100% 20%;
+    background-repeat: repeat-y;
+    background-position: 0 0;
+    opacity: var(--opacity-soft);
+}
+
+/* Right floral border */
+.floral-border-right::after {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--space-lg);
+    background-image: 
+        radial-gradient(ellipse 40% 60% at 50% 10%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 30%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 70%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 50% 90%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+    background-size: 100% 20%;
+    background-repeat: repeat-y;
+    background-position: 0 0;
+    opacity: var(--opacity-soft);
+}
+
+/* ===== FLORAL MARGIN COUPLING ===== */
+
+/* Floral margin - creates coupling between sections */
+.floral-margin {
+    position: relative;
+    margin: var(--space-2xl) 0;
+}
+
+/* Floral margin coupling - connects adjacent sections */
+.floral-margin-coupling {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: var(--space-2xl);
+    background-image: 
+        /* Floral coupling pattern - organic connection */
+        radial-gradient(ellipse 80% 60% at 0% 50%, rgba(10, 116, 218, 0.2) 0%, transparent 40%),
+        radial-gradient(ellipse 60% 80% at 25% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 40%),
+        radial-gradient(ellipse 100% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 80% at 75% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 40%),
+        radial-gradient(ellipse 80% 60% at 100% 50%, rgba(10, 116, 218, 0.2) 0%, transparent 40%);
+    background-size: 25% 100%;
+    background-repeat: repeat-x;
+    opacity: var(--opacity-medium);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Top coupling */
+.floral-margin-top .floral-margin-coupling {
+    top: calc(var(--space-xl) * -1);
+}
+
+/* Bottom coupling */
+.floral-margin-bottom .floral-margin-coupling {
+    bottom: calc(var(--space-xl) * -1);
+}
+
+/* ===== FLORAL CORNER DECORATIONS ===== */
+
+/* Floral corner - decorative corner elements */
+.floral-corner {
+    position: relative;
+}
+
+.floral-corner::before,
+.floral-corner::after {
+    content: '';
+    position: absolute;
+    width: var(--space-2xl);
+    height: var(--space-2xl);
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--opacity-soft);
+}
+
+/* Top-left corner */
+.floral-corner-top-left::before {
+    top: 0;
+    left: 0;
+    background-image: 
+        radial-gradient(ellipse 100% 100% at 0% 0%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+    border-radius: 0 0 100% 0;
+}
+
+/* Top-right corner */
+.floral-corner-top-right::before {
+    top: 0;
+    right: 0;
+    background-image: 
+        radial-gradient(ellipse 100% 100% at 100% 0%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+    border-radius: 0 0 0 100%;
+}
+
+/* Bottom-left corner */
+.floral-corner-bottom-left::after {
+    bottom: 0;
+    left: 0;
+    background-image: 
+        radial-gradient(ellipse 100% 100% at 0% 100%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+    border-radius: 0 100% 0 0;
+}
+
+/* Bottom-right corner */
+.floral-corner-bottom-right::after {
+    bottom: 0;
+    right: 0;
+    background-image: 
+        radial-gradient(ellipse 100% 100% at 100% 100%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+    border-radius: 100% 0 0 0;
+}
+
+/* ===== COMBINED FLORAL PATTERNS ===== */
+
+/* Full floral frame - borders on all sides */
+.floral-frame {
+    position: relative;
+    padding: var(--space-2xl);
+}
+
+.floral-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: var(--space-lg) solid transparent;
+    border-image: 
+        repeating-linear-gradient(
+            0deg,
+            transparent 0%,
+            rgba(10, 116, 218, 0.1) 5%,
+            rgba(10, 116, 218, 0.15) 10%,
+            rgba(10, 116, 218, 0.1) 15%,
+            transparent 20%
+        ) 1;
+    border-image-slice: 1;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--opacity-soft);
+}
+
+/* Floral section divider - between sections */
+.floral-divider {
+    position: relative;
+    height: var(--space-3xl);
+    margin: var(--space-3xl) 0;
+    background-image: 
+        /* Floral divider pattern */
+        radial-gradient(ellipse 120% 80% at 0% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 20% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 120% at 40% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 60% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 120% 80% at 80% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 100% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%);
+    background-size: 20% 100%;
+    background-repeat: repeat-x;
+    opacity: var(--opacity-medium);
+}
+
+/* ===== RESPONSIVE FLORAL PATTERNS ===== */
+
+@media (max-width: 768px) {
+    .floral-border::before,
+    .floral-border::after {
+        height: 1rem;
+        width: 1rem;
+    }
+    
+    .floral-margin-coupling {
+        width: 80%;
+        height: var(--space-lg);
+    }
+    
+    .floral-corner::before,
+    .floral-corner::after {
+        width: var(--space-lg);
+        height: var(--space-lg);
+    }
+}
+
+

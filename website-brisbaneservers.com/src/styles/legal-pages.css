@@ -1,0 +1,16 @@
+.legal-page .legal-meta {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.legal-page .legal-h2 {
+  margin-top: var(--space-xl);
+}
+
+.legal-page .legal-h2:first-of-type {
+  margin-top: var(--space-2xl);
+}
+
+.legal-page .legal-nav {
+  margin-top: var(--space-2xl);
+}

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Framework Dashboard</title>
+    <meta name="description" content="Voice Framework Dashboard for analyzing, generating, and managing voice profiles">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Simple OrbitControls implementation if not available
+        if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
+            THREE.OrbitControls = function(camera, domElement) {
+                this.camera = camera;
+                this.domElement = domElement;
+                this.enableDamping = false;
+                this.dampingFactor = 0.05;
+                this.minDistance = 0;
+                this.maxDistance = Infinity;
+                
+                let isMouseDown = false;
+                let mouseX = 0, mouseY = 0;
+                let targetRotationX = 0, targetRotationY = 0;
+                let rotationX = 0, rotationY = 0;
+                
+                const onMouseDown = (e) => {
+                    isMouseDown = true;
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                };
+                
+                const onMouseMove = (e) => {
+                    if (!isMouseDown) return;
+                    const deltaX = e.clientX - mouseX;
+                    const deltaY = e.clientY - mouseY;
+                    targetRotationY += deltaX * 0.01;
+                    targetRotationX += deltaY * 0.01;
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                };
+                
+                const onMouseUp = () => {
+                    isMouseDown = false;
+                };
+                
+                const onWheel = (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY * 0.01;
+                    const distance = camera.position.length();
+                    const newDistance = Math.max(this.minDistance, Math.min(this.maxDistance, distance + delta));
+                    camera.position.normalize().multiplyScalar(newDistance);
+                };
+                
+                domElement.addEventListener('mousedown', onMouseDown);
+                domElement.addEventListener('mousemove', onMouseMove);
+                domElement.addEventListener('mouseup', onMouseUp);
+                domElement.addEventListener('wheel', onWheel);
+                
+                this.update = () => {
+                    if (this.enableDamping) {
+                        rotationX += (targetRotationX - rotationX) * this.dampingFactor;
+                        rotationY += (targetRotationY - rotationY) * this.dampingFactor;
+                    } else {
+                        rotationX = targetRotationX;
+                        rotationY = targetRotationY;
+                    }
+                    
+                    const spherical = new THREE.Spherical();
+                    spherical.setFromVector3(camera.position);
+                    spherical.theta += rotationY;
+                    spherical.phi += rotationX;
+                    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+                    
+                    camera.position.setFromSpherical(spherical);
+                    camera.lookAt(0, 0, 0);
+                };
+            };
+        }
+    </script>
+</head>
+<body>
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header" role="banner">
+            <h1>🎙️ Voice Framework Dashboard</h1>
+            <div class="header-actions">
+                <button id="runTestsBtn" class="btn btn-primary" aria-label="Run A/B tests">Run A/B Tests</button>
+                <div class="status-indicator" id="statusIndicator" role="status" aria-live="polite" aria-atomic="true">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main" id="main-content" role="main">
+            <!-- Left Sidebar - Quick Access Panels -->
+            <aside class="left-sidebar" role="complementary" aria-label="Quick access panels">
+                <!-- Storage Panel -->
+                <div class="sidebar-panel">
+                    <button class="panel-header" data-panel="storage" aria-expanded="true" aria-controls="storagePanel" type="button">
+                        <span class="panel-icon" aria-hidden="true">📦</span>
+                        <span class="panel-title">Storage</span>
+                        <span class="panel-toggle" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="panel-content" id="storagePanel" role="region" aria-labelledby="storage-panel-title">
+                        <div class="panel-section">
+                            <h4 id="storage-panel-title">Recent Samples</h4>
+                            <div id="recentSamples" class="panel-list" role="list" aria-label="Recent text samples"></div>
+                            <button class="btn btn-secondary btn-sm" id="quickAddSample" aria-label="Add new text sample">+ Add Sample</button>
+                        </div>
+                        <div class="panel-section">
+                            <h4>Recent Principles</h4>
+                            <div id="recentPrinciples" class="panel-list" role="list" aria-label="Recent principles"></div>
+                            <button class="btn btn-secondary btn-sm" id="quickAddPrinciple" aria-label="Add new principle">+ Add Principle</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profiles Panel -->
+                <div class="sidebar-panel">
+                    <button class="panel-header" data-panel="profiles" aria-expanded="true" aria-controls="profilesPanel" type="button">
+                        <span class="panel-icon" aria-hidden="true">👤</span>
+                        <span class="panel-title">Profiles</span>
+                        <span class="panel-toggle" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="panel-content" id="profilesPanel" role="region" aria-labelledby="profiles-panel-title">
+                        <div class="panel-section">
+                            <label for="quickProfileSelect" class="sr-only">Select voice profile</label>
+                            <select id="quickProfileSelect" class="panel-select" aria-label="Select voice profile">
+                                <option value="">Select Profile...</option>
+                            </select>
+                            <div id="currentProfile" class="panel-info" role="status" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Workspace -->
+            <div class="workspace-container">
+                <!-- Top Navigation -->
+                <nav class="top-nav" role="navigation" aria-label="Main navigation">
+                    <a href="#workspace" class="nav-tab active" data-section="workspace" role="tab" aria-selected="true" aria-controls="workspace" id="tab-workspace">Workspace</a>
+                    <a href="#library" class="nav-tab" data-section="library" role="tab" aria-selected="false" aria-controls="library" id="tab-library">Library</a>
+                    <a href="#topology" class="nav-tab" data-section="topology" role="tab" aria-selected="false" aria-controls="topology" id="tab-topology">Topology</a>
+                    <a href="#testing" class="nav-tab" data-section="testing" role="tab" aria-selected="false" aria-controls="testing" id="tab-testing">Testing</a>
+                </nav>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Workspace Section -->
+                    <section id="workspace" class="content-section active" role="tabpanel" aria-labelledby="tab-workspace">
+                        <div class="workspace-grid">
+                            <!-- Unified Analysis Section -->
+                            <div class="workspace-card">
+                                <h2>📊 Analyze Text</h2>
+                                <p class="section-description">
+                                    Analyze text to extract tone characteristics, linguistic patterns, and voice markers. 
+                                    Compare against the voice profile to see how well the text matches the target voice.
+                                </p>
+                                <div class="card">
+                                    <div class="form-group">
+                                        <label for="unifiedAnalyzeInput">
+                                            Text to Analyze:
+                                            <span class="tooltip-icon" aria-label="Enter any text you want to analyze. The system will extract tone, patterns, and compare against the voice profile." role="img" aria-hidden="false">ℹ️</span>
+                                        </label>
+                                        <textarea 
+                                            id="unifiedAnalyzeInput" 
+                                            rows="6" 
+                                            placeholder="Enter text to analyze..."
+                                            aria-describedby="analyze-input-hint"
+                                            aria-label="Text to analyze"
+                                        ></textarea>
+                                        <span id="analyze-input-hint" class="sr-only">Enter any text you want to analyze. The system will extract tone, patterns, and compare against the voice profile.</span>
+                                    </div>
+                                    
+                                    <!-- Analysis Type Tabs -->
+                                    <div class="analysis-tabs" role="tablist" aria-label="Analysis type selection">
+                                        <button 
+                                            class="analysis-tab active" 
+                                            data-analysis="all" 
+                                            role="tab"
+                                            aria-selected="true"
+                                            aria-controls="analysis-content"
+                                            id="tab-analysis-all"
+                                            aria-label="Run all analysis types: tone, patterns, and truth extraction"
+                                        >
+                                            All Analysis
+                                        </button>
+                                        <button 
+                                            class="analysis-tab" 
+                                            data-analysis="tone" 
+                                            role="tab"
+                                            aria-selected="false"
+                                            aria-controls="analysis-content"
+                                            id="tab-analysis-tone"
+                                            aria-label="Analyze tone characteristics: formality, technicality, precision, and voice markers"
+                                        >
+                                            Tone Analysis
+                                        </button>
+                                        <button 
+                                            class="analysis-tab" 
+                                            data-analysis="patterns" 
+                                            role="tab"
+                                            aria-selected="false"
+                                            aria-controls="analysis-content"
+                                            id="tab-analysis-patterns"
+                                            aria-label="Extract linguistic and structural patterns from the text"
+                                        >
+                                            Patterns
+                                        </button>
+                                        <button 
+                                            class="analysis-tab" 
+                                            data-analysis="shredder" 
+                                            role="tab"
+                                            aria-selected="false"
+                                            aria-controls="analysis-content"
+                                            id="tab-analysis-shredder"
+                                            aria-label="Extract objective truths and factual statements from the text"
+                                        >
+                                            Shredder
+                                        </button>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="runAllAnalysis">
+                                            <input type="checkbox" id="runAllAnalysis" checked aria-describedby="run-all-hint"> Run all analyses
+                                        </label>
+                                        <span id="run-all-hint" class="sr-only">When checked, runs all analysis types regardless of selected tab</span>
+                                    </div>
+
+                                    <button id="unifiedAnalyzeBtn" class="btn btn-primary" aria-label="Analyze the entered text">Analyze</button>
+                                    
+                                    <div id="unifiedAnalysisOutput" class="output-area" role="region" aria-live="polite" aria-label="Analysis results"></div>
+                                    <div class="output-actions" id="analysisActions" style="display: none;">
+                                        <button class="btn btn-secondary btn-sm" id="saveAnalysisToStorage">Save to Storage</button>
+                                        <button class="btn btn-secondary btn-sm" id="addAnalysisPrinciple">Add as Principle</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Unified Generation Section -->
+                            <div class="workspace-card">
+                                <h2>✨ Generate Text</h2>
+                                <p class="section-description">
+                                    Generate new text matching the voice profile, or extrapolate existing text to expand on concepts 
+                                    while maintaining voice consistency. Choose from different generation modes and styles.
+                                </p>
+                                <div class="card">
+                                    <div class="form-group">
+                                        <label for="unifiedGenerateInput">
+                                            Topic/Seed Text:
+                                            <span class="tooltip-icon" title="Enter a topic to generate new text, or existing text to extrapolate and expand upon.">ℹ️</span>
+                                        </label>
+                                        <textarea id="unifiedGenerateInput" rows="4" placeholder="Enter topic or seed text..."></textarea>
+                                    </div>
+
+                                    <!-- Generation Mode Selector -->
+                                    <div class="mode-selector">
+                                        <label class="mode-option" title="Generate completely new text from a topic, matching the voice profile">
+                                            <input type="radio" name="genMode" value="generate" checked>
+                                            <span>Generate New</span>
+                                        </label>
+                                        <label class="mode-option" title="Expand and extrapolate on existing text, adding detail while maintaining voice">
+                                            <input type="radio" name="genMode" value="extrapolate">
+                                            <span>Extrapolate</span>
+                                        </label>
+                                        <label class="mode-option" title="Generate text and automatically validate it against the voice profile">
+                                            <input type="radio" name="genMode" value="generate-validate">
+                                            <span>Generate & Validate</span>
+                                        </label>
+                                    </div>
+
+                                    <!-- Options Panel -->
+                                    <div class="options-panel">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="unifiedLengthSelect">Length:</label>
+                                                <select id="unifiedLengthSelect">
+                                                    <option value="short">Short</option>
+                                                    <option value="medium" selected>Medium</option>
+                                                    <option value="long">Long</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="unifiedStyleSelect">Style:</label>
+                                                <select id="unifiedStyleSelect">
+                                                    <option value="descriptive" selected>Descriptive</option>
+                                                    <option value="technical">Technical</option>
+                                                    <option value="comprehensive">Comprehensive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="expansionLevelGroup" style="display: none;">
+                                            <label for="unifiedExpansionLevel">Expansion Level:</label>
+                                            <input type="range" id="unifiedExpansionLevel" min="1" max="5" value="3">
+                                            <span id="unifiedExpansionValue">3</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profileSelect">Use Profile:</label>
+                                            <select id="profileSelect">
+                                                <option value="">Default Profile</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <button id="unifiedGenerateBtn" class="btn btn-primary">Generate</button>
+                                    
+                                    <div id="unifiedGenerateOutput" class="output-area"></div>
+                                    <div class="output-actions" id="generateActions" style="display: none;">
+                                        <button class="btn btn-secondary btn-sm" id="saveGeneratedToStorage">Save as Sample</button>
+                                        <button class="btn btn-secondary btn-sm" id="extrapolateGenerated">Extrapolate This</button>
+                                        <button class="btn btn-secondary btn-sm" id="validateGenerated">Validate Voice</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Library Section -->
+                    <section id="library" class="content-section" role="tabpanel" aria-labelledby="tab-library" aria-hidden="true">
+                        <h2>📚 Library</h2>
+                        <p class="section-description">
+                            Manage your text samples, principles, profiles, and documents. Build new voice profiles from samples, 
+                            import documents to extract truths and patterns, and organize your voice analysis data.
+                        </p>
+                        
+                        <!-- Library Tabs -->
+                        <div class="library-tabs">
+                            <button class="library-tab active" data-library="samples">Samples</button>
+                            <button class="library-tab" data-library="principles">Principles</button>
+                            <button class="library-tab" data-library="profiles">Profiles</button>
+                            <button class="library-tab" data-library="documents">Documents</button>
+                            <button class="library-tab" data-library="resources">Resources</button>
+                            <button class="library-tab" data-library="builder">Profile Builder</button>
+                        </div>
+
+                        <!-- Samples Tab -->
+                        <div class="library-content active" id="librarySamples">
+                            <div class="card">
+                                <div class="library-header">
+                                    <div class="form-group" style="flex: 1; margin: 0;">
+                                        <input type="text" id="sampleSearch" placeholder="Search samples..." class="search-input">
+                                    </div>
+                                    <button id="libraryLoadSamples" class="btn btn-secondary">Refresh</button>
+                                    <button id="libraryAddSample" class="btn btn-primary">+ Add Sample</button>
+                                </div>
+                                <div id="librarySamplesList" class="library-list"></div>
+                            </div>
+                        </div>
+
+                        <!-- Principles Tab -->
+                        <div class="library-content" id="libraryPrinciples">
+                            <div class="card">
+                                <div class="library-header">
+                                    <div class="form-group" style="flex: 1; margin: 0;">
+                                        <input type="text" id="principleSearch" placeholder="Search principles..." class="search-input">
+                                    </div>
+                                    <button id="libraryLoadPrinciples" class="btn btn-secondary">Refresh</button>
+                                    <button id="libraryAddPrinciple" class="btn btn-primary">+ Add Principle</button>
+                                </div>
+                                <div id="libraryPrinciplesList" class="library-list"></div>
+                            </div>
+                        </div>
+
+                        <!-- Profiles Tab -->
+                        <div class="library-content" id="libraryProfiles">
+                            <div class="card">
+                                <div class="library-header">
+                                    <button id="libraryLoadProfiles" class="btn btn-secondary">Refresh</button>
+                                    <button id="libraryLoadDefaultProfile" class="btn btn-secondary">Load Default</button>
+                                </div>
+                                <div id="libraryProfilesList" class="library-list"></div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Tab -->
+                        <div class="library-content" id="libraryDocuments">
+                            <div class="card">
+                                <h3>Import Documents</h3>
+                                <p>Upload documents (HTML, Markdown, Text, JSON, XML, CSV, Code files, and more) to automatically shred and store their content.</p>
+                                
+                                <div class="form-group">
+                                    <label for="documentUpload">Select Document:</label>
+                                    <input type="file" id="documentUpload" accept=".html,.htm,.md,.markdown,.txt,.text,.json,.xml,.csv,.js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.bash,.zsh,.ps1,.yaml,.yml,.toml,.ini,.cfg,.conf,.log" class="file-input">
+                                    <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                        Supported: HTML, Markdown, Text, JSON, XML, CSV, Code files (JS, TS, Python, etc.), Config files
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                                    <label for="folderUpload" style="font-weight: 600;">Or Select Folder (Process All Files):</label>
+                                    <input type="file" id="folderUpload" webkitdirectory directory multiple class="file-input">
+                                    <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                        Select a folder to process all supported files within it (including subdirectories)
+                                    </small>
+                                    <div id="folderFileCount" style="margin-top: 0.5rem; color: var(--primary-color); font-weight: 500; display: none;"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="documentCategory">Category:</label>
+                                    <input type="text" id="documentCategory" placeholder="document" value="document">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="documentTags">Tags (comma-separated):</label>
+                                    <input type="text" id="documentTags" placeholder="imported, html, design">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="documentAutoStore" checked> Auto-store shredded content
+                                    </label>
+                                </div>
+                                
+                                <!-- Processing Options Section -->
+                                <div class="form-group" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                    <h4 style="margin-top: 0; margin-bottom: 1rem;">Processing Options</h4>
+                                    
+                                    <!-- Processing Mode -->
+                                    <div class="form-group">
+                                        <label for="processingMode" style="font-weight: 600;">Processing Mode:</label>
+                                        <select id="processingMode" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                            <option value="basic">Basic (Shred Only)</option>
+                                            <option value="vectorized" selected>Vectorized (Default - Vectorize + Shred)</option>
+                                            <option value="panned">Panned (Vectorize + Shred + Pan for Gold)</option>
+                                            <option value="profiles">Full Pipeline (Vectorize + Shred + Pan + Create Profiles)</option>
+                                        </select>
+                                        <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                            Select processing mode based on your needs
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Vectorization Options -->
+                                    <div class="form-group" id="vectorizationOptions" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                                        <label>
+                                            <input type="checkbox" id="enableVectorization" checked> Enable Vectorization
+                                        </label>
+                                        <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                            Store word vector embeddings of original document (always enabled for advanced modes)
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Panning Options -->
+                                    <div class="form-group" id="panningOptions" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: none;">
+                                        <label>
+                                            <input type="checkbox" id="enablePanning"> Enable Panning (Filter Gold Truths)
+                                        </label>
+                                        <div id="panningProfileSelect" style="margin-top: 0.5rem; display: none;">
+                                            <label for="panningProfile" style="font-weight: 500;">Voice Profile for Panning:</label>
+                                            <select id="panningProfile" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                                <option value="">Loading profiles...</option>
+                                            </select>
+                                            <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                                Select a voice profile to filter truths (only profile-relevant "gold" will be kept)
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Profile Creation Options -->
+                                    <div class="form-group" id="profileCreationOptions" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: none;">
+                                        <label>
+                                            <input type="checkbox" id="enableProfileCreation"> Create Profiles from Document
+                                        </label>
+                                        <div id="profileNamingOptions" style="margin-top: 0.5rem; display: none;">
+                                            <div style="margin-top: 0.5rem;">
+                                                <label for="topicProfileName" style="font-weight: 500;">Topic Profile Name:</label>
+                                                <input type="text" id="topicProfileName" placeholder="Auto-generated from filename" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                                <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                                    Profile created from panned gold truths (detailed, focused)
+                                                </small>
+                                            </div>
+                                            <div style="margin-top: 0.5rem;">
+                                                <label for="wholeTopicProfileName" style="font-weight: 500;">Whole Topic Profile Name:</label>
+                                                <input type="text" id="wholeTopicProfileName" placeholder="Auto-generated from filename" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                                <small style="color: var(--text-secondary); margin-top: 0.5rem; display: block;">
+                                                    Profile created from full vectorized document (broad, overall)
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button id="uploadDocumentBtn" class="btn btn-primary">Upload & Process File</button>
+                                    <button id="uploadFolderBtn" class="btn btn-secondary" style="display: none;">Process Folder</button>
+                                </div>
+                                
+                                <div id="documentUploadStatus" class="output-area" style="display: none; margin-top: 1rem;"></div>
+                                <div id="folderUploadStatus" class="output-area" style="display: none; margin-top: 1rem;"></div>
+                                
+                                <div class="form-group" style="margin-top: 2rem;">
+                                    <h4>Or Paste Content Directly:</h4>
+                                    <textarea id="documentContent" rows="10" placeholder="Paste document content here..."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="documentFilename">Filename:</label>
+                                    <input type="text" id="documentFilename" placeholder="document.txt">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="documentFileType">File Type:</label>
+                                    <select id="documentFileType">
+                                        <option value="text">Text</option>
+                                        <option value="html">HTML</option>
+                                        <option value="markdown">Markdown</option>
+                                        <option value="json">JSON</option>
+                                        <option value="xml">XML</option>
+                                        <option value="csv">CSV</option>
+                                        <option value="code">Code</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Processing Options for Direct Content (same as upload) -->
+                                <div class="form-group" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                    <h4 style="margin-top: 0; margin-bottom: 1rem;">Processing Options</h4>
+                                    
+                                    <div class="form-group">
+                                        <label for="processingModeContent" style="font-weight: 600;">Processing Mode:</label>
+                                        <select id="processingModeContent" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                            <option value="basic">Basic (Shred Only)</option>
+                                            <option value="vectorized" selected>Vectorized (Default - Vectorize + Shred)</option>
+                                            <option value="panned">Panned (Vectorize + Shred + Pan for Gold)</option>
+                                            <option value="profiles">Full Pipeline (Vectorize + Shred + Pan + Create Profiles)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group" id="panningOptionsContent" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: none;">
+                                        <label>
+                                            <input type="checkbox" id="enablePanningContent"> Enable Panning
+                                        </label>
+                                        <div id="panningProfileSelectContent" style="margin-top: 0.5rem; display: none;">
+                                            <label for="panningProfileContent" style="font-weight: 500;">Voice Profile:</label>
+                                            <select id="panningProfileContent" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                                <option value="">Loading profiles...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group" id="profileCreationOptionsContent" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: none;">
+                                        <label>
+                                            <input type="checkbox" id="enableProfileCreationContent"> Create Profiles
+                                        </label>
+                                        <div id="profileNamingOptionsContent" style="margin-top: 0.5rem; display: none;">
+                                            <input type="text" id="topicProfileNameContent" placeholder="Topic Profile Name" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                            <input type="text" id="wholeTopicProfileNameContent" placeholder="Whole Topic Profile Name" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button id="processDocumentBtn" class="btn btn-primary">Process Content</button>
+                                
+                                <div id="documentProcessStatus" class="output-area" style="display: none; margin-top: 1rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Resources Tab: Resource Portal (revamped UI) -->
+                        <div class="library-content" id="libraryResources">
+                            <div class="resource-portal">
+                                <header class="resource-portal-hero">
+                                    <h2 class="resource-portal-title">Resource Portal</h2>
+                                    <p class="resource-portal-desc">Add content via file upload or paste, then browse and manage resources. All content is processed through the voice framework.</p>
+                                </header>
+
+                                <div class="resource-portal-grid">
+                                    <section class="resource-add" aria-label="Add resource">
+                                        <h3 class="resource-section-title">Add resource</h3>
+
+                                        <div class="resource-add-card">
+                                            <h4 class="resource-add-heading">Upload file</h4>
+                                            <div class="form-group">
+                                                <label for="resourceUploadFile">Select file</label>
+                                                <input type="file" id="resourceUploadFile" accept=".txt,.md,.html,.htm,.doc,.docx" class="file-input">
+                                                <small class="resource-hint">Text, Markdown, HTML</small>
+                                            </div>
+                                            <div class="form-row resource-form-row">
+                                                <div class="form-group">
+                                                    <label for="resourceIndustry">Industry</label>
+                                                    <select id="resourceIndustry" required>
+                                                        <option value="">Industry…</option>
+                                                        <option value="professional-services">Professional Services</option>
+                                                        <option value="retail">Retail & E-commerce</option>
+                                                        <option value="healthcare">Healthcare</option>
+                                                        <option value="hospitality">Hospitality</option>
+                                                        <option value="construction">Construction</option>
+                                                        <option value="finance">Finance</option>
+                                                        <option value="manufacturing">Manufacturing</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="resourceTopic">Topic</label>
+                                                    <input type="text" id="resourceTopic" required placeholder="e.g. Client Management">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="resourceTitle">Title <span class="resource-optional">optional</span></label>
+                                                <input type="text" id="resourceTitle" placeholder="From filename if blank">
+                                            </div>
+                                            <div class="resource-checkboxes">
+                                                <label class="resource-check"><input type="checkbox" id="resourceAutoProcess" checked> Process with voice framework</label>
+                                                <label class="resource-check"><input type="checkbox" id="resourceAutoPublish"> Publish after processing</label>
+                                            </div>
+                                            <button id="uploadResourceBtn" class="btn btn-primary resource-submit">Upload & process</button>
+                                            <div id="resourceUploadStatus" class="output-area resource-status" style="display: none;"></div>
+                                        </div>
+
+                                        <div class="resource-add-card resource-add-card--paste">
+                                            <h4 class="resource-add-heading">Or paste content</h4>
+                                            <textarea id="resourceContent" rows="8" placeholder="Paste resource content here…"></textarea>
+                                            <div class="form-row resource-form-row">
+                                                <div class="form-group">
+                                                    <label for="resourceContentIndustry">Industry</label>
+                                                    <select id="resourceContentIndustry" required>
+                                                        <option value="">Industry…</option>
+                                                        <option value="professional-services">Professional Services</option>
+                                                        <option value="retail">Retail & E-commerce</option>
+                                                        <option value="healthcare">Healthcare</option>
+                                                        <option value="hospitality">Hospitality</option>
+                                                        <option value="construction">Construction</option>
+                                                        <option value="finance">Finance</option>
+                                                        <option value="manufacturing">Manufacturing</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="resourceContentTopic">Topic</label>
+                                                    <input type="text" id="resourceContentTopic" required placeholder="e.g. Client Management">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="resourceContentTitle">Title <span class="resource-optional">optional</span></label>
+                                                <input type="text" id="resourceContentTitle" placeholder="Auto if blank">
+                                            </div>
+                                            <label class="resource-check"><input type="checkbox" id="resourceContentAutoPublish"> Publish after processing</label>
+                                            <button id="processResourceContentBtn" class="btn btn-primary resource-submit">Process content</button>
+                                            <div id="resourceProcessStatus" class="output-area resource-status" style="display: none;"></div>
+                                        </div>
+                                    </section>
+
+                                    <section class="resource-list-section" aria-label="My resources">
+                                        <div class="resource-list-header">
+                                            <h3 class="resource-section-title">My resources</h3>
+                                            <div class="resource-list-actions">
+                                                <input type="search" id="resourceSearch" placeholder="Search…" class="search-input resource-search" aria-label="Search resources">
+                                                <button id="refreshResourcesBtn" class="btn btn-secondary btn-sm" aria-label="Refresh list">Refresh</button>
+                                            </div>
+                                        </div>
+                                        <div id="resourcesList" class="resource-list" aria-live="polite"></div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Builder Tab -->
+                        <div class="library-content" id="libraryBuilder">
+                            <div class="card">
+                                <h3>Build Profile from Samples</h3>
+                                <div class="form-group">
+                                    <label for="libraryBuilderSamples">Text Samples (one per line):</label>
+                                    <textarea id="libraryBuilderSamples" rows="8" placeholder="Enter text samples, one per line..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="libraryProfileName">Profile Name:</label>
+                                    <input type="text" id="libraryProfileName" placeholder="My Voice Profile">
+                                </div>
+                                <div class="form-group">
+                                    <label for="libraryProfileDescription">Description:</label>
+                                    <textarea id="libraryProfileDescription" rows="2" placeholder="Profile description..."></textarea>
+                                </div>
+                                <button id="libraryBuildProfile" class="btn btn-primary">Build Profile</button>
+                                <div id="libraryBuilderOutput" class="output-area"></div>
+                                <div class="output-actions" id="builderActions" style="display: none;">
+                                    <button class="btn btn-secondary btn-sm" id="saveBuiltProfile">Save Profile</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Topology Section -->
+                    <section id="topology" class="content-section" role="tabpanel" aria-labelledby="tab-topology" aria-hidden="true">
+                        <h2>🌐 3D Topology Visualization</h2>
+                        <p class="section-description">
+                            Visualize principles and their relationships in 3D space. Explore how different principles connect 
+                            and relate to each other across profiles. Interactive 3D visualization helps understand the semantic 
+                            structure of your voice profiles.
+                        </p>
+                        
+                        <div class="card">
+                            <div class="topology-controls">
+                                <div class="form-group">
+                                    <label for="topologyView">View Mode:</label>
+                                    <select id="topologyView">
+                                        <option value="all">All Principles</option>
+                                        <option value="profiles">By Profile</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="profileSelectGroup" style="display: none;">
+                                    <label for="topologyProfile">Profile:</label>
+                                    <select id="topologyProfile"></select>
+                                </div>
+                                
+                                <button id="refreshTopologyBtn" class="btn btn-secondary">Refresh</button>
+                            </div>
+                            
+                            <div id="topologyCanvas" style="width: 100%; height: 600px; border: 1px solid var(--border-color); border-radius: 0.5rem; background: #0a0a0a;"></div>
+                            
+                            <div id="topologyInfo" class="topology-info" style="margin-top: 1rem;">
+                                <p>Loading topology data...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Testing Section -->
+                    <section id="testing" class="content-section" role="tabpanel" aria-labelledby="tab-testing" aria-hidden="true">
+                        <h2>🧪 Testing</h2>
+                        <p class="section-description">
+                            Run A/B tests to compare different text generation approaches and validate voice consistency. 
+                            Test suites help ensure your generated content matches the target voice profile across different scenarios.
+                        </p>
+                        <div class="testing-tabs">
+                            <button class="testing-tab active" data-testing="run">Run Tests</button>
+                            <button class="testing-tab" data-testing="results">Results</button>
+                        </div>
+
+                        <!-- Run Tests Tab -->
+                        <div class="testing-content active" id="testingRun">
+                            <div class="card">
+                                <div class="form-group">
+                                    <label for="testSuiteSelect">Test Suite:</label>
+                                    <select id="testSuiteSelect">
+                                        <option value="default">Default Suite</option>
+                                        <option value="quick">Quick Suite</option>
+                                    </select>
+                                </div>
+                                <button id="runABTestsBtn" class="btn btn-primary">Run Test Suite</button>
+                                <div id="testProgress" class="progress-container" style="display: none;">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progressFill"></div>
+                                    </div>
+                                    <p id="progressText">Running tests...</p>
+                                </div>
+                                <div id="testOutput" class="output-area"></div>
+                            </div>
+                        </div>
+
+                        <!-- Results Tab -->
+                        <div class="testing-content" id="testingResults">
+                            <div class="card">
+                                <div id="resultsContainer" class="results-container">
+                                    <p class="empty-state">No test results yet. Run tests to see results here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Contextual Options -->
+            <aside class="right-sidebar" role="complementary" aria-label="Quick actions">
+                <div class="contextual-panel">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions" role="group" aria-label="Quick action buttons">
+                        <button class="btn btn-secondary btn-sm" id="clearAllInputs" aria-label="Clear all input fields">Clear All</button>
+                        <button class="btn btn-secondary btn-sm" id="loadFromStorage" aria-label="Load content from storage">Load from Storage</button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="topology3d.js"></script>
+    <script src="markov-chain-tracker.js"></script>
+    <script src="app.js"></script>
+    <!-- Debug script - only loaded in development mode -->
+    <script>
+        // Only load debug script in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            const script = document.createElement('script');
+            script.src = 'debug-script.js';
+            script.onerror = () => console.warn('Debug script not available');
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+---
+import { navigation } from '../data/navigation';
+import logo from '../logo.png';
+import SemanticText from './SemanticText.astro';
+
+/**
+ * Header Component Props
+ * 
+ * @interface Props
+ * @property {string} [currentPath] - Current page path for active navigation highlighting
+ * @property {Array<{label: string, href?: string}>} [breadcrumbs] - Breadcrumb items to display in mobile menu
+ */
+interface Props {
+  currentPath?: string;
+  breadcrumbs?: Array<{ label: string; href?: string }>;
+}
+
+const { currentPath = '', breadcrumbs = [] } = Astro.props;
+
+function isActive(href: string): boolean {
+  const pathOnly = href.split('#')[0] || href;
+  if (pathOnly === '/' && currentPath === '/') return true;
+  if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
+  return false;
+}
+---
+
+<header data-state-aware="true" class="header-state-aware" role="banner">
+  <div class="phi-lateral-angular-1 header-angular" aria-hidden="true"></div>
+  <nav role="navigation" aria-label="Main navigation">
+    <a href="/" class="nav-brand" aria-label="Brisbane Servers - Home">
+      <img src={logo.src} alt="Brisbane Servers Logo" width={logo.width} height={logo.height} />
+      <span class="nav-brand-text">
+        <SemanticText text="Brisbane Servers" semanticLevel="high" />
+      </span>
+      <span class="nav-tagline">
+        <SemanticText text="Access to Truth in Technology" semanticLevel="normal" />
+      </span>
+    </a>
+    
+    <ul class="nav-menu" role="menubar">
+      {navigation.map((item, index) => (
+        item.children ? (
+          <li class={`nav-dropdown ${isActive(item.href) ? 'active' : ''}`} role="none">
+            <a 
+              href={item.href} 
+              class={`nav-dropdown-toggle ${isActive(item.href) ? 'active' : ''}`}
+              role="menuitem"
+              aria-haspopup="true"
+              aria-expanded={isActive(item.href) ? 'true' : 'false'}
+              aria-controls={`dropdown-menu-${index}`}
+              id={`dropdown-toggle-${index}`}
+            >
+              <SemanticText text={item.label} semanticLevel="normal" />
+              <span class="sr-only">submenu</span>
+            </a>
+            <div 
+              class="nav-dropdown-menu" 
+              role="menu"
+              id={`dropdown-menu-${index}`}
+              aria-labelledby={`dropdown-toggle-${index}`}
+            >
+              {item.children.map((child) => (
+                <a 
+                  href={child.href} 
+                  class={isActive(child.href) ? 'active' : ''}
+                  role="menuitem"
+                >
+                  {child.label}
+                </a>
+              ))}
+            </div>
+          </li>
+        ) : (
+          <li role="none">
+            <a 
+              href={item.href} 
+              class={isActive(item.href) ? 'active' : ''}
+              role="menuitem"
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              <SemanticText text={item.label} semanticLevel="normal" />
+            </a>
+          </li>
+        )
+      ))}
+    </ul>
+    
+    <button 
+      class="hamburger"
+      aria-label="Toggle mobile menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      type="button"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+    
+    <div 
+      class="mobile-menu" 
+      id="mobile-menu"
+      role="menu"
+      aria-label="Mobile navigation menu"
+    >
+      {breadcrumbs.length > 0 && (
+        <div class="breadcrumb-section">
+          {breadcrumbs.map((crumb, index) => (
+            <span class="breadcrumb-item">
+              {crumb.href ? (
+                <a href={crumb.href}>{crumb.label}</a>
+              ) : (
+                <span>{crumb.label}</span>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
+      {navigation.map((item) => (
+        item.children ? (
+          <>
+            <a 
+              href={item.href} 
+              class={isActive(item.href) ? 'active' : ''}
+              role="menuitem"
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+            {item.children.map((child) => (
+              <a 
+                href={child.href} 
+                class={`mobile-menu__child-link ${isActive(child.href) ? 'active' : ''}`}
+                role="menuitem"
+                aria-current={isActive(child.href) ? 'page' : undefined}
+              >
+                {child.label}
+              </a>
+            ))}
+          </>
+        ) : (
+          <a 
+            href={item.href} 
+            class={isActive(item.href) ? 'active' : ''}
+            role="menuitem"
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        )
+      ))}
+    </div>
+  </nav>
+</header>
+

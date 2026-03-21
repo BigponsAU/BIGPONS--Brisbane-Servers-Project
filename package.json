@@ -1,0 +1,28 @@
+{
+  "name": "brisbane-servers-monorepo",
+  "version": "1.0.0",
+  "description": "Brisbane Servers website and voice framework",
+  "scripts": {
+    "build": "cd website-brisbaneservers.com && npm run build",
+    "build:website": "cd website-brisbaneservers.com && npm run build",
+    "build:website:cpanel": "cd website-brisbaneservers.com && npm run build:cpanel",
+    "verify:website": "cd website-brisbaneservers.com && npm run verify",
+    "clean": "node scripts/clean-repo.mjs",
+    "clean:all": "node scripts/clean-repo.mjs --include-deps",
+    "start": "npm run start:unified",
+    "start:unified": "npx tsx start-unified.ts",
+    "start:legacy": "concurrently \"npm run start:website\" \"npm run start:voice\"",
+    "start:website": "cd website-brisbaneservers.com && npm run dev",
+    "start:voice": "cd voice-framework && npm run dashboard",
+    "install:all": "npm install && cd website-brisbaneservers.com && npm install && cd ../voice-framework && npm install",
+    "seed:resources": "npx tsx scripts/seed-resources.ts",
+    "mark:starter-blocks": "npx tsx scripts/mark-starter-blocks.ts",
+    "create-base-profile": "npx tsx scripts/create-base-profile.ts",
+    "migrate:resources-sqlite": "npx tsx scripts/migrate-json-to-sqlite.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "tsx": "^4.7.0"
+  }
+}
+

@@ -1,0 +1,156 @@
+{
+  "voiceName": "Brisbane Servers Design System Voice",
+  "version": "1.0.0",
+  "sourceDocument": "DESIGN_BLOCKS_SYSTEM.md",
+  "characteristics": {
+    "tone": {
+      "formality": "professional",
+      "technicality": "high",
+      "accessibility": "moderate",
+      "precision": "very_high",
+      "comprehensiveness": "very_high"
+    },
+    "linguisticPatterns": {
+      "sentenceStructure": {
+        "averageLength": "medium_to_long",
+        "complexity": "moderate_to_high",
+        "preference": "declarative_statements",
+        "coordination": "frequent_use_of_commas_and_semicolons"
+      },
+      "vocabulary": {
+        "technicalTerms": [
+          "phi",
+          "azimuth",
+          "cipher",
+          "vectorized",
+          "semantic",
+          "Fourier transform",
+          "wave function",
+          "golden ratio",
+          "permutation",
+          "modulation"
+        ],
+        "descriptiveTerms": [
+          "comprehensive",
+          "all-encompassing",
+          "foundation",
+          "baseline",
+          "systematic",
+          "modular",
+          "scalable",
+          "mathematical precision"
+        ],
+        "relationshipTerms": [
+          "affects",
+          "creates",
+          "maintains",
+          "preserves",
+          "ensures",
+          "provides",
+          "allows for",
+          "forms",
+          "uses",
+          "integrates"
+        ]
+      },
+      "numericalPrecision": {
+        "specificValues": true,
+        "commonValues": [1.618, 0.618, 0.382, 38.2, 61.8, 23.6, 76.4],
+        "formatting": "decimal_with_precision",
+        "units": ["degrees", "ratios", "frequencies"]
+      }
+    },
+    "structuralPatterns": {
+      "organization": {
+        "hierarchical": true,
+        "sections": true,
+        "subsections": true,
+        "lists": "frequent",
+        "bulletPoints": "very_frequent"
+      },
+      "contentFlow": {
+        "overviewFirst": true,
+        "detailsAfter": true,
+        "examplesProvided": true,
+        "conclusions": true
+      }
+    },
+    "domainKnowledge": {
+      "mathematicalConcepts": [
+        "golden ratio (phi)",
+        "Fibonacci sequence",
+        "Fourier transforms",
+        "wave functions",
+        "azimuth angles",
+        "geometric proportions"
+      ],
+      "designConcepts": [
+        "color psychology",
+        "semantic levels",
+        "visual modulation",
+        "typography systems",
+        "spacing systems",
+        "layout patterns"
+      ],
+      "technicalConcepts": [
+        "vectorization",
+        "data extraction",
+        "cipher systems",
+        "encoding",
+        "permutations",
+        "dependencies"
+      ]
+    },
+    "voiceMarkers": {
+      "openingPhrases": [
+        "This document describes",
+        "Every element",
+        "All blocks",
+        "The system",
+        "Each block"
+      ],
+      "connectingPhrases": [
+        "forms the foundation",
+        "creates",
+        "ensures",
+        "allows for",
+        "maintains",
+        "preserves",
+        "provides",
+        "uses",
+        "affects",
+        "modulates"
+      ],
+      "emphasisPhrases": [
+        "comprehensive",
+        "all-encompassing",
+        "mathematical precision",
+        "infinite expansion",
+        "uniformity",
+        "meaning preservation"
+      ],
+      "closingPhrases": [
+        "throughout the entire website",
+        "while maintaining",
+        "for infinite expansion",
+        "creating a comprehensive",
+        "ensuring proportional harmony"
+      ]
+    },
+    "semanticDensity": {
+      "informationPerSentence": "high",
+      "technicalTermsPerParagraph": "very_high",
+      "specificity": "very_high",
+      "abstraction": "moderate"
+    }
+  },
+  "extrapolationGuidelines": {
+    "maintainPrecision": true,
+    "useDomainTerms": true,
+    "preserveStructure": true,
+    "extendConcepts": true,
+    "maintainRelationships": true,
+    "addSpecificValues": true
+  }
+}
+

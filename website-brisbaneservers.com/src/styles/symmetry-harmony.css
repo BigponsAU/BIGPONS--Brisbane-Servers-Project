@@ -1,0 +1,328 @@
+/**
+ * Symmetry & Harmony Psychology System
+ * 
+ * Systematic application of Gestalt principles for visual harmony:
+ * - Symmetry modes: bilateral, radial, asymmetric balance
+ * - Harmony levels: high, medium, low
+ * - Psychology integration: cognitive load reduction, visual rhythm, grouping
+ * 
+ * USAGE:
+ * 
+ * Symmetry Modes:
+ * - Add class "symmetry-bilateral" or data-symmetry="bilateral" for mirror symmetry
+ * - Add class "symmetry-radial" or data-symmetry="radial" for rotational symmetry
+ * - Add class "symmetry-asymmetric" or data-symmetry="asymmetric" for phi-based balance
+ * 
+ * Harmony Levels:
+ * - Add class "harmony-high" or data-harmony="high" for maximum visual balance
+ * - Add class "harmony-medium" or data-harmony="medium" for moderate balance
+ * - Add class "harmony-low" or data-harmony="low" for dynamic tension
+ * 
+ * Combined Usage:
+ * - Combine symmetry and harmony classes: "harmony-high symmetry-bilateral"
+ * - Use data attributes for dynamic state: data-state-symmetry-mode="bilateral"
+ * 
+ * All symmetry calculations use phi ratios (--phi, --phi-ratio, --phi-ratio-inv) 
+ * from global.css for consistent golden ratio relationships.
+ */
+
+/* ===== SYMMETRY MODES ===== */
+
+/* Bilateral Symmetry - Mirror elements across vertical/horizontal axes */
+[data-symmetry="bilateral"],
+.symmetry-bilateral {
+    /* Vertical bilateral symmetry */
+    --symmetry-axis: vertical;
+    --symmetry-mirror-x: 50%;
+    --symmetry-mirror-y: 50%;
+}
+
+.symmetry-bilateral-vertical {
+    /* Elements mirrored across vertical center */
+    position: relative;
+}
+
+.symmetry-bilateral-vertical > *:nth-child(odd) {
+    transform-origin: left center;
+}
+
+.symmetry-bilateral-vertical > *:nth-child(even) {
+    transform-origin: right center;
+    /* Mirror effect through positioning */
+}
+
+.symmetry-bilateral-horizontal {
+    /* Elements mirrored across horizontal center */
+    position: relative;
+}
+
+.symmetry-bilateral-horizontal > *:nth-child(odd) {
+    transform-origin: center top;
+}
+
+.symmetry-bilateral-horizontal > *:nth-child(even) {
+    transform-origin: center bottom;
+}
+
+/* Radial Symmetry - Rotational symmetry around center points */
+[data-symmetry="radial"],
+.symmetry-radial {
+    --symmetry-center-x: 50%;
+    --symmetry-center-y: 50%;
+    --symmetry-rotation: 0deg;
+    position: relative;
+}
+
+.symmetry-radial > * {
+    position: absolute;
+    transform-origin: var(--symmetry-center-x) var(--symmetry-center-y);
+}
+
+/* Radial symmetry with phi-based rotation */
+.symmetry-radial-phi > *:nth-child(1) { --symmetry-rotation: 0deg; }
+.symmetry-radial-phi > *:nth-child(2) { --symmetry-rotation: 137.5deg; } /* Golden angle */
+.symmetry-radial-phi > *:nth-child(3) { --symmetry-rotation: 275deg; }
+.symmetry-radial-phi > *:nth-child(4) { --symmetry-rotation: 52.5deg; }
+.symmetry-radial-phi > *:nth-child(5) { --symmetry-rotation: 190deg; }
+
+/* Asymmetric Balance - Visual weight distribution (phi-based) */
+[data-symmetry="asymmetric"],
+.symmetry-asymmetric {
+    --asymmetric-weight-left: var(--phi-ratio-inv);
+    /* 38.2% weight - uses phi inverse ratio */
+    --asymmetric-weight-right: var(--phi-ratio);
+    /* 61.8% weight - uses phi ratio */
+    /* Total: 100% with golden ratio distribution */
+    display: flex;
+}
+
+.symmetry-asymmetric > *:first-child {
+    flex: var(--asymmetric-weight-left);
+}
+
+.symmetry-asymmetric > *:last-child {
+    flex: var(--asymmetric-weight-right);
+}
+
+/* ===== HARMONY LEVELS ===== */
+
+/* High Harmony - Strong phi relationships, balanced color psychology */
+[data-harmony="high"],
+.harmony-high {
+    --harmony-phi-strength: var(--phi);
+    /* Uses base phi ratio (1.618) for maximum harmony */
+    --harmony-color-balance: 1;
+    /* Full color balance */
+    --harmony-spacing-ratio: var(--phi);
+    /* Spacing uses phi ratio */
+    --harmony-visual-rhythm: var(--phi-inv);
+    /* Visual rhythm uses phi inverse (0.618) */
+}
+
+.harmony-high * {
+    transition-timing-function: cubic-bezier(0.618, 0, 0.382, 1);
+    /* Phi-based easing for smooth harmony */
+}
+
+/* Medium Harmony - Moderate relationships, subtle variations */
+[data-harmony="medium"],
+.harmony-medium {
+    --harmony-phi-strength: 1.0;
+    --harmony-color-balance: 0.75;
+    --harmony-spacing-ratio: 1.2;
+    --harmony-visual-rhythm: 0.5;
+}
+
+.harmony-medium * {
+    transition-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
+    /* Balanced easing */
+}
+
+/* Low Harmony - Dynamic tension, intentional imbalance */
+[data-harmony="low"],
+.harmony-low {
+    --harmony-phi-strength: var(--phi-inv);
+    /* Uses phi inverse (0.618) for reduced harmony */
+    --harmony-color-balance: 0.5;
+    /* Reduced color balance for tension */
+    --harmony-spacing-ratio: 1.5;
+    /* Increased spacing ratio for dynamic feel */
+    --harmony-visual-rhythm: 0.3;
+    /* Reduced visual rhythm for energy */
+}
+
+.harmony-low * {
+    transition-timing-function: cubic-bezier(0.3, 0, 0.7, 1);
+    /* Dynamic, energetic easing */
+}
+
+/* ===== PSYCHOLOGY INTEGRATION ===== */
+
+/* Cognitive Load Reduction through Symmetry */
+.cognitive-ease {
+    /* Symmetrical layouts reduce cognitive load — min track scales with φ-rhythm */
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, calc(18.75 * var(--font-base))), 1fr)
+    );
+    gap: var(--space-xl);
+}
+
+.cognitive-ease > * {
+    /* Consistent sizing reduces mental processing */
+    min-height: calc(var(--space-5xl) * var(--phi-inv) * var(--phi));
+    /* Minimum height for visual consistency */
+}
+
+/* Visual Rhythm through Harmonic Spacing */
+.visual-rhythm {
+    /* Harmonic spacing creates visual rhythm using phi ratios */
+    --rhythm-base: var(--space-lg);
+    /* Base rhythm spacing */
+    --rhythm-1: calc(var(--rhythm-base) * var(--phi-inv));
+    /* Rhythm 1: base × phi inverse (0.618) */
+    --rhythm-2: var(--rhythm-base);
+    /* Rhythm 2: base (1.0) */
+    --rhythm-3: calc(var(--rhythm-base) * var(--phi));
+    /* Rhythm 3: base × phi (1.618) */
+    --rhythm-4: calc(var(--rhythm-base) * var(--phi) * var(--phi));
+    /* Rhythm 4: base × phi² (2.618) */
+}
+
+.visual-rhythm > *:nth-child(1) { margin-bottom: var(--rhythm-1); }
+.visual-rhythm > *:nth-child(2) { margin-bottom: var(--rhythm-2); }
+.visual-rhythm > *:nth-child(3) { margin-bottom: var(--rhythm-3); }
+.visual-rhythm > *:nth-child(4) { margin-bottom: var(--rhythm-4); }
+.visual-rhythm > *:nth-child(5) { margin-bottom: var(--rhythm-1); }
+/* Repeating pattern for rhythm */
+
+/* Gestalt Grouping Principles */
+
+/* Proximity - Elements close together are grouped */
+.gestalt-proximity {
+    display: flex;
+    gap: var(--space-sm);
+    /* Small gap creates grouping */
+}
+
+.gestalt-proximity > * {
+    /* Related items grouped together */
+}
+
+/* Similarity - Similar elements are grouped */
+.gestalt-similarity {
+    /* Similar visual properties create grouping */
+}
+
+.gestalt-similarity > * {
+    /* Shared properties: color, size, shape */
+    border-radius: var(--radius-md);
+    /* Consistent border radius */
+}
+
+/* Continuity - Elements following a path are grouped */
+.gestalt-continuity {
+    position: relative;
+}
+
+.gestalt-continuity::before {
+    content: '';
+    position: absolute;
+    /* Continuous line connecting elements */
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        var(--border-light) var(--phi-ratio-inv),
+        var(--border-light) var(--phi-ratio),
+        transparent 100%
+    );
+    height: var(--phi-line-width);
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+.gestalt-continuity > * {
+    position: relative;
+    z-index: 1;
+    /* Elements appear above continuity line */
+}
+
+/* ===== STATE-AWARE SYMMETRY/HARMONY ===== */
+
+/* Apply symmetry/harmony based on state variables */
+[data-state-symmetry-mode="bilateral"] {
+    --symmetry-mode: bilateral;
+}
+
+[data-state-symmetry-mode="radial"] {
+    --symmetry-mode: radial;
+}
+
+[data-state-symmetry-mode="asymmetric"] {
+    --symmetry-mode: asymmetric;
+}
+
+[data-state-harmony-level="high"] {
+    --harmony-level: high;
+}
+
+[data-state-harmony-level="medium"] {
+    --harmony-level: medium;
+}
+
+[data-state-harmony-level="low"] {
+    --harmony-level: low;
+}
+
+/* ===== COMBINED SYMMETRY & HARMONY ===== */
+
+/* High harmony + bilateral symmetry */
+.harmony-high.symmetry-bilateral {
+    /* Maximum cognitive ease */
+    --visual-balance: 1;
+    --cognitive-load: 0.3;
+}
+
+/* Medium harmony + radial symmetry */
+.harmony-medium.symmetry-radial {
+    /* Balanced interest and ease */
+    --visual-balance: 0.75;
+    --cognitive-load: 0.5;
+}
+
+/* Low harmony + asymmetric balance */
+.harmony-low.symmetry-asymmetric {
+    /* Dynamic, engaging layout */
+    --visual-balance: 0.5;
+    --cognitive-load: 0.7;
+}
+
+/* ===== RESPONSIVE SYMMETRY/HARMONY ===== */
+
+@media (max-width: 768px) {
+    /* Mobile: prefer bilateral symmetry for simplicity */
+    .symmetry-radial {
+        --symmetry-mode: bilateral;
+    }
+    
+    /* Reduce harmony complexity on small screens */
+    .harmony-high {
+        --harmony-phi-strength: 1.2;
+    }
+}
+
+@media (min-width: 1920px) {
+    /* Large screens: can handle more complex symmetry */
+    .symmetry-radial {
+        /* Full radial symmetry enabled */
+    }
+    
+    .harmony-high {
+        /* Full harmony strength */
+        --harmony-phi-strength: 1.618;
+    }
+}
+

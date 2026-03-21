@@ -1,0 +1,79 @@
+---
+/**
+ * Error Fallback Component
+ * 
+ * Provides graceful fallback UI when content fails to load or is unavailable.
+ * Implements Gestalt principles through clear visual hierarchy and information grouping.
+ */
+
+interface Props {
+  title?: string;
+  message?: string;
+  actionText?: string;
+  actionHref?: string;
+  icon?: string;
+}
+
+const {
+  title = 'Content Unavailable',
+  message = 'We encountered an issue loading this content. Please try again later or contact us for assistance.',
+  actionText,
+  actionHref,
+  icon = 'fas fa-exclamation-triangle'
+} = Astro.props;
+---
+
+<div class="error-fallback">
+  <div class="error-fallback-icon">
+    <i class={icon}></i>
+  </div>
+  <h3 class="error-fallback-title">{title}</h3>
+  <p class="error-fallback-message">{message}</p>
+  {actionText && actionHref && (
+    <a href={actionHref} class="btn btn-primary">
+      {actionText}
+    </a>
+  )}
+</div>
+
+<style>
+  .error-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    text-align: center;
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    border: var(--phi-line-width) solid var(--border-light);
+    min-height: calc(var(--space-6xl) * var(--phi));
+  }
+
+  .error-fallback-icon {
+    font-size: var(--text-3xl);
+    color: var(--color-error);
+    margin-bottom: var(--space-lg);
+    opacity: var(--opacity-strong);
+  }
+
+  .error-fallback-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  .error-fallback-message {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xl);
+    max-width: calc(var(--space-5xl) * var(--phi));
+    line-height: calc(1em * var(--phi));
+  }
+
+  .error-fallback .btn {
+    margin-top: var(--space-md);
+  }
+</style>
+

@@ -1,0 +1,74 @@
+---
+import '../styles/legal-pages.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SemanticText from '../components/SemanticText.astro';
+
+const currentPath = '/terms-of-service';
+---
+
+<BaseLayout
+  title="Terms of Service - Brisbane Servers"
+  description="Terms governing use of the Brisbane Servers website and related tools. A BIGPONS technology project."
+>
+  <Header currentPath={currentPath} />
+
+  <main id="main-content" class="main-phi-chassis legal-page" role="main">
+    <section class="section section-tartan-accent phi-line-symmetrical">
+      <div class="container phi-measure-prose">
+        <h1 class="section-title">
+          <SemanticText text="Terms of Service" semanticLevel="high" isParent={true} />
+        </h1>
+        <p class="section-description legal-meta">
+          <SemanticText
+            text="Last updated: March 2026. By using this website you agree to these terms. If you do not agree, please do not use the site. This is a general summary and not a substitute for independent legal advice."
+            semanticLevel="normal"
+          />
+        </p>
+
+        <h2 class="h3 legal-h2">Use of the site</h2>
+        <p class="text-content">
+          You may use the public website for lawful purposes and in a way that does not damage, disable, or impair the service or others’ use of it. We may suspend or restrict access where necessary to protect security or comply with law.
+        </p>
+
+        <h2 class="h3 legal-h2">Information and disclaimers</h2>
+        <p class="text-content">
+          Content on this site is provided for general information. It is not professional, financial, or technical advice for your specific situation. Business and technology decisions should be validated with qualified advisers.
+        </p>
+
+        <h2 class="h3 legal-h2">Resource portal and accounts</h2>
+        <p class="text-content">
+          Access to the resource portal and related tools may require an account. You are responsible for safeguarding credentials and for activity under your account. We may change or withdraw features to maintain security and service quality.
+        </p>
+
+        <h2 class="h3 legal-h2">Intellectual property</h2>
+        <p class="text-content">
+          Materials on this site (including branding, text, graphics, and software) are owned by Brisbane Servers / BIGPONS or licensors and are protected by applicable laws. Unless we give express permission, do not copy, scrape, or redistribute content for commercial use.
+        </p>
+
+        <h2 class="h3 legal-h2">Limitation of liability</h2>
+        <p class="text-content">
+          To the maximum extent permitted by Australian law, we are not liable for indirect or consequential loss arising from use of the site. Where liability cannot be excluded, it is limited to resupply of the service or payment of the amount you paid us for the relevant service in the prior twelve months, if any.
+        </p>
+
+        <h2 class="h3 legal-h2">Governing law</h2>
+        <p class="text-content">
+          These terms are governed by the laws of Queensland, Australia. Courts in Queensland have non-exclusive jurisdiction.
+        </p>
+
+        <h2 class="h3 legal-h2">Changes</h2>
+        <p class="text-content">
+          We may update these terms from time to time. The “Last updated” date at the top will change when we do. Continued use after changes constitutes acceptance of the revised terms.
+        </p>
+
+        <p class="text-content legal-nav">
+          <a href="/privacy-policy">Privacy Policy</a>
+          · <a href="/">Home</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

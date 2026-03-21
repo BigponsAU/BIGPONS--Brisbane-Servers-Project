@@ -1,0 +1,118 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import Hero from '~/components/Hero.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import InquiryForm from '~/components/InquiryForm.astro';
+import SemanticText from '~/components/SemanticText.astro';
+import { getIndustryBySlug } from '~/data/industries';
+
+// Note: In SSR mode, getStaticPaths is not used for dynamic routes
+// Routes are handled dynamically at request time
+
+const { resourceId } = Astro.params;
+
+// Fetch the specific resource from API
+const VOICE_API_URL = import.meta.env.VOICE_API_URL || '/api';
+let resource: any = null;
+let industry: any = null;
+
+try {
+  const response = await fetch(`${VOICE_API_URL}/resources/public?id=${resourceId}`, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
+  
+  if (response.ok) {
+    const data = await response.json();
+    resource = data.resource || null;
+    if (resource) {
+      industry = getIndustryBySlug(resource.industry);
+    }
+  }
+} catch (error) {
+  console.warn('Could not fetch resource from API');
+}
+
+if (!resource) {
+  return Astro.redirect('/resources');
+}
+
+const currentPath = `/resources/item/${resourceId}`;
+---
+
+<BaseLayout 
+  title={`${resource.title} - Resources - Brisbane Servers`}
+  description={resource.description}
+>
+  <Header currentPath={currentPath} />
+  
+  <main>
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Resources', href: '/resources' },
+      ...(industry ? [{ label: industry.name, href: `/resources/${industry.slug}` }] : []),
+      ...(resource.topic ? [{ label: resource.topic, href: `/resources/${resource.industry}/${resource.topic}` }] : []),
+      { label: resource.title }
+    ]} />
+    
+    <Hero 
+      title={resource.title}
+      subtitle={resource.description}
+    />
+
+    <section class="section">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="phi-lateral-angular-2"></div>
+      <div class="container">
+        <div class="resource-meta" style="margin-bottom: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap; align-items: center; padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius);">
+          <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+            <strong>Industry:</strong> {resource.industry}
+          </span>
+          <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+            <strong>Topic:</strong> {resource.topic}
+          </span>
+          {resource.metadata?.voiceScore && (
+            <span style="font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);">
+              <strong>Voice Match:</strong> {Math.round(resource.metadata.voiceScore * 100)}%
+            </span>
+          )}
+          {resource.generatedAt && (
+            <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+              <strong>Published:</strong> {new Date(resource.generatedAt).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+
+        <div class="resource-content" style="white-space: pre-wrap; line-height: 1.8; font-size: var(--text-base);">
+          <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
+        </div>
+
+        {resource.metadata?.voiceScore && (
+          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
+            <p style="margin: 0; font-size: var(--text-base); color: var(--text-secondary);">
+              <strong>Voice Consistency:</strong> This resource has been validated and matches {Math.round(resource.metadata.voiceScore * 100)}% with the Brisbane Servers voice profile, ensuring consistent tone and messaging.
+            </p>
+          </div>
+        )}
+
+        <div style="margin-top: var(--space-2xl);">
+          <a href={`/resources/${resource.industry}/${resource.topic}`} class="btn btn-secondary">
+            ← Back to {resource.topic} Resources
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <InquiryForm 
+      title={`Questions about ${resource.title}?`}
+      subtitle={`We're experts in ${resource.industry} technology—informal questions welcome.`}
+      defaultIndustry={resource.industry}
+    />
+  </main>
+
+  <Footer />
+</BaseLayout>

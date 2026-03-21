@@ -1,0 +1,244 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import SearchBar from '../components/SearchBar.astro';
+import IndustryFilters from '../components/IndustryFilters.astro';
+import InquiryForm from '../components/InquiryForm.astro';
+import SemanticText from '../components/SemanticText.astro';
+import { industries } from '../data/industries';
+
+// Fetch published resources from API (using Astro API routes)
+const API_URL = '/api';
+let publishedResources: any[] = [];
+
+try {
+  // Use absolute URL for server-side fetch
+  const baseUrl = import.meta.env.SITE || 'http://localhost:4321';
+  const response = await fetch(`${baseUrl}${API_URL}/resources/public`, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
+  
+  if (response.ok) {
+    const data = await response.json();
+    publishedResources = data.resources || [];
+    // Sort by generated date (most recent first) or voice score
+    publishedResources.sort((a, b) => {
+      const dateA = new Date(a.generatedAt || 0).getTime();
+      const dateB = new Date(b.generatedAt || 0).getTime();
+      return dateB - dateA;
+    });
+  } else {
+    console.warn('[Resources] API returned non-OK status:', response.status);
+  }
+} catch (error) {
+  // Silently fail - resources section will be hidden if no resources
+  console.warn('[Resources] Could not fetch resources from API:', error);
+}
+
+const currentPath = '/resources';
+const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most recent
+---
+
+<BaseLayout 
+  title="Resources - Brisbane Servers"
+  description="Industry-specific knowledge hub with insights on technology applications, grants, automation opportunities, and reality-based guidance for Australian SMEs."
+>
+  <Header 
+    currentPath={currentPath}
+    breadcrumbs={[
+      { label: 'Home', href: '/' },
+      { label: 'Resources' }
+    ]}
+  />
+  
+  <main id="main-content" class="main-phi-chassis" role="main">
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Resources' }
+    ]} />
+    
+    <Hero 
+      title="Resources & Insights"
+      subtitle="Industry-specific knowledge to help you understand what's possible, what's real, and what actually works for your business. Facts, documented proof, and practical guidance."
+    />
+    
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <SearchBar />
+      </div>
+    </section>
+
+    <!-- What Are Resources Section -->
+    <section class="section phi-line-symmetrical">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="container">
+        <div class="section-intro-phi">
+          <h2 class="section-title">
+            <SemanticText text="What Are Resources?" semanticLevel="high" isParent={true} />
+          </h2>
+          <p class="section-description">
+            <SemanticText text="Our resources are comprehensive, industry-specific guides created using our voice framework technology. Each resource is validated for voice consistency, ensuring it matches Brisbane Servers' approach to technology consulting: practical, evidence-based, and tailored to Australian business contexts." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          <Card
+            title="Voice Validated"
+            description="Every resource is validated using our voice matching technology to ensure consistent tone, messaging, and approach. Resources with high voice scores (80%+) are marked as validated."
+            icon="fas fa-check-circle"
+          />
+          <Card
+            title="Industry Specific"
+            description="Resources are tailored to specific industries—retail, healthcare, hospitality, professional services, and more. Each addresses unique challenges and opportunities."
+            icon="fas fa-industry"
+          />
+          <Card
+            title="Evidence Based"
+            description="Our resources include documented proof, real-world examples, and practical guidance based on actual implementations. Not theory—reality."
+            icon="fas fa-book"
+          />
+        </CardGrid>
+      </div>
+    </section>
+
+    {featuredResources.length > 0 && (
+      <!-- Featured Resources Section -->
+      <section class="section" style="background: var(--surface);">
+        <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+        <div class="phi-line-vertical phi-line-vertical-inv"></div>
+        <div class="container">
+          <div class="section-intro-phi">
+            <h2 class="section-title">
+              <SemanticText text="Featured Resources" semanticLevel="high" isParent={true} />
+            </h2>
+            <p class="section-description">
+              <SemanticText text="Recently published resources with validated voice consistency. Each resource provides practical, actionable guidance tailored to specific industries and topics. Click any resource to read the full content." semanticLevel="normal" isChild={true} />
+            </p>
+          </div>
+          <CardGrid columns={3}>
+            {featuredResources.map((resource) => (
+              <Card
+                title={resource.title}
+                description={resource.description}
+                href={`/resources/${resource.industry}/${resource.topic}#resource-${resource.id}`}
+              >
+                <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; font-size: var(--text-sm);">
+                  <span style="color: var(--text-secondary);">
+                    {resource.industry} • {resource.topic}
+                  </span>
+                  {resource.metadata?.voiceScore && (
+                    <span style="padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);">
+                      {Math.round(resource.metadata.voiceScore * 100)}% match
+                    </span>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </CardGrid>
+        </div>
+      </section>
+    )}
+
+    <!-- How Resources Are Created Section -->
+    <section class="section">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-lateral-angular-2"></div>
+      <div class="container">
+        <h2 class="section-title">
+          <SemanticText text="How Resources Are Created" semanticLevel="high" isParent={true} />
+        </h2>
+        <div class="section-description" style="line-height: 1.8;">
+          <p>
+            <SemanticText text="Our resources are generated using advanced AI technology combined with our voice framework system:" semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>1. Content Generation:</strong> <SemanticText text="Using industry-specific prompts and our text generation system, we create comprehensive content tailored to your industry and topic." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>2. Voice Validation:</strong> <SemanticText text="Every resource is analyzed using our voice matching technology to ensure it aligns with Brisbane Servers' communication style—practical, evidence-based, and focused on real-world solutions." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>3. Quality Assurance:</strong> <SemanticText text="Resources with high voice scores (typically 80%+) are published. Lower-scoring content is refined or regenerated to meet our standards." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>4. Continuous Improvement:</strong> <SemanticText text="Published resources can be improved using our voice framework, ensuring they remain accurate and aligned with our approach." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <SemanticText text="This process ensures every resource you read maintains consistency in tone, approach, and quality—whether it's about grant opportunities, automation strategies, or technology implementation." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
+          <h3 style="margin-bottom: var(--space-md);">Voice Score Explained</h3>
+          <p style="margin: 0; line-height: 1.8;">
+            <SemanticText text="Each resource displays a voice score percentage indicating how well it matches Brisbane Servers' voice profile. Scores of 80%+ indicate strong alignment with our practical, evidence-based approach. Resources are validated before publication to ensure quality and consistency." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layout A: Masonry-style grid with phi proportions -->
+    <!-- Comprehensive block usage: phi-line-vertical, phi-line-vertical-inv, phi-lateral-angular-2, bg-pattern-phi-grid -->
+    <section class="section" style="background: var(--surface);">
+      <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+      <div class="phi-line-vertical phi-line-vertical-inv"></div>
+      <div class="phi-lateral-angular-2"></div>
+      <div class="container">
+        <div class="section-intro-phi">
+          <h2 class="section-title">
+            <SemanticText text="Industry-Specific Resources" semanticLevel="high" isParent={true} />
+          </h2>
+          <p class="section-description">
+            <SemanticText text="Insights tailored to your industry. What works in retail differs from healthcare, and hospitality needs different solutions than professional services. Practical guidance specific to Brisbane and Australian business contexts." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <IndustryFilters />
+        
+        <CardGrid>
+          {industries.map((industry) => (
+            <Card
+              title={industry.name}
+              description={industry.description}
+              icon={industry.icon}
+              href={`/resources/${industry.slug}`}
+              industry={industry.slug}
+            >
+              <a href={`/resources/${industry.slug}`} class="btn btn-secondary" style="margin-top: var(--space-lg);">
+                Explore {industry.name}
+              </a>
+              
+              {industry.topics.length > 0 && (
+                <div class="topic-cards" style="margin-top: var(--space-lg);">
+                  {industry.topics.map((topic) => (
+                    <a href={`/resources/${industry.slug}/${topic.slug}`} class="topic-card">
+                      <i class={topic.icon}></i>
+                      <span>{topic.name}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </Card>
+          ))}
+        </CardGrid>
+      </div>
+    </section>
+
+    <InquiryForm 
+      title="Questions about your industry? I have an idea..."
+      subtitle="Share your thoughts, questions, or half-formed ideas. We're here to provide clarity and explore what's possible. You don't need to be the expert—we are."
+      locationField={true}
+    />
+  </main>
+
+  <Footer />
+</BaseLayout>
+

@@ -1,0 +1,25 @@
+---
+import { industries } from '../data/industries';
+import SemanticText from './SemanticText.astro';
+
+interface Props {
+  currentFilter?: string;
+}
+
+const { currentFilter = 'all' } = Astro.props;
+---
+
+<div class="industry-filters">
+  <button class={`filter-btn ${currentFilter === 'all' ? 'active' : ''}`} data-filter="all">
+    <SemanticText text="All Industries" semanticLevel="medium" />
+  </button>
+  {industries.map((industry) => (
+    <button 
+      class={`filter-btn ${currentFilter === industry.slug ? 'active' : ''}`} 
+      data-filter={industry.slug}
+    >
+      <SemanticText text={industry.name} semanticLevel="medium" />
+    </button>
+  ))}
+</div>
+

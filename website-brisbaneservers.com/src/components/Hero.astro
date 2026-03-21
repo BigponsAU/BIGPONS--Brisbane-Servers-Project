@@ -1,0 +1,109 @@
+---
+import SemanticText from './SemanticText.astro';
+import SierpinskiSatellite from './SierpinskiSatellite.astro';
+
+/**
+ * Hero Component Props
+ * 
+ * @interface Props
+ * @property {string} title - The main hero title text (required)
+ * @property {string} [subtitle] - Optional subtitle text displayed below title
+ * @property {string} [ctaText] - Call-to-action button text
+ * @property {string} [ctaHref] - Call-to-action button link URL
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  eyebrow?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  highlights?: string[];
+}
+
+const { 
+  title = 'Welcome', 
+  subtitle, 
+  eyebrow,
+  ctaText, 
+  ctaHref,
+  secondaryCtaText,
+  secondaryCtaHref,
+  highlights = [],
+} = Astro.props;
+---
+
+<section class="hero hero-original">
+  <div class="hero-background-gradient"></div>
+  <!-- Banach fixed-point: convergence motif (outer purple → blue → inner white) -->
+  <div class="fixed-point-anchor" aria-hidden="true">
+    <span class="fixed-point-ring fixed-point-ring-outer"></span>
+    <span class="fixed-point-dot"></span>
+  </div>
+  <!-- Portal-style tartan overlay for fruitful visuals -->
+  <div class="hero-tartan-overlay" aria-hidden="true"></div>
+  
+  <!-- φ split: both columns in layout (no absolute-only gap); stacks on small viewports -->
+  <div class="hero-inner">
+    <div class="hero-text-wrapper">
+      <div class="hero-text-content">
+        {eyebrow && (
+          <p class="hero-eyebrow">
+            {eyebrow}
+          </p>
+        )}
+        <h1 class="hero-title">
+          {title || 'Welcome'}
+        </h1>
+        {subtitle && (
+          <p class="hero-subtitle">
+            {subtitle}
+          </p>
+        )}
+        {(ctaText && ctaHref) || (secondaryCtaText && secondaryCtaHref) ? (
+          <div class="hero-cta">
+            {ctaText && ctaHref && (
+              <a href={ctaHref} class="btn btn-primary">
+                {ctaText}
+              </a>
+            )}
+            {secondaryCtaText && secondaryCtaHref && (
+              <a href={secondaryCtaHref} class="btn btn-secondary">
+                {secondaryCtaText}
+              </a>
+            )}
+          </div>
+        ) : null}
+        {highlights.length > 0 && (
+          <ul class="hero-highlights" aria-label="Key value points">
+            {highlights.map((highlight) => (
+              <li>{highlight}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+    <div class="hero-visual">
+      <SierpinskiSatellite />
+    </div>
+  </div>
+  
+  <!-- Sierpinski-styled scroll button -->
+  <a href="#inquiry-section" class="hero-scroll-button" aria-label="Scroll to contact section">
+    <svg class="sierpinski-arrow" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sierpinski triangle pattern - recursive triangles -->
+      <g class="sierpinski-triangle-group">
+        <!-- Outer triangle -->
+        <path class="triangle-outer" d="M 50 20 L 20 80 L 80 80 Z" />
+        <!-- Middle triangle (inverted) -->
+        <path class="triangle-middle" d="M 50 50 L 35 70 L 65 70 Z" />
+        <!-- Inner triangle -->
+        <path class="triangle-inner" d="M 50 60 L 45 70 L 55 70 Z" />
+        <!-- Downward arrow indicator -->
+        <path class="arrow-down" d="M 50 70 L 45 80 L 50 75 L 55 80 Z" />
+      </g>
+    </svg>
+  </a>
+</section>
+

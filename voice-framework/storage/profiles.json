@@ -1,0 +1,792 @@
+{
+  "profiles": [
+    {
+      "metadata": {
+        "name": "brisbaneservers-nauT",
+        "description": "Generated from http://localhost:3000",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "tags": [
+          "website",
+          "auto-generated",
+          "localhost"
+        ],
+        "isDefault": false,
+        "id": "profile_1763560934945_nd2d3adnh",
+        "createdAt": "2025-11-19T14:02:14.945Z",
+        "updatedAt": "2025-11-19T14:02:14.945Z"
+      },
+      "profile": {
+        "voiceName": "brisbaneservers-nauT",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "characteristics": {
+          "tone": {
+            "formality": "professional",
+            "technicality": "moderate",
+            "accessibility": "high",
+            "precision": "very_high",
+            "comprehensiveness": "moderate"
+          },
+          "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium",
+              "complexity": "low",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
+            "vocabulary": {
+              "technicalTerms": [
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "evidence",
+                "guidance",
+                "available",
+                "support",
+                "management",
+                "systems",
+                "professional",
+                "healthcare",
+                "hospitality",
+                "manufacturing",
+                "commerce",
+                "construction",
+                "finance",
+                "accounting",
+                "enterprise"
+              ],
+              "descriptiveTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "industry",
+                "strategic",
+                "services",
+                "brisbane",
+                "businesses",
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "retail",
+                "evidence"
+              ],
+              "relationshipTerms": []
+            },
+            "numericalPrecision": {
+              "specificValues": true,
+              "commonValues": [
+                61,
+                490,
+                478,
+                864,
+                93,
+                297,
+                393,
+                962
+              ],
+              "formatting": "integer",
+              "units": []
+            }
+          },
+          "structuralPatterns": {
+            "organization": {
+              "hierarchical": false,
+              "sections": false,
+              "subsections": false,
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": false,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
+            }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio",
+              "transform"
+            ],
+            "designConcepts": [
+              "design"
+            ],
+            "technicalConcepts": [
+              "system",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Brisbane Servers -",
+              "Tailored insights, documented",
+              "Explore Solutions What",
+              "Consultation & Analysis",
+              "We assess your"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [],
+            "closingPhrases": [
+              "A BIGPONS project",
+              "478 864 support@brisbaneservers",
+              "2024 Brisbane Servers",
+              "All rights reserved",
+              "Terms of Service"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "moderate",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
+          }
+        },
+        "extrapolationGuidelines": {
+          "maintainPrecision": true,
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "brisbaneservers-nauT",
+        "description": "Generated from http://127.0.0.1:3000",
+        "version": "1.0.0",
+        "sourceDocument": "http://127.0.0.1:3000",
+        "tags": [
+          "website",
+          "auto-generated",
+          "127.0.0.1"
+        ],
+        "isDefault": false,
+        "id": "profile_1763560956506_h50zgnckx",
+        "createdAt": "2025-11-19T14:02:36.506Z",
+        "updatedAt": "2025-11-19T14:02:36.506Z"
+      },
+      "profile": {
+        "voiceName": "brisbaneservers-nauT",
+        "version": "1.0.0",
+        "sourceDocument": "http://127.0.0.1:3000",
+        "characteristics": {
+          "tone": {
+            "formality": "professional",
+            "technicality": "moderate",
+            "accessibility": "high",
+            "precision": "very_high",
+            "comprehensiveness": "moderate"
+          },
+          "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium",
+              "complexity": "low",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
+            "vocabulary": {
+              "technicalTerms": [
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "evidence",
+                "guidance",
+                "available",
+                "support",
+                "management",
+                "systems",
+                "professional",
+                "healthcare",
+                "hospitality",
+                "manufacturing",
+                "commerce",
+                "construction",
+                "finance",
+                "accounting",
+                "enterprise"
+              ],
+              "descriptiveTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "industry",
+                "strategic",
+                "services",
+                "brisbane",
+                "businesses",
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "retail",
+                "evidence"
+              ],
+              "relationshipTerms": []
+            },
+            "numericalPrecision": {
+              "specificValues": true,
+              "commonValues": [
+                61,
+                490,
+                478,
+                864,
+                93,
+                297,
+                393,
+                962
+              ],
+              "formatting": "integer",
+              "units": []
+            }
+          },
+          "structuralPatterns": {
+            "organization": {
+              "hierarchical": false,
+              "sections": false,
+              "subsections": false,
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": false,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
+            }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio",
+              "transform"
+            ],
+            "designConcepts": [
+              "design"
+            ],
+            "technicalConcepts": [
+              "system",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Brisbane Servers -",
+              "Tailored insights, documented",
+              "Explore Solutions What",
+              "Consultation & Analysis",
+              "We assess your"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [],
+            "closingPhrases": [
+              "A BIGPONS project",
+              "478 864 support@brisbaneservers",
+              "2024 Brisbane Servers",
+              "All rights reserved",
+              "Terms of Service"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "moderate",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
+          }
+        },
+        "extrapolationGuidelines": {
+          "maintainPrecision": true,
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "brisbaneservers-nauT",
+        "description": "Generated from http://localhost:3000",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "tags": [
+          "website",
+          "auto-generated",
+          "localhost"
+        ],
+        "isDefault": false,
+        "id": "profile_1763561005315_0mqva2etu",
+        "createdAt": "2025-11-19T14:03:25.315Z",
+        "updatedAt": "2025-11-19T14:03:25.315Z"
+      },
+      "profile": {
+        "voiceName": "brisbaneservers-nauT",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "characteristics": {
+          "tone": {
+            "formality": "professional",
+            "technicality": "moderate",
+            "accessibility": "high",
+            "precision": "very_high",
+            "comprehensiveness": "moderate"
+          },
+          "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium",
+              "complexity": "low",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
+            "vocabulary": {
+              "technicalTerms": [
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "evidence",
+                "guidance",
+                "available",
+                "support",
+                "management",
+                "systems",
+                "professional",
+                "healthcare",
+                "hospitality",
+                "manufacturing",
+                "commerce",
+                "construction",
+                "finance",
+                "accounting",
+                "enterprise"
+              ],
+              "descriptiveTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "industry",
+                "strategic",
+                "services",
+                "brisbane",
+                "businesses",
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "retail",
+                "evidence"
+              ],
+              "relationshipTerms": []
+            },
+            "numericalPrecision": {
+              "specificValues": true,
+              "commonValues": [
+                61,
+                490,
+                478,
+                864,
+                93,
+                297,
+                393,
+                962
+              ],
+              "formatting": "integer",
+              "units": []
+            }
+          },
+          "structuralPatterns": {
+            "organization": {
+              "hierarchical": false,
+              "sections": false,
+              "subsections": false,
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": false,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
+            }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio",
+              "transform"
+            ],
+            "designConcepts": [
+              "design"
+            ],
+            "technicalConcepts": [
+              "system",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Brisbane Servers -",
+              "Tailored insights, documented",
+              "Explore Solutions What",
+              "Consultation & Analysis",
+              "We assess your"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [],
+            "closingPhrases": [
+              "A BIGPONS project",
+              "478 864 support@brisbaneservers",
+              "2024 Brisbane Servers",
+              "All rights reserved",
+              "Terms of Service"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "moderate",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
+          }
+        },
+        "extrapolationGuidelines": {
+          "maintainPrecision": true,
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "brisbaneservers-nauT",
+        "description": "Generated from http://localhost:3000",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "tags": [
+          "website",
+          "auto-generated",
+          "localhost"
+        ],
+        "isDefault": false,
+        "id": "profile_1763561012340_p8ljy15bm",
+        "createdAt": "2025-11-19T14:03:32.340Z",
+        "updatedAt": "2025-11-19T14:03:32.340Z"
+      },
+      "profile": {
+        "voiceName": "brisbaneservers-nauT",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "characteristics": {
+          "tone": {
+            "formality": "professional",
+            "technicality": "moderate",
+            "accessibility": "high",
+            "precision": "very_high",
+            "comprehensiveness": "moderate"
+          },
+          "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium",
+              "complexity": "low",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
+            "vocabulary": {
+              "technicalTerms": [
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "evidence",
+                "guidance",
+                "available",
+                "support",
+                "management",
+                "systems",
+                "professional",
+                "healthcare",
+                "hospitality",
+                "manufacturing",
+                "commerce",
+                "construction",
+                "finance",
+                "accounting",
+                "enterprise"
+              ],
+              "descriptiveTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "industry",
+                "strategic",
+                "services",
+                "brisbane",
+                "businesses",
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "retail",
+                "evidence"
+              ],
+              "relationshipTerms": []
+            },
+            "numericalPrecision": {
+              "specificValues": true,
+              "commonValues": [
+                61,
+                490,
+                478,
+                864,
+                93,
+                297,
+                393,
+                962
+              ],
+              "formatting": "integer",
+              "units": []
+            }
+          },
+          "structuralPatterns": {
+            "organization": {
+              "hierarchical": false,
+              "sections": false,
+              "subsections": false,
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": false,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
+            }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio",
+              "transform"
+            ],
+            "designConcepts": [
+              "design"
+            ],
+            "technicalConcepts": [
+              "system",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Brisbane Servers -",
+              "Tailored insights, documented",
+              "Explore Solutions What",
+              "Consultation & Analysis",
+              "We assess your"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [],
+            "closingPhrases": [
+              "A BIGPONS project",
+              "478 864 support@brisbaneservers",
+              "2024 Brisbane Servers",
+              "All rights reserved",
+              "Terms of Service"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "moderate",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
+          }
+        },
+        "extrapolationGuidelines": {
+          "maintainPrecision": true,
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "brisbaneservers-nauT",
+        "description": "Generated from http://localhost:3000",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "tags": [
+          "website",
+          "auto-generated",
+          "localhost"
+        ],
+        "isDefault": false,
+        "id": "profile_1763561221512_92tsbv0nu",
+        "createdAt": "2025-11-19T14:07:01.512Z",
+        "updatedAt": "2025-11-19T14:07:01.512Z"
+      },
+      "profile": {
+        "voiceName": "brisbaneservers-nauT",
+        "version": "1.0.0",
+        "sourceDocument": "http://localhost:3000",
+        "characteristics": {
+          "tone": {
+            "formality": "professional",
+            "technicality": "moderate",
+            "accessibility": "high",
+            "precision": "very_high",
+            "comprehensiveness": "moderate"
+          },
+          "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium",
+              "complexity": "low",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
+            "vocabulary": {
+              "technicalTerms": [
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "evidence",
+                "guidance",
+                "available",
+                "support",
+                "management",
+                "systems",
+                "professional",
+                "healthcare",
+                "hospitality",
+                "manufacturing",
+                "commerce",
+                "construction",
+                "finance",
+                "accounting",
+                "enterprise"
+              ],
+              "descriptiveTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "industry",
+                "strategic",
+                "services",
+                "brisbane",
+                "businesses",
+                "australian",
+                "resources",
+                "specific",
+                "automation",
+                "servers",
+                "retail",
+                "evidence"
+              ],
+              "relationshipTerms": []
+            },
+            "numericalPrecision": {
+              "specificValues": true,
+              "commonValues": [
+                61,
+                490,
+                478,
+                864,
+                93,
+                297,
+                393,
+                962
+              ],
+              "formatting": "integer",
+              "units": []
+            }
+          },
+          "structuralPatterns": {
+            "organization": {
+              "hierarchical": false,
+              "sections": false,
+              "subsections": false,
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": false,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
+            }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio",
+              "transform"
+            ],
+            "designConcepts": [
+              "design"
+            ],
+            "technicalConcepts": [
+              "system",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Brisbane Servers -",
+              "Tailored insights, documented",
+              "Explore Solutions What",
+              "Consultation & Analysis",
+              "We assess your"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [],
+            "closingPhrases": [
+              "A BIGPONS project",
+              "478 864 support@brisbaneservers",
+              "2024 Brisbane Servers",
+              "All rights reserved",
+              "Terms of Service"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "moderate",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
+          }
+        },
+        "extrapolationGuidelines": {
+          "maintainPrecision": true,
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
+        }
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-19T14:07:01.512Z",
+  "defaultProfileId": "profile_1763560934945_nd2d3adnh"
+}

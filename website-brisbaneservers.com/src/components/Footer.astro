@@ -1,0 +1,108 @@
+---
+import logo from '../logo.png';
+import SemanticText from './SemanticText.astro';
+---
+
+<footer class="footer" role="contentinfo">
+  <div class="bg-pattern-phi-grid footer-pattern" aria-hidden="true"></div>
+  <div class="phi-lateral-angular-2 footer-angular" aria-hidden="true"></div>
+  <div class="footer-content">
+      <div class="footer-main">
+        <div class="footer-section footer-brand-section">
+          <div class="footer-brand">
+            <img src={logo.src} alt="Brisbane Servers Logo" class="footer-logo" width={logo.width} height={logo.height} />
+            <span class="footer-brand-text">
+              <SemanticText text="Brisbane Servers" semanticLevel="high" />
+            </span>
+          </div>
+          <p class="footer-description">
+            <SemanticText text="Elite technology consulting services delivering enterprise-grade solutions for businesses across Australia. A BIGPONS project." semanticLevel="normal" />
+          </p>
+          <div class="footer-credentials">
+            <div class="credential-badge">
+              <i class="fas fa-sun"></i>
+              <span>BIGPONS ABN: 93 297 393 962</span>
+            </div>
+            <div class="credential-badge">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Brisbane, QLD</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-title">Services</h4>
+          <ul class="footer-links">
+            <li><a href="/services">Web Development</a></li>
+            <li><a href="/services">Application Scaling</a></li>
+            <li><a href="/services">Automation Solutions</a></li>
+            <li><a href="/services">IT Consulting</a></li>
+            <li><a href="/services">Enterprise Support</a></li>
+            <li><a href="/services">Security Services</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section footer-right-section">
+          <div class="footer-subsection">
+            <h4 class="footer-title">Company</h4>
+            <ul class="footer-links">
+              <li><a href="/about">About Us</a></li>
+              <li><a href="/about#additive-semantics">Design philosophy</a></li>
+              <li><a href="/about">Why Choose Us</a></li>
+              <li><a href="/portal">Resource portal <span class="footer-link-hint">(team tools)</span></a></li>
+              <li><a href="/services#consultation">Consultation</a></li>
+              <li><a href="/services">Business Solutions</a></li>
+              <li><a href="/services">Support</a></li>
+            </ul>
+          </div>
+          
+          <div class="footer-subsection">
+            <h4 class="footer-title">Contact Info</h4>
+            <div class="footer-contact">
+              <div class="footer-contact-item">
+                <i class="fas fa-phone"></i>
+                <span>+61 490 478 864</span>
+              </div>
+              <div class="footer-contact-item">
+                <i class="fas fa-envelope"></i>
+                <span>support@brisbaneservers.com</span>
+              </div>
+              <div class="footer-contact-item">
+                <i class="fas fa-calendar-check"></i>
+                <span>Consultations by Appointment</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="footer-subsection">
+            <h5 class="social-title">Connect With Us</h5>
+            <div class="social-links">
+              <a href="https://www.linkedin.com/company/bigpons/" class="social-link" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-linkedin"></i>
+              </a>
+              <a href="https://facebook.com/brisbaneservers" class="social-link" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-facebook"></i>
+              </a>
+              <a href="mailto:connect@brisbaneservers.com" class="social-link" aria-label="Email">
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-bottom-content">
+          <div class="footer-copyright">
+            <p>© 2026 Brisbane Servers. All rights reserved.</p>
+            <p class="footer-subtitle">A BIGPONS Technology Project</p>
+          </div>
+          <div class="footer-legal">
+            <a href="/privacy-policy" class="footer-legal-link">Privacy Policy</a>
+            <a href="/terms-of-service" class="footer-legal-link">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </div>
+</footer>
+

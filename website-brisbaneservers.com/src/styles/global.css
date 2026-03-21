@@ -1,0 +1,4748 @@
+/**
+ * GLOBAL STYLES
+ * 
+ * Imports design tokens and provides global styles.
+ * Design tokens are defined in design-tokens.css following
+ * the Sierpinski pattern (tokens reference tokens).
+ */
+
+@import './design-tokens.css';
+
+* {
+    margin: 0; 
+    padding: 0;
+    box-sizing: border-box ;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* :root block removed - design tokens are imported from design-tokens.css */
+/* All token definitions have been moved to design-tokens.css to follow Sierpinski pattern */
+
+html {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    scrollbar-gutter: stable;
+    /* Allow native browser zoom to work properly */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    /* 100% respects user font prefs; rem/em + tokens then scale with zoom consistently */
+    font-size: 100%;
+    
+    /* Legacy mappings for backward compatibility */
+    --opacity-light: var(--opacity-soft);
+}
+
+/* Body styles - Content scales with browser zoom using rem units */
+body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* Flexbox layout to push footer to bottom */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: calc(1em * var(--phi));
+    /* Line height uses phi ratio for proportional harmony */
+    color: var(--text-primary);
+    background: var(--bg-accent);
+    /* Subtle gradient background - reduces white space */
+    background-color: var(--background);
+    /* Fallback solid color */
+    padding-top: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+    /* Fluid φ-rhythm (design-tokens) — tracks viewport + zoom with spacing */
+    font-size: var(--font-base);
+    font-weight: var(--font-weight-normal);
+    /* Prevent text resizing glitches during page transitions */
+    will-change: auto;
+    backface-visibility: hidden;
+}
+
+/* Heading Styles - Standardized Typography */
+/* Individual Element Sizing - Phi-Based (Not Template-Locked) */
+/* Each element uses individual phi derivatives for unique sizing */
+
+h1, .h1 {
+    /* Individual sizing using phi-cubed for prominence */
+    font-size: clamp(calc(var(--text-2xl-practical) * var(--phi-cubed)), calc(2.5rem * var(--phi-cubed)), calc(var(--text-4xl-practical) * var(--phi-cubed)));
+    font-weight: var(--font-weight-extrabold);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: calc(-0.02em * var(--phi-inv));
+    /* Phi-based letter spacing */
+}
+
+h2, .h2 {
+    /* Individual sizing using phi-sqrt for balance */
+    font-size: clamp(calc(var(--text-xl-practical) * var(--phi-sqrt)), calc(2rem * var(--phi-sqrt)), calc(var(--text-3xl-practical) * var(--phi-sqrt)));
+    font-weight: var(--font-weight-bold);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: calc(-0.015em * var(--phi-inv));
+}
+
+h3, .h3 {
+    /* Individual sizing using phi for harmony */
+    font-size: clamp(calc(var(--text-lg-practical) * var(--phi)), calc(1.75rem * var(--phi)), calc(var(--text-2xl-practical) * var(--phi)));
+    font-weight: var(--font-weight-semibold);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: calc(-0.01em * var(--phi-inv));
+}
+
+h4, .h4 {
+    /* Individual sizing using phi-two-thirds for subtle variation */
+    font-size: clamp(calc(var(--text-base) * var(--phi-two-thirds)), calc(1.5rem * var(--phi-two-thirds)), calc(var(--text-lg-practical) * var(--phi-two-thirds)));
+    font-weight: var(--font-weight-semibold);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: calc(-0.005em * var(--phi-inv));
+}
+
+h5, .h5 {
+    /* Individual sizing using phi-half for compactness */
+    font-size: clamp(calc(var(--text-sm) * var(--phi-half)), calc(1.25rem * var(--phi-half)), calc(var(--text-base) * var(--phi-half)));
+    font-weight: var(--font-weight-medium);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: 0;
+}
+
+h6, .h6 {
+    /* Individual sizing using phi-quarter for minimal prominence */
+    font-size: clamp(calc(var(--text-xs) * var(--phi-quarter)), calc(1rem * var(--phi-quarter)), calc(var(--text-sm) * var(--phi-quarter)));
+    font-weight: var(--font-weight-medium);
+    line-height: calc(1em * var(--phi));
+    letter-spacing: 0;
+}
+
+/* Site content wrapper - scales as one unit with zoom */
+/* Using viewport units for unified scaling - no transform needed */
+.site-content {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    /* All internal elements use rem/vw/vh, so they scale proportionally */
+}
+
+/* Zoom Wrapper - No longer needed, removed */
+/* Content now scales naturally with browser zoom using rem units */
+/* Footer chrome uses rem/tokens like main — scales with root + zoom */
+.footer,
+footer {
+    transform: none;
+    transform-origin: bottom left;
+}
+
+/* === TEXT WIDTH CONSTRAINT === */
+/* Maximum 740px for comfortable eye tracking - cognitive kindness */
+.text-content,
+.section-description,
+.card-description,
+.hero-subtitle,
+p:not(.footer-description):not(.form-disclaimer) {
+    max-width: var(--measure-prose);
+}
+
+/* ===== MAIN CONTENT WRAPPER ===== */
+/* Account for fixed header - Content scales with browser zoom using rem/vh units */
+main {
+    flex: 1;
+    /* Take up available space, pushing footer to bottom */
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    position: relative;
+    padding-top: clamp(
+        calc(var(--space-lg) * 1.2 + var(--site-header-clearance)),
+        calc(var(--space-xl) * var(--phi-inv) + var(--site-header-clearance)),
+        calc(var(--space-xl) * 1.2 + var(--site-header-clearance))
+    );
+    /* rem-only preferred value — tracks zoom with typography (vh fought rem at extreme zoom) */
+    padding-bottom: clamp(
+        calc(var(--space-2xl) * 0.8),
+        calc(var(--space-xl) * var(--phi-inv)),
+        calc(var(--space-3xl) * 0.8)
+    );
+    /* Prevent text rendering glitches during page transitions */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    /* Prevent horizontal overflow */
+    /* Background to match body - prevents white block showing through */
+    background: var(--bg-accent);
+    background-color: var(--background);
+}
+
+/* Ensure main#main-content has proper background */
+main#main-content {
+    background: var(--bg-accent);
+    background-color: var(--background);
+    /* Short pages: use dynamic viewport so main fills visible area below header (flex footer still applies) */
+    min-height: calc(100dvh - var(--site-header-clearance));
+}
+
+/* φ chassis: lateral slack splits φ⁻² : φ⁻¹ (not symmetric 1fr|1fr) — same minor/major rhythm as hero & OG */
+/* Center track uses section % width so nested .banach-joined-backing stays aligned at zoom */
+main.main-phi-chassis .section:not(.hero) {
+    display: grid;
+    /* 0.382fr | 0.618fr = --phi-chassis-wing-minor | --phi-chassis-wing-major (φ⁻² slack : φ⁻¹ slack) */
+    grid-template-columns:
+        minmax(0, 0.382fr)
+        minmax(0, min(100%, var(--container-max-width)))
+        minmax(0, 0.618fr);
+    box-sizing: border-box;
+}
+
+main.main-phi-chassis .section:not(.hero) > .container {
+    grid-column: 2;
+    max-width: none;
+    width: 100%;
+    margin-inline: 0;
+}
+
+/* ===== CONTAINER ELEMENT STYLING ===== */
+.container * {
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    /* Wide layouts + zoom: cap width in rem (scales with zoom), center with symmetric gutters */
+    max-width: var(--container-max-width);
+    margin-inline: auto;
+    padding-top: var(--layout-padding-block-tight);
+    padding-bottom: var(--layout-padding-block-tight);
+    /* Symmetric φ gutters — same scale as vertical rhythm */
+    padding-inline: var(--layout-padding-inline);
+    position: relative;
+    /* Full viewport-relative scaling */
+    z-index: 1;
+    /* Ensure content appears above background elements */
+    box-sizing: border-box;
+    /* Ensure padding is included in width calculation */
+}
+
+.container--wide {
+    max-width: var(--container-max-width-wide);
+}
+
+/* Homepage: wider φ cap (still min(vw, 80rem·φ)); nav / footer / sections share one variable */
+body:has(main.main-home) {
+    --container-max-width: var(--container-max-width-wide);
+}
+
+/* Golden Ratio Content Positioning - Structural Alignment */
+/* Phi Lines - Vertical alignment line at golden ratio division */
+.container::after {
+    content: '';
+    position: absolute;
+    left: var(--phi-ratio);
+    /* Content alignment at 61.8% mark - golden ratio division */
+    top: 0;
+    width: var(--phi-line-width-filtered);
+    /* Use Lanczos-filtered width for quality scaling */
+    /* Phi-based line width */
+    height: 100%;
+    background: linear-gradient(180deg, 
+        transparent var(--phi-spiral-1), 
+        var(--border-light) var(--phi-spiral-2),
+        var(--border-light) var(--phi-spiral-3),
+        transparent var(--phi-spiral-4)
+    );
+    opacity: var(--phi-line-opacity);
+    pointer-events: none;
+    z-index: 0;
+    /* Only visible on larger screens - hidden on mobile/zoom */
+    display: none;
+}
+
+/* Phi Lateral - Horizontal line at golden ratio division */
+.container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: var(--phi-lateral-position-h);
+    /* Horizontal lateral at 38.2% */
+    width: 100%;
+    height: var(--phi-line-width-filtered);
+    /* Lanczos-filtered phi-based line width for quality scaling */
+    background: linear-gradient(90deg, 
+        transparent var(--phi-spiral-1), 
+        var(--border-light) var(--phi-spiral-2),
+        var(--border-light) var(--phi-spiral-3),
+        transparent var(--phi-spiral-4)
+    );
+    opacity: var(--phi-lateral-opacity);
+    transition: var(--transition-lanczos-opacity);
+    /* Lanczos-quality opacity transition */
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+}
+
+@media (min-width: 968px) {
+    .container::after,
+    .container::before {
+        display: block;
+    }
+}
+
+/* ===== FOOTER ELEMENT STYLING ===== */
+
+/* Footer — inherits body font-size (var(--font-base) rhythm); spacing via tokens */
+.footer,
+footer {
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    color: white;
+    position: relative;
+    width: 100%;
+    margin: 0;
+    margin-top: auto;
+    transform: none;
+    transform-origin: bottom left;
+    z-index: 10;
+    min-height: fit-content;
+    overflow: hidden;
+    border-top: max(1px, var(--phi-stroke-hairline)) solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: var(--opacity-subtle);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.footer-angular {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: calc(var(--phi-azimuth-opacity-filtered) * 0.3);
+    /* Use Lanczos-filtered opacity */
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* One horizontal band: same max-width + gutters as `nav` (no nested .container — that doubled padding and max-width) */
+.footer-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin-inline: auto;
+    box-sizing: border-box;
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+    padding-left: max(var(--layout-padding-inline), var(--safe-area-inset-left));
+    padding-right: max(var(--layout-padding-inline), var(--safe-area-inset-right));
+}
+
+.footer-main {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
+    padding: var(--space-2xl) 0;
+    border-bottom: max(1px, var(--phi-stroke-hairline)) solid rgba(255, 255, 255, 0.1);
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== FOOTER BRAND SECTION ===== */
+
+.footer-brand-section {
+    max-width: 100%;
+    /* Allow full width within grid column */
+    min-width: 0;
+    /* Allow grid item to shrink */
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.footer-logo {
+    width: 2.625rem;
+    height: 2.625rem;
+    object-fit: contain;
+}
+
+.footer-brand-text {
+    font-size: var(--text-xl-practical);
+    font-weight: var(--font-weight-bold);
+    color: #ffffff;
+}
+
+.footer-brand-text .semantic-text,
+.footer-brand-text .semantic-high {
+    color: #ffffff !important;
+    /* Force white color for semantic text in footer brand */
+}
+
+.footer-description {
+    color: #ffffff;
+    line-height: var(--phi);
+    margin-bottom: var(--space-xl);
+    font-size: var(--text-sm);
+}
+
+.footer-description .semantic-text,
+.footer-description .semantic-normal {
+    color: #ffffff !important;
+    /* Force white color for semantic text in footer description */
+}
+
+.footer-credentials {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    /* Phi-based spacing */
+}
+
+.credential-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    /* Phi-based spacing */
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--text-sm);
+    /* Consistent with text scale */
+}
+
+.credential-badge i {
+    width: calc(var(--space-md) * var(--phi));
+    /* Phi-based sizing */
+    height: calc(var(--space-md) * var(--phi));
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--text-xs);
+}
+
+/* ===== FOOTER SECTIONS ===== */
+
+.footer-section {
+    position: relative;
+}
+
+.footer-right-section {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+}
+
+.footer-subsection {
+    position: relative;
+}
+
+.footer-title {
+    font-size: var(--text-lg-practical);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-md);
+    color: white;
+    position: relative;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    bottom: calc(-1 * max(2px, 0.125rem));
+    left: 0;
+    width: 2.5rem;
+    height: max(2px, 0.125rem);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: var(--space-md);
+    /* Phi-based spacing */
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    position: relative;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.footer-links a::before {
+    content: '';
+    width: calc(var(--space-xs) * var(--phi-inv));
+    /* Phi-based sizing */
+    height: calc(var(--space-xs) * var(--phi-inv));
+    background: var(--primary-color);
+    border-radius: 50%;
+    transition: var(--transition-fast);
+    /* Phi-timed transition */
+    opacity: 0;
+    transform: translateX(calc(var(--space-xs) * var(--phi-inv) * -1));
+    /* Phi-based transform */
+}
+
+.footer-links a:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+}
+
+.footer-link-hint {
+    font-size: 0.85em;
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+/* ===== FOOTER CONTACT ===== */
+
+.footer-contact {
+    margin-bottom: 0;
+    /* No bottom margin as it's within a subsection */
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: var(--text-sm);
+}
+
+.footer-contact-item i {
+    width: calc(var(--space-md) * var(--phi-sqrt));
+    /* Phi-based sizing */
+    height: calc(var(--space-md) * var(--phi-sqrt));
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--text-xs);
+    flex-shrink: 0;
+    margin-top: calc(var(--space-xs) * var(--phi-quarter));
+    /* Phi-based offset */
+}
+
+/* ===== FOOTER SOCIAL ===== */
+
+.footer-social {
+    margin-top: 0;
+    /* No top margin as it's within a subsection */
+}
+
+.social-title {
+    font-size: var(--text-sm);
+    /* Consistent with text scale */
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-md);
+    /* Reduced margin for subsection */
+    color: white;
+}
+
+.social-links {
+    display: flex;
+    gap: var(--space-md);
+    /* Phi-based spacing */
+}
+
+.social-link {
+    width: calc(var(--space-xl) * var(--phi));
+    height: calc(var(--space-xl) * var(--phi));
+    background: rgba(255, 255, 255, 0.1);
+    border: max(1px, var(--phi-stroke-hairline)) solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: var(--transition);
+    /* Phi-timed transition */
+    backdrop-filter: blur(10px);
+}
+
+.social-link:hover {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    transform: translateY(calc(var(--space-xs) * var(--phi-inv) * -1));
+    /* Phi-based transform */
+    box-shadow: 0 calc(var(--space-md) * var(--phi)) calc(var(--space-xl) * var(--phi)) rgba(10, 116, 218, var(--opacity-medium));
+    /* Phi-based shadow */
+}
+
+/* ===== FOOTER BOTTOM ===== */
+
+.footer-bottom {
+    padding-block: clamp(1.25rem, 1.75rem, 2rem);
+    border-top: var(--phi-stroke-hairline) solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-bottom-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.footer-copyright p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: var(--text-sm);
+    /* Consistent with text scale */
+}
+
+.footer-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--text-xs);
+    /* Consistent with text scale */
+    margin-top: var(--space-xs);
+    /* Phi-based margin */
+}
+
+.footer-legal {
+    display: flex;
+    gap: var(--space-xl);
+    /* Phi-based spacing */
+}
+
+.footer-legal-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    /* Consistent with text scale */
+    transition: var(--transition);
+    /* Phi-timed transition */
+    position: relative;
+}
+
+.footer-legal-link::after {
+    position: absolute;
+    bottom: calc(-1 * max(1px, 0.0625rem));
+    left: 0;
+    width: 0;
+    height: max(1px, 0.0625rem);
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.footer-legal-link:hover::after {
+    width: 100%;
+}
+
+.footer-legal-link:hover {
+    color: var(--primary-color);
+}
+
+/* ===== FOOTER RESPONSIVE DESIGN ===== */
+
+@media (max-width: 1200px) {
+    .footer-main {
+        grid-template-columns: 1.5fr 1fr 1.5fr;
+        gap: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+    }
+    
+    .footer-right-section {
+        gap: clamp(var(--space-md), var(--space-lg), var(--space-xl));
+    }
+}
+
+@media (max-width: 968px) {
+    .footer-main {
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+        padding: clamp(var(--space-lg), var(--space-xl), var(--space-2xl)) 0 clamp(var(--space-md), var(--space-lg), var(--space-xl));
+    }
+    
+    .footer-right-section {
+        gap: clamp(var(--space-md), var(--space-lg), var(--space-xl));
+    }
+
+    .footer-brand-section {
+        max-width: 100%;
+    }
+
+    .footer-bottom-content {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-xl);
+        /* Phi-based spacing */
+    }
+
+    .footer-legal {
+        justify-content: center;
+    }
+    
+    nav {
+        padding: var(--space-sm) clamp(var(--space-md), var(--space-lg), var(--space-xl));
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-main {
+        grid-template-columns: 1fr;
+        gap: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+        padding: clamp(var(--space-lg), var(--space-xl), var(--space-2xl)) 0 clamp(var(--space-md), var(--space-lg), var(--space-xl));
+        text-align: center;
+    }
+    
+    .footer-right-section {
+        gap: clamp(var(--space-md), var(--space-lg), var(--space-xl));
+        align-items: center;
+    }
+
+    .footer-brand {
+        justify-content: center;
+    }
+
+    .footer-credentials {
+        align-items: center;
+    }
+
+    .footer-title::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .footer-links a {
+        justify-content: center;
+    }
+
+    .footer-contact-item {
+        justify-content: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-content {
+        padding-top: clamp(var(--space-md), var(--space-lg), var(--space-xl));
+        padding-bottom: clamp(var(--space-md), var(--space-lg), var(--space-xl));
+        padding-left: max(var(--layout-padding-inline), var(--safe-area-inset-left));
+        padding-right: max(var(--layout-padding-inline), var(--safe-area-inset-right));
+    }
+
+    .footer-main {
+        padding: clamp(var(--space-sm), var(--space-md), var(--space-lg)) 0 clamp(var(--space-xs), var(--space-sm), var(--space-md));
+        gap: clamp(var(--space-sm), var(--space-md), var(--space-lg));
+    }
+
+    .footer-bottom {
+        padding: clamp(var(--space-xs), var(--space-sm), var(--space-md)) 0;
+    }
+
+    .footer-legal {
+        flex-direction: column;
+        gap: var(--space-lg);
+        /* Phi-based spacing */
+    }
+    
+    nav {
+        padding: var(--space-sm) clamp(var(--space-xs), var(--space-sm), var(--space-md));
+    }
+
+    .social-link {
+        width: calc(var(--space-lg) * var(--phi) * var(--phi-sqrt));
+        /* Phi-based sizing for mobile */
+        height: calc(var(--space-lg) * var(--phi) * var(--phi-sqrt));
+    }
+}
+
+/* ===== PREVENT TEXT RESIZING GLITCHES ===== */
+/* Ensure consistent text rendering across page transitions */
+* {
+    /* Prevent text from resizing during transitions */
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+}
+
+/* ===== NAVIGATION STYLES ===== */
+
+/* Header — position fixed; type/spacing use rem/tokens (tracks body + zoom) */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 1) 0%, 
+        var(--primary-ultra-light) 100%
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: max(1px, 0.125rem) solid rgba(10, 116, 218, var(--color-intensity-medium));
+    z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
+    transition: var(--transition);
+    transform: none;
+    transform-origin: top left;
+    font-size: var(--font-base);
+    min-height: fit-content;
+    max-height: clamp(5rem, 7.5rem, 12rem);
+    overflow: visible;
+    /* Changed to visible to allow dropdown menus to show */
+    /* Prevent text rendering glitches during page transitions */
+    will-change: auto;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Ensure header blocks tartan pattern from showing through */
+    isolation: isolate;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: max(2px, 0.125rem);
+    background: linear-gradient(90deg, 
+        transparent var(--gradient-stop-1), 
+        var(--primary-color) var(--gradient-stop-2),
+        var(--primary-dark) var(--gradient-stop-3), 
+        transparent var(--gradient-stop-4)
+    );
+    /* Enhanced gradient with color intensity matching importance */
+    opacity: var(--color-intensity-medium);
+    /* Medium importance = medium color presence */
+}
+
+.header-angular,
+header .phi-lateral-angular-1,
+header .header-angular.phi-lateral-angular-1 {
+    opacity: 0 !important;
+    /* Hide angular pathways in header to prevent visual clutter */
+    display: none !important;
+    /* Completely hide to prevent pathways showing beneath navbar */
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+nav {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 1rem var(--layout-padding-inline);
+    /* Match .container horizontal gutters (rem rhythm) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Ensure nav doesn't overflow on smaller screens */
+    box-sizing: border-box;
+    /* Nav height is auto based on content */
+    min-height: fit-content;
+    gap: var(--space-xl);
+    overflow: visible;
+    /* Allow dropdown menus to overflow nav container */
+    position: relative;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: var(--transition);
+    padding: var(--space-xs);
+    border-radius: var(--border-radius-sm);
+}
+
+.nav-brand:hover {
+    background: var(--surface);
+    transform: translateY(calc(var(--space-xs) * -0.25));
+}
+
+.nav-brand img {
+    width: 1.625rem;
+    height: 1.625rem;
+    object-fit: contain;
+}
+
+.nav-brand-text {
+    font-size: var(--text-lg-practical);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    /* Solid color - no decorative gradients */
+    letter-spacing: -0.02em;
+    /* Prevent text rendering glitches */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.nav-tagline {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-left: var(--space-sm);
+    font-weight: var(--font-weight-normal);
+    /* Prevent text rendering glitches */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.nav-menu {
+    display: flex;
+    gap: clamp(var(--space-md), var(--space-lg), var(--space-2xl));
+    align-items: center;
+    list-style: none;
+    flex-wrap: nowrap;
+    /* Prevent wrapping to avoid overflow issues */
+    overflow: visible;
+    /* Allow dropdown menus to overflow */
+    position: relative;
+    max-width: 100%;
+    /* Prevent menu from exceeding container */
+}
+
+.nav-menu li {
+    position: relative;
+}
+
+.nav-menu a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--text-base);
+    transition: var(--transition);
+    position: relative;
+    /* Prevent text rendering glitches */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.nav-menu a::after {
+    content: '';
+    position: absolute;
+    bottom: calc(-1 * max(2px, 0.125rem));
+    left: 0;
+    width: 0;
+    height: max(2px, 0.125rem);
+    background: linear-gradient(90deg, 
+        var(--primary-color) var(--gradient-stop-2), 
+        var(--primary-dark) var(--gradient-stop-3)
+    );
+    border-radius: max(2px, 0.125rem);
+    transition: width var(--transition);
+    box-shadow: 0 0.125rem 0.5rem rgba(10, 116, 218, var(--opacity-medium));
+    overflow: visible;
+    /* Ensure underline doesn't get clipped */
+}
+
+.nav-menu a:hover::after,
+.nav-menu a.active::after {
+    width: 100%;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    color: var(--primary-color);
+}
+
+/* ===== NAVIGATION DROPDOWN ===== */
+
+.nav-dropdown {
+    position: relative;
+    /* Ensure dropdown container allows overflow */
+    overflow: visible;
+}
+
+.nav-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-dropdown-toggle::after {
+    content: '▼';
+    font-size: var(--text-xs);
+    transition: transform 0.3s ease;
+}
+
+.nav-dropdown:hover .nav-dropdown-toggle::after,
+.nav-dropdown.active .nav-dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + var(--space-xs));
+    left: 0;
+    right: auto;
+    background: var(--surface-elevated);
+    border: max(1px, var(--phi-stroke-hairline)) solid var(--border-light);
+    border-radius: calc(var(--border-radius) * 0.75);
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1), 0 0.0625rem 0.25rem rgba(0, 0, 0, 0.06);
+    min-width: 13.75rem;
+    width: max-content;
+    max-width: min(17.5rem, calc(100vw - var(--container-gutter-sum)));
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(calc(var(--space-xs) * -0.75));
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+    z-index: 1001;
+    backdrop-filter: blur(10px);
+    padding: var(--space-xs) 0;
+    overflow: hidden;
+    /* Hide overflow to keep bubble shape */
+    box-sizing: border-box;
+    /* Ensure padding is included in width calculation */
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown.active .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Prevent dropdown from extending off right edge of viewport */
+.nav-dropdown:last-child .nav-dropdown-menu {
+    left: auto;
+    right: 0;
+    /* Align to right for last dropdown to prevent overflow */
+}
+
+/* For dropdowns near the right edge, align to right */
+@media (min-width: 1024px) {
+    .nav-dropdown:nth-last-child(-n+2) .nav-dropdown-menu {
+        left: auto;
+        right: 0;
+        /* Align last 2 dropdowns to right edge */
+    }
+}
+
+.nav-dropdown-menu a {
+    display: block;
+    padding: var(--space-sm) var(--space-lg);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: var(--transition);
+    border-bottom: max(1px, var(--phi-stroke-hairline)) solid var(--border-light);
+    position: relative;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    width: 100%;
+    /* Full width to ensure background coverage */
+    box-sizing: border-box;
+    /* Include padding in width */
+}
+
+.nav-dropdown-menu a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: max(2px, 0.125rem);
+    background: var(--primary-color);
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
+}
+
+.nav-dropdown-menu a:last-child {
+    border-bottom: none;
+}
+
+.nav-dropdown-menu a:hover {
+    background: var(--surface);
+    color: var(--primary-color);
+    padding-left: var(--space-lg);
+}
+
+.nav-dropdown-menu a:hover::before {
+    transform: scaleY(1);
+}
+
+.nav-dropdown-menu a::after {
+    display: none;
+}
+
+/* Portal/Login link styling */
+.nav-menu a[href="/admin"] {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+    position: relative;
+}
+
+.nav-menu a[href="/admin"]::before {
+    content: '🔒';
+    margin-right: var(--space-xs);
+    font-size: var(--text-xs);
+    opacity: 0.7;
+}
+
+.nav-menu a[href="/admin"]:hover {
+    color: var(--primary-dark);
+}
+
+.nav-menu a[href="/admin"]:hover::before {
+    opacity: 1;
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 0.3125rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: var(--space-sm);
+    min-width: 3rem;
+    min-height: 3rem;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius-sm);
+    transition: background 0.2s ease;
+}
+
+.hamburger:hover,
+.hamburger:focus {
+    background: var(--primary-light);
+    outline: max(2px, 0.125rem) solid var(--primary-color);
+    outline-offset: 0.125rem;
+}
+
+.hamburger:focus-visible {
+    outline: max(2px, 0.1875rem) solid var(--primary-color);
+    outline-offset: 0.125rem;
+}
+
+.hamburger span {
+    width: 1.5rem;
+    height: max(2px, 0.125rem);
+    background: var(--text-primary);
+    border-radius: max(2px, 0.125rem);
+    transition: var(--transition);
+    display: block;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(0.375rem, 0.375rem);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(0.25rem, -0.25rem);
+}
+
+.mobile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.1);
+    padding: var(--space-2xl);
+    flex-direction: column;
+    gap: var(--space-2xl);
+    /* Prevent text rendering glitches during transitions */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.mobile-menu.active {
+    display: flex;
+}
+
+.mobile-menu a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    padding: var(--space-md);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    font-size: var(--text-base);
+    /* Prevent text rendering glitches */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent text resizing during transitions */
+    will-change: auto;
+}
+
+.mobile-menu .breadcrumb-section {
+    border-top: max(1px, var(--phi-stroke-hairline)) solid var(--border-light);
+    border-bottom: max(1px, var(--phi-stroke-hairline)) solid var(--border-light);
+    padding: var(--space-md);
+    margin: var(--space-md) 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.mobile-menu .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.mobile-menu .breadcrumb-item a {
+    color: var(--primary-color);
+    padding: 0;
+    font-size: var(--text-sm);
+    text-decoration: none;
+}
+
+.mobile-menu .breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.mobile-menu .breadcrumb-item:not(:last-child)::after {
+    content: '/';
+    margin: 0 var(--space-xs);
+    color: var(--text-secondary);
+}
+
+.mobile-menu .breadcrumb-item span {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.mobile-menu a:hover,
+.mobile-menu a.active {
+    background: var(--surface);
+    color: var(--primary-color);
+}
+
+/* ===== HERO SECTION ===== */
+
+.hero {
+    padding: 0;
+    text-align: center;
+    background: var(--original-bg-gradient);
+    position: relative;
+    overflow: hidden;
+    min-height: var(--hero-min-height);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    margin-top: calc(-1 * clamp(calc(var(--space-lg) * 1.2 + var(--site-header-clearance)), calc(var(--space-xl) * var(--phi-inv) + var(--site-header-clearance)), calc(var(--space-xl) * 1.2 + var(--site-header-clearance))));
+}
+
+/* Blending layer for smooth transition between left and right */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0.4) 35%,
+        rgba(0, 0, 0, 0.3) 45%,
+        rgba(0, 0, 0, 0.2) 48%,
+        rgba(var(--original-purple-glow-rgb), 0.1) calc(100% * var(--phi-inv)),
+        rgba(var(--original-purple-glow-rgb), 0.2) 55%,
+        rgba(var(--original-purple-glow-rgb), 0.3) 60%,
+        rgba(var(--original-purple-glow-rgb), 0.4) 70%,
+        rgba(var(--original-purple-glow-rgb), 0.45) 100%
+    );
+    /* Smooth blend from dark left to purple-tinted right */
+    pointer-events: none;
+    z-index: 1;
+    /* Above background gradient, below satellite */
+    mix-blend-mode: multiply;
+    /* Multiply blend for deeper, richer color integration */
+}
+
+/* Additional radial blend for Sierpinski area - creates seamless transition */
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(100% * var(--hero-visual-span));
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center right,
+        rgba(var(--original-purple-glow-rgb), 0.4) 0%,
+        rgba(var(--original-purple-glow-rgb), 0.3) 25%,
+        rgba(var(--original-purple-glow-rgb), 0.25) 40%,
+        rgba(var(--original-blue-node-rgb), 0.2) 50%,
+        rgba(var(--original-blue-node-rgb), 0.15) 60%,
+        rgba(0, 0, 0, 0.1) 75%,
+        transparent 90%
+    );
+    /* Radial gradient that blends purple and blue tones with black underlay */
+    pointer-events: none;
+    z-index: 1;
+    /* Above base gradient, below satellite */
+    mix-blend-mode: color-dodge;
+    /* Color dodge for vibrant, glowing blend effect */
+}
+
+/* Hero: φ⁻² | φ⁻¹ — numerically = --hero-text-span | --hero-visual-span (OG / SVG same rhythm) */
+.hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
+    align-items: stretch;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: var(--hero-inner-min-height);
+    position: relative;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+.hero-visual {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .hero-inner {
+        grid-template-columns: 1fr;
+        /* rem floor for visual row (replaces min(42vh,28rem)) so it tracks zoom with rem layout, not vh-only */
+        grid-template-rows: auto minmax(28rem, auto);
+        min-height: 0;
+    }
+}
+
+.hero-text-wrapper {
+    position: relative;
+    z-index: 10;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--space-5xl) clamp(var(--space-lg), calc(var(--space-2xl) * var(--phi-inv)), var(--space-3xl));
+    box-sizing: border-box;
+}
+
+@supports (container-type: inline-size) {
+    .hero-text-wrapper {
+        container-type: inline-size;
+        container-name: hero-text;
+    }
+}
+
+.hero-text-content {
+    position: relative;
+    z-index: 11;
+    width: 100%;
+    max-width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    /* φ-stack: title → subtitle → CTA track the column like a fixed arc */
+    gap: calc(var(--space-xl) * var(--phi-inv));
+    box-sizing: border-box;
+}
+
+.hero-title,
+.hero-text-content h1 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.hero-subtitle {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Backdrop for hero text to improve visibility over satellite */
+.hero-text-content::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -10%;
+    right: -10%;
+    bottom: -20%;
+    background: radial-gradient(ellipse at left center,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.4) 40%,
+        transparent 70%
+    );
+    /* Dark backdrop gradient to improve text visibility */
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 20px;
+    /* Rounded corners for smooth appearance */
+}
+
+.hero-background-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--original-bg-gradient);
+    z-index: 0;
+    pointer-events: none;
+    /* Base dark gradient background */
+}
+
+/* Blending overlay between left text area and right Sierpinski area */
+.hero-background-gradient::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.15) 40%,
+        rgba(0, 0, 0, 0.1) 48%,
+        rgba(var(--original-purple-glow-rgb), 0.1) 50%,
+        rgba(var(--original-purple-glow-rgb), 0.2) 55%,
+        rgba(var(--original-purple-glow-rgb), 0.3) 60%,
+        rgba(var(--original-purple-glow-rgb), 0.35) 70%,
+        rgba(var(--original-purple-glow-rgb), 0.4) 100%
+    );
+    /* Smooth blend from dark left to purple-tinted right */
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    /* Soft light blend for smoother, more natural color transition */
+}
+
+/* Hero type: rem + φ caps; when container queries run, cqi tracks the text band (sentry column) */
+.hero-title,
+.hero h1,
+.hero-text-content h1 {
+    /* rem-only preferred value (no vw): tracks zoom with --font-base like spacing; vw in fallback fought rem at Ctrl± zoom */
+    font-size: clamp(
+        calc(var(--text-2xl-practical) * var(--phi-inv)),
+        calc(var(--text-4xl-practical) * var(--phi-inv)),
+        calc(var(--text-5xl-practical) * var(--phi))
+    );
+    font-weight: var(--font-weight-extrabold);
+    /* PRIMARY: Solid white text - always visible */
+    color: #ffffff !important;
+    /* Direct white color - ensure visibility */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Remove gradient text effect that makes text invisible */
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    line-height: 1.2;
+    /* Tighter line height for large text */
+    letter-spacing: -0.02em;
+    /* Slight negative letter spacing for large text */
+    width: 100%;
+    /* Full width of left container */
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    position: relative;
+    z-index: 12;
+    /* Highest z-index to ensure text is visible */
+    text-align: left;
+    /* Left-aligned */
+    text-rendering: optimizeLegibility;
+    /* Optimize character rendering */
+    /* Text shadow for better visibility */
+    text-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.9),
+        0 4px 20px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(0, 0, 0, 0.5);
+    /* Strong shadow to ensure text is readable */
+}
+
+/* Ensure SemanticText inside hero inherits visibility and color - MAXIMUM SPECIFICITY */
+section.hero .semantic-text,
+section.hero .semantic-high,
+section.hero .semantic-medium,
+section.hero .semantic-parent,
+section.hero .semantic-child,
+section.hero h1 .semantic-text,
+section.hero h1 .semantic-high,
+section.hero h1 .semantic-parent,
+section.hero .hero-subtitle .semantic-text,
+section.hero .hero-subtitle .semantic-medium,
+section.hero .hero-subtitle .semantic-child,
+.hero h1 span.semantic-text,
+.hero h1 span.semantic-high,
+.hero h1 span.semantic-parent,
+.hero-subtitle span.semantic-text,
+.hero-subtitle span.semantic-medium,
+.hero-subtitle span.semantic-child {
+    color: var(--original-text-white) !important;
+    display: inline !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative;
+    z-index: 2;
+    /* Ensure text is visible */
+    text-shadow: 
+        0 0 20px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(0, 0, 0, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.9),
+        0 0 10px rgba(139, 92, 246, 0.5);
+    /* Ensure text is visible with shadows */
+    background: none !important;
+    -webkit-text-fill-color: var(--original-text-white) !important;
+    /* Override any scoped styles from SemanticText component - including dark colors */
+    font-weight: inherit !important;
+}
+
+.hero-subtitle {
+    font-size: clamp(
+        calc(var(--text-base) * var(--phi-inv)),
+        calc(var(--text-lg-practical) * var(--phi-inv)),
+        calc(var(--text-xl-practical) * var(--phi))
+    );
+    color: #ffffff !important;
+    /* Direct white color - ensure visibility */
+    margin-left: 0;
+    margin-right: 0;
+    line-height: 1.6;
+    /* Comfortable line height for readability */
+    font-weight: var(--font-weight-normal);
+    letter-spacing: 0.01em;
+    /* Slight positive letter spacing for readability */
+    position: relative;
+    z-index: 12;
+    /* Highest z-index to ensure text is visible */
+    width: 100%;
+    /* Full width of left container */
+    max-width: 100%;
+    text-align: left;
+    /* Left-aligned */
+    text-rendering: optimizeLegibility;
+    /* Optimize character rendering */
+    /* Force visibility */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Text shadow for better visibility */
+    text-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.9),
+        0 4px 16px rgba(0, 0, 0, 0.7),
+        0 0 24px rgba(0, 0, 0, 0.5);
+    /* Strong shadow to ensure text is readable */
+}
+
+/* Container-relative φ sizing (must follow .hero-subtitle fallback rules) */
+@supports (container-type: inline-size) {
+    .hero-title,
+    .hero h1,
+    .hero-text-content h1 {
+        font-size: clamp(
+            calc(var(--text-2xl-practical) * var(--phi-inv)),
+            calc(3.85cqi + 1rem),
+            calc(var(--text-5xl-practical) * var(--phi))
+        );
+    }
+
+    .hero-subtitle {
+        font-size: clamp(
+            var(--text-base),
+            calc(1.55cqi + 0.65rem),
+            calc(var(--text-xl-practical) * var(--phi))
+        );
+    }
+}
+
+.hero-cta {
+    display: flex;
+    gap: calc(var(--space-lg) * var(--phi-inv));
+    justify-content: flex-start;
+    /* Left-aligned */
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 12;
+    /* Highest z-index to ensure button is visible */
+    width: 100%;
+    /* Full width of left container */
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+}
+
+/* Sierpinski-styled scroll button at bottom of hero */
+.hero-scroll-button {
+    position: absolute;
+    bottom: var(--space-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    /* High z-index to ensure visibility */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(3rem, 3.5rem, 4rem);
+    height: clamp(3rem, 3.5rem, 4rem);
+    cursor: pointer;
+    transition: var(--transition);
+    opacity: 0.8;
+    /* Slightly transparent for subtle appearance */
+    animation: float 3s ease-in-out infinite;
+    /* Floating animation */
+}
+
+.hero-scroll-button:hover {
+    opacity: 1;
+    transform: translateX(-50%) translateY(calc(var(--space-xs) * -0.75));
+}
+
+.sierpinski-arrow {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 0.625rem rgba(var(--original-purple-glow-rgb), 0.6));
+    /* Purple glow matching Sierpinski design */
+}
+
+.sierpinski-triangle-group {
+    transform-origin: center;
+    transition: transform 0.3s ease;
+}
+
+.hero-scroll-button:hover .sierpinski-triangle-group {
+    transform: scale(1.1);
+    /* Slight scale on hover */
+}
+
+.triangle-outer {
+    fill: var(--original-text-white);
+    opacity: 0.9;
+    stroke: rgba(var(--original-purple-glow-rgb), 0.8);
+    stroke-width: 1;
+}
+
+.triangle-middle {
+    fill: rgba(var(--original-purple-glow-rgb), 0.6);
+    opacity: 0.8;
+    stroke: rgba(var(--original-purple-glow-rgb), 0.9);
+    stroke-width: 0.5;
+}
+
+.triangle-inner {
+    fill: var(--original-text-white);
+    opacity: 0.9;
+    stroke: rgba(var(--original-purple-glow-rgb), 0.8);
+    stroke-width: 0.5;
+}
+
+.arrow-down {
+    fill: rgba(var(--original-purple-glow-rgb), 0.9);
+    opacity: 1;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-0.625rem);
+    }
+}
+
+/* Responsive adjustments for scroll button */
+@media (max-width: 768px) {
+    .hero-scroll-button {
+        width: clamp(2.5rem, 2.75rem, 3rem);
+        height: clamp(2.5rem, 2.75rem, 3rem);
+        bottom: var(--space-lg);
+    }
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--btn-md);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold);
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    font-size: var(--text-base);
+}
+
+.btn-primary {
+    background: var(--original-gradient-purple-pink);
+    /* Original purple/pink gradient for buttons - matches old webpage */
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--phi-radius-atypical-cta);
+    box-shadow: 0 10px 25px -5px rgba(var(--original-purple-glow-rgb), 0.4);
+    /* Purple glow shadow matching original design */
+    font-size: calc(var(--text-base) * var(--size-card-title));
+    /* Importance-based sizing: medium importance = moderate size */
+    padding: calc(var(--space-md) * var(--size-card-title)) calc(var(--space-xl) * var(--size-card-title));
+    /* Importance-based padding - larger buttons for medium importance */
+    font-weight: var(--font-weight-semibold);
+    /* Slightly bolder for importance */
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: 
+        /* Tartan pattern overlay */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent calc(var(--path-3) * 2px - 1px),
+            rgba(255, 255, 255, 0.2) calc(var(--path-3) * 2px - 1px),
+            rgba(255, 255, 255, 0.2) calc(var(--path-3) * 2px),
+            transparent calc(var(--path-3) * 2px)
+        ),
+        /* Shine effect */
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background-size: 
+        calc(var(--path-1) * 15px) calc(var(--path-1) * 15px),
+        100% 100%;
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px -10px rgba(var(--original-purple-glow-rgb), 0.5);
+    /* Enhanced purple glow on hover - original design */
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-primary);
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--primary-color);
+    border: var(--phi-stroke-md) solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+    background: var(--surface);
+}
+
+/* ===== SEARCH BAR ===== */
+
+.search-bar {
+    max-width: 37.5rem;
+    /* 600px / 16 = 37.5rem - scales with zoom */
+    width: var(--phi-ratio);
+    /* 61.8% width - golden ratio proportion for search positioning */
+    margin: var(--space-3xl) auto;
+    position: relative;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: clamp(var(--space-md), 1.5vw, var(--space-lg)) clamp(var(--space-lg), 2vw, 3rem);
+    /* Responsive padding scales with zoom */
+    border: 2px solid var(--border);
+    border-radius: var(--border-radius);
+    font-size: clamp(0.875rem, 1rem, var(--text-base));
+    /* Rem-based sizing - scales with zoom */
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(10, 116, 218, 0.1), var(--shadow-sm);
+    background: var(--surface-elevated);
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--space-lg);
+    color: var(--text-secondary);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: var(--space-lg);
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border);
+}
+
+.search-result-item:hover {
+    background: var(--surface);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.search-result-description {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.search-result-industry {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    margin-top: 0.25rem;
+}
+
+.search-result-item {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ===== INQUIRY FORM ===== */
+
+.inquiry-section {
+    padding: var(--space-4xl) 0;
+    background: var(--gradient-primary);
+    /* Primary gradient - unified system */
+    background-color: var(--primary-light);
+    /* Fallback - primary light */
+    position: relative;
+    /* Add background pattern for dead space reduction */
+    background-image: 
+        var(--gradient-primary),
+        radial-gradient(circle at var(--phi-spiral-2) var(--phi-spiral-3), rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 50%);
+    background-size: 100% 100%, calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed));
+}
+
+/* Golden Ratio Positioning for Inquiry Form */
+.inquiry-form {
+    max-width: 37.5rem;
+    /* 600px / 16 = 37.5rem - scales with zoom */
+    width: var(--phi-ratio);
+    /* 61.8% width - golden ratio proportion */
+    margin: 0 auto;
+    background: linear-gradient(135deg, 
+        var(--surface-elevated) 0%, 
+        var(--primary-light) 100%
+    );
+    /* Primary light gradient - unified system */
+    background-color: var(--surface-elevated);
+    /* Fallback */
+    padding: var(--space-2xl);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border: 2px solid var(--accent-primary-bg);
+    /* Primary border accent - unified system */
+    position: relative;
+    overflow: hidden;
+}
+
+.inquiry-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--phi-ratio-inv);
+    height: 100%;
+    background: radial-gradient(circle at 100% 0%, rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.inquiry-form > * {
+    position: relative;
+    z-index: 1;
+}
+
+.form-group {
+    margin-bottom: var(--space-lg);
+    position: relative;
+    z-index: 1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: clamp(var(--space-sm), 1.5vw, var(--space-md));
+    /* Responsive padding scales with zoom */
+    border: 2px solid var(--border);
+    border-radius: var(--border-radius);
+    font-size: clamp(0.875rem, 1.2vw, var(--text-base));
+    /* Minimum 14px for readability - important for forms at zoom */
+    font-family: inherit;
+    transition: var(--transition);
+    /* Forms scale entirely for zoom scenarios */
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(10, 116, 218, 0.1), var(--shadow-xs);
+    background: var(--surface-elevated);
+    transition: var(--transition);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-disclaimer {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-md);
+    font-style: italic;
+}
+
+/* ===== FORM INTERACTION STATES ===== */
+/* Reassurance through immediate feedback */
+
+.form-group input:valid,
+.form-group textarea:valid,
+.form-group select:valid {
+    border-color: var(--color-success);
+}
+
+.form-group input:invalid:not(:placeholder-shown),
+.form-group textarea:invalid:not(:placeholder-shown),
+.form-group select:invalid:not(:placeholder-shown) {
+    border-color: var(--color-error);
+}
+
+.form-group.success input,
+.form-group.success textarea,
+.form-group.success select {
+    border-color: var(--color-success);
+    background-color: var(--color-success-light);
+}
+
+.form-group.error input,
+.form-group.error textarea,
+.form-group.error select {
+    border-color: var(--color-error);
+    background-color: var(--color-error-light);
+}
+
+.form-message {
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    margin-top: var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.form-message-success {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark);
+    border: 1px solid var(--color-success);
+}
+
+.form-message-error {
+    background-color: var(--color-error-light);
+    color: var(--color-error-dark);
+    border: 1px solid var(--color-error);
+}
+
+.btn-primary.success {
+    background: var(--color-success);
+    color: white;
+}
+
+.btn-primary.success:hover {
+    background: var(--color-success-dark);
+}
+
+/* ===== SEARCH LOADING STATE ===== */
+.search-input-wrapper.loading::after {
+    content: '';
+    position: absolute;
+    right: var(--space-lg);
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--space-lg);
+    /* Phi-based sizing */
+    height: var(--space-lg);
+    border: calc(var(--space-xs) * var(--phi-inv)) solid var(--border);
+    /* Phi-based border */
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.618s linear infinite;
+    /* Phi-timed animation */
+}
+
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* ===== EVIDENCE CITATION SYSTEM ===== */
+/* Truth foundation - every claim carries proof */
+
+.evidence-citation {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-left: var(--space-xs);
+    transition: var(--transition-fast);
+}
+
+.evidence-citation::before {
+    content: '[';
+    color: var(--primary-color);
+}
+
+.evidence-citation::after {
+    content: ']';
+    color: var(--primary-color);
+}
+
+.evidence-citation:hover {
+    color: var(--primary-color);
+}
+
+.evidence-section {
+    margin-top: var(--space-2xl);
+    padding: clamp(var(--space-xl), calc(var(--space-lg) * var(--phi-inv)), var(--space-2xl));
+    /* Importance-based padding: medium importance = proportional spacing */
+    background: linear-gradient(135deg, 
+        var(--surface-elevated) 0%, 
+        var(--primary-ultra-light) 50%,
+        var(--surface-elevated) 100%
+    );
+    /* Subtle gradient - more color presence than plain surface */
+    background-color: var(--surface-elevated);
+    /* Fallback */
+    border-left: calc(4px * var(--importance-medium)) solid var(--primary-color);
+    /* Importance-based border: medium importance = visible accent */
+    border-radius: var(--border-radius);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    /* Subtle elevation for importance */
+}
+
+.evidence-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--phi-ratio-inv);
+    /* 38.2% width - golden ratio division */
+    height: 100%;
+    background: radial-gradient(circle at 100% 0%, 
+        var(--accent-primary-bg) 0%, 
+        transparent 70%
+    );
+    /* Phi tangent - curved gradient following golden spiral */
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--color-intensity-low);
+    /* Low opacity for subtlety - additive semantics */
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.evidence-section h3 {
+    font-size: clamp(calc(var(--text-lg) * var(--importance-medium)), 1.5rem, calc(var(--text-xl-practical) * var(--importance-medium)));
+    /* Rem-based sizing - scales with zoom while maintaining importance hierarchy */
+    font-weight: var(--font-weight-bold);
+    margin-bottom: calc(var(--space-md) * var(--importance-medium));
+    /* Importance-based spacing */
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+    /* Above background gradient */
+}
+
+.evidence-section p {
+    position: relative;
+    z-index: 1;
+    /* Above background gradient */
+    line-height: calc(1em * var(--phi));
+    /* Phi-based line height for proportional harmony */
+}
+
+.evidence-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.evidence-list li {
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-lg);
+    position: relative;
+}
+
+.evidence-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+.evidence-list a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.evidence-list a:hover {
+    text-decoration: underline;
+}
+
+/* ===== PROGRESSIVE DISCLOSURE ===== */
+/* Reduce cognitive load - show depth when needed */
+
+.card-grid.progressive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+}
+
+.card-grid.progressive .card:nth-child(n+4) {
+    display: none;
+}
+
+.card-grid.progressive.expanded .card {
+    display: flex;
+}
+
+.load-more-btn {
+    margin-top: var(--space-2xl);
+    text-align: center;
+}
+
+.load-more-btn button {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    transition: var(--transition);
+}
+
+.load-more-btn button:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ===== SECTION STYLES ===== */
+/* Enhanced spacing using golden ratio for harmonious proportions */
+
+/* Zoom compensation: Ensure sections and containers scale uniformly with html transform */
+html.zoom-compensated .section,
+html[data-zoom-level] .section,
+html.zoom-compensated .container,
+html[data-zoom-level] .container {
+    /* Sections and containers scale uniformly with html transform */
+    transform: none;
+    /* Remove any conflicting transforms */
+    box-sizing: border-box;
+    /* Ensure consistent box model */
+    /* Viewport units (vw, vh, vmin) scale correctly with html transform */
+    /* The transform on html handles all scaling uniformly */
+}
+
+.section {
+    /* Edge-to-edge band: backgrounds and patterns span the full main/viewport width; content width stays in .container */
+    width: var(--section-inline-size);
+    max-width: 100%;
+    inline-size: var(--section-inline-size);
+    padding-top: var(--layout-section-padding-y);
+    padding-bottom: var(--layout-section-padding-y);
+    padding-left: clamp(0, 0, var(--section-max-padding-left));
+    padding-right: clamp(0, 0, var(--section-max-padding-right));
+    /* Horizontal padding scales with zoom using phi-based tokens - max values scale */
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: clamp(0, 0, var(--section-max-margin-left));
+    margin-right: clamp(0, 0, var(--section-max-margin-right));
+    /* Horizontal margin scales with zoom */
+    position: relative;
+    /* Full section scaling for zoom scenarios */
+    min-height: fit-content;
+    box-sizing: border-box;
+    /* Ensure padding is included in calculations */
+}
+
+.section--bg-surface {
+    background: var(--surface);
+    background-color: var(--surface);
+}
+
+.section--bg-primary-light {
+    background: var(--primary-light);
+    background-color: var(--primary-light);
+}
+
+.cta-row {
+    text-align: center;
+    margin-top: var(--space-2xl);
+}
+
+.cta-row--compact {
+    margin-top: var(--space-xl);
+}
+
+.section-description--prewrap {
+    white-space: pre-wrap;
+    line-height: calc(1em * var(--phi));
+}
+
+.voice-score-callout {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--surface-elevated);
+    border-radius: var(--phi-radius-atypical-a);
+    border-left: max(3px, calc(var(--phi-stroke-md) * 2)) solid var(--primary-color);
+}
+
+.voice-score-callout p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.stack-lg {
+    margin-top: var(--space-lg);
+}
+
+.stack-2xl {
+    margin-top: var(--space-2xl);
+}
+
+.section-title--stack-4xl {
+    margin-top: var(--space-4xl);
+}
+
+/* Section Spacing Variations - PHI Congruence */
+.section:nth-child(even) {
+    /* Even sections - slightly different spacing for rhythm */
+    padding-top: var(--layout-section-padding-y-alt);
+    padding-bottom: var(--layout-section-padding-y-alt);
+    padding-left: clamp(0, 0, calc(var(--section-even-max-padding-horizontal) * var(--phi-inv)));
+    padding-right: clamp(0, 0, calc(var(--section-even-max-padding-horizontal) * var(--phi-inv)));
+    /* Horizontal padding scales with zoom */
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: clamp(0, 0, calc(var(--section-even-max-margin) * var(--phi-inv)));
+    margin-right: clamp(0, 0, calc(var(--section-even-max-margin) * var(--phi-inv)));
+}
+
+.section:nth-child(odd):not(.hero):not(.inquiry-section) {
+    /* Odd sections - base spacing */
+    padding-top: var(--layout-section-padding-y);
+    padding-bottom: var(--layout-section-padding-y);
+    padding-left: clamp(0, 0, var(--section-max-padding-left));
+    padding-right: clamp(0, 0, var(--section-max-padding-right));
+    /* Horizontal padding scales with zoom */
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: clamp(0, 0, var(--section-max-margin-left));
+    margin-right: clamp(0, 0, var(--section-max-margin-right));
+}
+
+/* Golden Ratio Structural Positioning for Sections */
+/* Background colors for alternating sections - More Color, Less White */
+.section:nth-child(even) {
+    background: var(--bg-accent);
+    /* Gradient background for alternating sections - more color presence */
+    background-color: var(--surface-accent);
+    /* Fallback with light blue tint */
+    position: relative;
+}
+
+.section:nth-child(even)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--space-xs) * var(--phi-inv));
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        var(--accent-primary-bg) var(--phi-ratio-inv),
+        var(--accent-primary-bg) var(--phi-ratio),
+        transparent 100%
+    );
+    /* Subtle color accent line - additive semantics */
+}
+
+.section:nth-child(odd):not(.hero):not(.inquiry-section) {
+    background: var(--bg-secondary);
+    /* Off-white background - less stark than pure white */
+    position: relative;
+}
+
+.section:nth-child(odd):not(.hero):not(.inquiry-section)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--space-xs) * var(--phi-inv));
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        var(--accent-success-bg) var(--phi-ratio-inv),
+        transparent 100%
+    );
+    /* Subtle success accent - variety in color */
+}
+
+/* Golden rectangle divisions within sections - Structural positioning */
+.section .container {
+    position: relative;
+    /* Container inherits responsive scaling from base .container class */
+    /* Zoom compensation: Containers scale uniformly with html transform */
+    transform: none;
+    /* Remove any conflicting transforms */
+    box-sizing: border-box;
+    /* Ensure consistent box model */
+}
+
+/* Phi Tangent - Curved line following golden ratio spiral in sections */
+.section > .container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--phi-ratio-inv);
+    /* 38.2% width - creates golden ratio division */
+    height: 100%;
+    background: radial-gradient(
+        ellipse at var(--phi-spiral-2) var(--phi-spiral-3),
+        rgba(10, 116, 218, 0.008) 0%, 
+        rgba(10, 116, 218, 0.004) var(--phi-spiral-2),
+        transparent var(--phi-spiral-3)
+    );
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--transition);
+    /* Phi-timed transition */
+}
+
+.section:hover > .container::before {
+    opacity: 1;
+}
+
+    /* Phi Lateral Lines in Sections - Additional structural guidance */
+    .section > .container::after {
+        content: '';
+        position: absolute;
+        right: var(--phi-ratio-inv);
+        /* Right lateral at 38.2% from right */
+        top: var(--phi-lateral-position-v);
+        /* Vertical position at 61.8% */
+        width: var(--phi-line-width-filtered);
+    /* Use Lanczos-filtered width for quality scaling */
+        height: calc(100% * var(--phi-ratio-inv));
+        /* Height based on phi ratio */
+        background: linear-gradient(180deg, 
+            transparent 0%,
+            rgba(10, 116, 218, var(--opacity-soft)) var(--phi-spiral-2),
+            rgba(10, 116, 218, var(--opacity-medium)) var(--phi-spiral-3),
+            transparent 100%
+        );
+        opacity: var(--phi-lateral-opacity);
+        pointer-events: none;
+        z-index: 0;
+        display: none;
+    }
+
+    @media (min-width: 968px) {
+        .section > .container::after {
+            display: block;
+        }
+    }
+
+    /* === PHI-ENHANCED EVIDENCE SECTIONS === */
+    /* Enhanced phi lines, tangents, and laterals with color integration */
+    
+    .evidence-section.phi-enhanced {
+        position: relative;
+        overflow: visible;
+    }
+
+    /* Phi Lines - Multiple vertical lines at golden ratio divisions */
+    .evidence-section.phi-enhanced::before {
+        content: '';
+        position: absolute;
+        left: var(--phi-ratio-inv);
+        top: 0;
+        width: calc(var(--phi-line-width) * 2);
+        height: 100%;
+        background: linear-gradient(180deg,
+            transparent 0%,
+            rgba(10, 116, 218, var(--opacity-light)) var(--phi-spiral-1),
+            rgba(10, 116, 218, var(--opacity-soft)) var(--phi-spiral-2),
+            rgba(10, 116, 218, var(--opacity-medium)) var(--phi-spiral-3),
+            rgba(10, 116, 218, var(--opacity-soft)) var(--phi-spiral-4),
+            transparent 100%
+        );
+        opacity: var(--phi-line-opacity);
+        pointer-events: none;
+        z-index: 0;
+        border-radius: calc(var(--phi-line-width) * 2);
+    }
+
+    /* Phi Tangent - Curved line following golden spiral with color */
+    .evidence-section.phi-enhanced::after {
+        content: '';
+        position: absolute;
+        top: var(--phi-lateral-position-h);
+        left: 0;
+        right: 0;
+        height: calc(var(--phi-line-width) * 3);
+        background: radial-gradient(
+            ellipse 150% 100% at var(--phi-ratio) 50%,
+            transparent 0%,
+            rgba(10, 116, 218, var(--opacity-light)) var(--phi-spiral-1),
+            rgba(10, 116, 218, var(--opacity-soft)) var(--phi-spiral-2),
+            rgba(10, 116, 218, var(--opacity-medium)) var(--phi-spiral-3),
+            rgba(16, 185, 129, var(--opacity-soft)) var(--phi-spiral-4),
+            transparent 100%
+        );
+        opacity: var(--phi-tangent-opacity);
+        pointer-events: none;
+        z-index: 0;
+        transform: translateY(-50%);
+    }
+
+    /* Angular Laterals - Diagonal lines at phi angles (azimuth) */
+    /* Combined with color integration background */
+    .evidence-section.phi-enhanced {
+        background: 
+            /* Angular lateral at 38.2° (phi-based angle) */
+            linear-gradient(
+                var(--phi-azimuth-1-filtered, var(--phi-azimuth-1)),
+                transparent 0%,
+                transparent calc(var(--phi-ratio-inv) * 100% - 1px),
+                rgba(10, 116, 218, var(--opacity-light)) calc(var(--phi-ratio-inv) * 100%),
+                rgba(10, 116, 218, var(--opacity-light)) calc(var(--phi-ratio-inv) * 100% + 1px),
+                transparent calc(var(--phi-ratio-inv) * 100% + 2px)
+            ),
+            /* Angular lateral at 61.8° (phi-based angle) */
+            linear-gradient(
+                var(--phi-azimuth-2-filtered, var(--phi-azimuth-2)),
+                transparent 0%,
+                transparent calc(var(--phi-ratio) * 100% - 1px),
+                rgba(16, 185, 129, var(--opacity-light)) calc(var(--phi-ratio) * 100%),
+                rgba(16, 185, 129, var(--opacity-light)) calc(var(--phi-ratio) * 100% + 1px),
+                transparent calc(var(--phi-ratio) * 100% + 2px)
+            ),
+            /* Color integration - enhanced background gradients */
+            linear-gradient(135deg, 
+                var(--surface-elevated) 0%, 
+                rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-ratio-inv),
+                var(--primary-ultra-light) var(--phi-ratio),
+                rgba(16, 185, 129, var(--opacity-subtle)) calc(var(--phi-ratio) + var(--phi-ratio-inv) * var(--phi-inv)),
+                var(--surface-elevated) 100%
+            );
+        background-size: 100% 100%, 100% 100%, 100% 100%;
+        background-position: 0 0, 0 0, 0 0;
+        background-repeat: no-repeat;
+        background-color: var(--surface-elevated);
+    }
+
+    /* Semantic heading styling */
+    .semantic-heading {
+        position: relative;
+        z-index: 1;
+        margin-bottom: calc(var(--space-md) * var(--importance-medium));
+    }
+
+    .semantic-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Additional phi lines for harmonic tension */
+    .evidence-section.phi-enhanced .semantic-content::before {
+        content: '';
+        position: absolute;
+        left: var(--phi-ratio);
+        top: 0;
+        bottom: 0;
+        width: var(--phi-line-width-filtered);
+    /* Use Lanczos-filtered width for quality scaling */
+        background: linear-gradient(180deg,
+            transparent 0%,
+            rgba(10, 116, 218, var(--opacity-light)) 25%,
+            rgba(10, 116, 218, var(--opacity-medium)) 50%,
+            rgba(10, 116, 218, var(--opacity-light)) 75%,
+            transparent 100%
+        );
+        opacity: calc(var(--phi-line-opacity) * 0.5);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+.section-title {
+    /* Individual sizing using phi-sqrt for visual balance */
+    font-size: clamp(calc(var(--text-2xl-practical) * var(--phi-sqrt)), calc(2.25rem * var(--phi-sqrt)), calc(var(--text-4xl-practical) * var(--phi-sqrt)));
+    font-weight: var(--font-weight-extrabold);
+    margin-bottom: calc(var(--space-lg) * var(--phi));
+    margin-top: 0;
+    color: var(--primary-dark);
+    letter-spacing: calc(-0.025em * var(--phi-inv));
+    line-height: calc(1em * var(--phi));
+    position: relative;
+    width: 100%;
+    max-width: var(--measure-prose);
+    text-align: left;
+}
+
+.section-title--center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+}
+
+.section-description--center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: min(12rem, 100%);
+    /* Accent width independent of phi-ratio page banding */
+    height: calc(3px * var(--size-section-title));
+    /* Importance-based sizing: larger accent for high importance */
+    background: linear-gradient(90deg, 
+        var(--primary-color) 0%, 
+        var(--primary-dark) var(--phi-ratio-inv),
+        transparent 100%
+    );
+    /* Gradient with color intensity matching importance */
+    border-radius: 2px;
+    opacity: var(--color-intensity-high);
+    /* High importance = stronger color presence */
+}
+
+.section-title.section-title--center::after {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.section-description {
+    font-size: clamp(calc(var(--text-base) * var(--importance-normal)), 1.125rem, calc(var(--text-lg-practical) * var(--importance-normal)));
+    color: var(--text-secondary);
+    margin-bottom: calc(var(--space-2xl) * var(--importance-normal) * var(--phi));
+    line-height: calc(1em * var(--phi));
+    letter-spacing: calc(0.005em * var(--phi-inv));
+    width: 100%;
+    max-width: var(--measure-prose);
+    text-align: left;
+    position: relative;
+    text-rendering: optimizeLegibility;
+}
+
+.section-description.section-description--narrow {
+    max-width: var(--measure-narrow);
+}
+
+/* φ-split section intro: title (minor) + lead copy (major), stacks with CardGrid breakpoint */
+.section-intro-phi {
+    display: grid;
+    grid-template-columns: minmax(0, var(--phi-ratio-inv)) minmax(0, var(--phi-ratio));
+    gap: var(--grid-gap);
+    align-items: start;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.section-intro-phi .section-title:not(.section-title--center) {
+    max-width: none;
+    margin-top: 0;
+}
+
+.section-intro-phi .section-description {
+    max-width: min(var(--measure-article), 100%);
+    margin-top: 0;
+}
+
+@media (max-width: 1024px) {
+    .section-intro-phi {
+        grid-template-columns: 1fr;
+        gap: var(--grid-gap-sm);
+    }
+
+    .section-intro-phi .section-description {
+        max-width: min(var(--measure-article), 100%);
+    }
+}
+
+/* Readable width + optional φ-offset for callouts (armature “power band”) */
+.phi-measure-prose {
+    max-width: var(--measure-prose);
+    width: 100%;
+}
+
+.phi-measure-article {
+    max-width: var(--measure-article);
+    width: 100%;
+}
+
+.phi-focus-offset-start {
+    margin-inline-start: min(var(--phi-ratio-inv), 4rem);
+    padding-inline-start: var(--space-md);
+    border-inline-start: var(--phi-stroke-hairline) solid var(--primary-color);
+}
+
+/* ===== CARD GRID ===== */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, calc(18.75 * var(--font-base))), 1fr)
+    );
+    gap: var(--space-xl);
+    position: relative;
+}
+
+/* Golden Ratio Positioning: Cards create golden rectangles */
+.card-grid::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--phi-ratio-inv);
+    /* 38.2% - golden ratio division creates structural symmetry */
+    height: 100%;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        var(--primary-ultra-light) var(--phi-ratio-inv),
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.15;
+    /* Very subtle - professional and truth-focused */
+}
+
+/* Base Card - Individual PHI-based sizing with Color Accents */
+.card {
+    background: var(--surface-elevated);
+    padding: clamp(var(--space-xl), calc(var(--space-lg) * var(--phi-inv)), var(--space-2xl));
+    /* Responsive padding uses rem - scales with zoom */
+    border-radius: var(--phi-radius-md);
+    box-shadow: var(--shadow-sm);
+    border: var(--phi-stroke-md) solid var(--border-light);
+    border-left: calc(4px * var(--size-card-title)) solid var(--primary-color);
+    /* Importance-based border: medium importance = colored accent */
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    /* Cards scale proportionally with zoom */
+    min-height: fit-content;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, 
+        var(--surface-elevated) 0%, 
+        var(--primary-ultra-light) 100%
+    );
+    /* Subtle gradient background - more color than pure white */
+}
+
+/* Card Variations - PHI Congruence for Visual Appeal */
+/* Cards #1, #2, #4 - Congruent sizing (maintain same values - parental and child) */
+.card:nth-child(1),
+.card:nth-child(2),
+.card:nth-child(4) {
+    /* Congruent sizing using Tucker's coefficient for factor congruence */
+    padding: clamp(calc(var(--space-xl) * var(--tucker-congruence-phi)), calc(var(--space-lg) * var(--phi-inv)), calc(var(--space-2xl) * var(--tucker-congruence-phi)));
+    /* Congruent phi relationship - maintains proportional harmony */
+    border-radius: calc(var(--radius-md) * var(--phi-sqrt));
+    /* Subtle variation using sqrt(phi) */
+    margin-bottom: calc(var(--space-lg) * var(--tucker-congruence-phi));
+    /* Congruent spacing */
+}
+
+/* Card #3 - Different sizing for visual rhythm (not congruent with #1, #2, #4) */
+.card:nth-child(3) {
+    /* Different sizing using phi-sqrt for visual interest and rhythm */
+    padding: clamp(calc(var(--space-xl) * var(--phi-sqrt)), calc(var(--space-lg) * var(--phi-inv)), calc(var(--space-2xl) * var(--phi-sqrt)));
+    /* Larger padding - creates focal point through phi symmetry */
+    border-radius: calc(var(--radius-md) * var(--phi-half));
+    /* Reduced radius for visual distinction */
+    transform: translateY(calc(var(--space-xs) * var(--phi-quarter)));
+    /* Subtle vertical offset for visual interest */
+    margin-bottom: calc(var(--space-lg) * var(--phi-sqrt));
+    /* Different spacing to match sizing */
+}
+
+.card:nth-child(5) {
+    /* Card #5 - Base size */
+    padding: clamp(var(--space-xl), calc(var(--space-lg) * var(--phi-inv)), var(--space-2xl));
+}
+
+.card:nth-child(6) {
+    /* Card #6 - phi-quarter variation */
+    padding: clamp(calc(var(--space-xl) * (1 + var(--phi-quarter))), calc(var(--space-lg) * var(--phi-inv)), calc(var(--space-2xl) * (1 + var(--phi-quarter))));
+}
+
+/* PHI Symmetry - Maintain proportional relationships */
+/* Cards maintain visual congruence even with size variations */
+.card:nth-child(3n) {
+    /* Every 3rd card - subtle emphasis through phi symmetry */
+    transform-origin: center;
+}
+
+.card:nth-child(3n):hover {
+    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) scale(1.01);
+    /* Hover uses phi-derived movement for congruence */
+}
+
+/* Golden Ratio Internal Structure - Creates Symmetry */
+/* Phi Tangent in Cards - Curved gradient following golden spiral */
+/* Enhanced with tartan pattern overlay */
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--phi-ratio-inv);
+    /* 38.2% width - golden ratio division */
+    height: var(--phi-ratio);
+    /* 61.8% height - creates golden rectangle for symmetry */
+    background: 
+        /* Tartan pattern overlay */
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent calc(var(--path-3) * 2px - 1px),
+            rgba(var(--primary-color-rgb), 0.1) calc(var(--path-3) * 2px - 1px),
+            rgba(var(--primary-color-rgb), 0.1) calc(var(--path-3) * 2px),
+            transparent calc(var(--path-3) * 2px)
+        ),
+        /* Existing radial gradient */
+        radial-gradient(
+            ellipse at 100% 0%, 
+            var(--primary-ultra-light) var(--phi-spiral-1), 
+            rgba(10, 116, 218, 0.02) var(--phi-spiral-2),
+            transparent var(--phi-spiral-3)
+        );
+    background-size: 
+        /* Tartan pattern size */
+        calc(var(--path-1) * 20px) calc(var(--path-1) * 20px),
+        /* Existing radial gradient size */
+        var(--phi-ratio-inv) var(--phi-ratio);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--transition);
+    /* Phi-timed transition */
+}
+
+.card:hover::after {
+    opacity: 0.3;
+    /* Enhanced visibility with tartan pattern */
+}
+
+/* Phi Lateral Line in Cards - Horizontal division */
+.card::before {
+    content: '';
+    position: absolute;
+    top: var(--phi-lateral-position-h);
+    /* Horizontal lateral at 38.2% */
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--phi-line-width);
+    /* Phi-based line width */
+    background: linear-gradient(90deg, 
+        transparent var(--phi-spiral-1),
+        var(--border-light) var(--phi-spiral-2),
+        transparent var(--phi-spiral-3)
+    );
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity var(--transition);
+}
+
+.card:hover::before {
+    opacity: var(--phi-lateral-opacity);
+}
+
+/* Phi Line - Top accent line on card hover */
+.card-top-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--phi-line-width) * 3);
+    /* 3× phi line width for visibility */
+    background: linear-gradient(90deg, 
+        var(--primary-color) var(--phi-ratio-inv), 
+        var(--primary-dark) var(--phi-ratio)
+    );
+    /* Gradient stops at golden ratio positions */
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.card:hover .card-top-accent {
+    transform: scaleX(1);
+    opacity: 1;
+}
+
+.card:hover {
+    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.2deg));
+    /* Angular hover effect with phi-based rotation */
+    box-shadow: var(--shadow-lg), 0 0 0 calc(2px * var(--size-card-title)) var(--accent-primary-bg);
+    /* Importance-based shadow with color accent - additive semantics */
+    border-left-width: calc(6px * var(--size-card-title));
+    /* Larger colored border on hover - importance-based */
+    border-color: var(--border);
+}
+
+/* Angular hover effects for cards */
+.card:nth-child(5n):hover {
+    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.5deg));
+}
+
+.card:nth-child(8n):hover {
+    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * -0.3deg));
+}
+
+.card:nth-child(13n):hover {
+    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.2deg));
+}
+
+.card:active {
+    transform: translateY(calc(-1 * var(--space-xs) * var(--phi)));
+    /* Uses rem-based spacing - scales with zoom */
+}
+
+/* Card Icon sizing - already defined above with variations */
+
+/* Individual Icon Sizing - PHI Congruence */
+.card:nth-child(3) .card-icon {
+    /* Card #3 icon - larger using phi-sqrt */
+    width: calc(var(--space-xl) * var(--phi) * var(--phi-sqrt));
+    height: calc(var(--space-xl) * var(--phi) * var(--phi-sqrt));
+}
+
+/* ============================================
+   ICON HOVER FIXES - SMOOTH TRANSITIONS
+   ============================================ */
+
+/* Base icon styles - all icons get smooth transitions */
+.card-icon,
+.card-icon i,
+i[class*="fa-"],
+[class*="icon"],
+.btn-icon,
+.search-icon,
+.error-fallback-icon,
+.error-fallback-icon i {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    display: inline-block;
+}
+
+/* Card icon hover - smooth and consistent */
+.card-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-icon i {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.card:hover .card-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.card:hover .card-icon i {
+    transform: scale(1.15);
+    color: var(--primary-color);
+    filter: drop-shadow(0 2px 4px rgba(var(--primary-color-rgb), 0.3));
+}
+
+/* Button icon hover */
+.btn-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+}
+
+.btn:hover .btn-icon {
+    transform: scale(1.15) translateX(2px);
+}
+
+.btn:active .btn-icon {
+    transform: scale(0.95);
+}
+
+/* Search icon hover */
+.search-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-bar:hover .search-icon,
+.search-bar:focus-within .search-icon {
+    transform: scale(1.1) rotate(10deg);
+    color: var(--primary-color);
+}
+
+/* Font Awesome icons in general */
+i[class*="fa-"] {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    display: inline-block;
+}
+
+/* Icon hover states for interactive elements */
+a:hover i[class*="fa-"],
+button:hover i[class*="fa-"],
+.card:hover i[class*="fa-"] {
+    transform: scale(1.1);
+    color: var(--primary-color);
+}
+
+/* Smooth icon animations */
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.card-icon:hover {
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+/* Icon tartan accent on hover */
+.card-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    background-image: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent calc(var(--path-3) * 2px - 1px),
+            rgba(var(--primary-color-rgb), 0.2) calc(var(--path-3) * 2px - 1px),
+            rgba(var(--primary-color-rgb), 0.2) calc(var(--path-3) * 2px),
+            transparent calc(var(--path-3) * 2px)
+        );
+    background-size: calc(var(--path-1) * 15px) calc(var(--path-1) * 15px);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .card-icon::after {
+    opacity: 0.6;
+}
+
+/* Card Title - defined below with variations */
+
+/* Card Description - Text-length-aware PHI sizing */
+.card-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: clamp(0.875rem, 1rem, var(--text-base));
+    /* Rem-based responsive scaling - scales with zoom */
+    margin-bottom: var(--space-lg);
+    text-align: left;
+    /* Left-aligned for optimal reading */
+    flex-grow: 1;
+    /* Cards expand to fill available space */
+    max-width: var(--measure-prose);
+}
+
+/* Text-Length-Aware Phi Sizing */
+/* Applied via JavaScript - detects text length and applies appropriate classes */
+
+/* Short text (<100 chars): Tighter spacing, smaller sizing */
+.card-description.text-short,
+.section-description.text-short,
+.hero-subtitle.text-short,
+p.text-short {
+    font-size: clamp(calc(0.875rem * var(--phi-text-short)), 1rem, calc(var(--text-base) * var(--phi-text-short)));
+    /* Uses phi-text-short token (phi-quarter) */
+    line-height: var(--phi-text-short-line-height);
+    /* Tighter line height for short text */
+    margin-bottom: calc(var(--space-lg) * var(--phi-text-short-spacing));
+    /* Tighter spacing */
+}
+
+/* Medium text (100-200 chars): Base phi sizing */
+.card-description.text-medium,
+.section-description.text-medium,
+.hero-subtitle.text-medium,
+p.text-medium {
+    font-size: clamp(0.875rem, 1rem, var(--text-base));
+    /* Base sizing */
+    line-height: var(--phi-text-medium-line-height);
+    /* Base phi line height */
+    margin-bottom: calc(var(--space-lg) * var(--phi-text-medium-spacing));
+    /* Base spacing */
+}
+
+/* Long text (>200 chars): Larger sizing, adjusted line-height */
+.card-description.text-long,
+.section-description.text-long,
+.hero-subtitle.text-long,
+p.text-long {
+    font-size: clamp(calc(0.875rem * var(--phi-text-long)), 1rem, calc(var(--text-base) * var(--phi-text-long)));
+    /* Uses phi-text-long token (phi-sqrt) */
+    line-height: var(--phi-text-long-line-height);
+    /* Adjusted line height for long text */
+    margin-bottom: calc(var(--space-lg) * var(--phi-text-long-spacing));
+    /* Larger spacing */
+}
+
+/* Card Title - Importance-based sizing with Color */
+.card-title {
+    font-size: var(--font-h3);
+    /* Uses √phi modular scale */
+    font-size: clamp(calc(var(--text-lg-practical) * var(--size-card-title)), calc(1.5rem * var(--size-card-title)), calc(var(--text-xl-practical) * var(--size-card-title)));
+    /* Rem-based sizing - scales with zoom while maintaining phi proportions */
+    /* Importance-based sizing: medium importance = moderate size */
+    /* Responsive scaling for zoom readability */
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-lg);
+    margin-top: 0;
+    color: var(--primary-dark);
+    /* Medium importance color - stronger than body text */
+    letter-spacing: -0.015em;
+    line-height: calc(1em * var(--phi));
+    /* Phi-based line height for proportional harmony */
+    text-align: left;
+    /* Left-aligned for readability */
+    /* Text-length-aware: longer titles get adjusted sizing */
+    max-width: var(--measure-prose);
+    position: relative;
+}
+
+/* Card Title variations - PHI Congruence */
+/* Cards #1, #2, #4 - Congruent sizing (parental and child same values) */
+.card:nth-child(1) .card-title,
+.card:nth-child(2) .card-title,
+.card:nth-child(4) .card-title {
+    /* Congruent sizing using Tucker's coefficient for factor congruence */
+    font-size: clamp(calc(var(--text-lg-practical) * var(--tucker-congruence-phi)), calc(1.5rem * var(--tucker-congruence-phi)), calc(var(--text-xl-practical) * var(--tucker-congruence-phi)));
+    /* Rem-based sizing - scales with zoom */
+    letter-spacing: calc(-0.015em * var(--phi-inv));
+    /* Phi-based letter spacing - congruent */
+    margin-bottom: calc(var(--space-lg) * var(--tucker-congruence-phi));
+    /* Congruent spacing */
+}
+
+.card:nth-child(3) .card-title {
+    /* Card #3 - different sizing for visual rhythm (not congruent) */
+    font-size: clamp(calc(var(--text-lg-practical) * var(--phi-sqrt)), calc(1.5rem * var(--phi-sqrt)), calc(var(--text-xl-practical) * var(--phi-sqrt)));
+    /* Rem-based sizing - scales with zoom */
+    letter-spacing: calc(-0.015em * var(--phi));
+    /* Slightly wider letter spacing for distinction */
+    font-weight: var(--font-weight-semibold);
+    /* Slightly lighter weight for distinction */
+    margin-bottom: calc(var(--space-lg) * var(--phi-sqrt));
+    /* Different spacing to match sizing */
+}
+
+/* ===== RESPONSIVE & ZOOM COMPENSATION ===== */
+/* Comprehensive scaling for all screen sizes with zoom compensation */
+/* 
+ * ZOOM COMPENSATION SYSTEM:
+ * - JavaScript detects browser zoom level and applies inverse CSS zoom
+ * - Website maintains exact 100% visual appearance regardless of browser zoom
+ * - All font sizes and spacing maintain topological consistency
+ * - Phi ratios and design system relationships preserved at all zoom levels
+ * - Transform-origin: top-left for zoom compensation
+ * - Viewport units (vw/vh) only used for truly viewport-dependent features
+ * 
+ * VIEWPORT ENHANCEMENTS:
+ * - Safe area insets for devices with notches
+ * - Orientation-based adjustments
+ * - Pixel ratio considerations
+ * - Container queries where beneficial
+ */
+
+/* Ultra-wide screens (1920px+) */
+@media (min-width: 1920px) {
+    :root {
+        --is-ultra-wide: 1;
+        --is-desktop: 0;
+        --viewport-spacing-multiplier: 1.2;
+    }
+    /* .container max-width: var(--container-max-width) — avoid narrower 87.5rem band */
+}
+
+/* Large screens and zoom out scenarios */
+@media (min-width: 1400px) and (max-width: 1919px) {
+    :root {
+        --is-desktop: 1;
+        --is-ultra-wide: 0;
+        --viewport-spacing-multiplier: 1.1;
+    }
+}
+
+/* Standard desktop */
+@media (max-width: 1399px) and (min-width: 1024px) {
+    :root {
+        --is-desktop: 1;
+        --is-tablet: 0;
+        --viewport-spacing-multiplier: 1;
+    }
+}
+
+/* Tablet landscape and small desktop */
+@media (max-width: 1023px) and (min-width: 769px) {
+    :root {
+        --is-tablet: 1;
+        --is-mobile: 0;
+        --is-desktop: 0;
+        --viewport-spacing-multiplier: 0.95;
+    }
+    
+    .hero-text-wrapper {
+        /* Keep φ column split; only tighten horizontal padding */
+        padding: var(--space-3xl) var(--space-lg);
+    }
+}
+
+/* Intermediate breakpoint - maintain desktop layout with adjusted spacing */
+@media (max-width: 768px) and (min-width: 601px) {
+    :root {
+        --is-tablet: 1;
+        --is-mobile: 0;
+        --is-desktop: 0;
+        --viewport-spacing-multiplier: 0.92;
+    }
+    /* Keep desktop navigation visible - no hamburger menu */
+    .nav-menu {
+        display: flex;
+    }
+    
+    .hamburger {
+        display: none;
+    }
+    
+    /* Adjust nav menu for smaller width */
+    .nav-menu {
+        gap: var(--space-sm);
+        font-size: clamp(0.875rem, 1rem, 1rem);
+    }
+    
+    .nav-tagline {
+        display: none;
+    }
+}
+
+/* Tablet portrait and mobile landscape - mobile menu appears */
+@media (max-width: 600px) {
+    :root {
+        --is-mobile: 1;
+        --is-tablet: 0;
+        --viewport-spacing-multiplier: 0.9;
+    }
+    .nav-menu {
+        display: none;
+    }
+    
+    .hamburger {
+        display: flex;
+    }
+    
+    .nav-tagline {
+        display: none;
+    }
+    
+    /* Elements scale proportionally, centered for mobile */
+    .hero h1 {
+        font-size: clamp(var(--text-2xl-practical), 2.5rem, var(--text-4xl-practical));
+        /* Rem-based sizing - scales with zoom */
+        width: 100%;
+        text-align: center;
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(var(--text-base), 1.125rem, var(--text-lg-practical));
+        /* Rem-based sizing - scales with zoom */
+        width: 100%;
+        text-align: center;
+    }
+    
+    .section-title {
+        width: 100%;
+        text-align: center;
+        font-size: clamp(var(--text-xl-practical), 2rem, var(--text-3xl-practical));
+        /* Rem-based sizing - scales with zoom */
+    }
+    
+    .section-description {
+        width: 100%;
+        text-align: center;
+        font-size: clamp(var(--text-sm), 1rem, var(--text-base));
+        /* Rem-based sizing - scales with zoom */
+    }
+    
+    .hero-cta {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .search-bar {
+        width: 100%;
+        margin: var(--space-2xl) auto;
+    }
+    
+    .industry-filters {
+        width: 100%;
+    }
+    
+    .inquiry-form {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* Mobile portrait - enhanced viewport considerations */
+@media (max-width: 600px) {
+    .container {
+        padding-left: max(var(--layout-padding-inline), var(--safe-area-inset-left));
+        padding-right: max(var(--layout-padding-inline), var(--safe-area-inset-right));
+        padding-top: var(--layout-padding-block-tight);
+        padding-bottom: var(--layout-padding-block-tight);
+    }
+    
+    .hero {
+        padding: var(--layout-padding-block-tight) var(--layout-padding-inline);
+        /* rem caps only (no vh): matches earlier 600px hero rules and avoids vw/rem fight at zoom */
+        min-height: clamp(26rem, 34rem, 44rem);
+    }
+    
+    .hero-text-wrapper {
+        width: 100%;
+        /* Full width on mobile */
+        max-width: 100%;
+        padding: var(--space-xl) var(--space-md);
+        /* Reduced padding on mobile */
+    }
+    
+    .hero-title,
+    .hero h1 {
+        /* Must not use vw here — a prior 600px block used rem-only; this block had been overriding with 5vw */
+        font-size: clamp(var(--text-2xl-practical), 2.25rem, var(--text-4xl-practical));
+        line-height: 1.3;
+        margin-bottom: var(--space-lg);
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(var(--text-base), 1.125rem, var(--text-lg-practical));
+        margin-bottom: var(--space-lg);
+    }
+    
+    .section {
+        padding-top: var(--layout-section-padding-y);
+        padding-bottom: var(--layout-section-padding-y);
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .card {
+        padding: clamp(var(--space-lg), calc(var(--space-xl) * var(--phi-inv)), var(--space-xl));
+    }
+    
+    .hero-cta {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+}
+
+/* Orientation-based adjustments */
+@media (orientation: portrait) {
+    :root {
+        --viewport-orientation: portrait;
+    }
+    
+}
+
+@media (orientation: landscape) {
+    :root {
+        --viewport-orientation: landscape;
+    }
+}
+
+/* Small mobile and high zoom scenarios */
+@media (max-width: 480px) {
+    :root {
+        --viewport-spacing-multiplier: 0.85;
+        --viewport-font-multiplier: 0.95;
+    }
+    /* Ensure minimum readable sizes at maximum zoom */
+    body {
+        font-size: var(--font-base);
+    }
+    
+    .hero h1 {
+        font-size: clamp(1.5rem, 2rem, var(--text-2xl-practical));
+        /* Rem-based sizing - scales with zoom, minimum 24px for readability */
+    }
+    
+    .section-title {
+        font-size: clamp(1.25rem, 1.75rem, var(--text-xl-practical));
+        /* Rem-based sizing - scales with zoom, minimum 20px */
+    }
+    
+    .card-title {
+        font-size: clamp(1rem, 1.5rem, var(--text-lg-practical));
+        /* Rem-based sizing - scales with zoom, minimum 16px */
+    }
+    
+    .btn {
+        padding: var(--space-md) var(--space-lg);
+        font-size: clamp(0.875rem, 1rem, 1rem);
+        /* Rem-based sizing - scales with zoom, minimum 14px button text */
+    }
+}
+
+/* Zoom support - handles browser zoom 50% to 200% */
+@media (min-resolution: 0.75dppx) {
+    /* Zoomed out scenarios - maintain proportions */
+    .section {
+        padding: clamp(var(--space-xl), 3vw, var(--space-4xl)) 0;
+    }
+}
+
+/* High DPI and zoom in support */
+@media (min-resolution: 2dppx) {
+    :root {
+        --viewport-pixel-ratio: 2;
+    }
+    
+    /* Retina displays and zoom in - maintain crisp rendering */
+    .hero h1,
+    .section-title,
+    .card-title {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Container queries support (where beneficial) */
+@container (min-width: 768px) {
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (min-width: 1024px) {
+    .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Very small screens - minimum viable layout */
+@media (max-width: 320px) {
+    .hero {
+        padding: var(--space-xl) var(--space-sm);
+    }
+    
+    .container {
+        padding: 0 var(--space-sm);
+    }
+    
+    .card {
+        padding: var(--space-lg);
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero {
+        padding: var(--space-2xl) var(--space-lg);
+    }
+    
+    .section {
+        padding: var(--space-xl) 0;
+    }
+}
+
+/* ===== BREADCRUMBS ===== */
+.breadcrumbs {
+    display: none !important;
+    /* Hide breadcrumbs completely */
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Hide breadcrumbs on mobile - they're shown in burger menu instead */
+@media (max-width: 600px) {
+    .breadcrumbs {
+        display: none;
+    }
+}
+
+/* Golden Ratio Positioning in Breadcrumbs */
+.breadcrumbs::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--phi-ratio-inv);
+    /* 38.2% - creates golden ratio division */
+    height: 100%;
+    background: linear-gradient(90deg, 
+        rgba(10, 116, 218, 0.005) 0%, 
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.breadcrumbs .container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    /* Smaller gap for compact appearance */
+    flex-wrap: wrap;
+    padding-top: 0;
+    /* Remove default container vertical padding */
+    padding-bottom: 0;
+    /* Remove default container vertical padding */
+    padding-left: 0;
+    /* Remove left padding - breadcrumbs nav already has horizontal padding */
+    padding-right: 0;
+    /* Remove right padding - breadcrumbs nav already has horizontal padding */
+}
+
+.breadcrumbs a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumbs span {
+    color: var(--text-secondary);
+}
+
+.breadcrumbs ol {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumbs li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.breadcrumb-separator {
+    color: var(--text-secondary);
+    margin: 0 var(--space-xs);
+}
+
+.breadcrumb-current span {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ===== TOPIC CARDS ===== */
+.topic-cards {
+    margin-top: var(--space-lg);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-md);
+}
+
+.topic-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: var(--transition);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.topic-card i {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.topic-card:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.topic-card span {
+    display: block;
+    margin-top: var(--space-xs);
+}
+
+/* ===== FILTERING ===== */
+.industry-filters {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+    flex-wrap: wrap;
+    width: var(--phi-ratio);
+    /* 61.8% width - golden ratio proportion for filter positioning */
+    max-width: 100%;
+}
+
+.filter-btn {
+    padding: clamp(var(--space-xs), 1vw, var(--space-sm)) clamp(var(--space-md), 2vw, var(--space-lg));
+    /* Responsive padding scales with zoom */
+    border: 1.5px solid var(--border);
+    background: var(--surface-elevated);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: var(--font-weight-medium);
+    font-size: clamp(0.875rem, 1rem, var(--text-base));
+    /* Rem-based sizing - scales with zoom */
+    color: var(--text-secondary);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    /* Prevents text wrapping on zoom */
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--primary-light);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition);
+    z-index: 0;
+}
+
+.filter-btn > * {
+    position: relative;
+    z-index: 1;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: var(--shadow-xs);
+}
+
+.filter-btn:hover::before {
+    transform: scaleX(1);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, 
+        var(--primary-color) var(--gradient-stop-2), 
+        var(--primary-dark) var(--gradient-stop-3)
+    );
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-primary);
+}
+
+.filter-btn.active::before {
+    display: none;
+}
+
+.resource-item {
+    transition: var(--transition);
+    opacity: 1;
+}
+
+.resource-item.hidden {
+    display: none;
+}
+
+/* ===== SEMANTIC PARENT/CHILD SYSTEM ===== */
+/* Cascading semantic effects for hierarchical elements */
+
+.semantic-parent {
+    position: relative;
+    --semantic-phase: 0;
+    /* Base phase for parent */
+    --semantic-inheritance: 1;
+    /* Inheritance multiplier */
+}
+
+.semantic-child {
+    position: relative;
+    --semantic-phase: calc(var(--semantic-phase, 0) + 0.618);
+    /* Child phase builds on parent */
+    --semantic-inheritance: calc(var(--semantic-inheritance, 1) * var(--phi-inv));
+    /* Child inherits reduced intensity */
+}
+
+/* Harmonic phase relationships between parent/child */
+.semantic-parent .semantic-child {
+    --harmonic-offset: calc(var(--semantic-phase) * var(--phi-inv));
+    /* Offset based on parent phase */
+}
+
+.semantic-parent .semantic-child:nth-child(odd) {
+    --harmonic-offset: calc(var(--harmonic-offset, 0) + var(--phi-inv));
+}
+
+.semantic-parent .semantic-child:nth-child(even) {
+    --harmonic-offset: calc(var(--harmonic-offset, 0) - var(--phi-inv));
+}
+
+/* Cascading semantic effects */
+.semantic-parent {
+    --semantic-color-intensity: var(--color-intensity-high);
+}
+
+.semantic-parent .semantic-child {
+    --semantic-color-intensity: calc(var(--semantic-color-intensity, 0.618) * var(--phi-inv));
+}
+
+/* Semantic inheritance for colors */
+.semantic-parent {
+    --semantic-primary: var(--primary-color);
+    --semantic-wisdom: var(--primary-dark);
+    --semantic-calm: var(--primary-color);
+}
+
+.semantic-child {
+    color: inherit;
+    opacity: calc(0.9 + var(--semantic-inheritance, 1) * 0.1);
+}
+
+/* ===== BACKGROUND PATTERNS ===== */
+/* Subtle phi-based patterns to reduce dead space */
+
+/* Phi-based grid pattern */
+.bg-pattern-phi-grid {
+    background-image: 
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, transparent calc(var(--phi-ratio-inv) * 100% - 1px), rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%), transparent calc(var(--phi-ratio-inv) * 100% + 1px)),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, transparent calc(var(--phi-ratio) * 100% - 1px), rgba(107, 70, 193, var(--opacity-subtle)) calc(var(--phi-ratio) * 100%), transparent calc(var(--phi-ratio) * 100% + 1px));
+    background-size: 
+        calc(var(--phi-grid-cell-h) * var(--phi)) calc(var(--phi-grid-cell-v) * var(--phi)),
+        calc(var(--phi-grid-cell-h) * var(--phi)) calc(var(--phi-grid-cell-v) * var(--phi));
+    background-position: 0 0, var(--phi-grid-cell-h) var(--phi-grid-cell-v);
+}
+
+/* Radial gradients at phi spiral points - Enterprise Refined */
+.bg-pattern-phi-radial {
+    background-image: 
+        radial-gradient(circle at var(--phi-spiral-2) var(--phi-spiral-3), rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 50%),
+        radial-gradient(circle at var(--phi-spiral-3) var(--phi-spiral-2), rgba(10, 116, 218, calc(var(--opacity-subtle) * 0.7)) 0%, transparent 50%);
+    /* Unified color - primary blue only for enterprise consistency */
+    background-size: 
+        calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed)),
+        calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed));
+}
+
+/* Angular gradient overlays (azimuth-based) - Enterprise Refined */
+.bg-pattern-angular {
+    background-image: 
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(10, 116, 218, calc(var(--opacity-subtle) * 0.8)) var(--phi-ratio), transparent 100%);
+    /* Unified color - primary blue only for enterprise consistency */
+    background-size: 100% 100%, 100% 100%;
+    background-blend-mode: multiply;
+}
+
+/* Pattern opacity using phi-based values (reduced by 30-40%) */
+.bg-pattern-subtle {
+    opacity: calc(var(--opacity-subtle) * 0.7);
+    /* Reduced by 30% for more subtle patterns */
+}
+
+.bg-pattern-light {
+    opacity: calc(var(--opacity-soft) * 0.6);
+    /* Reduced by 40% - unified to opacity-soft */
+}
+
+.bg-pattern-soft {
+    opacity: calc(var(--opacity-soft) * 0.65);
+    /* Reduced by 35% */
+}
+
+/* ===== ENHANCED PHI LINES & TANGENTS ===== */
+/* Additional structural elements for dead space reduction */
+
+/* Enhanced vertical phi lines */
+.phi-line-vertical {
+    position: absolute;
+    left: var(--phi-ratio);
+    top: 0;
+    width: var(--phi-line-width-filtered);
+    /* Use Lanczos-filtered width for quality scaling */
+    height: 100%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-spiral-4),
+        transparent 100%
+    );
+    /* Reduced opacity for enterprise refinement */
+    opacity: var(--phi-line-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.phi-line-vertical-inv {
+    left: var(--phi-ratio-inv);
+}
+
+/* Enhanced horizontal laterals - Enterprise Refined */
+.phi-lateral-horizontal {
+    position: absolute;
+    top: var(--phi-lateral-position-h);
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--phi-line-width);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-spiral-2),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-spiral-4),
+        transparent 100%
+    );
+    /* Reduced opacity for enterprise refinement */
+    opacity: calc(var(--phi-lateral-opacity) * 0.5);
+    /* Further reduced for horizontal laterals */
+    pointer-events: none;
+    z-index: 0;
+}
+
+.phi-lateral-horizontal-inv {
+    top: var(--phi-ratio);
+}
+
+/* Curved tangents following golden spiral - Enterprise Refined */
+.phi-tangent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        ellipse 150% 100% at var(--phi-ratio) 50%,
+        transparent 0%,
+        rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-spiral-1),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-2),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 2)) var(--phi-spiral-3),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-4),
+        transparent 100%
+    );
+    /* Unified color - primary blue only for enterprise consistency */
+    opacity: var(--phi-tangent-opacity);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Angular laterals at phi-based angles */
+.phi-lateral-angular-1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        var(--phi-azimuth-1),
+        transparent 0%,
+        transparent calc(var(--phi-ratio-inv) * 100% - 1px),
+        rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) calc(var(--phi-ratio-inv) * 100% + 1px),
+        transparent calc(var(--phi-ratio-inv) * 100% + 2px)
+    );
+    /* Unified primary blue for enterprise consistency */
+    opacity: var(--phi-azimuth-opacity-filtered);
+    /* Use Lanczos-filtered opacity for quality scaling */
+    transition: var(--transition-lanczos-opacity);
+    /* Lanczos-quality opacity transition */
+    pointer-events: none;
+    z-index: 0;
+}
+
+.phi-lateral-angular-2 {
+    background: linear-gradient(
+        var(--phi-azimuth-2),
+        transparent 0%,
+        transparent calc(var(--phi-ratio) * 100% - 1px),
+        rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) calc(var(--phi-ratio) * 100% + 1px),
+        transparent calc(var(--phi-ratio) * 100% + 2px)
+    );
+    /* Unified primary blue for enterprise consistency */
+}
+
+.phi-lateral-angular-3 {
+    background: linear-gradient(
+        var(--phi-azimuth-3),
+        transparent 0%,
+        transparent calc(var(--phi-ratio-inv) * 100% - 1px),
+        rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) calc(var(--phi-ratio-inv) * 100% + 1px),
+        transparent calc(var(--phi-ratio-inv) * 100% + 2px)
+    );
+    /* Unified primary blue for enterprise consistency */
+}
+
+.phi-lateral-angular-4 {
+    background: linear-gradient(
+        var(--phi-azimuth-4),
+        transparent 0%,
+        transparent calc(var(--phi-ratio) * 100% - 1px),
+        rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+        rgba(10, 116, 218, calc(var(--opacity-subtle) * 1.5)) calc(var(--phi-ratio) * 100% + 1px),
+        transparent calc(var(--phi-ratio) * 100% + 2px)
+    );
+    /* Unified primary blue for enterprise consistency */
+}
+
+/* ===== ENHANCED NTH-CHILD VARIATIONS ===== */
+/* Expanded Fibonacci-based patterns for unique element treatments */
+
+/* Fibonacci sequence positions: 1, 2, 3, 5, 8, 13, 21, 34, 55... */
+.card:nth-child(21n) {
+    /* 21st Fibonacci number - subtle emphasis */
+    transform: translateY(calc(var(--space-xs) * var(--phi-quarter) * -1));
+    border-left-width: calc(5px * var(--size-card-title));
+}
+
+.card:nth-child(34n) {
+    /* 34th Fibonacci number - moderate emphasis */
+    transform: translateY(calc(var(--space-xs) * var(--phi-half) * -1));
+    border-left-width: calc(6px * var(--size-card-title));
+}
+
+.card:nth-child(55n) {
+    /* 55th Fibonacci number - strong emphasis */
+    transform: translateY(calc(var(--space-xs) * var(--phi) * -1));
+    border-left-width: calc(7px * var(--size-card-title));
+}
+
+/* Harmonic phase relationships */
+.card:nth-child(3n+1) {
+    --harmonic-phase: 0;
+}
+
+.card:nth-child(3n+2) {
+    --harmonic-phase: calc(var(--phi-inv) * 0.5);
+}
+
+.card:nth-child(3n+3) {
+    --harmonic-phase: var(--phi-inv);
+}
+
+/* Angular transforms based on position */
+.card:nth-child(5n) {
+    transform: rotate(calc(var(--phi-phase, 0) * 0.5deg));
+    transform-origin: center;
+}
+
+.card:nth-child(8n) {
+    transform: rotate(calc(var(--phi-phase, 0) * -0.3deg));
+    transform-origin: center;
+}
+
+.card:nth-child(13n) {
+    transform: rotate(calc(var(--phi-phase, 0) * 0.2deg));
+    transform-origin: center;
+}
+
+/* Combined angular and vertical transforms */
+.card:nth-child(21n):hover {
+    transform: translateY(calc(var(--space-md) * var(--phi) * -1)) rotate(calc(var(--phi-phase, 0) * 0.5deg)) scale(1.02);
+}
+
+.card:nth-child(34n):hover {
+    transform: translateY(calc(var(--space-md) * var(--phi) * -1)) rotate(calc(var(--phi-phase, 0) * -0.3deg)) scale(1.03);
+}
+
+/* ===== PAGE-SPECIFIC LAYOUT CLASSES ===== */
+
+/* Philosophy/Wisdom Sections - Unified Primary Dark for Authority */
+.philosophy-section {
+    background: linear-gradient(135deg, var(--primary-ultra-light) 0%, var(--primary-light) 100%);
+    position: relative;
+}
+
+.wisdom-section {
+    border-left-color: var(--primary-dark) !important;
+}
+
+.wisdom-section .semantic-heading {
+    color: var(--primary-dark);
+}
+
+.wisdom-section::before {
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(8, 85, 168, var(--opacity-light)) var(--phi-spiral-2),
+        rgba(8, 85, 168, var(--opacity-soft)) var(--phi-spiral-3),
+        rgba(8, 85, 168, var(--opacity-light)) var(--phi-spiral-4),
+        transparent 100%
+    );
+}
+
+/* Stacked philosophy blocks on About — token-driven spacing, no inline styles */
+.evidence-section.evidence-section--philosophy-stack {
+    margin-top: var(--space-3xl);
+}
+
+/* Plain evidence: no phi-enhanced gradients/pseudos — zoom-stable; φ symmetry lives on the clause spine only */
+.evidence-section.evidence-section--additive-plain {
+    background: linear-gradient(135deg,
+        var(--surface-elevated) 0%,
+        var(--primary-ultra-light) 50%,
+        var(--surface-elevated) 100%);
+    background-color: var(--surface-elevated);
+}
+
+.semantic-content--tight {
+    margin-bottom: var(--space-md);
+}
+
+.philosophy-lead {
+    margin-bottom: var(--space-sm);
+}
+
+.philosophy-body {
+    margin-top: var(--space-md);
+}
+
+/* Symmetry frame for the quoted clause only — rem/ch, no vw; φ used as narrow proportion for line box, not global layout basis */
+.clause-spine {
+    margin: var(--space-md) 0 var(--space-lg);
+    margin-inline: auto;
+    max-width: min(42rem, 100%);
+    padding-block: clamp(var(--space-md), calc(var(--space-base) * var(--phi-inv)), var(--space-lg));
+    padding-inline: clamp(var(--space-md), calc(var(--space-lg) * var(--phi-inv)), var(--space-xl));
+    border-inline: max(1px, 0.0625rem) solid var(--border-light);
+    border-block: max(1px, 0.0625rem) solid var(--border-light);
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.clause-spine__blockquote {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.clause-spine__text {
+    margin: 0;
+    max-width: min(38.2ch, 100%);
+    margin-inline: auto;
+    text-align: center;
+    font-size: clamp(1rem, 1.0625rem, 1.125rem);
+    line-height: 1.65;
+}
+
+.additive-semantics-quote {
+    font-style: italic;
+    color: var(--text-primary);
+    quotes: '\201c' '\201d';
+}
+
+.philosophy-cross-links {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--space-lg);
+    line-height: calc(1em * var(--phi));
+}
+
+.philosophy-cross-links a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.philosophy-cross-links a:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Timeline sections */
+.timeline-section {
+    position: relative;
+}
+
+.timeline-line {
+    left: var(--phi-ratio-inv);
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(10, 116, 218, var(--opacity-light)) var(--phi-spiral-1),
+        rgba(10, 116, 218, var(--opacity-medium)) var(--phi-spiral-2),
+        rgba(10, 116, 218, var(--opacity-medium)) var(--phi-spiral-3),
+        rgba(10, 116, 218, var(--opacity-light)) var(--phi-spiral-4),
+        transparent 100%
+    );
+}
+
+/* Section title enhancements with semantic text */
+.section-title .semantic-text {
+    display: block;
+    width: 100%;
+}
+
+/* Enhanced section backgrounds with patterns */
+.section {
+    position: relative;
+}
+
+.section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at var(--phi-spiral-2) var(--phi-spiral-3), rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.section:hover::after {
+    opacity: 1;
+}
+
+/* Ensure section content appears above background elements */
+.section > .container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Projects page - primary dark accents for evidence */
+.projects-section .card {
+    border-left-color: var(--primary-color);
+}
+
+.projects-section .card:nth-child(2n) {
+    border-left-color: var(--primary-dark);
+    /* Primary dark accent for evidence emphasis */
+}
+
+.projects-section .card:nth-child(2n):hover {
+    box-shadow: var(--shadow-lg), 0 0 0 calc(2px * var(--size-card-title)) var(--accent-primary-bg);
+}
+
+/* ===== COMPREHENSIVE BLOCK COMBINATIONS ===== */
+/* All-encompassing web presence using all blocks in permutations */
+
+/* Multiple background pattern combinations */
+.section .bg-pattern-phi-grid.bg-pattern-subtle,
+.section .bg-pattern-phi-radial.bg-pattern-subtle,
+.section .bg-pattern-angular.bg-pattern-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Combined phi line and lateral patterns */
+.section .phi-line-vertical + .phi-lateral-angular-1,
+.section .phi-line-vertical + .phi-lateral-angular-2,
+.section .phi-line-vertical + .phi-lateral-angular-3,
+.section .phi-line-vertical + .phi-lateral-angular-4 {
+    z-index: 0;
+}
+
+/* Combined tangent and angular patterns */
+.section .phi-tangent + .phi-lateral-angular-1,
+.section .phi-tangent + .phi-lateral-angular-2,
+.section .phi-tangent + .phi-lateral-angular-3,
+.section .phi-tangent + .phi-lateral-angular-4 {
+    z-index: 0;
+}
+
+/* Multiple angular laterals - azimuth-based combinations */
+.section .phi-lateral-angular-1 + .phi-lateral-angular-2 {
+    opacity: calc(var(--phi-azimuth-opacity-filtered) * 0.7);
+    /* Use Lanczos-filtered opacity */
+}
+
+.section .phi-lateral-angular-2 + .phi-lateral-angular-3 {
+    opacity: calc(var(--phi-azimuth-opacity-filtered) * 0.6);
+    /* Use Lanczos-filtered opacity */
+}
+
+.section .phi-lateral-angular-3 + .phi-lateral-angular-4 {
+    opacity: calc(var(--phi-azimuth-opacity-filtered) * 0.5);
+    /* Use Lanczos-filtered opacity */
+}
+
+/* All four angular laterals combined - full azimuth coverage */
+.section .phi-lateral-angular-1 + .phi-lateral-angular-2 + .phi-lateral-angular-3 + .phi-lateral-angular-4 {
+    background-blend-mode: multiply;
+    opacity: calc(var(--phi-azimuth-opacity-filtered) * 0.4);
+    /* Use Lanczos-filtered opacity */
+}
+
+/* Comprehensive section with all block types */
+.section.comprehensive {
+    position: relative;
+    overflow: hidden;
+}
+
+.section.comprehensive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* Phi grid pattern */
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, transparent calc(var(--phi-ratio-inv) * 100% - 1px), rgba(10, 116, 218, var(--opacity-subtle)) calc(var(--phi-ratio-inv) * 100%), transparent calc(var(--phi-ratio-inv) * 100% + 1px)),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, transparent calc(var(--phi-ratio) * 100% - 1px), rgba(107, 70, 193, var(--opacity-subtle)) calc(var(--phi-ratio) * 100%), transparent calc(var(--phi-ratio) * 100% + 1px)),
+        /* Radial gradients */
+        radial-gradient(circle at var(--phi-spiral-2) var(--phi-spiral-3), rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 50%),
+        radial-gradient(circle at var(--phi-spiral-3) var(--phi-spiral-2), rgba(107, 70, 193, var(--opacity-subtle)) 0%, transparent 50%);
+    background-size: 
+        calc(var(--phi-grid-cell-h) * var(--phi)) calc(var(--phi-grid-cell-v) * var(--phi)),
+        calc(var(--phi-grid-cell-h) * var(--phi)) calc(var(--phi-grid-cell-v) * var(--phi)),
+        calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed)),
+        calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed));
+    background-position: 0 0, var(--phi-grid-cell-h) var(--phi-grid-cell-v), 0 0, var(--phi-grid-cell-h) var(--phi-grid-cell-v);
+    opacity: var(--opacity-subtle);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Grand web presence - all-encompassing azimuth design */
+.section.grand-presence {
+    position: relative;
+    background: 
+        /* Angular patterns at all azimuth angles */
+        linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(107, 70, 193, var(--opacity-subtle)) var(--phi-ratio), transparent 100%),
+        linear-gradient(var(--phi-azimuth-3), transparent 0%, rgba(59, 130, 246, var(--opacity-subtle)) var(--phi-ratio-inv), transparent 100%),
+        linear-gradient(var(--phi-azimuth-4), transparent 0%, rgba(16, 185, 129, var(--opacity-subtle)) var(--phi-ratio), transparent 100%),
+        /* Base gradient */
+        linear-gradient(135deg, var(--bg-secondary) 0%, var(--primary-ultra-light) 50%, var(--bg-secondary) 100%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-blend-mode: multiply, multiply, multiply, multiply, normal;
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+}
+
+.section.grand-presence::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* Phi lines at all positions */
+        linear-gradient(90deg, transparent 0%, rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-ratio-inv), transparent var(--phi-ratio), rgba(107, 70, 193, var(--opacity-subtle)) calc(var(--phi-ratio) + var(--phi-ratio-inv) * var(--phi-inv)), transparent 100%),
+        /* Vertical phi lines */
+        linear-gradient(180deg, transparent 0%, rgba(10, 116, 218, var(--opacity-subtle)) var(--phi-ratio-inv), transparent var(--phi-ratio), rgba(107, 70, 193, var(--opacity-subtle)) calc(var(--phi-ratio) + var(--phi-ratio-inv) * var(--phi-inv)), transparent 100%);
+    background-size: 100% 100%, 100% 100%;
+    opacity: var(--opacity-subtle);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Vectorized block combinations - stored for data extraction */
+/* Each combination creates unique visual signature */
+.block-combination-1 {
+    /* Hero + Card Grid + Phi Lines + Angular Laterals */
+    --combination-signature: 'hero-cardgrid-philines-angular';
+}
+
+.block-combination-2 {
+    /* Section + Evidence + Wisdom + Tangents */
+    --combination-signature: 'section-evidence-wisdom-tangents';
+}
+
+.block-combination-3 {
+    /* Form + Calm + Angular 3 + Radial Pattern */
+    --combination-signature: 'form-calm-angular3-radial';
+}
+
+.block-combination-4 {
+    /* Footer + Grid Pattern + Angular 2 + All Links */
+    --combination-signature: 'footer-grid-angular2-links';
+}
+
+/* All permutations create unique cipher signatures */
+.block-permutation-asymmetric {
+    --permutation-azimuth: 38.2deg;
+    --permutation-phi-ratio: 0.618;
+    --permutation-cipher-intensity: 0.8;
+}
+
+.block-permutation-centered {
+    --permutation-azimuth: 0deg;
+    --permutation-phi-ratio: 0.618;
+    --permutation-cipher-intensity: 0.7;
+}
+
+.block-permutation-diagonal {
+    --permutation-azimuth: 61.8deg;
+    --permutation-phi-ratio: 0.618;
+    --permutation-cipher-intensity: 0.9;
+}
+
+.block-permutation-masonry {
+    --permutation-azimuth: 61.8deg;
+    --permutation-phi-ratio: 0.618;
+    --permutation-cipher-intensity: 0.8;
+}
+
+.block-permutation-showcase {
+    --permutation-azimuth: 76.4deg;
+    --permutation-phi-ratio: 0.618;
+    --permutation-cipher-intensity: 0.9;
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* Skip to main content link - hidden by default, visible on focus */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 2rem;
+    text-decoration: none;
+    z-index: 10000;
+    font-weight: 600;
+    border-radius: 0 0 0.5rem 0;
+    transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--primary-dark);
+    outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Focus indicators - high contrast, visible */
+*:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Enhanced focus for interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Remove default focus outline for mouse users, keep for keyboard */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Required field indicator */
+.required-indicator {
+    color: var(--color-error);
+    font-weight: 600;
+}
+
+/* Form error messages */
+.form-error {
+    display: block;
+    color: var(--color-error);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* Form success state */
+.form-group.success input,
+.form-group.success select,
+.form-group.success textarea {
+    border-color: var(--color-success);
+}
+
+/* Touch target sizes - minimum 44x44px for mobile accessibility */
+button,
+a.btn,
+input[type="submit"],
+input[type="button"],
+.nav-menu a,
+.mobile-menu a,
+.hamburger,
+.filter-btn,
+.topic-card,
+.search-input {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure form inputs are touch-friendly on mobile */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+    min-height: 44px;
+    font-size: 1rem; /* 16px equivalent - prevents zoom on iOS, scales with browser zoom */
+}
+
+/* Mobile-specific touch improvements */
+@media (max-width: 600px) {
+    /* Larger touch targets on mobile */
+    button,
+    a.btn,
+    .nav-menu a,
+    .mobile-menu a,
+    .filter-btn {
+        min-height: 48px;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    /* Improved spacing for touch */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Better form input sizing */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        padding: 0.875rem 1rem;
+        font-size: 1rem; /* 16px equivalent - prevents iOS zoom, scales with browser zoom */
+        border-radius: 0.5rem;
+    }
+    
+    /* Improved card spacing on mobile */
+    .card {
+        padding: 1.25rem;
+    }
+    
+    /* Better button spacing */
+    .btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Keyboard navigation improvements */
+.nav-dropdown-toggle:focus + .nav-dropdown-menu,
+.nav-dropdown-toggle:hover + .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Ensure dropdowns are keyboard accessible */
+.nav-dropdown:focus-within .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-color: #0056b3;
+        --text-primary: #000000;
+        --text-secondary: #333333;
+    }
+    
+    *:focus-visible {
+        outline-width: 4px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Ensure sufficient color contrast */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Improve link contrast */
+a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+a:hover,
+a:focus {
+    color: var(--primary-dark);
+    text-decoration-thickness: 2px;
+}
+
+/* Search results accessibility */
+.search-result-item {
+    display: block;
+    padding: 1rem;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.search-result-item:focus,
+.search-result-item:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    outline: none;
+}
+
+/* Mobile menu accessibility */
+.mobile-menu[aria-hidden="true"] {
+    display: none;
+}
+
+.mobile-menu[aria-hidden="false"] {
+    display: block;
+}
+
+/* Hamburger button states */
+/* .hamburger[aria-expanded="true"] - State is handled by .hamburger.active class */
+
+.hamburger[aria-expanded="true"] span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger[aria-expanded="true"] span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* ===== MOBILE RESPONSIVENESS ENHANCEMENTS ===== */
+
+/* Improved mobile typography - prevents zoom on iOS */
+@media (max-width: 600px) {
+    /* Ensure inputs don't trigger zoom on iOS */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="search"],
+    select,
+    textarea {
+        font-size: 1rem !important; /* 16px equivalent - prevents iOS zoom, scales with browser zoom */
+    }
+    
+    /* Better search bar on mobile */
+    .search-input {
+        font-size: 1rem; /* 16px equivalent - prevents iOS zoom, scales with browser zoom */
+        padding: 0.875rem 1rem;
+        min-height: 48px;
+    }
+    
+    .search-results {
+        max-height: 60vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Improved breadcrumbs on mobile */
+    .breadcrumbs {
+        font-size: 0.875rem;
+        padding: 0.75rem 0;
+    }
+    
+    .breadcrumbs ol {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .breadcrumbs li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .breadcrumb-separator {
+        color: var(--text-secondary);
+        margin: 0 0.25rem;
+    }
+    
+    .breadcrumbs a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .breadcrumbs a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-current span {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    /* Better form spacing on mobile */
+    .inquiry-form {
+        padding: 1.5rem 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Improved card grid on mobile */
+    .card-grid {
+        gap: 1rem;
+    }
+    
+    /* Better button sizing on mobile */
+    .btn {
+        width: 100%;
+        max-width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    /* Even larger touch targets on small screens */
+    button,
+    a.btn,
+    .nav-menu a,
+    .mobile-menu a,
+    .filter-btn {
+        min-height: 48px;
+        padding: 0.875rem 1.25rem;
+    }
+    
+    /* Compact spacing on small screens */
+    .section {
+        padding: 1.5rem 0;
+    }
+    
+    .container {
+        padding: 0 1rem;
+    }
+    
+    /* Better hero on small screens */
+    .hero {
+        padding: 2rem 1rem;
+    }
+    
+    .hero h1 {
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+}

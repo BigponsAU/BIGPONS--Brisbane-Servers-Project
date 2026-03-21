@@ -1,0 +1,243 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
+import IndustryFilters from '../components/IndustryFilters.astro';
+import SemanticText from '../components/SemanticText.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+const currentPath = '/projects';
+---
+
+<BaseLayout 
+  title="Projects - Brisbane Servers"
+  description="Real project showcases demonstrating our approach to technology solutions. Documented proof of implementations showing feasibility, value framework, and results."
+>
+  <Header currentPath={currentPath} />
+  
+  <main id="main-content" class="main-phi-chassis" role="main">
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Projects' }
+    ]} />
+    <Hero 
+      title="Real Projects, Real Results"
+      subtitle="Documented proof of implementations showing how we assess your reality—size, costs, grants, industry specifics—and deliver solutions that actually work."
+    />
+
+    <!-- Our Approach Section -->
+    <section class="section phi-line-symmetrical">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="container">
+        <div class="section-intro-phi">
+          <h2 class="section-title">
+            <SemanticText text="Our Project Approach" semanticLevel="high" isParent={true} />
+          </h2>
+          <p class="section-description">
+            <SemanticText text="Every project follows our value framework: understanding your business context, identifying what's feasible given your constraints, and delivering solutions that actually work. We don't sell one-size-fits-all—we assess your reality and recommend what makes sense." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+          <Card
+            title="Assessment Phase"
+            description="We start by understanding your business size, budget constraints, available grants, industry requirements, and strategic objectives. No assumptions—we gather facts."
+            icon="fas fa-search"
+          />
+          <Card
+            title="Solution Design"
+            description="Based on your reality, we design solutions that fit your constraints. This might mean phased implementation, grant-assisted projects, or cost-effective alternatives."
+            icon="fas fa-drafting-compass"
+          />
+          <Card
+            title="Implementation"
+            description="We work with you through implementation, ensuring solutions are properly configured, staff are trained, and systems are integrated with your existing processes."
+            icon="fas fa-cogs"
+          />
+          <Card
+            title="Results & Documentation"
+            description="Every project is documented with real results, lessons learned, and measurable outcomes. This documentation becomes part of our knowledge base."
+            icon="fas fa-chart-bar"
+          />
+        </CardGrid>
+      </div>
+    </section>
+
+    <!-- Value Framework Section -->
+    <section class="section" style="background: var(--surface);">
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-tangent"></div>
+      <div class="container">
+        <h2 class="section-title">
+          <SemanticText text="Value Framework" semanticLevel="high" isParent={true} />
+        </h2>
+        <div class="section-description" style="line-height: 1.8;">
+          <p>
+            <SemanticText text="Our value framework guides every project decision:" semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>Business Context:</strong> <SemanticText text="Understanding your industry, size, location, and specific challenges. What works for a large enterprise doesn't work for a small Brisbane business." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>Reality Assessment:</strong> <SemanticText text="Honest evaluation of what's feasible given your budget, resources, and constraints. We identify grant opportunities, cost-effective alternatives, and phased approaches." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>Evidence-Based Recommendations:</strong> <SemanticText text="Every recommendation is backed by documented proof—case studies, implementation details, and real results from similar businesses." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>Practical Implementation:</strong> <SemanticText text="Solutions designed to be implemented, not just conceptualized. We consider staff training, integration requirements, and ongoing maintenance." semanticLevel="normal" isChild={true} />
+          </p>
+          <p style="margin-top: var(--space-md);">
+            <strong>Measurable Outcomes:</strong> <SemanticText text="Every project includes clear success metrics and documentation of actual results. This transparency helps you make informed decisions." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
+          <h3 style="margin-bottom: var(--space-md);">Why Case Studies Matter</h3>
+          <p style="margin: 0; line-height: 1.8;">
+            <SemanticText text="Each case study documents a real project with actual results. You can see how we assessed the business context, what solutions we recommended, and what outcomes were achieved. This transparency helps you understand our approach and evaluate whether it's right for your business." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layout A: Showcase grid with varied card sizes -->
+    <!-- Comprehensive block usage: phi-tangent, phi-lateral-angular-4, bg-pattern-phi-radial -->
+    <section class="section projects-section">
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-tangent"></div>
+      <div class="phi-lateral-angular-4"></div>
+      <div class="container">
+        <div class="section-intro-phi">
+          <h2 class="section-title">
+            <SemanticText text="Projects by Industry" semanticLevel="high" isParent={true} />
+          </h2>
+          <p class="section-description">
+            <SemanticText text="Each project demonstrates our value framework in action: understanding your business context, identifying what's feasible, and delivering tailored solutions for Brisbane and Australian businesses." semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+        
+        <IndustryFilters />
+        
+        <CardGrid>
+          <Card
+            title="Retail: Inventory & E-commerce Integration"
+            description="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation. Brisbane-based business."
+            icon="fas fa-store"
+            industry="retail"
+          >
+            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
+              <a href="/case-studies/retail-inventory-ecommerce" class="btn btn-secondary">View Case Study</a>
+              <a href="/resources/retail" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+            </div>
+          </Card>
+          
+          <Card
+            title="Gallery: Semantic Search & NLP Categorization"
+            description="Art gallery implementing semantic product categorization with NLP-powered search. Visitors can explore collections by style, theme, technique. Unique edge for creative spaces."
+            icon="fas fa-palette"
+          >
+            <a href="#" class="btn btn-secondary" style="margin-top: var(--space-lg);">View Case Study</a>
+          </Card>
+          
+          <Card
+            title="Healthcare: Patient Management System"
+            description="Medical practice implementing compliant patient management with automated appointment handling and secure data storage. Australian Privacy Principles compliance, phased implementation. Brisbane-based practice."
+            icon="fas fa-heartbeat"
+            industry="healthcare"
+          >
+            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
+              <a href="/case-studies/healthcare-patient-management" class="btn btn-secondary">View Case Study</a>
+              <a href="/resources/healthcare" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+            </div>
+          </Card>
+          
+          <Card
+            title="Service Business: Spreadsheet to Database"
+            description="Professional services company outgrowing spreadsheets. Implemented proper database with semantic search and automated reporting. Time savings, improved accuracy, scalability. Australian SME."
+            icon="fas fa-database"
+            industry="professional-services"
+          >
+            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
+              <a href="/case-studies/professional-services-database" class="btn btn-secondary">View Case Study</a>
+              <a href="/resources/professional-services" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+            </div>
+          </Card>
+        </CardGrid>
+      </div>
+    </section>
+
+    <!-- Project Types Section -->
+    <section class="section">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-lateral-angular-2"></div>
+      <div class="container">
+        <h2 class="section-title">
+          <SemanticText text="Types of Projects We Handle" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="We work on a wide range of technology projects, from small automation tasks to comprehensive system implementations. Here are common project types:" semanticLevel="normal" isChild={true} />
+        </p>
+        
+        <CardGrid columns={2} style="margin-top: var(--space-xl);">
+          <Card
+            title="Database & Data Management"
+            description="Moving from spreadsheets to proper databases, implementing data management systems, and setting up automated reporting."
+            icon="fas fa-database"
+          />
+          <Card
+            title="E-commerce Integration"
+            description="Connecting physical stores with online platforms, inventory synchronization, and unified customer experiences."
+            icon="fas fa-shopping-cart"
+          />
+          <Card
+            title="Process Automation"
+            description="Identifying repetitive tasks that can be automated, implementing workflow systems, and reducing manual effort."
+            icon="fas fa-robot"
+          />
+          <Card
+            title="Compliance & Security"
+            description="Implementing systems that meet industry compliance requirements (APP, healthcare regulations, etc.) with proper security."
+            icon="fas fa-shield-alt"
+          />
+          <Card
+            title="Grant-Assisted Projects"
+            description="Identifying and applying for digital transformation grants, then implementing solutions that qualify for funding."
+            icon="fas fa-hand-holding-usd"
+          />
+          <Card
+            title="System Integration"
+            description="Connecting existing systems, APIs, and platforms to create unified workflows and eliminate data silos."
+            icon="fas fa-plug"
+          />
+        </CardGrid>
+      </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section class="section" style="background: var(--surface);">
+      <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+      <div class="container">
+        <h2 class="section-title">
+          <SemanticText text="Getting Started" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="Interested in working with us? Start by exploring our case studies to understand our approach, then reach out for a consultation. We'll assess your business context and discuss what's feasible for your situation." semanticLevel="normal" isChild={true} />
+        </p>
+        
+        <div style="margin-top: var(--space-2xl); display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center;">
+          <a href="/case-studies/retail-inventory-ecommerce" class="btn btn-primary">View Case Studies</a>
+          <a href="/resources" class="btn btn-secondary">Explore Resources</a>
+          <a href="/services" class="btn btn-secondary">Our Services</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+

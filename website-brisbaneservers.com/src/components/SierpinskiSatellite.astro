@@ -1,0 +1,268 @@
+---
+/**
+ * Sierpinski Satellite/Brain Network Component
+ * 
+ * Creates a recursive, self-similar network pattern using Sierpinski principles:
+ * - Phi-based node positioning (golden ratio spacing)
+ * - Azimuth angles for connection lines (23.6°, 38.2°, 61.8°, 76.4°)
+ * - Recursive node clusters (nodes contain sub-nodes)
+ * - Technology icons in each node
+ * - Purple glowing connection lines
+ */
+---
+
+<div class="sierpinski-satellite" aria-hidden="true">
+  <svg class="satellite-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Connection Lines Layer (drawn first, behind nodes) -->
+    <g class="connections-layer"></g>
+    
+    <!-- Nodes Layer (drawn on top) -->
+    <g class="nodes-layer"></g>
+  </svg>
+</div>
+
+<script>
+  /**
+   * Generate Sierpinski-based satellite network
+   * Uses recursive node generation with phi-based spacing
+   */
+  function generateSierpinskiSatellite() {
+    const svg = document.querySelector('.satellite-svg');
+    if (!svg) return;
+    
+    const connectionsLayer = svg.querySelector('.connections-layer');
+    const nodesLayer = svg.querySelector('.nodes-layer');
+    
+    if (!connectionsLayer || !nodesLayer) return;
+    
+    // Technology icons (Font Awesome class names)
+    const icons = [
+      'fa-cog', 'fa-rocket', 'fa-database', 'fa-shield-alt', 'fa-globe', 
+      'fa-box', 'fa-tools', 'fa-cloud', 'fa-brain', 'fa-bolt', 
+      'fa-lock', 'fa-code-branch', 'fa-users', 'fa-chart-bar', 'fa-plug'
+    ];
+    
+    // Base node positions using phi ratios (Sierpinski pattern)
+    // Center point at phi ratio (61.8%)
+    const centerX = 400;
+    const centerY = 300;
+    
+    // Generate nodes in recursive Sierpinski pattern
+    const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
+    
+    // Draw connections using azimuth angles
+    nodes.forEach((node, i) => {
+      // Connect to nearby nodes using phi-based relationships
+      const connections = findPhiConnections(node, nodes, i);
+      connections.forEach(targetNode => {
+        drawConnection(connectionsLayer, node, targetNode);
+      });
+    });
+    
+    // Draw nodes with icons
+    nodes.forEach((node, i) => {
+      drawNode(nodesLayer, node, icons[i % icons.length]);
+    });
+  }
+  
+  /**
+   * Generate nodes in Sierpinski recursive pattern
+   */
+  function generateSierpinskiNodes(centerX, centerY, level, maxLevel) {
+    const nodes = [];
+    const phi = 1.618;
+    const phiInv = 0.618;
+    
+    if (level >= maxLevel) return nodes;
+    
+    const size = 20 * Math.pow(phiInv, level); // Recursive size scaling
+    const radius = 100 * Math.pow(phi, level); // Recursive radius scaling
+    
+    // Main center node
+    if (level === 0) {
+      nodes.push({ x: centerX, y: centerY, level, size: size * 1.5 });
+    }
+    
+    // Generate child nodes at phi-based angles (azimuth angles)
+    const azimuthAngles = [23.6, 38.2, 61.8, 76.4];
+    const numChildren = Math.floor(phi * 3); // ~4-5 children per level (phi-based)
+    
+    for (let i = 0; i < numChildren; i++) {
+      const angle = (azimuthAngles[i % azimuthAngles.length] + (i * 360 / numChildren)) * Math.PI / 180;
+      const childX = centerX + radius * Math.cos(angle);
+      const childY = centerY + radius * Math.sin(angle);
+      
+      nodes.push({ x: childX, y: childY, level, size });
+      
+      // Recursive: generate sub-nodes
+      const subNodes = generateSierpinskiNodes(childX, childY, level + 1, maxLevel);
+      nodes.push(...subNodes);
+    }
+    
+    return nodes;
+  }
+  
+  /**
+   * Find connections based on phi relationships
+   */
+  function findPhiConnections(node, allNodes, currentIndex) {
+    const connections = [];
+    const phi = 1.618;
+    
+    // Connect to nodes within phi-based distance
+    allNodes.forEach((targetNode, i) => {
+      if (i === currentIndex) return;
+      
+      const distance = Math.sqrt(
+        Math.pow(node.x - targetNode.x, 2) + Math.pow(node.y - targetNode.y, 2)
+      );
+      
+      // Connect if within phi-based relationship distance
+      const connectionRadius = 150 * Math.pow(phi, -Math.abs(node.level - targetNode.level));
+      
+      if (distance < connectionRadius && Math.random() > 0.3) { // 70% connection probability
+        connections.push(targetNode);
+      }
+    });
+    
+    return connections.slice(0, 4); // Limit to 4 connections per node (phi-based)
+  }
+  
+  /**
+   * Draw connection line between nodes
+   */
+  function drawConnection(layer, from, to) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', from.x.toString());
+    line.setAttribute('y1', from.y.toString());
+    line.setAttribute('x2', to.x.toString());
+    line.setAttribute('y2', to.y.toString());
+    // Use design token colors for original purple glow
+    const purpleGlowRgb = getComputedStyle(document.documentElement)
+      .getPropertyValue('--original-purple-glow-rgb').trim() || '139, 92, 246';
+    line.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.6)`);
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('opacity', '0.6');
+    line.classList.add('satellite-connection');
+    layer.appendChild(line);
+  }
+  
+  /**
+   * Draw node with icon
+   */
+  function drawNode(layer, node, iconClass) {
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    group.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+    
+    // Outer white circle
+    const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    outerCircle.setAttribute('r', (node.size * 1.2).toString());
+    outerCircle.setAttribute('fill', 'white');
+    outerCircle.setAttribute('opacity', '0.9');
+    group.appendChild(outerCircle);
+    
+    // Inner blue circle - use design token for original blue node color
+    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    innerCircle.setAttribute('r', node.size.toString());
+    const blueNodeColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--original-blue-node').trim() || '#3b82f6';
+    innerCircle.setAttribute('fill', blueNodeColor);
+    group.appendChild(innerCircle);
+    
+    // Create foreignObject for Font Awesome icon
+    const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+    foreignObject.setAttribute('x', (-node.size).toString());
+    foreignObject.setAttribute('y', (-node.size).toString());
+    foreignObject.setAttribute('width', (node.size * 2).toString());
+    foreignObject.setAttribute('height', (node.size * 2).toString());
+    
+    const iconDiv = document.createElement('div');
+    iconDiv.style.cssText = `
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: ${node.size * 0.8}px;
+    `;
+    iconDiv.innerHTML = `<i class="fas ${iconClass}"></i>`;
+    foreignObject.appendChild(iconDiv);
+    group.appendChild(foreignObject);
+    
+    group.classList.add('satellite-node');
+    layer.appendChild(group);
+  }
+  
+  // Initialize on page load with error handling
+  function initSatellite() {
+    try {
+      // Wait a bit to ensure DOM is ready
+      setTimeout(() => {
+        generateSierpinskiSatellite();
+      }, 100);
+    } catch (error) {
+      console.error('[SierpinskiSatellite] Error generating satellite array:', error);
+    }
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSatellite);
+  } else {
+    initSatellite();
+  }
+</script>
+
+<style>
+  .sierpinski-satellite {
+    /* In-flow inside .hero-visual (grid column); fills φ major band */
+    position: relative;
+    width: 100%;
+    /* Do not use height:100% — recursive SVG content can extend past viewBox and inflate layout bbox (seen: hero clientHeight ~3542px vs min-height ~832px). */
+    height: auto;
+    max-height: min(70vh, 48rem);
+    min-height: var(--hero-inner-min-height);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.5;
+    filter: blur(0.5px);
+    mix-blend-mode: screen;
+    overflow: hidden;
+  }
+  
+  .satellite-svg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 800 / 600;
+    max-height: min(70vh, 48rem);
+    overflow: hidden;
+    display: block;
+  }
+  
+  .satellite-connection {
+    filter: drop-shadow(0 0 3px var(--original-purple-glow));
+    transition: opacity 0.3s ease;
+  }
+  
+  .satellite-node {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .satellite-node:hover {
+    transform: scale(1.1);
+  }
+  
+  @media (max-width: 768px) {
+    .sierpinski-satellite {
+      min-height: clamp(18rem, 42vh, 36rem);
+      max-height: min(42vh, 36rem);
+      height: auto;
+    }
+    .satellite-svg {
+      max-height: min(42vh, 36rem);
+    }
+  }
+</style>
+
+

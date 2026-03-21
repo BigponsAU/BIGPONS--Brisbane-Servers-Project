@@ -1,0 +1,7 @@
+name = "brisbane-servers-website"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "../website-brisbaneservers.com/dist"
+
+# For Cloudflare Pages, also set PUBLIC_SITE_URL in the dashboard for preview branches if it differs.
+[env.production]
+vars = { NODE_ENV = "production", PUBLIC_SITE_URL = "https://brisbaneservers.com" }
