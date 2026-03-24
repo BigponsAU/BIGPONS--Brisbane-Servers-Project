@@ -220,12 +220,12 @@
     width: 100%;
     /* Do not use height:100% — recursive SVG content can extend past viewBox and inflate layout bbox (seen: hero clientHeight ~3542px vs min-height ~832px). */
     height: auto;
-    max-height: min(70vh, 48rem);
+    max-height: min(82vh, 52rem);
     min-height: var(--hero-inner-min-height);
     pointer-events: none;
     z-index: 2;
-    opacity: 0.5;
-    filter: blur(0.5px);
+    opacity: 0.82;
+    filter: blur(0.2px);
     mix-blend-mode: screen;
     overflow: hidden;
   }
@@ -234,7 +234,7 @@
     width: 100%;
     height: auto;
     aspect-ratio: 800 / 600;
-    max-height: min(70vh, 48rem);
+    max-height: min(82vh, 52rem);
     overflow: hidden;
     display: block;
   }

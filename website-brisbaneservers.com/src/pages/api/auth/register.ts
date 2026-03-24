@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { createSessionToken, hashPassword, type AuthUser } from '../../../utils/auth';
 import { createUser, findUserByEmail } from '../../../lib/db/users';
 import { createSession } from '../../../lib/db/sessions';
+import { authTokenSetCookie } from '../../../utils/http-cookies';
 
 const SESSION_MAX_AGE = 24 * 60 * 60;
 
@@ -77,7 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': `authToken=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE}`
+          'Set-Cookie': authTokenSetCookie(token, SESSION_MAX_AGE, request)
         }
       }
     );

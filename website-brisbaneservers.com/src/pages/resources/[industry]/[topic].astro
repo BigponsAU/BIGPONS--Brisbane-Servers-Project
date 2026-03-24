@@ -1,5 +1,4 @@
 ---
-// SSR (not prerender): published resources load from /api at request time; prerender would freeze empty HTML at build.
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
@@ -10,6 +9,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, getTopicBySlug, industries } from '~/data/industries';
+import { getInternalFetchOrigin } from '~/lib/server-origin';
 
 export async function getStaticPaths() {
   const paths: Array<{ params: { industry: string; topic: string } }> = [];
@@ -41,8 +41,7 @@ const API_URL = '/api';
 let publishedResources: any[] = [];
 
 try {
-  // Use absolute URL for server-side fetch
-  const baseUrl = import.meta.env.SITE || 'http://localhost:4321';
+  const baseUrl = getInternalFetchOrigin(Astro);
   const response = await fetch(`${baseUrl}${API_URL}/resources/public?industry=${industrySlug}&topic=${topicSlug}`, {
     headers: {
       'Accept': 'application/json'
@@ -98,17 +97,17 @@ const primaryResource = publishedResources[0] || null;
         
         {hasGeneratedContent && primaryResource ? (
           <>
-            <div class="section-description section-description--prewrap">
+            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
               <SemanticText text={primaryResource.content} semanticLevel="normal" isChild={true} />
             </div>
             {primaryResource.metadata?.voiceScore && (
-              <div class="voice-score-callout">
-                <p>
+              <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
+                <p style="margin: 0; font-size: var(--text-sm); color: var(--text-secondary);">
                   <strong>Voice Consistency:</strong> {Math.round(primaryResource.metadata.voiceScore * 100)}% match with Brisbane Servers voice profile
                 </p>
               </div>
             )}
-            <div class="stack-lg">
+            <div style="margin-top: var(--space-lg);">
               <a href={`/resources/item/${primaryResource.id}`} class="btn btn-secondary">
                 View Full Resource →
               </a>
@@ -120,7 +119,7 @@ const primaryResource = publishedResources[0] || null;
           </p>
         )}
         
-        <CardGrid class="stack-2xl">
+        <CardGrid style="margin-top: var(--space-2xl);">
           <Card
             title="Key Considerations"
             description="Understanding your business context, size, and constraints helps identify solutions that actually work. We assess your reality and recommend what makes sense for your situation."
@@ -134,7 +133,7 @@ const primaryResource = publishedResources[0] || null;
         
         {publishedResources.length > 1 && (
           <>
-            <h2 class="section-title section-title--stack-4xl">
+            <h2 class="section-title" style="margin-top: var(--space-4xl);">
               <SemanticText text="Additional Resources" semanticLevel="high" isParent={true} />
             </h2>
             <div class="resources-list">
@@ -153,17 +152,17 @@ const primaryResource = publishedResources[0] || null;
                       <p class="resource-description">{resource.description}</p>
                     </summary>
                     <div class="resource-content">
-                      <div class="section-description section-description--prewrap stack-lg">
+                      <div style="white-space: pre-wrap; line-height: 1.8; margin-top: var(--space-lg);">
                         <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
                       </div>
                       {resource.metadata?.voiceScore && (
-                        <div class="voice-score-callout">
-                          <p>
+                        <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
+                          <p style="margin: 0; font-size: var(--text-sm); color: var(--text-secondary);">
                             <strong>Voice Consistency:</strong> {Math.round(resource.metadata.voiceScore * 100)}% match with Brisbane Servers voice profile
                           </p>
                         </div>
                       )}
-                      <div class="stack-lg">
+                      <div style="margin-top: var(--space-lg);">
                         <a href={`/resources/item/${resource.id}`} class="btn btn-secondary btn-sm">
                           View Full Resource →
                         </a>

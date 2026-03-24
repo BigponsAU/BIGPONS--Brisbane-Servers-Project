@@ -12,14 +12,14 @@ const currentPath = '/contribute';
   description="Join our community: share your experience, earn tokens, and help improve industry resources. Your contributions are checked against our voice profile and shown alongside a community note."
 >
   <Header currentPath={currentPath} />
-  <main id="main-content" class="main-phi-chassis" role="main">
+  <main>
     <Breadcrumbs items={[
       { label: 'Home', href: '/' },
       { label: 'Resources', href: '/resources' },
       { label: 'Contribute' }
     ]} />
 
-    <section class="contribute-hero section phi-line-symmetrical">
+    <section class="contribute-hero section">
       <div class="container">
         <h1 class="contribute-title">Contribute to Community Resources</h1>
         <p class="contribute-lead">
@@ -146,7 +146,7 @@ const currentPath = '/contribute';
 <style>
   .contribute-hero { padding-top: var(--space-2xl); }
   .contribute-title { font-size: var(--text-3xl); margin-bottom: var(--space-md); }
-  .contribute-lead { font-size: var(--text-lg); color: var(--text-secondary); max-width: var(--measure-prose); }
+  .contribute-lead { font-size: var(--text-lg); color: var(--text-secondary); max-width: 60ch; }
   .contribute-blocks { display: grid; gap: var(--space-xl); margin-top: var(--space-xl); }
   .contribute-block {
     padding: var(--space-lg);

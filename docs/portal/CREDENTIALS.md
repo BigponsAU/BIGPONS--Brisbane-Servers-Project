@@ -2,14 +2,22 @@
 
 **URL:** `http://localhost:3000/portal`
 
-## Default (development only)
+## Required configuration
 
-- **Email:** `admin@brisbaneservers.com`
-- **Password:** `admin123`
+There are **no hardcoded admin passwords** in the application. To use bootstrap admin login on the Astro site **and** the voice-framework dashboard, set **both**:
 
-⚠️ **Never use these in production.**
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
 
-## Custom credentials
+in environment variables (or `website-brisbaneservers.com/.env` / hosting panel for the Node app).
+
+If these are unset, use **registered users** via `users.json` / the registration flow where enabled.
+
+### Website (`website-brisbaneservers.com`)
+
+See `website-brisbaneservers.com/.env.example` — copy to `.env` and set values locally (never commit `.env`).
+
+### Voice dashboard (`voice-framework`)
 
 Create or edit `voice-framework/.env`:
 
@@ -32,10 +40,8 @@ export ADMIN_EMAIL="your-email@example.com"
 export ADMIN_PASSWORD="your-secure-password"
 ```
 
-## Production
+## Production (cPanel / later Cloudflare)
 
-- Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your production environment.
-- Use a strong password and secure storage (env vars, not in code).
-- Consider password hashing and proper session storage (e.g. Redis/DB).
-
-See [Production checklist](../project/PRODUCTION_CHECKLIST.md) for full deployment security.
+- Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in the production environment only.
+- Use a strong password and secure storage (panel env vars, not in code).
+- Prefer registered users + proper session storage for multi-instance deployments.

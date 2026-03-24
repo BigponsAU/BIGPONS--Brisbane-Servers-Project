@@ -37,7 +37,7 @@ export const navigation: NavItem[] = [
     href: '/about'
   },
   {
-    label: 'Portal',
+    label: 'Resource Portal',
     href: '/portal'
   }
 ];

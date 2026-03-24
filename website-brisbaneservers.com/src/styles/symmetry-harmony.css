@@ -160,13 +160,11 @@
 
 /* Cognitive Load Reduction through Symmetry */
 .cognitive-ease {
-    /* Symmetrical layouts reduce cognitive load — min track scales with φ-rhythm */
+    /* Symmetrical layouts reduce cognitive load */
     display: grid;
-    grid-template-columns: repeat(
-        auto-fit,
-        minmax(min(100%, calc(18.75 * var(--font-base))), 1fr)
-    );
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--space-5xl) * var(--phi)), 1fr));
     gap: var(--space-xl);
+    /* Balanced spacing for easy scanning */
 }
 
 .cognitive-ease > * {

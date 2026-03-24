@@ -94,6 +94,16 @@ PUBLIC_SITE_URL=https://staging.example.com
 
 ---
 
+### `ADMIN_EMAIL` / `ADMIN_PASSWORD` (website + optional bootstrap admin)
+
+**Type**: String  
+**Default**: *none* — bootstrap admin login is **disabled** until both are set.  
+**Location**: `website-brisbaneservers.com/src/pages/api/auth/login.ts`, `voice-framework/dashboard/middleware/auth.ts`
+
+Used only for optional **environment-configured** admin login (same email/password for both the Astro API and the voice-framework dashboard when you choose to use that path). **There are no seeded defaults in code.** For production, set strong values in cPanel / your host’s environment, or rely on registered users in `users.json`.
+
+---
+
 ### Semantic platform (website)
 
 | Variable | Purpose |

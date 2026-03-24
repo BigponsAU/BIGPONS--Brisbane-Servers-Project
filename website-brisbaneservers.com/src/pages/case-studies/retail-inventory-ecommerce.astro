@@ -18,7 +18,7 @@ const currentPath = '/case-studies/retail-inventory-ecommerce';
 >
   <Header currentPath={currentPath} />
   
-  <main id="main-content" class="main-phi-chassis" role="main">
+  <main>
     <Breadcrumbs items={[
       { label: 'Home', href: '/' },
       { label: 'Projects', href: '/projects' },
@@ -31,13 +31,13 @@ const currentPath = '/case-studies/retail-inventory-ecommerce';
       subtitle="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation."
     />
 
-    <section class="section phi-line-symmetrical">
+    <section class="section">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="case-study-content">
-          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--phi-radius-atypical-a); border-left: max(3px, calc(var(--phi-stroke-md) * 2)) solid var(--primary-color);">
+          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
               <div>
                 <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
@@ -58,12 +58,11 @@ const currentPath = '/case-studies/retail-inventory-ecommerce';
             </div>
           </div>
 
-          <div class="section-intro-phi">
-            <h2 class="section-title">
-              <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-              <SemanticText text={`A small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence. 
+          <h2 class="section-title">
+            <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+            <SemanticText text={`A small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence. 
 
 As the business grew, this manual process became unsustainable. Stock levels were frequently incorrect, leading to overselling online or missing sales opportunities in-store. The business needed an automated solution that could:
 - Track inventory in real-time across physical and online channels
@@ -71,15 +70,13 @@ As the business grew, this manual process became unsustainable. Stock levels wer
 - Provide accurate reporting for purchasing decisions
 - Integrate with their existing e-commerce platform
 - Be cost-effective for a small business budget`} semanticLevel="normal" isChild={true} />
-            </div>
           </div>
 
-          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
-            <h2 class="section-title">
-              <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-              <SemanticText text={`We assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:
+          <h2 class="section-title" style="margin-top: var(--space-4xl);">
+            <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+            <SemanticText text={`We assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:
 
 Phase 1: Core Inventory System
 - Implemented a cloud-based inventory management system
@@ -97,7 +94,6 @@ Phase 3: Reporting & Analytics
 - Inventory turnover metrics
 
 The solution was designed to scale with the business while remaining cost-effective through grant assistance.`} semanticLevel="normal" isChild={true} />
-            </div>
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
@@ -126,13 +122,11 @@ The solution was designed to scale with the business while remaining cost-effect
             />
           </CardGrid>
 
-          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
-            <h2 class="section-title">
-              <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description">
-              <SemanticText text="Cloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance." semanticLevel="normal" isChild={true} />
-            </div>
+          <h2 class="section-title" style="margin-top: var(--space-4xl);">
+            <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description">
+            <SemanticText text="Cloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance." semanticLevel="normal" isChild={true} />
           </div>
 
           <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
@@ -157,7 +151,7 @@ The solution was designed to scale with the business while remaining cost-effect
 
 <style>
   .case-study-content {
-    max-width: var(--measure-article);
+    max-width: 900px;
     margin: 0 auto;
   }
 </style>

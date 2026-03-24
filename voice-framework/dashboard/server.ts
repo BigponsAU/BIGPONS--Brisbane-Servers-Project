@@ -90,35 +90,21 @@ const documentProcessor = new DocumentProcessor(textStorage);
  */
 function checkDefaultCredentials(): void {
   const isProduction = process.env.NODE_ENV === 'production';
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@brisbaneservers.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  const jwtSecret = process.env.JWT_SECRET || 'brisbane-servers-secret-key-change-in-production';
-  
-  const isDefaultEmail = adminEmail === 'admin@brisbaneservers.com';
-  const isDefaultPassword = adminPassword === 'admin123';
-  const isDefaultJwtSecret = jwtSecret === 'brisbane-servers-secret-key-change-in-production';
-  
-  if (isProduction && (isDefaultEmail || isDefaultPassword || isDefaultJwtSecret)) {
-    console.warn('\n⚠️  ⚠️  ⚠️  SECURITY WARNING ⚠️  ⚠️  ⚠️');
-    console.warn('Default credentials detected in PRODUCTION environment!');
-    console.warn('This is a CRITICAL security risk!');
-    if (isDefaultEmail) {
-      console.warn('  - ADMIN_EMAIL is using default value');
-    }
-    if (isDefaultPassword) {
-      console.warn('  - ADMIN_PASSWORD is using default value');
-    }
-    if (isDefaultJwtSecret) {
-      console.warn('  - JWT_SECRET is using default value');
-    }
-    console.warn('\nPlease set the following environment variables:');
-    console.warn('  - ADMIN_EMAIL (your production admin email)');
-    console.warn('  - ADMIN_PASSWORD (a strong, secure password)');
-    console.warn('  - JWT_SECRET (a strong random string)');
-    console.warn('\n⚠️  Never deploy with default credentials! ⚠️\n');
-  } else if (!isProduction && (isDefaultEmail || isDefaultPassword)) {
-    console.log('ℹ️  Using default credentials for development (this is OK)');
-    console.log('   Remember to change credentials before deploying to production!\n');
+  const adminEmail = process.env.ADMIN_EMAIL || '';
+  const adminPassword = process.env.ADMIN_PASSWORD || '';
+  const jwtSecret = process.env.JWT_SECRET || '';
+
+  if (!adminEmail || !adminPassword) {
+    console.warn(
+      '\nℹ️  ADMIN_EMAIL / ADMIN_PASSWORD not set — voice dashboard admin login is disabled until you configure them.\n'
+    );
+  }
+
+  const isDefaultJwtSecret =
+    jwtSecret === 'brisbane-servers-secret-key-change-in-production' || jwtSecret === '';
+
+  if (isProduction && isDefaultJwtSecret) {
+    console.warn('\n⚠️  SECURITY: Set JWT_SECRET to a strong random value in production.\n');
   }
 }
 

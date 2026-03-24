@@ -2,11 +2,14 @@ import type { APIRoute } from 'astro';
 import { createSessionToken, verifyPassword, type AuthUser } from '../../../utils/auth';
 import { findUserByEmail } from '../../../lib/db/users';
 import { createSession } from '../../../lib/db/sessions';
+import { authTokenSetCookie } from '../../../utils/http-cookies';
 
 const SESSION_MAX_AGE = 24 * 60 * 60;
 
 /**
- * Login: env admin first, then DB users. Persists session for DB users.
+ * Login: optional env-configured bootstrap admin (both ADMIN_EMAIL + ADMIN_PASSWORD),
+ * then DB users. No hardcoded credentials — set secrets in `.env` / hosting panel.
+ * Persists session for DB users.
  * POST /api/auth/login
  */
 export const POST: APIRoute = async ({ request }) => {
@@ -28,13 +31,18 @@ export const POST: APIRoute = async ({ request }) => {
     const ADMIN_EMAIL =
       import.meta.env.ADMIN_EMAIL ||
       (typeof process !== 'undefined' && process.env?.ADMIN_EMAIL) ||
-      'admin@brisbaneservers.com';
+      '';
     const ADMIN_PASSWORD =
       import.meta.env.ADMIN_PASSWORD ||
       (typeof process !== 'undefined' && process.env?.ADMIN_PASSWORD) ||
-      'admin123';
+      '';
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    if (
+      ADMIN_EMAIL &&
+      ADMIN_PASSWORD &&
+      email === ADMIN_EMAIL &&
+      password === ADMIN_PASSWORD
+    ) {
       const isSuperAdmin =
         email === ADMIN_EMAIL || (typeof email === 'string' && email.endsWith('@brisbaneservers.com'));
       const user: AuthUser = {
@@ -49,7 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Set-Cookie': `authToken=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE}`
+            'Set-Cookie': authTokenSetCookie(token, SESSION_MAX_AGE, request)
           }
         }
       );
@@ -77,7 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': `authToken=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE}`
+          'Set-Cookie': authTokenSetCookie(token, SESSION_MAX_AGE, request)
         }
       }
     );

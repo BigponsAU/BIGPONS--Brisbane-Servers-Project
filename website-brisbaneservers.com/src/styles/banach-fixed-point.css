@@ -220,12 +220,6 @@
 .main-home .banach-joined-backing {
   position: relative;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  /* No second full gutter; rails use φ·inset below to align with chassis rhythm */
-  padding-left: 0;
-  padding-right: 0;
 }
 
 /* Sections sit above the shared backing */
@@ -234,16 +228,13 @@
   z-index: 1;
 }
 
-/* Continuous left rail – full height; inset φ·gutter so banding matches section chassis & hero */
+/* Continuous left rail – full height of all sections (purple → primary) */
 .main-home .banach-rail-continuous {
   position: absolute;
-  left: max(
-    calc(var(--layout-padding-inline) * var(--phi-inv)),
-    var(--safe-area-inset-left)
-  );
+  left: 0;
   top: 0;
   bottom: 0;
-  width: clamp(2.25rem, calc(var(--space-xl) * var(--phi-inv)), 3rem);
+  width: 44px;
   pointer-events: none;
   z-index: 0;
 }
@@ -270,8 +261,7 @@
 .main-home .banach-rail-continuous::after {
   content: '';
   position: absolute;
-  /* Inset scales with rail width (was fixed 12px → clipped on narrow rails at zoom) */
-  left: clamp(0.5rem, 32%, 0.875rem);
+  left: 12px;
   top: var(--path-2);
   height: calc(100% * var(--phi-inverse));
   width: 2px;
@@ -293,16 +283,13 @@
   }
 }
 
-/* Continuous right trail – φ·inset from edge (mirror rail) */
+/* Continuous right trail – full height of all sections */
 .main-home .banach-trail-continuous {
   position: absolute;
-  right: max(
-    calc(var(--layout-padding-inline) * var(--phi-inv)),
-    var(--safe-area-inset-right)
-  );
+  right: 0;
   top: 0;
   bottom: 0;
-  width: clamp(2.75rem, calc(var(--space-xl) * var(--phi)), 3.5rem);
+  width: 56px;
   pointer-events: none;
   z-index: 0;
 }
@@ -330,7 +317,7 @@
 .main-home .banach-trail-continuous::after {
   content: '';
   position: absolute;
-  right: clamp(0.625rem, 36%, 1rem);
+  right: 18px;
   top: var(--path-1);
   height: calc(100% * var(--phi-inverse) * var(--phi-inverse));
   width: 2px;
@@ -352,7 +339,7 @@
   }
 }
 
-/* Shared tartan/convergence backing – z-index 0 under sections (z-index 1 + opaque fills), so it reads in inter-section gaps / edges, not across full section faces. Stronger tartan: .banach-overlay-tartan */
+/* Shared tartan/convergence backing – one surface behind all sections */
 .main-home .banach-backing-tartan {
   position: absolute;
   inset: 0;
@@ -376,24 +363,24 @@
       0deg,
       transparent,
       transparent calc(var(--path-2) * 3px - 1px),
-      rgba(139, 92, 246, 0.045) calc(var(--path-2) * 3px - 1px),
-      rgba(139, 92, 246, 0.045) calc(var(--path-2) * 3px),
+      rgba(139, 92, 246, 0.03) calc(var(--path-2) * 3px - 1px),
+      rgba(139, 92, 246, 0.03) calc(var(--path-2) * 3px),
       transparent calc(var(--path-2) * 3px),
       transparent calc(var(--path-1) * 4px - 1px),
-      rgba(var(--primary-color-rgb), 0.055) calc(var(--path-1) * 4px - 1px),
-      rgba(var(--primary-color-rgb), 0.055) calc(var(--path-1) * 4px),
+      rgba(var(--primary-color-rgb), 0.04) calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.04) calc(var(--path-1) * 4px),
       transparent calc(var(--path-1) * 4px)
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent calc(var(--path-2) * 3px - 1px),
-      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 3px - 1px),
-      rgba(59, 130, 246, 0.04) calc(var(--path-2) * 3px),
+      rgba(59, 130, 246, 0.025) calc(var(--path-2) * 3px - 1px),
+      rgba(59, 130, 246, 0.025) calc(var(--path-2) * 3px),
       transparent calc(var(--path-2) * 3px),
       transparent calc(var(--path-1) * 4px - 1px),
-      rgba(var(--primary-color-rgb), 0.05) calc(var(--path-1) * 4px - 1px),
-      rgba(var(--primary-color-rgb), 0.05) calc(var(--path-1) * 4px),
+      rgba(var(--primary-color-rgb), 0.035) calc(var(--path-1) * 4px - 1px),
+      rgba(var(--primary-color-rgb), 0.035) calc(var(--path-1) * 4px),
       transparent calc(var(--path-1) * 4px)
     );
   background-size:
@@ -481,11 +468,11 @@
   z-index: 1;
 }
 
-.main-home .banach-joined-backing .section.section-tartan-accent.section--bg-surface {
+.main-home .banach-joined-backing .section.section-tartan-accent[style*="background: var(--surface)"] {
   background-color: var(--surface) !important;
 }
 
-.main-home .banach-joined-backing .section.section-tartan-accent.section--bg-primary-light {
+.main-home .banach-joined-backing .section.section-tartan-accent[style*="background: var(--primary-light)"] {
   background-color: var(--primary-light) !important;
 }
 

@@ -11,14 +11,14 @@ import IndustryFilters from '../components/IndustryFilters.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 import { industries } from '../data/industries';
+import { getInternalFetchOrigin } from '../lib/server-origin';
 
 // Fetch published resources from API (using Astro API routes)
 const API_URL = '/api';
 let publishedResources: any[] = [];
 
 try {
-  // Use absolute URL for server-side fetch
-  const baseUrl = import.meta.env.SITE || 'http://localhost:4321';
+  const baseUrl = getInternalFetchOrigin(Astro);
   const response = await fetch(`${baseUrl}${API_URL}/resources/public`, {
     headers: {
       'Accept': 'application/json'

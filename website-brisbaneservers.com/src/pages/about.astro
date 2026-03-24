@@ -17,13 +17,13 @@ const currentPath = '/about';
 >
   <Header currentPath={currentPath} />
   
-  <main id="main-content" class="main-phi-chassis" role="main">
+  <main id="main-content" role="main">
     <Hero 
       title="About Brisbane Servers"
       subtitle="Providing access to truth in technology for Australian businesses. Contributing to domestic growth and Brisbane's innovation authority."
     />
 
-    <section class="section phi-line-symmetrical">
+    <section class="section">
       <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="container">
@@ -141,14 +141,12 @@ const currentPath = '/about';
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-angular-4"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="A BIGPONS Project" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="Brisbane Servers is operated by BIGPONS, contributing to our mission of providing genuine technological expertise to Australian businesses." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
+        <h2 class="section-title">
+          <SemanticText text="A BIGPONS Project" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="Brisbane Servers is operated by BIGPONS, contributing to our mission of providing genuine technological expertise to Australian businesses." semanticLevel="normal" isChild={true} />
+        </p>
         <CardGrid>
           <Card
             title="BIGPONS ABN"
@@ -164,18 +162,16 @@ const currentPath = '/about';
       </div>
     </section>
 
-    <section class="section section--bg-surface">
+    <section class="section" style="background: var(--surface);">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical phi-line-vertical-inv"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="Why We Matter" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="Australian SMEs face unique challenges navigating an overwhelming tech landscape. We provide the clarity, expertise, and access they need to succeed." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
+        <h2 class="section-title">
+          <SemanticText text="Why We Matter" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="Australian SMEs face unique challenges navigating an overwhelming tech landscape. We provide the clarity, expertise, and access they need to succeed." semanticLevel="normal" isChild={true} />
+        </p>
         <CardGrid>
           <Card
             title="Industry Understanding"

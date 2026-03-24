@@ -16,8 +16,7 @@ export interface AuthUser {
 // Simple in-memory session store (in production, use Redis or database)
 const sessions = new Map<string, { user: AuthUser; expiresAt: number }>();
 
-// Secret key for JWT signing (in production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || 'brisbane-servers-secret-key-change-in-production';
+// Session tokens are opaque random bytes (see createSessionToken). Set JWT_SECRET if you add signed JWTs later.
 
 // Session expiration (24 hours)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
@@ -136,11 +135,18 @@ export function requireEditor(req: Request, res: Response, next: NextFunction): 
 export async function handleLogin(req: Request, res: Response): Promise<void> {
   const { email, password } = req.body;
   
-  // Simple authentication (in production, use proper password hashing and database)
-  // Default admin credentials (should be changed in production)
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@brisbaneservers.com';
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-  
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    res.status(503).json({
+      error: 'Admin login is not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD in the environment.',
+      code: 'ADMIN_NOT_CONFIGURED',
+      success: false
+    });
+    return;
+  }
+
   if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
     res.status(401).json({
       error: 'Invalid credentials',

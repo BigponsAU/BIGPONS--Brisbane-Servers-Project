@@ -8,11 +8,10 @@ import { industries } from '../data/industries';
 <BaseLayout 
   title="Resource Portal - Brisbane Servers"
   description="Secure portal for managing resources using voice framework integration"
-  noindex
 >
   <Header currentPath="/portal" />
   
-  <main id="main-content" role="main">
+  <main id="main-content" role="main" style="min-height: 80vh;">
     <div id="admin-portal" class="admin-portal">
       <!-- Login Screen -->
       <div id="login-screen" class="login-screen">
@@ -864,7 +863,7 @@ import { industries } from '../data/industries';
               </div>
               
               <!-- Base Profile Creation -->
-              <div class="profile-create-base-card" style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: var(--portal-surface-elevated); border: var(--phi-stroke-md) solid var(--portal-border); border-radius: var(--phi-radius-md);">
+              <div class="profile-create-base-card" style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: var(--portal-surface-elevated); border: 2px solid var(--portal-border); border-radius: var(--border-radius);">
                 <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">Foundation profile</h3>
                 <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Create a base profile from all starter resources. This becomes the default voice for content generation.</p>
                 <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Create base profile from starter resources">
@@ -947,7 +946,7 @@ import { industries } from '../data/industries';
                 <div class="quick-links" style="margin-top: var(--space-2xl);">
                   <h3>Quick Actions</h3>
                   <div class="quick-links-grid">
-                    <a href="/resources" class="quick-link-card">
+                    <a href="/resources" class="quick-link-card" target="_blank">
                       <svg class="quick-link-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -1619,7 +1618,7 @@ import { industries } from '../data/industries';
   .mobile-menu-toggle {
     display: none;
     background: var(--portal-surface);
-    border: var(--phi-stroke-md) solid var(--portal-border);
+    border: 2px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-sm);
     cursor: pointer;
@@ -1643,7 +1642,7 @@ import { industries } from '../data/industries';
 
   .header-search {
     flex: 1;
-    max-width: var(--portal-header-search-max);
+    max-width: 500px;
     position: relative;
     display: flex;
     align-items: center;
@@ -1659,7 +1658,7 @@ import { industries } from '../data/industries';
   .header-search input {
     width: 100%;
     padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) * 2 + 16px);
-    border: var(--phi-stroke-md) solid var(--portal-border-light);
+    border: 2px solid var(--portal-border-light);
     border-radius: var(--border-radius);
     font-size: var(--text-base);
     background: var(--portal-surface);
@@ -1707,7 +1706,7 @@ import { industries } from '../data/industries';
     background: var(--portal-surface-elevated);
     padding: var(--space-xl);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     box-shadow: var(--portal-shadow-sm);
     display: flex;
     align-items: flex-start;
@@ -1798,7 +1797,7 @@ import { industries } from '../data/industries';
 
   .quick-action-card {
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-xl);
     display: flex;
@@ -1878,7 +1877,7 @@ import { industries } from '../data/industries';
   .activity-list,
   .resources-preview-grid {
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
     min-height: 200px;
@@ -1916,7 +1915,7 @@ import { industries } from '../data/industries';
 
   .purpose-card {
     background: var(--portal-primary-ultra-light);
-    border: var(--phi-stroke-md) solid var(--portal-primary-light);
+    border: 2px solid var(--portal-primary-light);
     border-radius: var(--border-radius);
     padding: var(--space-xl);
     display: flex;
@@ -1993,8 +1992,8 @@ import { industries } from '../data/industries';
 
   .purpose-tip kbd {
     background: var(--portal-surface);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
-    border-radius: var(--phi-radius-sm);
+    border: 1px solid var(--portal-border);
+    border-radius: 4px;
     padding: 2px 6px;
     font-family: monospace;
     font-size: var(--text-xs);
@@ -2044,7 +2043,7 @@ import { industries } from '../data/industries';
 
   .starter-block-card {
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-md) solid var(--portal-border);
+    border: 2px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
     cursor: pointer;
@@ -2229,7 +2228,7 @@ import { industries } from '../data/industries';
 
   .resource-preview-card {
     background: var(--portal-surface);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-lg);
     cursor: pointer;
@@ -2375,7 +2374,7 @@ import { industries } from '../data/industries';
 
   .login-container {
     width: 100%;
-    max-width: var(--portal-login-max);
+    max-width: 450px;
     position: relative;
     z-index: 1;
     padding: var(--space-md);
@@ -2387,7 +2386,7 @@ import { industries } from '../data/industries';
     padding: var(--space-3xl);
     border-radius: var(--border-radius);
     box-shadow: var(--portal-shadow-xl);
-    border: var(--phi-stroke-md) solid var(--portal-border-light);
+    border: 2px solid var(--portal-border-light);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(20px);
@@ -2520,7 +2519,7 @@ import { industries } from '../data/industries';
   .login-form .form-group input {
     width: 100%;
     padding: var(--space-md);
-    border: var(--phi-stroke-md) solid var(--border-light);
+    border: 2px solid var(--border-light);
     border-radius: var(--border-radius);
     font-size: var(--text-base);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2774,7 +2773,7 @@ import { industries } from '../data/industries';
     padding: var(--space-xl);
     border-radius: var(--border-radius);
     box-shadow: var(--portal-shadow-md);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -2852,7 +2851,7 @@ import { industries } from '../data/industries';
 
   .section-toggle {
     background: transparent;
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     padding: var(--space-sm);
     cursor: pointer;
@@ -3009,7 +3008,7 @@ import { industries } from '../data/industries';
   textarea {
     width: 100%;
     padding: var(--space-md);
-    border: var(--phi-stroke-md) solid var(--portal-border-light);
+    border: 2px solid var(--portal-border-light);
     border-radius: var(--border-radius);
     font-size: var(--text-base);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3070,7 +3069,7 @@ import { industries } from '../data/industries';
       0 4px 12px rgba(0, 0, 0, 0.08),
       0 2px 4px rgba(0, 0, 0, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border: var(--phi-stroke-hairline) solid var(--border);
+    border: 1px solid var(--border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
@@ -3201,7 +3200,7 @@ import { industries } from '../data/industries';
 
   .search-input {
     padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-xl) + var(--space-xs));
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     width: 100%;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3220,7 +3219,7 @@ import { industries } from '../data/industries';
 
   .filter-select {
     padding: var(--space-sm) var(--space-md);
-    border: var(--phi-stroke-md) solid var(--border);
+    border: 2px solid var(--border);
     border-radius: var(--border-radius);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--surface);
@@ -3266,7 +3265,7 @@ import { industries } from '../data/industries';
   .resource-tree-panel {
     background: var(--portal-surface-subtle);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--portal-border-light);
+    border: 1px solid var(--portal-border-light);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -3317,7 +3316,7 @@ import { industries } from '../data/industries';
   .tree-search-input {
     width: 100%;
     padding: var(--space-sm) var(--space-sm) var(--space-sm) calc(var(--space-md) + var(--space-sm));
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     background: var(--portal-surface);
     font-size: var(--text-sm);
@@ -3352,7 +3351,7 @@ import { industries } from '../data/industries';
     border-radius: var(--border-radius-sm, 6px);
     font-weight: var(--font-weight-medium);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: var(--phi-stroke-hairline) solid var(--portal-border-light);
+    border: 1px solid var(--portal-border-light);
     background: var(--portal-surface);
     color: var(--portal-text-secondary);
     white-space: nowrap;
@@ -3874,7 +3873,7 @@ import { industries } from '../data/industries';
   .resource-workspace-content {
     background: var(--portal-surface);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--portal-border-light);
+    border: 1px solid var(--portal-border-light);
     display: flex;
     flex-direction: column;
     min-width: 0; /* Prevent grid overflow */
@@ -3992,7 +3991,7 @@ import { industries } from '../data/industries';
     background: var(--portal-surface);
     padding: var(--space-xl);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--portal-border-light);
+    border: 1px solid var(--portal-border-light);
     border-left: 4px solid var(--portal-border-light);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -4006,7 +4005,7 @@ import { industries } from '../data/industries';
 
   .resource-item-starter {
     background: var(--portal-primary-ultra-light);
-    border: var(--phi-stroke-md) solid var(--portal-primary-light);
+    border: 2px solid var(--portal-primary-light);
     border-left: 4px solid var(--portal-primary);
   }
 
@@ -4421,7 +4420,7 @@ import { industries } from '../data/industries';
   .badge-archived {
     background: var(--portal-neutral-100);
     color: var(--portal-neutral-600);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
   }
 
   .loading-message {
@@ -4433,7 +4432,7 @@ import { industries } from '../data/industries';
   .loading-spinner {
     width: 40px;
     height: 40px;
-    border: max(3px, calc(var(--phi-stroke-md) * 2)) solid var(--portal-border-light);
+    border: 4px solid var(--portal-border-light);
     border-top-color: var(--portal-primary);
     border-right-color: var(--portal-primary-light);
     border-bottom-color: var(--portal-info);
@@ -4552,7 +4551,7 @@ import { industries } from '../data/industries';
     background: var(--portal-surface-elevated);
     border-radius: var(--border-radius);
     box-shadow: var(--portal-shadow-xl);
-    max-width: var(--portal-modal-max);
+    max-width: 800px;
     width: 90%;
     max-height: 90vh;
     display: flex;
@@ -4560,7 +4559,7 @@ import { industries } from '../data/industries';
     z-index: 1001;
     overflow: hidden;
     animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     /* Sierpinski path-aligned corners */
     clip-path: polygon(
       0% 0%,
@@ -4611,7 +4610,7 @@ import { industries } from '../data/industries';
   }
 
   .modal-large {
-    max-width: var(--portal-modal-wide-max);
+    max-width: 1200px;
   }
 
   .modal-header {
@@ -5114,7 +5113,7 @@ import { industries } from '../data/industries';
     padding: var(--space-lg);
     background: var(--portal-surface-subtle);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--portal-border-light);
+    border: 1px solid var(--portal-border-light);
     margin-bottom: var(--space-xl);
     flex-wrap: wrap;
   }
@@ -5186,7 +5185,7 @@ import { industries } from '../data/industries';
   .profiles-helm {
     position: relative;
     width: 100%;
-    max-width: var(--portal-profiles-helm-max);
+    max-width: 800px;
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -5204,7 +5203,7 @@ import { industries } from '../data/industries';
     height: 120px;
     border-radius: 50%;
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-md) solid var(--portal-border);
+    border: 2px solid var(--portal-border);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -5267,7 +5266,7 @@ import { industries } from '../data/industries';
     height: 140px;
     border-radius: 50%;
     background: var(--portal-surface);
-    border: var(--phi-stroke-md) solid var(--portal-border);
+    border: 2px solid var(--portal-border);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     display: flex;
@@ -5463,7 +5462,7 @@ import { industries } from '../data/industries';
     padding: var(--space-lg);
     background: var(--surface-elevated);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--border);
+    border: 1px solid var(--border);
   }
 
   .profile-visualization-section h3 {
@@ -5537,7 +5536,7 @@ import { industries } from '../data/industries';
     pointer-events: none;
     transition: opacity 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: var(--phi-stroke-hairline) solid var(--border);
+    border: 1px solid var(--border);
     z-index: 10;
   }
 
@@ -5804,7 +5803,7 @@ import { industries } from '../data/industries';
     background: var(--surface-elevated);
     padding: var(--space-xl);
     border-radius: var(--border-radius);
-    border: var(--phi-stroke-hairline) solid var(--border);
+    border: 1px solid var(--border);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -6013,7 +6012,7 @@ import { industries } from '../data/industries';
     gap: var(--space-md);
     padding: var(--space-xl);
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     text-decoration: none;
     color: var(--portal-text-primary);
@@ -6274,7 +6273,7 @@ import { industries } from '../data/industries';
     right: 0;
     margin-top: var(--space-xs);
     background: var(--portal-surface-elevated);
-    border: var(--phi-stroke-hairline) solid var(--portal-border);
+    border: 1px solid var(--portal-border);
     border-radius: var(--border-radius);
     box-shadow: var(--portal-shadow-lg);
     padding: var(--space-xs);
@@ -6316,7 +6315,7 @@ import { industries } from '../data/industries';
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-    max-width: var(--portal-notification-stack-max);
+    max-width: 400px;
     pointer-events: none;
   }
 
@@ -6553,7 +6552,7 @@ import { industries } from '../data/industries';
 
     .modal-content {
       width: 95%;
-      max-width: var(--portal-modal-tablet-max);
+      max-width: 700px;
     }
 
     .tone-rings,
@@ -7426,7 +7425,7 @@ import { industries } from '../data/industries';
     .tone-ring,
     .vocab-ring {
       width: 100%;
-      max-width: var(--portal-thumb-max);
+      max-width: 200px;
     }
 
     .rings-matrix-grid {
@@ -7946,6 +7945,27 @@ import { industries } from '../data/industries';
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('sidebar-logout-btn')?.addEventListener('click', handleLogout);
 
+  /** Merge starter blocks + published resources into default voice profile (editors+). */
+  async function syncBaseVoiceProfile(user: { role?: string }): Promise<void> {
+    const roles = ['super-admin', 'admin', 'editor'];
+    if (!user?.role || !roles.includes(user.role)) return;
+    try {
+      const res = await fetch(`${VOICE_API_URL}/profiles/create-base`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.ok && import.meta.env.MODE === 'development') {
+        const data = await res.json().catch(() => ({}));
+        console.log('[Portal] Base voice profile:', (data as { message?: string }).message ?? 'synced');
+      }
+    } catch (e) {
+      console.warn('[Portal] Base voice profile sync failed (non-fatal):', e);
+    }
+  }
+
   // Show login screen
   function showLogin(): void {
     document.getElementById('login-screen')!.style.display = 'flex';
@@ -7989,6 +8009,7 @@ import { industries } from '../data/industries';
     // Load dashboard data and resources
     console.log('[Portal] Loading dashboard data');
     setTimeout(() => {
+      void syncBaseVoiceProfile(user);
       loadDashboardData();
       loadResources();
       loadStarterBlocks();
@@ -9015,7 +9036,6 @@ import { industries } from '../data/industries';
             <div class="resource-status-group">
               ${starterBlockBadge}
               ${!isStarterBlock ? `<span class="badge badge-${escapeHtml(resource.status || 'draft')}">${escapeHtml((resource.status || 'draft').charAt(0).toUpperCase() + (resource.status || 'draft').slice(1))}</span>` : ''}
-              ${!isStarterBlock && resource.processingStatus && resource.processingStatus !== 'ready' ? `<span class="badge badge-secondary" title="Pipeline status">${escapeHtml(String(resource.processingStatus))}</span>` : ''}
               ${voiceScore > 0 ? `
                 <span class="voice-score ${voiceScoreClass}" title="Voice Match Score: ${voiceScoreText}">
                   <svg class="voice-score-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -9537,7 +9557,7 @@ import { industries } from '../data/industries';
         </div>
         <div>
           <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Content</h4>
-          <div style="background: var(--portal-surface-subtle); padding: var(--space-lg); border-radius: var(--border-radius); border: var(--phi-stroke-hairline) solid var(--portal-border-light);">
+          <div style="background: var(--portal-surface-subtle); padding: var(--space-lg); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
             <pre style="white-space: pre-wrap; font-family: inherit; font-size: var(--text-sm); line-height: 1.6; margin: 0; color: var(--portal-text-primary);">${escapeHtml(resource.content || 'No content available')}</pre>
           </div>
         </div>
@@ -12092,7 +12112,7 @@ import { industries } from '../data/industries';
                       const isDuplicate = sim.similarity >= 0.85;
                       
                       return `
-                        <div class="similarity-item" style="padding: var(--space-md); margin-bottom: var(--space-md); border: var(--phi-stroke-hairline) solid var(--border); border-radius: var(--border-radius); background: var(--surface-elevated);">
+                        <div class="similarity-item" style="padding: var(--space-md); margin-bottom: var(--space-md); border: 1px solid var(--border); border-radius: var(--border-radius); background: var(--surface-elevated);">
                           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-sm);">
                             <div style="flex: 1;">
                               <div style="font-weight: 600; margin-bottom: var(--space-xs);">${escapeHtml(p1?.name || 'Unknown')} ↔ ${escapeHtml(p2?.name || 'Unknown')}</div>

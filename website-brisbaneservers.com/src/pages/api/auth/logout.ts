@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getTokenFromRequest, requireAuth } from '../../../utils/auth';
 import { deleteSession } from '../../../lib/db/sessions';
+import { authTokenClearCookie } from '../../../utils/http-cookies';
 
 /**
  * Logout endpoint
@@ -32,7 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Set-Cookie': 'authToken=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'
+        'Set-Cookie': authTokenClearCookie(request)
       }
     }
   );

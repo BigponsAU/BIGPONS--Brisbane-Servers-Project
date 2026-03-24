@@ -18,7 +18,7 @@ const currentPath = '/case-studies/professional-services-database';
 >
   <Header currentPath={currentPath} />
   
-  <main id="main-content" class="main-phi-chassis" role="main">
+  <main>
     <Breadcrumbs items={[
       { label: 'Home', href: '/' },
       { label: 'Projects', href: '/projects' },
@@ -31,13 +31,13 @@ const currentPath = '/case-studies/professional-services-database';
       subtitle="Professional services company outgrowing spreadsheets. Implemented proper database with semantic search and automated reporting. Time savings, improved accuracy, scalability."
     />
 
-    <section class="section phi-line-symmetrical">
+    <section class="section">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="case-study-content">
-          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--phi-radius-atypical-a); border-left: max(3px, calc(var(--phi-stroke-md) * 2)) solid var(--primary-color);">
+          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
               <div>
                 <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
@@ -58,12 +58,11 @@ const currentPath = '/case-studies/professional-services-database';
             </div>
           </div>
 
-          <div class="section-intro-phi">
-            <h2 class="section-title">
-              <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-              <SemanticText text={`A professional services company had grown from a small team to 20+ employees, but was still managing all client data, projects, and communications in spreadsheets. The limitations became increasingly apparent:
+          <h2 class="section-title">
+            <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+            <SemanticText text={`A professional services company had grown from a small team to 20+ employees, but was still managing all client data, projects, and communications in spreadsheets. The limitations became increasingly apparent:
 
 - Multiple team members editing the same spreadsheets caused version conflicts
 - No way to search across historical client communications effectively
@@ -73,15 +72,13 @@ const currentPath = '/case-studies/professional-services-database';
 - Risk of data loss with no proper backup strategy
 
 The company needed a proper database system that could handle their growing data volume while improving team collaboration and operational efficiency.`} semanticLevel="normal" isChild={true} />
-            </div>
           </div>
 
-          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
-            <h2 class="section-title">
-              <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-              <SemanticText text={`We analyzed their existing workflows and data structures to design a database system that matched their business processes:
+          <h2 class="section-title" style="margin-top: var(--space-4xl);">
+            <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
+            <SemanticText text={`We analyzed their existing workflows and data structures to design a database system that matched their business processes:
 
 Database Design:
 - Structured relational database for client, project, and communication data
@@ -104,7 +101,6 @@ Workflow Automation:
 - Document management integration
 
 The system was designed to scale with the business while maintaining data integrity and improving team productivity.`} semanticLevel="normal" isChild={true} />
-            </div>
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
@@ -133,13 +129,11 @@ The system was designed to scale with the business while maintaining data integr
             />
           </CardGrid>
 
-          <div class="section-intro-phi" style="margin-top: var(--space-4xl);">
-            <h2 class="section-title">
-              <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="section-description">
-              <SemanticText text="PostgreSQL database, semantic search engine (NLP-based), automated reporting system, RESTful API, cloud infrastructure, automated backup systems, version control integration." semanticLevel="normal" isChild={true} />
-            </div>
+          <h2 class="section-title" style="margin-top: var(--space-4xl);">
+            <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+          </h2>
+          <div class="section-description">
+            <SemanticText text="PostgreSQL database, semantic search engine (NLP-based), automated reporting system, RESTful API, cloud infrastructure, automated backup systems, version control integration." semanticLevel="normal" isChild={true} />
           </div>
 
           <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
@@ -164,7 +158,7 @@ The system was designed to scale with the business while maintaining data integr
 
 <style>
   .case-study-content {
-    max-width: var(--measure-article);
+    max-width: 900px;
     margin: 0 auto;
   }
 </style>

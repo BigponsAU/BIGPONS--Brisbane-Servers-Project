@@ -159,21 +159,22 @@ async function waitForHealth(
  * Verify both services are healthy
  * 
  * Health Check Strategy:
- * - Website (port 3000): Static Astro site with no API endpoint.
- *   Checks root URL - accepts 200 (OK) or 404 (not found, but server responding).
- * - Dashboard (port 3001): Express API server with dedicated health endpoint.
- *   Checks /api/health endpoint which returns detailed health status.
+ * - Website (port 3000): Try `/api/health` first (200 = ok); fallback to `/` (200/404).
+ * - Dashboard (port 3001): `/api/health` returns detailed health status.
  */
 async function verifyHealth(): Promise<boolean> {
   console.log('\n🔍 ' + generateStatusMessage('Ascertaining service health with systematic verification...'));
   
-  // Website: Static site, no API health endpoint - check root URL
+  const websiteHealthUrl = `http://localhost:${WEBSITE_PORT}/api/health`;
   const websiteUrl = `http://localhost:${WEBSITE_PORT}`;
   // Dashboard: Has dedicated /api/health endpoint for detailed health status
   const dashboardUrl = `http://localhost:${DASHBOARD_PORT}/api/health`;
   
   process.stdout.write(`   Checking website (${WEBSITE_PORT})`);
-  const websiteHealthy = await waitForHealth('website', websiteUrl);
+  let websiteHealthy = await waitForHealth('website', websiteHealthUrl);
+  if (!websiteHealthy) {
+    websiteHealthy = await waitForHealth('website (root)', websiteUrl);
+  }
   console.log(websiteHealthy ? ' ✅' : ' ❌');
   
   process.stdout.write(`   Checking dashboard (${DASHBOARD_PORT})`);

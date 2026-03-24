@@ -10,6 +10,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, industries } from '~/data/industries';
+import { getInternalFetchOrigin } from '~/lib/server-origin';
 
 export async function getStaticPaths() {
   return industries.map((industry) => ({
@@ -29,8 +30,7 @@ const API_URL = '/api';
 let publishedResources: any[] = [];
 
 try {
-  // Use absolute URL for server-side fetch
-  const baseUrl = import.meta.env.SITE || 'http://localhost:4321';
+  const baseUrl = getInternalFetchOrigin(Astro);
   const response = await fetch(`${baseUrl}${API_URL}/resources/public?industry=${industrySlug}`, {
     headers: {
       'Accept': 'application/json'
