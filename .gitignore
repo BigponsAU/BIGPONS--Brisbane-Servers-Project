@@ -97,3 +97,6 @@ temp/
 .wrangler/
 .dev.vars
 wrangler.toml.local
+
+# Local visual archive
+_visual-archive/
