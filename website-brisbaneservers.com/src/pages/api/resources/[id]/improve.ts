@@ -4,6 +4,7 @@ import { getVoiceFramework } from '../../../../utils/voice-framework';
 import { loadResources, saveResources } from '../../../../lib/resources-api';
 import { buildRagContext } from '../../../../lib/semantic/rag';
 import { runIndexPipeline } from '../../../../lib/semantic/pipeline';
+import { isDevelopmentMode } from '../../../../utils/runtime-env';
 
 /**
  * Improve/regenerate resource content
@@ -69,7 +70,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       ? `${rag.contextText}\n\n---\nOriginal:\n${resource.content}`
       : resource.content;
 
-    if (import.meta.env.MODE === 'development') {
+    if (isDevelopmentMode()) {
       console.log(
         `[API] RAG improve retrievalMs=${rag.retrievalMs} model=${rag.modelId} chunks=${rag.chunkIds.length}`
       );

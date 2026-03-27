@@ -93,10 +93,5 @@ website-brisbaneservers.com/.wrangler/
 tmp/
 temp/
 
-# Cloudflare
-.wrangler/
-.dev.vars
-wrangler.toml.local
-
 # Local visual archive
 _visual-archive/

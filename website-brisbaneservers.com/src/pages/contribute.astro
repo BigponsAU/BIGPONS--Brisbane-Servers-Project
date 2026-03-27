@@ -1,24 +1,26 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import Header from '~/components/Header.astro';
-import Footer from '~/components/Footer.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import SiteShell from '~/layouts/SiteShell.astro';
+import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
 
 const currentPath = '/contribute';
+const publicApiBaseUrl = resolvePublicApiUrl('');
+const portalPath = resolvePublicSitePath('/portal/');
 ---
 
-<BaseLayout
+<SiteShell
   title="Contribute - Brisbane Servers"
   description="Join our community: share your experience, earn tokens, and help improve industry resources. Your contributions are checked against our voice profile and shown alongside a community note."
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Resources', href: '/resources' },
+    { label: 'Contribute' }
+  ]}
+  pageId="contribute"
+  valueProfile="utility"
+  zoomProfile="focused"
+  density="compact"
 >
-  <Header currentPath={currentPath} />
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources', href: '/resources' },
-      { label: 'Contribute' }
-    ]} />
-
     <section class="contribute-hero section">
       <div class="container">
         <h1 class="contribute-title">Contribute to Community Resources</h1>
@@ -76,15 +78,13 @@ const currentPath = '/contribute';
           </div>
         </div>
         <p class="contribute-portal-link">
-          Already use the portal? <a href="/portal">Open Resource Portal</a>
+          Already use the portal? <a href={portalPath}>Open Resource Portal</a>
         </p>
       </div>
     </section>
-  </main>
-  <Footer />
-</BaseLayout>
+</SiteShell>
 
-<script>
+<script define:vars={{ apiBaseUrl: publicApiBaseUrl, portalPath }}>
   const registerForm = document.getElementById('register-form') as HTMLFormElement;
   const loginForm = document.getElementById('login-form') as HTMLFormElement;
   const registerStatus = document.getElementById('register-status');
@@ -101,7 +101,7 @@ const currentPath = '/contribute';
     const fd = new FormData(registerForm);
     setStatus(registerStatus, 'Creating account…');
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
@@ -110,7 +110,7 @@ const currentPath = '/contribute';
       if (res.ok && data.success) {
         setStatus(registerStatus, 'Account created. Redirecting to portal…');
         if (data.token) localStorage.setItem('authToken', data.token);
-        window.location.href = '/portal';
+        window.location.href = portalPath;
       } else {
         setStatus(registerStatus, data.error || 'Registration failed', true);
       }
@@ -124,7 +124,7 @@ const currentPath = '/contribute';
     const fd = new FormData(loginForm);
     setStatus(loginStatus, 'Logging in…');
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
@@ -133,7 +133,7 @@ const currentPath = '/contribute';
       if (res.ok && data.success) {
         setStatus(loginStatus, 'Logged in. Redirecting to portal…');
         if (data.token) localStorage.setItem('authToken', data.token);
-        window.location.href = '/portal';
+        window.location.href = portalPath;
       } else {
         setStatus(loginStatus, data.error || 'Login failed', true);
       }

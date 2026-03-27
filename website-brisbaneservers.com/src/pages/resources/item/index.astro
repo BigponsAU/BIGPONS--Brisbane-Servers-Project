@@ -1,0 +1,211 @@
+---
+import SiteShell from '~/layouts/SiteShell.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import InquiryForm from '~/components/InquiryForm.astro';
+import { getPublicApiBaseUrl } from '~/lib/api-config';
+import { getPageDescriptor } from '~/lib/page-descriptors';
+
+const currentPath = '/resources/item';
+const publicApiBaseUrl = getPublicApiBaseUrl();
+const pageDescriptor = getPageDescriptor('resource-detail');
+---
+
+<SiteShell
+  title="Resource Detail - Brisbane Servers"
+  description="Published Brisbane Servers resource content loaded from the hybrid API pipeline."
+  currentPath={currentPath}
+  pageId={pageDescriptor.pageId}
+  valueProfile={pageDescriptor.valueProfile}
+  layoutDensity={pageDescriptor.layoutDensity}
+  zoomProfile={pageDescriptor.zoomProfile}
+  surfaceTone={pageDescriptor.surfaceTone}
+  mainClass={pageDescriptor.mainClass}
+  showFooter={pageDescriptor.showFooter}
+>
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Resources', href: '/resources' },
+      { label: 'Resource detail' }
+    ]} />
+
+    <section class="section">
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="container">
+        <div id="resource-detail-status" class="resource-detail-status">
+          Loading resource...
+        </div>
+
+        <article id="resource-detail-article" class="resource-detail-article" hidden>
+          <header class="resource-detail-header">
+            <p id="resource-detail-eyebrow" class="resource-detail-eyebrow"></p>
+            <h1 id="resource-detail-title" class="section-title"></h1>
+            <p id="resource-detail-description" class="section-description"></p>
+          </header>
+
+          <div id="resource-detail-meta" class="resource-detail-meta"></div>
+          <div id="resource-detail-content" class="resource-detail-content"></div>
+
+          <div class="resource-detail-actions">
+            <a id="resource-detail-back-topic" class="btn btn-secondary" href="/resources">Back to topic</a>
+            <a class="btn btn-primary" href="/resources">Browse resources</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <InquiryForm
+      title="Questions about this resource?"
+      subtitle="We can unpack the practical implications for your industry and operating context."
+    />
+</SiteShell>
+
+<script define:vars={{ apiBaseUrl: publicApiBaseUrl }}>
+  const params = new URLSearchParams(window.location.search);
+  const resourceId = params.get('id');
+  const statusEl = document.getElementById('resource-detail-status');
+  const articleEl = document.getElementById('resource-detail-article');
+  const titleEl = document.getElementById('resource-detail-title');
+  const descEl = document.getElementById('resource-detail-description');
+  const eyebrowEl = document.getElementById('resource-detail-eyebrow');
+  const metaEl = document.getElementById('resource-detail-meta');
+  const contentEl = document.getElementById('resource-detail-content');
+  const backTopicEl = document.getElementById('resource-detail-back-topic') as HTMLAnchorElement | null;
+
+  function setStatus(message: string, isError = false) {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.setAttribute('data-error', isError ? 'true' : 'false');
+  }
+
+  function formatDate(value?: string): string {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
+  }
+
+  function createMetaChip(label: string, value: string): HTMLElement {
+    const chip = document.createElement('span');
+    chip.className = 'resource-detail-chip';
+    chip.textContent = `${label}: ${value}`;
+    return chip;
+  }
+
+  async function loadResource() {
+    if (!resourceId) {
+      setStatus('No resource id was provided.', true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/resources/public?id=${encodeURIComponent(resourceId)}`, {
+        headers: { Accept: 'application/json' }
+      });
+
+      if (!response.ok) {
+        setStatus('This resource could not be loaded.', true);
+        return;
+      }
+
+      const data = await response.json();
+      const resource = data?.resource;
+
+      if (!resource) {
+        setStatus('This resource is no longer available.', true);
+        return;
+      }
+
+      document.title = `${resource.title} - Resources - Brisbane Servers`;
+      if (titleEl) titleEl.textContent = resource.title || 'Resource detail';
+      if (descEl) descEl.textContent = resource.description || '';
+      if (eyebrowEl) eyebrowEl.textContent = [resource.industry, resource.topic].filter(Boolean).join(' / ');
+
+      if (metaEl) {
+        metaEl.innerHTML = '';
+        if (resource.generatedAt) metaEl.appendChild(createMetaChip('Published', formatDate(resource.generatedAt)));
+        if (resource.metadata?.voiceScore) {
+          metaEl.appendChild(createMetaChip('Voice match', `${Math.round(resource.metadata.voiceScore * 100)}%`));
+        }
+        if (resource.generatedBy) metaEl.appendChild(createMetaChip('Author', resource.generatedBy));
+      }
+
+      if (contentEl) {
+        contentEl.textContent = resource.content || '';
+      }
+
+      if (backTopicEl && resource.industry && resource.topic) {
+        backTopicEl.href = `/resources/${resource.industry}/${resource.topic}`;
+        backTopicEl.textContent = `Back to ${resource.topic}`;
+      }
+
+      articleEl?.removeAttribute('hidden');
+      statusEl?.setAttribute('hidden', 'true');
+    } catch {
+      setStatus('Network error while loading this resource.', true);
+    }
+  }
+
+  void loadResource();
+</script>
+
+<style>
+  .resource-detail-status {
+    padding: var(--space-lg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    background: var(--surface-elevated);
+    color: var(--text-secondary);
+  }
+
+  .resource-detail-status[data-error='true'] {
+    border-color: rgba(var(--primary-color-rgb), 0.25);
+    color: var(--primary-dark);
+  }
+
+  .resource-detail-article {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .resource-detail-header {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .resource-detail-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .resource-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .resource-detail-chip {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-pill, 999px);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: var(--text-sm);
+  }
+
+  .resource-detail-content {
+    white-space: pre-wrap;
+    line-height: 1.85;
+    font-size: var(--text-base);
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-light);
+  }
+
+  .resource-detail-actions {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+</style>

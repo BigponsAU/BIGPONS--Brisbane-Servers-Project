@@ -1,51 +1,69 @@
 # Run the App & Troubleshooting
 
-## Quick start (single server)
+## Quick start (hybrid local split)
 
 From **project root**:
+
+```bash
+npm run start:hybrid
+```
+
+This starts the hybrid stack:
+
+- **Static frontend + portal UI:** `http://localhost:3000`
+- **Standalone API:** `http://localhost:3002/api`
+- **Health:** `http://localhost:3002/api/health`
+
+See [Credentials](../portal/CREDENTIALS.md) for login.
+
+## Legacy unified mode
+
+From project root:
 
 ```bash
 npm start
 ```
 
-This starts the unified stack:
+This keeps the old single-process developer flow available while the hybrid migration is rolled out.
 
-- **Website + Portal + API:** `http://localhost:3000`
-- Portal: `http://localhost:3000/portal`
-- Health: `http://localhost:3000/api/health`
+## Running each side separately
 
-See [Credentials](../portal/CREDENTIALS.md) for login.
-
-## Running the website only (e.g. after API moved into Astro)
-
-From project root:
+### Static frontend
 
 ```bash
 cd website-brisbaneservers.com
 npm run dev
 ```
 
-Everything (site + API) runs on port 3000.
+### Standalone API
+
+```bash
+cd website-brisbaneservers.com
+npm run start:api
+```
 
 ## Verify
 
-1. **Health:** Open `http://localhost:3000/api/health` → expect `{"status":"ok",...}` or similar.
-2. **Portal:** Open `http://localhost:3000/portal` → login screen (no connection error).
+1. **Health:** Open `http://localhost:3002/api/health` → expect `{"status":"ok",...}` or similar.
+2. **Public resources:** Open `http://localhost:3002/api/resources/public` → expect JSON payload.
+3. **Frontend:** Open `http://localhost:3000/resources` → page should render without same-origin API errors.
+4. **Portal:** Open `http://localhost:3000/portal` → login screen should load and actions should target the external API.
 
 ## Common issues
 
 ### "Please check if the voice framework server is running"
 
-The app is now unified: one server on port 3000. Ensure you started it from project root:
+For the hybrid setup, ensure the standalone API is running on port 3002:
 
 ```bash
-npm start
+cd website-brisbaneservers.com
+npm run start:api
 ```
 
-or from the website folder:
+or from project root:
 
 ```bash
-cd website-brisbaneservers.com && npm run dev
+npm run start:hybrid
 ```
 
 ### Port already in use
@@ -54,6 +72,7 @@ cd website-brisbaneservers.com && npm run dev
 
 ```powershell
 netstat -ano | findstr :3000
+netstat -ano | findstr :3002
 ```
 
 **Kill (replace `<PID>` with the number from the last column):**
@@ -66,25 +85,28 @@ taskkill /PID <PID> /F
 
 ```bash
 lsof -i :3000
+lsof -i :3002
 kill -9 <PID>
 ```
 
 ### CORS errors
 
-- Ensure you’re using the same origin (e.g. `http://localhost:3000` for site and API).
-- If you still run a separate API, set `ALLOWED_ORIGINS` to include the frontend URL (e.g. `http://localhost:3000`).
+- Ensure `ALLOWED_ORIGINS` includes the frontend URL (e.g. `http://localhost:3000`).
+- Ensure `PUBLIC_API_BASE_URL` points at the standalone API origin, not the GitHub Pages site origin.
 
 ### API not responding
 
-1. Check the terminal where you ran `npm start` or `npm run dev` for errors.
+1. Check the terminal where you ran `npm run start:api` for errors.
 2. Run a local build: `cd website-brisbaneservers.com && npm run build`.
 3. Confirm routes exist under `website-brisbaneservers.com/src/pages/api/`.
+4. Confirm the standalone API host can bind to `PORT` (default `3002`).
 
 ### Login / auth issues
 
 1. Clear site data for `localhost:3000` or run in a private window.
 2. In browser console: `localStorage.removeItem('authToken')` then reload.
 3. Confirm credentials: [Credentials](../portal/CREDENTIALS.md).
+4. Confirm `PUBLIC_API_BASE_URL` points to the same API host you used for login/register.
 
 ### Dependencies
 
@@ -96,5 +118,7 @@ cd website-brisbaneservers.com && npm install
 
 ## Configuration
 
-- **Custom API base (if applicable):** In `website-brisbaneservers.com/.env` set `PUBLIC_VOICE_API_URL` (e.g. `/api` when same origin).
+- **Public API base:** In `website-brisbaneservers.com/.env` set `PUBLIC_API_BASE_URL` (e.g. `http://localhost:3002/api`).
+- **Build-time API base:** Set `INTERNAL_API_BASE_URL` if Astro prerender should fetch from a different API URL.
+- **GitHub Pages base path:** Set `PUBLIC_SITE_BASE` to `/<repo>/` for project-site hosting.
 - **Env vars:** See [Environment variables](../development/ENV_VARIABLES.md).

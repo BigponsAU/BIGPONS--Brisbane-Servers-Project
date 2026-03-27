@@ -68,6 +68,48 @@ body {
     backface-visibility: hidden;
 }
 
+body[data-value-profile='foundation'] {
+    --page-container-max: 116rem;
+    --page-measure-max: 48rem;
+    --page-accent-strength: 0.95;
+}
+
+body[data-value-profile='evidence'] {
+    --page-container-max: 110rem;
+    --page-measure-max: 44rem;
+    --page-accent-strength: 0.8;
+}
+
+body[data-value-profile='utility'] {
+    --page-container-max: 104rem;
+    --page-measure-max: 40rem;
+    --page-accent-strength: 0.65;
+}
+
+body[data-page-density='airy'] {
+    --page-section-space: var(--space-3xl);
+    --page-density-multiplier: 1.08;
+}
+
+body[data-page-density='comfortable'] {
+    --page-section-space: var(--space-2xl);
+    --page-density-multiplier: 1;
+}
+
+body[data-page-density='compact'] {
+    --page-section-space: calc(var(--space-xl) * 1.1);
+    --page-density-multiplier: 0.88;
+}
+
+body[data-zoom-profile='immersive'][data-zoom-tier='wide'] {
+    --page-container-max: calc(var(--page-container-max) * 1.04);
+}
+
+body[data-zoom-profile='focused'][data-zoom-tier='compact'] {
+    --page-container-max: calc(var(--page-container-max) * 0.94);
+    --page-measure-max: calc(var(--page-measure-max) * 0.94);
+}
+
 /* Heading Styles - Standardized Typography */
 /* Individual Element Sizing - Phi-Based (Not Template-Locked) */
 /* Each element uses individual phi derivatives for unique sizing */
@@ -162,7 +204,7 @@ footer {
 .card-description,
 .hero-subtitle,
 p:not(.footer-description):not(.form-disclaimer) {
-    max-width: 46.25rem;
+    max-width: var(--page-measure-max);
     /* 740px / 16 = 46.25rem - scales with zoom */
 }
 
@@ -208,7 +250,7 @@ main#main-content {
 .container {
     width: 100%;
     /* Wide layouts + zoom: cap width in rem (scales with zoom), center with symmetric gutters */
-    max-width: min(120rem, 100%);
+    max-width: min(var(--page-container-max), 100%);
     margin-inline: auto;
     padding-top: var(--layout-padding-block-tight);
     padding-bottom: var(--layout-padding-block-tight);
@@ -2353,8 +2395,8 @@ html[data-zoom-level] .container {
 }
 
 .section {
-    padding-top: var(--layout-section-padding-y);
-    padding-bottom: var(--layout-section-padding-y);
+    padding-top: calc(var(--layout-section-padding-y) * var(--page-density-multiplier));
+    padding-bottom: calc(var(--layout-section-padding-y) * var(--page-density-multiplier));
     padding-left: clamp(0, 0, var(--section-max-padding-left));
     padding-right: clamp(0, 0, var(--section-max-padding-right));
     /* Horizontal padding scales with zoom using phi-based tokens - max values scale */

@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "start:api": "npx tsx standalone-api/server.ts",
     "prebuild": "npx tsx scripts/pre-build-check.ts",
     "build": "astro build",
+    "build:github-pages": "npm run build",
     "build:cpanel": "npm run prebuild && astro build --config astro.config.cpanel.mjs && npm run postbuild",
     "postbuild": "npx tsx scripts/post-build-verify.ts",
     "preview": "astro preview",
@@ -16,9 +18,8 @@
     "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
   },
   "dependencies": {
-    "astro": "^5.15.4",
-    "@astrojs/cloudflare": "^12.0.0",
     "@astrojs/node": "^9.0.0",
+    "astro": "^5.15.4",
     "sql.js": "^1.11.0"
   },
   "devDependencies": {
@@ -28,6 +29,3 @@
     "typescript": "^5.0.0"
   }
 }
-
-
-

@@ -28,7 +28,15 @@ npm start
 - **App:** `http://localhost:3000`
 - **Portal:** `http://localhost:3000/portal`
 
-See [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) to run or fix issues. [Credentials](docs/portal/CREDENTIALS.md) for login. [Portal](docs/portal/PORTAL.md) for portal features.
+For the GitHub Pages hybrid split, run the static frontend and standalone API separately:
+```bash
+npm run start:hybrid
+```
+
+- **Static frontend:** `http://localhost:3000`
+- **Standalone API:** `http://localhost:3002/api`
+
+See [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) to run or fix issues. [GitHub Pages hybrid](docs/operations/GITHUB_PAGES_HYBRID.md) for deployment. [Credentials](docs/portal/CREDENTIALS.md) for login. [Portal](docs/portal/PORTAL.md) for portal features.
 
 **Full documentation map:** [docs/README.md](docs/README.md) (start there if the repo feels large).
 
@@ -62,8 +70,10 @@ See [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) to run or fix 
 - [Portal](docs/portal/PORTAL.md) — Admin portal and API overview
 - [Credentials](docs/portal/CREDENTIALS.md) — Login and env credentials
 - [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) — Start app and common issues
+- [GitHub Pages hybrid](docs/operations/GITHUB_PAGES_HYBRID.md) — Static frontend + standalone API deployment
 - [Repository status](docs/project/REPOSITORY_STATUS.md) — Status and overview
 - [Environment variables](docs/development/ENV_VARIABLES.md) — Environment configuration
+- [Hybrid API contract](docs/development/HYBRID_API_CONTRACT.md) — Shared frontend/backend route contract
 - [Design tokens](docs/design/DESIGN_TOKENS_REFERENCE.md) — Design system tokens
 
 ### Voice Framework

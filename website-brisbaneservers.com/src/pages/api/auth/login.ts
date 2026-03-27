@@ -3,6 +3,7 @@ import { createSessionToken, verifyPassword, type AuthUser } from '../../../util
 import { findUserByEmail } from '../../../lib/db/users';
 import { createSession } from '../../../lib/db/sessions';
 import { authTokenSetCookie } from '../../../utils/http-cookies';
+import { getRuntimeEnv } from '../../../utils/runtime-env';
 
 const SESSION_MAX_AGE = 24 * 60 * 60;
 
@@ -28,14 +29,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const ADMIN_EMAIL =
-      import.meta.env.ADMIN_EMAIL ||
-      (typeof process !== 'undefined' && process.env?.ADMIN_EMAIL) ||
-      '';
-    const ADMIN_PASSWORD =
-      import.meta.env.ADMIN_PASSWORD ||
-      (typeof process !== 'undefined' && process.env?.ADMIN_PASSWORD) ||
-      '';
+    const ADMIN_EMAIL = getRuntimeEnv('ADMIN_EMAIL') ?? '';
+    const ADMIN_PASSWORD = getRuntimeEnv('ADMIN_PASSWORD') ?? '';
 
     if (
       ADMIN_EMAIL &&

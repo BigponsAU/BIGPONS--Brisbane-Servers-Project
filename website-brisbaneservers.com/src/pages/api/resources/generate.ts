@@ -10,6 +10,7 @@ import {
 } from '../../../lib/resources-api';
 import { buildRagContext } from '../../../lib/semantic/rag';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
+import { isDevelopmentMode } from '../../../utils/runtime-env';
 
 /**
  * Generate a new resource
@@ -69,7 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
       ? `Knowledge base context:\n${rag.contextText}\n\n---\nTask: ${resourceTitle}. ${topic} solutions for ${industry} businesses.`
       : `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
 
-    if (import.meta.env.MODE === 'development') {
+    if (isDevelopmentMode()) {
       console.log(
         `[API] RAG generate retrievalMs=${rag.retrievalMs} model=${rag.modelId} chunks=${rag.chunkIds.length}`
       );

@@ -89,7 +89,7 @@ Important areas:
 
 Framework and adapter:
 
-- Default runtime is Astro server mode with `@astrojs/cloudflare`.
+- Default frontend runtime is Astro static mode using `website-brisbaneservers.com/src-static`.
 - Alternate runtime is Astro server mode with `@astrojs/node` using `astro.config.cpanel.mjs`.
 
 ### `voice-framework/`
@@ -155,7 +155,7 @@ Important areas:
 
 | Variant | Main config | Intended target | Implication |
 |---|---|---|---|
-| Cloudflare default | `website-brisbaneservers.com/astro.config.mjs` | Workers or Pages style server runtime | Best aligned with edge deployment, but clashes with local filesystem persistence |
+| GitHub Pages hybrid frontend | `website-brisbaneservers.com/astro.config.mjs` | Static frontend deployment | Pairs with the standalone API host and keeps the public site portable |
 | cPanel or Node standalone | `website-brisbaneservers.com/astro.config.cpanel.mjs` | Traditional Node hosting | Better aligned with filesystem-backed JSON or SQLite storage |
 
 ### Variation 2: storage model
@@ -495,7 +495,7 @@ Ordered by practical impact, with inference where needed.
 ### Critical
 
 1. Default admin credentials appear to exist when env vars are missing.
-2. The default website runtime is Cloudflare, while most persistence assumes writable local files.
+2. The default website deployment is a static frontend plus standalone API, while most persistence still assumes writable local files on the API host.
 3. Session state is partly memory-only, which is brittle for workers, restarts, and horizontal scale.
 
 ### High

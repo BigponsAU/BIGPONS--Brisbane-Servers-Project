@@ -1,25 +1,21 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 import SearchBar from '../components/SearchBar.astro';
 import IndustryFilters from '../components/IndustryFilters.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 import { industries } from '../data/industries';
-import { getInternalFetchOrigin } from '../lib/server-origin';
+import { resolveInternalApiUrl } from '../lib/api-config';
 
-// Fetch published resources from API (using Astro API routes)
-const API_URL = '/api';
+// Fetch published resources from the standalone API so the page can also build statically.
+const publicResourcesUrl = resolveInternalApiUrl('/resources/public');
 let publishedResources: any[] = [];
 
 try {
-  const baseUrl = getInternalFetchOrigin(Astro);
-  const response = await fetch(`${baseUrl}${API_URL}/resources/public`, {
+  const response = await fetch(publicResourcesUrl, {
     headers: {
       'Accept': 'application/json'
     }
@@ -46,24 +42,19 @@ const currentPath = '/resources';
 const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most recent
 ---
 
-<BaseLayout 
+<SiteShell 
   title="Resources - Brisbane Servers"
   description="Industry-specific knowledge hub with insights on technology applications, grants, automation opportunities, and reality-based guidance for Australian SMEs."
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Resources' }
+  ]}
+  pageId="resources"
+  valueProfile="evidence"
+  zoomProfile="focused"
+  mainClass="main-phi-chassis"
 >
-  <Header 
-    currentPath={currentPath}
-    breadcrumbs={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources' }
-    ]}
-  />
-  
-  <main id="main-content" class="main-phi-chassis" role="main">
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources' }
-    ]} />
-    
     <Hero 
       title="Resources & Insights"
       subtitle="Industry-specific knowledge to help you understand what's possible, what's real, and what actually works for your business. Facts, documented proof, and practical guidance."
@@ -237,8 +228,5 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
       subtitle="Share your thoughts, questions, or half-formed ideas. We're here to provide clarity and explore what's possible. You don't need to be the expert—we are."
       locationField={true}
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 

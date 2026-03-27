@@ -1,15 +1,18 @@
-# cPanel deployment (today) vs Cloudflare (later)
+# cPanel deployment vs GitHub Pages hybrid
 
-This site is **SSR + API routes** (`output: 'server'`). It is **not** a static HTML/CSS/JS bundle you can drop into `public_html` alone.
+The repo now has two supported deployment shapes:
+
+- `astro.config.mjs`: static frontend build for GitHub Pages
+- `astro.config.cpanel.mjs`: Node standalone build for cPanel or another Node host
 
 ## What does *not* work
 
-- Uploading only the **Cloudflare** build (`npm run build` with default `astro.config.mjs`) — that output targets **Cloudflare Workers** (`dist/_worker.js`). Apache/cPanel will not execute it.
+- Uploading only the static frontend and expecting `/api/*` to work without a separate API host.
 - Expecting **FTP-only** “static hosting” to run `/portal`, `/api/*`, or resource APIs without a **Node.js** process.
 
 ## What works on cPanel
 
-Use the **Node standalone** build (does **not** replace the Cloudflare config):
+Use the **Node standalone** build:
 
 ```bash
 cd website-brisbaneservers.com
@@ -23,7 +26,7 @@ From repo root:
 npm run build:website:cpanel
 ```
 
-This uses [website-brisbaneservers.com/astro.config.cpanel.mjs](../../website-brisbaneservers.com/astro.config.cpanel.mjs) (`@astrojs/node`, `mode: 'standalone'`). The default [astro.config.mjs](../../website-brisbaneservers.com/astro.config.mjs) remains **`@astrojs/cloudflare`** for future Cloudflare deploys.
+This uses [website-brisbaneservers.com/astro.config.cpanel.mjs](../../website-brisbaneservers.com/astro.config.cpanel.mjs) (`@astrojs/node`, `mode: 'standalone'`). The default [astro.config.mjs](../../website-brisbaneservers.com/astro.config.mjs) is the static GitHub Pages frontend build.
 
 ### Run the app
 
@@ -68,21 +71,21 @@ Exact clicks vary by host; use their Node.js app docs.
 
 If Apache serves the domain and proxies to Node, use your host’s recommended **.htaccess** or proxy config. Do not commit secrets into `.htaccess`.
 
-## Cloudflare later
+## GitHub Pages hybrid
 
-When you move to **Cloudflare Pages/Workers**, use the default build:
+When you deploy the frontend to **GitHub Pages**, use the default build:
 
 ```bash
 npm run build
 ```
 
-Keep `astro.config.mjs` + `@astrojs/cloudflare` unchanged. The cPanel config is an **alternate** build; both can live in the repo.
+Deploy the standalone API separately from `website-brisbaneservers.com/standalone-api/server.ts`.
 
 ## Summary
 
 | Target | Command | Output |
 |--------|---------|--------|
-| Cloudflare | `npm run build` (default config) | `dist/_worker.js` |
+| GitHub Pages frontend | `npm run build` (default config) | `dist/` static files |
 | cPanel / Node host | `npm run build:cpanel` | `dist/server/entry.mjs` |
 
 Neither option is “upload PHP files only”; both need the right runtime and layout as above.

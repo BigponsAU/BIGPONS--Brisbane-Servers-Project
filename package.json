@@ -5,8 +5,10 @@
   "scripts": {
     "start": "npm run start:unified",
     "start:unified": "npx tsx start-unified.ts",
+    "start:hybrid": "concurrently \"npm run start:website\" \"npm run start:api\"",
     "start:legacy": "concurrently \"npm run start:website\" \"npm run start:voice\"",
     "start:website": "cd website-brisbaneservers.com && npm run dev",
+    "start:api": "cd website-brisbaneservers.com && npm run start:api",
     "start:voice": "cd voice-framework && npm run dashboard",
     "install:all": "cd website-brisbaneservers.com && npm install && cd ../voice-framework && npm install",
     "seed:resources": "npx tsx scripts/seed-resources.ts",

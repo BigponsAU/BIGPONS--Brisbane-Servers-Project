@@ -1,17 +1,24 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import { industries } from '../data/industries';
+import { resolvePublicApiUrl } from '../lib/api-config';
+
+const publicApiBaseUrl = resolvePublicApiUrl('');
 ---
 
-<BaseLayout 
+<SiteShell 
   title="Resource Portal - Brisbane Servers"
   description="Secure portal for managing resources using voice framework integration"
+  noindex={true}
+  currentPath="/portal"
+  pageId="portal"
+  shellVariant="portal"
+  valueProfile="utility"
+  zoomProfile="focused"
+  density="compact"
+  showFooter={false}
+  mainClass="portal-shell"
 >
-  <Header currentPath="/portal" />
-  
-  <main id="main-content" role="main" style="min-height: 80vh;">
     <div id="admin-portal" class="admin-portal">
       <!-- Login Screen -->
       <div id="login-screen" class="login-screen">
@@ -1063,13 +1070,9 @@ import { industries } from '../data/industries';
         </div>
       </div>
     </div>
-  </main>
-
   <!-- Notification Container -->
   <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 
 <style>
   /* Global Responsive Base */
@@ -7727,7 +7730,7 @@ import { industries } from '../data/industries';
 
 </style>
 
-<script>
+<script define:vars={{ publicApiBaseUrl }}>
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
           (function() {
@@ -7800,13 +7803,13 @@ import { industries } from '../data/industries';
             }
           })();
           
-          // API URL - now uses Astro API routes (same origin)
-          const VOICE_API_URL = import.meta.env.PUBLIC_VOICE_API_URL || '/api';
+          // API URL - shared with the static GitHub Pages frontend.
+          const VOICE_API_URL = publicApiBaseUrl;
           const isDev = import.meta.env.MODE === 'development';
           if (isDev) {
             console.log('[Portal] Initializing with API URL:', VOICE_API_URL);
             console.log('[Portal] Environment:', {
-              PUBLIC_VOICE_API_URL: import.meta.env.PUBLIC_VOICE_API_URL,
+              PUBLIC_API_BASE_URL: VOICE_API_URL,
               MODE: import.meta.env.MODE
             });
           }
@@ -10807,10 +10810,10 @@ import { industries } from '../data/industries';
       // Use Astro API route for profiles (not Express dashboard)
       const isDev = import.meta.env.MODE === 'development';
       if (isDev) {
-        console.log('[Portal] Fetching profiles from:', `/api/profiles`);
+        console.log('[Portal] Fetching profiles from:', `${VOICE_API_URL}/profiles`);
       }
       
-      const response = await fetch(`/api/profiles`, {
+      const response = await fetch(`${VOICE_API_URL}/profiles`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json',

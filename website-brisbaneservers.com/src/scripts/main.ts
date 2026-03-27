@@ -8,11 +8,26 @@
 // Initialize Lanczos scaling manager for geometric pattern quality
 import { getLanczosScalingManager } from './lanczos-scaling';
 
+function applyPageZoomTier(): void {
+    const body = document.body;
+    if (!body) return;
+
+    const viewportWidth = window.innerWidth;
+    const tier =
+        viewportWidth >= 1440 ? 'wide'
+        : viewportWidth <= 900 ? 'compact'
+        : 'balanced';
+
+    body.dataset.zoomTier = tier;
+}
+
 // ===== INITIALIZE SYSTEMS =====
 // Initialize all systems on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit to ensure DOM is fully ready before initializing systems
     setTimeout(() => {
+        applyPageZoomTier();
+
         // Zoom compensation is disabled - content now scales naturally with browser zoom
         // Navbar and footer stay fixed via CSS (px units)
         // Content scales via rem/em/vw/vh units
@@ -33,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100); // Small delay to ensure DOM is fully ready
 });
+
+window.addEventListener('resize', applyPageZoomTier);
 
 // ===== TEXT-LENGTH-AWARE PHI SIZING =====
 /**

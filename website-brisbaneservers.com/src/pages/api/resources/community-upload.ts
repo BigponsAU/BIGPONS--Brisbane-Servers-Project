@@ -14,6 +14,7 @@ import {
 import { addLedgerEntry } from '../../../lib/token-ledger';
 import { loadPipelineConfig } from '../../../lib/pipeline-config';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
+import { isDevelopmentMode } from '../../../utils/runtime-env';
 
 /**
  * Community upload endpoint for client/admin/editor users.
@@ -151,7 +152,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const duration = Date.now() - startTime;
-    if (import.meta.env.MODE === 'development') {
+    if (isDevelopmentMode()) {
       console.log(
         `[API] POST /api/resources/community-upload - Success (${duration}ms, voiceScore=${voiceScore.toFixed(
           2

@@ -1,6 +1,6 @@
 /**
  * Canonical filesystem paths for JSON-backed storage (local dev / Node SSR).
- * Not durable on Cloudflare Workers; use JSON binding or external DB in production.
+ * Not durable on ephemeral/serverless file systems; use an external database in production.
  */
 
 import * as path from 'path';

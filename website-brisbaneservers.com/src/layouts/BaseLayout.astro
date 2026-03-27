@@ -8,6 +8,13 @@ import '../styles/banach-fixed-point.css';
 import '../styles/site-framework.css';
 import CookieConsent from '../components/CookieConsent.astro';
 import favicon from '../favicon.png';
+import {
+  getPageDescriptor,
+  type PageDensity,
+  type PageShellVariant,
+  type PageValueProfile,
+  type PageZoomProfile,
+} from '../lib/page-descriptors';
 
 interface Props {
   title: string;
@@ -16,6 +23,11 @@ interface Props {
   ogImage?: string;
   /** When true, adds robots noindex and omits OG/Twitter images and JSON-LD for sensitive routes (e.g. portal). */
   noindex?: boolean;
+  pageId?: string;
+  shellVariant?: PageShellVariant;
+  valueProfile?: PageValueProfile;
+  zoomProfile?: PageZoomProfile;
+  density?: PageDensity;
 }
 
 const {
@@ -23,10 +35,16 @@ const {
   description = "Access to truth in technology for Australian businesses. Brisbane Servers provides tailored insights, industry-specific guidance, and reality-based tech solutions for SMEs.",
   ogImage,
   noindex = false,
+  pageId,
+  shellVariant,
+  valueProfile,
+  zoomProfile,
+  density,
 } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('https://brisbaneservers.com');
 const canonicalURL = new URL(Astro.url.pathname, siteUrl);
+const descriptor = getPageDescriptor(Astro.url.pathname);
 /** Default social preview: South Bank / riverfront in `public/og-default.png`. Alternate: `og-nature.png`. */
 const OG_DEFAULT_PATH = '/og-default.png';
 const OG_IMAGE_WIDTH = 1200;
@@ -151,7 +169,13 @@ const jsonLd = JSON.stringify({
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     </noscript>
   </head>
-  <body>
+  <body
+    data-page-id={pageId ?? descriptor.pageId}
+    data-shell-variant={shellVariant ?? descriptor.shellVariant}
+    data-value-profile={valueProfile ?? descriptor.valueProfile}
+    data-zoom-profile={zoomProfile ?? descriptor.zoomProfile}
+    data-page-density={density ?? descriptor.density}
+  >
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <slot />

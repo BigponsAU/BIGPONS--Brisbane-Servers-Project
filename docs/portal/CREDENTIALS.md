@@ -40,7 +40,7 @@ export ADMIN_EMAIL="your-email@example.com"
 export ADMIN_PASSWORD="your-secure-password"
 ```
 
-## Production (cPanel / later Cloudflare)
+## Production (Node host / GitHub Pages hybrid)
 
 - Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in the production environment only.
 - Use a strong password and secure storage (panel env vars, not in code).

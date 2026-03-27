@@ -1,20 +1,25 @@
 ---
 import '../styles/legal-pages.css';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import SemanticText from '../components/SemanticText.astro';
+import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/terms-of-service';
+const pageDescriptor = getPageDescriptor('legal');
 ---
 
-<BaseLayout
+<SiteShell
   title="Terms of Service - Brisbane Servers"
   description="Terms governing use of the Brisbane Servers website and related tools. A BIGPONS technology project."
+  currentPath={currentPath}
+  pageId={pageDescriptor.pageId}
+  valueProfile={pageDescriptor.valueProfile}
+  layoutDensity={pageDescriptor.layoutDensity}
+  zoomProfile={pageDescriptor.zoomProfile}
+  surfaceTone={pageDescriptor.surfaceTone}
+  mainClass={pageDescriptor.mainClass}
+  showFooter={pageDescriptor.showFooter}
 >
-  <Header currentPath={currentPath} />
-
-  <main id="main-content" class="main-phi-chassis legal-page" role="main">
     <section class="section section-tartan-accent phi-line-symmetrical">
       <div class="container phi-measure-prose">
         <h1 class="section-title">
@@ -68,7 +73,4 @@ const currentPath = '/terms-of-service';
         </p>
       </div>
     </section>
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>

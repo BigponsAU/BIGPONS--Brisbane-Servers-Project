@@ -29,7 +29,7 @@ Geometric armature over organic content: **contracts first** (schema, visibility
 2. Unified semantic index (`semantic-index.json` or SQLite) — replace TF-IDF and 1D `vectors.json` placeholders on the hot path.
 3. RAG on generate/improve with retrieval logging.
 4. OCR as ingest branch (`processingStatus` on resources).
-5. Cloudflare: no mutable disk — use JSON/SQLite locally; production should target D1 + Vectorize or external DB (see checklist).
+5. Static frontend + external API hosting: no assumption of mutable disk on the frontend; production should target an external database or other durable storage for the API host (see checklist).
 
 ## Dependency graph
 

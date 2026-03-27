@@ -1,19 +1,28 @@
 # Environment Variables Example
 
-This document provides an example `.env` file configuration for the Voice Framework.
+This document provides an example `.env` file configuration for the hybrid GitHub Pages frontend + standalone API setup.
 
 ## Creating Your .env File
 
-Create a `.env` file in the `voice-framework` directory with the following variables:
+Create a `.env` file in `website-brisbaneservers.com` with the following variables:
 
 ```bash
-# Voice Framework Environment Variables
-# Copy this content to voice-framework/.env and update with your actual values
+# Hybrid frontend/API environment variables
+# Copy this content to website-brisbaneservers.com/.env and update with your actual values
 # Never commit .env to version control
 
-# Server Configuration
-# Port on which the voice framework dashboard API server will run
-PORT=3001
+# Browser-side API base (GitHub Pages frontend -> standalone API)
+PUBLIC_API_BASE_URL=http://localhost:3002/api
+
+# Build-time API base (Astro prerender -> standalone API)
+INTERNAL_API_BASE_URL=http://localhost:3002/api
+
+# Canonical site URL and optional base path
+PUBLIC_SITE_URL=http://localhost:3000
+PUBLIC_SITE_BASE=/
+
+# Standalone API server configuration
+PORT=3002
 
 # CORS Configuration
 # Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing)
@@ -43,7 +52,7 @@ NODE_ENV=development
 
 ## Quick Setup
 
-1. Navigate to the `voice-framework` directory
+1. Navigate to the `website-brisbaneservers.com` directory
 2. Create a new file named `.env`
 3. Copy the content above into the file
 4. Update the values as needed for your environment
@@ -54,9 +63,11 @@ For production deployment, ensure:
 
 1. **Set `NODE_ENV=production`** for optimized performance and security
 2. **Configure `ALLOWED_ORIGINS`** with your actual production domains
-3. **Set `PORT`** if you need a different port than 3001
-4. **Change admin credentials** from defaults (set `ADMIN_EMAIL` and `ADMIN_PASSWORD`)
-5. **Never commit `.env` files** to version control
+3. **Set `PUBLIC_API_BASE_URL`** to your deployed API origin
+4. **Set `INTERNAL_API_BASE_URL`** if CI/build uses a different internal API URL
+5. **Set `PUBLIC_SITE_BASE`** to `/<repo>/` for GitHub Pages project sites
+6. **Change admin credentials** from defaults (set `ADMIN_EMAIL` and `ADMIN_PASSWORD`)
+7. **Never commit `.env` files** to version control
 
 > ⚠️ **SECURITY WARNING**: Default admin credentials (`admin@brisbaneservers.com` / `admin123`) are for **development only**!
 > 

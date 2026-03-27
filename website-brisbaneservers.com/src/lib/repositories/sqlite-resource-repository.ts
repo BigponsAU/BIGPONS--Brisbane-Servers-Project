@@ -1,6 +1,6 @@
 /**
  * SQLite-backed resource store (local Node / dev). Uses sql.js (WASM).
- * Set RESOURCE_STORAGE=sqlite. On Cloudflare Workers use json or D1 — not this driver.
+ * Set RESOURCE_STORAGE=sqlite for local Node-style hosting; not suitable for serverless file systems.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';

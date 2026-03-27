@@ -1,15 +1,12 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import Header from '~/components/Header.astro';
-import Footer from '~/components/Footer.astro';
+import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, getTopicBySlug, industries } from '~/data/industries';
-import { getInternalFetchOrigin } from '~/lib/server-origin';
+import { resolveInternalApiUrl, resolvePublicApiUrl } from '~/lib/api-config';
 
 export async function getStaticPaths() {
   const paths: Array<{ params: { industry: string; topic: string } }> = [];
@@ -36,13 +33,15 @@ if (!industry || !topic) {
   return Astro.redirect('/resources');
 }
 
-// Fetch published resources from API (using Astro API routes)
-const API_URL = '/api';
+// Fetch published resources from the standalone API so the route can be prerendered.
+const publicResourcesUrl = resolveInternalApiUrl(
+  `/resources/public?industry=${encodeURIComponent(industrySlug!)}&topic=${encodeURIComponent(topicSlug!)}`
+);
+const publicApiBaseUrl = resolvePublicApiUrl('');
 let publishedResources: any[] = [];
 
 try {
-  const baseUrl = getInternalFetchOrigin(Astro);
-  const response = await fetch(`${baseUrl}${API_URL}/resources/public?industry=${industrySlug}&topic=${topicSlug}`, {
+  const response = await fetch(publicResourcesUrl, {
     headers: {
       'Accept': 'application/json'
     }
@@ -66,20 +65,20 @@ const primaryResource = publishedResources[0] || null;
 // Community contributions for this topic are loaded client-side via API.
 ---
 
-<BaseLayout 
+<SiteShell 
   title={`${topic.name} - ${industry.name} Resources - Brisbane Servers`}
   description={topic.description}
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Resources', href: '/resources' },
+    { label: industry.name, href: `/resources/${industry.slug}` },
+    { label: topic.name }
+  ]}
+  pageId="resource-topic"
+  valueProfile="evidence"
+  zoomProfile="focused"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources', href: '/resources' },
-      { label: industry.name, href: `/resources/${industry.slug}` },
-      { label: topic.name }
-    ]} />
-    
     <Hero 
       title={topic.name}
       subtitle={topic.description}
@@ -108,7 +107,7 @@ const primaryResource = publishedResources[0] || null;
               </div>
             )}
             <div style="margin-top: var(--space-lg);">
-              <a href={`/resources/item/${primaryResource.id}`} class="btn btn-secondary">
+              <a href={`/resources/item/?id=${primaryResource.id}`} class="btn btn-secondary">
                 View Full Resource →
               </a>
             </div>
@@ -163,7 +162,7 @@ const primaryResource = publishedResources[0] || null;
                         </div>
                       )}
                       <div style="margin-top: var(--space-lg);">
-                        <a href={`/resources/item/${resource.id}`} class="btn btn-secondary btn-sm">
+                        <a href={`/resources/item/?id=${resource.id}`} class="btn btn-secondary btn-sm">
                           View Full Resource →
                         </a>
                       </div>
@@ -234,10 +233,7 @@ const primaryResource = publishedResources[0] || null;
       subtitle={`We're experts in ${industry.name} technology—informal questions welcome.`}
       defaultIndustry={industry.name}
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 
 <style>
   .resources-list {
@@ -461,19 +457,25 @@ const primaryResource = publishedResources[0] || null;
   }
 </style>
 
-<script>
+<script define:vars={{ apiBaseUrl: publicApiBaseUrl, industrySlug, topicSlug }}>
   if (typeof window !== 'undefined') {
-    const industry = {industrySlug};
-    const topic = {topicSlug};
+    const industry = industrySlug;
+    const topic = topicSlug;
 
     const contributionFormContainer = document.getElementById('community-contribution-form');
     const callout = document.getElementById('community-contribution-callout');
     const statusEl = document.getElementById('community-upload-status');
     const listEl = document.getElementById('community-contributions-list');
+    const authToken = localStorage.getItem('authToken');
 
     async function checkAuthAndToggleForm() {
       try {
-        const res = await fetch('/api/auth/me', { headers: { Accept: 'application/json' } });
+        const headers: HeadersInit = { Accept: 'application/json' };
+        if (authToken) {
+          headers.Authorization = `Bearer ${authToken}`;
+        }
+
+        const res = await fetch(`${apiBaseUrl}/auth/me`, { headers });
         if (!res.ok) {
           if (contributionFormContainer) {
             contributionFormContainer.setAttribute('data-visible', 'false');
@@ -495,7 +497,7 @@ const primaryResource = publishedResources[0] || null;
       listEl.innerHTML = '<p class="form-status">Loading community contributions…</p>';
       try {
         const res = await fetch(
-          `/api/community/by-topic?industry=${encodeURIComponent(
+          `${apiBaseUrl}/community/by-topic?industry=${encodeURIComponent(
             industry
           )}&topic=${encodeURIComponent(topic)}`
         );
@@ -570,9 +572,18 @@ const primaryResource = publishedResources[0] || null;
         };
 
         try {
-          const res = await fetch('/api/resources/community-upload', {
+          const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          };
+
+          if (authToken) {
+            headers.Authorization = `Bearer ${authToken}`;
+          }
+
+          const res = await fetch(`${apiBaseUrl}/resources/community-upload`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            headers,
             body: JSON.stringify(payload)
           });
           const data = await res.json();

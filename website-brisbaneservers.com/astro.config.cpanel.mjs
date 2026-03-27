@@ -1,6 +1,6 @@
 /**
  * cPanel / traditional Node hosting (standalone server).
- * Default `astro.config.mjs` stays on @astrojs/cloudflare for Cloudflare Pages/Workers.
+ * Default `astro.config.mjs` is the static GitHub Pages frontend config.
  *
  * Build: npm run build:cpanel
  * Run:  node ./dist/server/entry.mjs  (set HOST=0.0.0.0 PORT=3000 as needed)

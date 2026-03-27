@@ -1,28 +1,27 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 
 const currentPath = '/services';
 ---
 
-<BaseLayout 
+<SiteShell 
   title="Services - Brisbane Servers"
   description="Access and support we provide: consultation, analysis, implementation, and ongoing guidance. We assess your reality and identify what you need."
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Services' }
+  ]}
+  pageId="services"
+  valueProfile="utility"
+  zoomProfile="focused"
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main id="main-content" class="main-phi-chassis" role="main">
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Services' }
-    ]} />
     <Hero 
       title="Access & Support We Provide"
       subtitle="We assess your reality—size, costs, grants available, industry specifics—and identify what you need. Not selling you what you don't require. Collaborative, tailored, practical."
@@ -127,8 +126,5 @@ const currentPath = '/services';
       industryField={true}
       preferenceField={true}
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 

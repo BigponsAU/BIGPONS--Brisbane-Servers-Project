@@ -1,16 +1,13 @@
 ---
-// SSR (not prerender): published resources load from /api at request time; prerender would freeze empty HTML at build.
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import Header from '~/components/Header.astro';
-import Footer from '~/components/Footer.astro';
+// Published resources can now be pulled from the standalone API during prerender.
+import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, industries } from '~/data/industries';
-import { getInternalFetchOrigin } from '~/lib/server-origin';
+import { resolveInternalApiUrl } from '~/lib/api-config';
 
 export async function getStaticPaths() {
   return industries.map((industry) => ({
@@ -25,13 +22,12 @@ if (!industry) {
   return Astro.redirect('/resources');
 }
 
-// Fetch published resources from API for this industry (using Astro API routes)
-const API_URL = '/api';
+// Fetch published resources from the standalone API so the route can be prerendered.
+const publicResourcesUrl = resolveInternalApiUrl(`/resources/public?industry=${encodeURIComponent(industrySlug!)}`);
 let publishedResources: any[] = [];
 
 try {
-  const baseUrl = getInternalFetchOrigin(Astro);
-  const response = await fetch(`${baseUrl}${API_URL}/resources/public?industry=${industrySlug}`, {
+  const response = await fetch(publicResourcesUrl, {
     headers: {
       'Accept': 'application/json'
     }
@@ -51,19 +47,19 @@ try {
 const currentPath = `/resources/${industrySlug}`;
 ---
 
-<BaseLayout 
+<SiteShell 
   title={`${industry.name} Resources - Brisbane Servers`}
   description={industry.description}
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Resources', href: '/resources' },
+    { label: industry.name }
+  ]}
+  pageId="resource-industry"
+  valueProfile="evidence"
+  zoomProfile="focused"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources', href: '/resources' },
-      { label: industry.name }
-    ]} />
-    
     <Hero 
       title={`${industry.name} Technology Solutions`}
       subtitle={industry.description}
@@ -113,7 +109,7 @@ const currentPath = `/resources/${industrySlug}`;
                 <Card
                   title={resource.title}
                   description={resource.description}
-                  href={`/resources/item/${resource.id}`}
+                  href={`/resources/item/?id=${resource.id}`}
                 >
                   <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
                     <span style="font-size: var(--text-sm); color: var(--text-secondary);">
@@ -138,8 +134,5 @@ const currentPath = `/resources/${industrySlug}`;
       subtitle="We're experts in your industry—informal questions welcome."
       defaultIndustry={industry.name}
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 

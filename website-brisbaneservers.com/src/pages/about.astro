@@ -1,7 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
@@ -11,13 +9,14 @@ import SemanticText from '../components/SemanticText.astro';
 const currentPath = '/about';
 ---
 
-<BaseLayout 
+<SiteShell 
   title="About - Brisbane Servers"
   description="Our mission: Providing access to truth in technology, supporting domestic growth, building Brisbane's innovation authority. Facts-based, open, collaborative."
+  currentPath={currentPath}
+  pageId="about"
+  valueProfile="foundation"
+  zoomProfile="balanced"
 >
-  <Header currentPath={currentPath} />
-  
-  <main id="main-content" role="main">
     <Hero 
       title="About Brisbane Servers"
       subtitle="Providing access to truth in technology for Australian businesses. Contributing to domestic growth and Brisbane's innovation authority."
@@ -197,8 +196,5 @@ const currentPath = '/about';
       title="Questions about who we are or what we do?"
       industryField={false}
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 

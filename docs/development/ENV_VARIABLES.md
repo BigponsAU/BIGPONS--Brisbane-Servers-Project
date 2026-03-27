@@ -4,10 +4,14 @@ This document describes all environment variables used in the Brisbane Servers m
 
 ## Quick Start
 
-Create a `.env` file in the `voice-framework` directory (or set environment variables in your system) with the following variables:
+Create a `.env` file in `website-brisbaneservers.com` for the hybrid frontend/API split (or set environment variables in your system) with the following variables:
 
 ```bash
-PORT=3001
+PUBLIC_API_BASE_URL=http://localhost:3002/api
+INTERNAL_API_BASE_URL=http://localhost:3002/api
+PUBLIC_SITE_BASE=/
+PUBLIC_SITE_URL=http://localhost:3000
+PORT=3002
 ALLOWED_ORIGINS=http://localhost:3000
 NODE_ENV=development
 ```
@@ -17,14 +21,14 @@ NODE_ENV=development
 ### `PORT`
 
 **Type**: Number  
-**Default**: `3001`  
-**Location**: `voice-framework/dashboard/server.ts`
+**Default**: `3002`  
+**Location**: `website-brisbaneservers.com/standalone-api/server.ts`
 
-The port on which the voice framework dashboard API server will run.
+The port on which the standalone hybrid API server will run.
 
 **Example**:
 ```bash
-PORT=3001
+PORT=3002
 ```
 
 ---
@@ -35,7 +39,7 @@ PORT=3001
 **Default**: `http://localhost:3000`  
 **Location**: `voice-framework/dashboard/middleware/security.ts`
 
-Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing). The website runs on port 3000 by default, so `http://localhost:3000` is automatically allowed in development mode even if not specified.
+Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing). The static frontend runs on port 3000 by default, so `http://localhost:3000` is automatically allowed in development mode even if not specified.
 
 **Format**: Comma-separated list of URLs
 
@@ -85,12 +89,47 @@ NODE_ENV=development
 **Default**: `https://brisbaneservers.com`  
 **Location**: `website-brisbaneservers.com/astro.config.mjs` (`site`), canonical links, `/sitemap.xml`
 
-Sets Astro’s `site` origin so canonical URLs, Open Graph/Twitter `og:url`, and the generated sitemap use the correct hostname. Use your real production domain in production; for preview or staging deploys, set this to that deploy’s public URL so metadata and XML stay consistent. The production value is also set in [`cloudflare/wrangler.toml`](../../cloudflare/wrangler.toml) under `[env.production].vars` for Wrangler-based deploys; override in the Cloudflare Pages UI per environment as needed.
+Sets Astro’s `site` origin so canonical URLs, Open Graph/Twitter `og:url`, and the generated sitemap use the correct hostname. Use your real production domain in production; for preview or staging deploys, set this to that deploy’s public URL so metadata and XML stay consistent.
 
 **Example (staging)**:
 ```bash
 PUBLIC_SITE_URL=https://staging.example.com
 ```
+
+---
+
+### `PUBLIC_SITE_BASE`
+
+**Type**: String (path prefix)  
+**Default**: `/`  
+**Location**: `website-brisbaneservers.com/astro.config.mjs`
+
+Base path for static frontend deployment. Use `/` for custom domains or root hosting. For GitHub Pages project sites, use the repository path, for example `/O1/`.
+
+---
+
+### `PUBLIC_API_BASE_URL`
+
+**Type**: String (absolute URL including `/api`)  
+**Default**: `http://localhost:3002/api`  
+**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`, portal/client scripts, static resource pages
+
+Primary API origin for the hybrid frontend. This is the URL used by browser-side code on the portal, contribute flow, resource detail page, and topic/community interactions.
+
+**Example**:
+```bash
+PUBLIC_API_BASE_URL=https://api.example.com/api
+```
+
+---
+
+### `INTERNAL_API_BASE_URL`
+
+**Type**: String (absolute URL including `/api`)  
+**Default**: falls back to `PUBLIC_API_BASE_URL`  
+**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
+
+Optional build-time API origin for prerendered resource pages. Use this when CI/build jobs should talk to a different/private API origin than the public browser-facing one.
 
 ---
 
@@ -101,6 +140,51 @@ PUBLIC_SITE_URL=https://staging.example.com
 **Location**: `website-brisbaneservers.com/src/pages/api/auth/login.ts`, `voice-framework/dashboard/middleware/auth.ts`
 
 Used only for optional **environment-configured** admin login (same email/password for both the Astro API and the voice-framework dashboard when you choose to use that path). **There are no seeded defaults in code.** For production, set strong values in cPanel / your host’s environment, or rely on registered users in `users.json`.
+
+---
+
+### `PUBLIC_API_BASE_URL`
+
+**Type**: String  
+**Default**: `/api` for same-origin local use; production should be an absolute standalone API URL  
+**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
+
+Browser-side pages use this for auth, community upload, portal actions, and public resource fetches. For GitHub Pages production, this should point at the deployed API host, e.g. `https://api.example.com/api`.
+
+**Example**:
+```bash
+PUBLIC_API_BASE_URL=https://api.example.com/api
+```
+
+---
+
+### `INTERNAL_API_BASE_URL`
+
+**Type**: String  
+**Default**: Falls back to `PUBLIC_API_BASE_URL`, then `http://localhost:3002/api`  
+**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
+
+Used by Astro during prerender/build-time fetches. Set this explicitly in CI if the static build needs to fetch from a different internal or preview API URL than the browser should use.
+
+**Example**:
+```bash
+INTERNAL_API_BASE_URL=https://api-preview.example.com/api
+```
+
+---
+
+### `PUBLIC_SITE_BASE`
+
+**Type**: String  
+**Default**: `/`  
+**Location**: `website-brisbaneservers.com/astro.config.mjs`
+
+Base path for the static frontend. Use `/` for a custom domain or root deploy. Use `/<repo>/` for GitHub Pages project-site hosting.
+
+**Example**:
+```bash
+PUBLIC_SITE_BASE=/brisbane-servers/
+```
 
 ---
 
@@ -144,11 +228,15 @@ if (process.env.NODE_ENV === 'development' && error instanceof Error) {
 
 ### Option 1: `.env` File (Recommended for Development)
 
-Create a `.env` file in the `voice-framework` directory:
+Create a `.env` file in `website-brisbaneservers.com`:
 
 ```bash
-# voice-framework/.env
-PORT=3001
+# website-brisbaneservers.com/.env
+PUBLIC_API_BASE_URL=http://localhost:3002/api
+INTERNAL_API_BASE_URL=http://localhost:3002/api
+PUBLIC_SITE_BASE=/
+PUBLIC_SITE_URL=http://localhost:3000
+PORT=3002
 ALLOWED_ORIGINS=http://localhost:3000
 NODE_ENV=development
 ```
@@ -161,14 +249,22 @@ Set environment variables in your system:
 
 **Windows (PowerShell)**:
 ```powershell
-$env:PORT=3001
+$env:PUBLIC_API_BASE_URL="http://localhost:3002/api"
+$env:INTERNAL_API_BASE_URL="http://localhost:3002/api"
+$env:PUBLIC_SITE_BASE="/"
+$env:PUBLIC_SITE_URL="http://localhost:3000"
+$env:PORT=3002
 $env:ALLOWED_ORIGINS="http://localhost:3000"
 $env:NODE_ENV="development"
 ```
 
 **Linux/macOS (Bash)**:
 ```bash
-export PORT=3001
+export PUBLIC_API_BASE_URL="http://localhost:3002/api"
+export INTERNAL_API_BASE_URL="http://localhost:3002/api"
+export PUBLIC_SITE_BASE="/"
+export PUBLIC_SITE_URL="http://localhost:3000"
+export PORT=3002
 export ALLOWED_ORIGINS="http://localhost:3000"
 export NODE_ENV="development"
 ```
@@ -180,7 +276,7 @@ You can also set environment variables in your `package.json` scripts:
 ```json
 {
   "scripts": {
-    "dashboard": "NODE_ENV=development PORT=3001 node dist/dashboard/server.js"
+    "start:api": "NODE_ENV=development PORT=3002 npx tsx standalone-api/server.ts"
   }
 }
 ```
@@ -193,10 +289,13 @@ For production deployment, ensure:
 
 1. **Set `NODE_ENV=production`** for optimized performance and security
 2. **Configure `ALLOWED_ORIGINS`** with your actual production domains
-3. **Set `PORT`** if you need a different port than 3001
-4. **Set `PUBLIC_SITE_URL`** on the Astro/Cloudflare website build to your live site origin (canonical URLs and `/sitemap.xml`)
-5. **Use a process manager** (PM2, systemd, etc.) to manage environment variables
-6. **Never commit `.env` files** to version control
+3. **Set `PORT`** if you need a different API port than 3002
+4. **Set `PUBLIC_SITE_URL`** on the Astro static frontend build to your live site origin (canonical URLs and `/sitemap.xml`)
+5. **Set `PUBLIC_API_BASE_URL`** to the deployed external API base
+6. **Set `INTERNAL_API_BASE_URL`** if your CI/build network should fetch from a different API URL
+7. **Set `PUBLIC_SITE_BASE`** to `/<repo>/` for GitHub Pages project sites or `/` for custom domains
+8. **Use a process manager** (PM2, systemd, etc.) to manage environment variables
+9. **Never commit `.env` files** to version control
 
 ---
 

@@ -1,28 +1,27 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import IndustryFilters from '../components/IndustryFilters.astro';
 import SemanticText from '../components/SemanticText.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 
 const currentPath = '/projects';
 ---
 
-<BaseLayout 
+<SiteShell 
   title="Projects - Brisbane Servers"
   description="Real project showcases demonstrating our approach to technology solutions. Documented proof of implementations showing feasibility, value framework, and results."
+  currentPath={currentPath}
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Projects' }
+  ]}
+  pageId="projects"
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main id="main-content" class="main-phi-chassis" role="main">
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Projects' }
-    ]} />
     <Hero 
       title="Real Projects, Real Results"
       subtitle="Documented proof of implementations showing how we assess your reality—size, costs, grants, industry specifics—and deliver solutions that actually work."
@@ -236,8 +235,5 @@ const currentPath = '/projects';
         </div>
       </div>
     </section>
-  </main>
-
-  <Footer />
-</BaseLayout>
+</SiteShell>
 

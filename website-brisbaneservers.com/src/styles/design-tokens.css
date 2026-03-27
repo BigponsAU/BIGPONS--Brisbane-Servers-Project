@@ -55,6 +55,11 @@
   --browser-zoom: 1;
   --zoom-scale: 1;
   --inverse-zoom: 1;
+  --page-container-max: 120rem;
+  --page-measure-max: 46.25rem;
+  --page-section-space: var(--space-2xl);
+  --page-density-multiplier: 1;
+  --page-accent-strength: 1;
   /* Header offset below fixed bar — rem so it tracks content when zooming (avoids px/rem clash) */
   --site-header-clearance: clamp(4.25rem, 5rem, 6rem);
   

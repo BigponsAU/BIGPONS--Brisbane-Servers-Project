@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,12 +7,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** Canonical origin for URLs, sitemap, and social previews. Override per env (e.g. preview deploys). */
 const rawSite = process.env.PUBLIC_SITE_URL ?? 'https://brisbaneservers.com';
 const site = rawSite.replace(/\/$/, '');
+const rawBase = process.env.PUBLIC_SITE_BASE ?? '/';
+const base = rawBase === '/' ? '/' : `/${rawBase.replace(/^\/+|\/+$/g, '')}/`;
 
 // https://astro.build/config
 export default defineConfig({
   site,
-  output: 'server', // Server mode: enables API routes and SSR
-  adapter: cloudflare(),
+  base,
+  srcDir: './src-static',
+  output: 'static',
   server: {
     port: 3000,
     host: true,
@@ -28,7 +30,8 @@ export default defineConfig({
     resolve: {
       alias: {
         '~': path.resolve(__dirname, './src'),
-        // Resolve @voice-framework to repo root (O1/voice-framework) for API routes and utils
+        '~static': path.resolve(__dirname, './src-static'),
+        // Resolve @voice-framework to repo root (O1/voice-framework) for the standalone API.
         '@voice-framework': path.resolve(__dirname, '../voice-framework'),
       }
     },

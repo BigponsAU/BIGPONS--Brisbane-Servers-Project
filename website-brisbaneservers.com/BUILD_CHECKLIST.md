@@ -11,14 +11,14 @@
 
 | Command | Use |
 |--------|-----|
-| `npm run build` | **Cloudflare** (default `astro.config.mjs`) |
+| `npm run build` | **GitHub Pages static frontend** (default `astro.config.mjs`) |
 | `npm run build:cpanel` | **Node / cPanel** — see [../docs/operations/CPANEL_DEPLOY.md](../docs/operations/CPANEL_DEPLOY.md) |
 
 ## Build Process
 - [ ] Build completes without errors
 - [ ] All TypeScript files compile successfully
 - [ ] CSS files are generated correctly
-- [ ] If Astro warns that `getStaticPaths()` is ignored on `/resources/[industry]` routes, that is expected: those pages stay **SSR** so the live `/api/resources/public` response is not frozen at build time
+- [ ] If the standalone API is unavailable during build, public resource pages still render with fallback content
 
 ## Post-Build Verification
 - [ ] dist directory exists

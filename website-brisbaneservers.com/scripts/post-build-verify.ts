@@ -74,10 +74,7 @@ function checkDistDirectory(): VerificationResult {
 function checkHTMLViewportTags(): VerificationResult {
   try {
     const htmlFiles = findHTMLFiles(distPath);
-    // Cloudflare adapter: dist/_worker.js/; generic SSR: dist/server/entry.mjs
-    const serverEntryPath = existsSync(join(distPath, '_worker.js', 'index.js'))
-      ? join(distPath, '_worker.js', 'index.js')
-      : join(distPath, 'server', 'entry.mjs');
+    const serverEntryPath = join(distPath, 'server', 'entry.mjs');
 
     // Server mode: no prerendered HTML; viewport is in BaseLayout and applied at runtime
     if (htmlFiles.length === 0 && existsSync(serverEntryPath)) {
@@ -277,7 +274,6 @@ function checkAssetReferences(): VerificationResult {
  */
 function checkIndexHTML(): VerificationResult {
   const indexPath = join(distPath, 'index.html');
-  const cloudflareWorker = join(distPath, '_worker.js', 'index.js');
   const serverEntry = join(distPath, 'server', 'entry.mjs');
 
   if (existsSync(indexPath)) {
@@ -288,8 +284,8 @@ function checkIndexHTML(): VerificationResult {
     return { name: 'Index HTML', passed: true, message: 'index.html exists and has content' };
   }
 
-  // Server mode: no index.html; pass if Cloudflare worker or generic server entry exists
-  if (existsSync(cloudflareWorker) || existsSync(serverEntry)) {
+  // Server mode: no index.html; pass if a generic server entry exists
+  if (existsSync(serverEntry)) {
     return { name: 'Index HTML', passed: true, message: 'Server build (no static index.html)' };
   }
 

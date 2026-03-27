@@ -7,19 +7,23 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug } from '~/data/industries';
+import { resolveInternalApiUrl } from '~/lib/api-config';
 
-// Note: In SSR mode, getStaticPaths is not used for dynamic routes
-// Routes are handled dynamically at request time
+// Static hosting keeps query-param detail rendering in `resources/item/index.astro`.
+// This route remains only for explicitly pre-generated paths; none are emitted by default.
+export async function getStaticPaths() {
+  return [];
+}
 
 const { resourceId } = Astro.params;
 
-// Fetch the specific resource from API
-const VOICE_API_URL = import.meta.env.VOICE_API_URL || '/api';
+// Fetch the specific resource from the standalone API.
+const resourceApiUrl = resolveInternalApiUrl(`/resources/public?id=${encodeURIComponent(resourceId!)}`);
 let resource: any = null;
 let industry: any = null;
 
 try {
-  const response = await fetch(`${VOICE_API_URL}/resources/public?id=${resourceId}`, {
+  const response = await fetch(resourceApiUrl, {
     headers: {
       'Accept': 'application/json'
     }
