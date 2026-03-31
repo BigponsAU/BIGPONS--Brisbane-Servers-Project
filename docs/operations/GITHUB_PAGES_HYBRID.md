@@ -7,16 +7,18 @@ This repository now supports a hybrid deployment model:
 
 ## Required repository variables
 
-Set these GitHub repository variables before enabling the Pages workflow:
+Configure these under **GitHub → your repo → Settings → Secrets and variables → Actions → Variables** (or set them in the **github-pages** environment if you use environment-scoped vars).
 
-```bash
-PUBLIC_API_BASE_URL=https://your-api-host.example.com/api
-INTERNAL_API_BASE_URL=https://your-api-host.example.com/api
-PUBLIC_SITE_URL=https://your-domain.example.com
-PUBLIC_SITE_BASE=/
-```
+The workflow **defaults** `PUBLIC_SITE_BASE` and `PUBLIC_SITE_URL` for a normal **project site** (`https://<owner>.github.io/<repo>/`). Override the variables below only when you use a **custom domain** or a different public API URL.
 
-Use `PUBLIC_SITE_BASE=/<repo>/` only if you are deploying as a GitHub Pages project site without a custom domain.
+| Variable | When to set | Example |
+|----------|-------------|---------|
+| `PUBLIC_API_BASE_URL` | **Always for real hybrid use** — browser calls this API from the static site | `https://api.yourdomain.com/api` |
+| `INTERNAL_API_BASE_URL` | Optional — build-time fetches in CI (defaults to `PUBLIC_API_BASE_URL`) | Same as public, or an internal CI URL |
+| `PUBLIC_SITE_URL` | Optional — overrides canonical site origin (defaults to `https://<owner>.github.io/<repo>`) | `https://yourdomain.com` |
+| `PUBLIC_SITE_BASE` | Optional — path prefix (defaults to `/<repo>/`; use `/` for custom domain at root) | `/` or `/O1/` |
+
+Static-only preview (no API): you can leave `PUBLIC_API_BASE_URL` unset; the build still completes, but account/login and dynamic resource calls will not work until you point the variable at a live API and add that origin to `ALLOWED_ORIGINS` on the API host.
 
 ## Workflow
 
@@ -46,7 +48,7 @@ Verify:
 
 - `http://localhost:3002/api/health`
 - `http://localhost:3002/api/resources/public`
-- `http://localhost:3000/portal`
+- `http://localhost:3000/account`
 - `http://localhost:3000/contribute`
 
 ## Notes

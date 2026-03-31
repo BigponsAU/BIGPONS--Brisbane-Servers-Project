@@ -44,8 +44,10 @@ jobs:
           PUBLIC_SITE_BASE: ${{ vars.PUBLIC_SITE_BASE }}
         run: |
           repo_name="${GITHUB_REPOSITORY#*/}"
+          # Project site lives at https://<owner>.github.io/<repo>/ — base + site origin must match.
           export PUBLIC_SITE_BASE="${PUBLIC_SITE_BASE:-/$repo_name/}"
-          export PUBLIC_SITE_URL="${PUBLIC_SITE_URL:-https://${GITHUB_REPOSITORY_OWNER}.github.io}"
+          default_site_url="https://${GITHUB_REPOSITORY_OWNER}.github.io/${repo_name}"
+          export PUBLIC_SITE_URL="${PUBLIC_SITE_URL:-$default_site_url}"
           export INTERNAL_API_BASE_URL="${INTERNAL_API_BASE_URL:-$PUBLIC_API_BASE_URL}"
           npm run build
 

@@ -114,7 +114,7 @@ Base path for static frontend deployment. Use `/` for custom domains or root hos
 **Default**: `http://localhost:3002/api`  
 **Location**: `website-brisbaneservers.com/src/lib/api-config.ts`, portal/client scripts, static resource pages
 
-Primary API origin for the hybrid frontend. This is the URL used by browser-side code on the portal, contribute flow, resource detail page, and topic/community interactions.
+Primary API origin for the hybrid frontend. This is the URL used by browser-side code on the portal, contribute flow, resource detail page, and topic/community interactions. For **GitHub Pages**, set this to the absolute URL of your deployed standalone API.
 
 **Example**:
 ```bash
@@ -126,10 +126,15 @@ PUBLIC_API_BASE_URL=https://api.example.com/api
 ### `INTERNAL_API_BASE_URL`
 
 **Type**: String (absolute URL including `/api`)  
-**Default**: falls back to `PUBLIC_API_BASE_URL`  
+**Default**: falls back to `PUBLIC_API_BASE_URL`, then `http://localhost:3002/api`  
 **Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
 
 Optional build-time API origin for prerendered resource pages. Use this when CI/build jobs should talk to a different/private API origin than the public browser-facing one.
+
+**Example**:
+```bash
+INTERNAL_API_BASE_URL=https://api-preview.example.com/api
+```
 
 ---
 
@@ -139,52 +144,7 @@ Optional build-time API origin for prerendered resource pages. Use this when CI/
 **Default**: *none* — bootstrap admin login is **disabled** until both are set.  
 **Location**: `website-brisbaneservers.com/src/pages/api/auth/login.ts`, `voice-framework/dashboard/middleware/auth.ts`
 
-Used only for optional **environment-configured** admin login (same email/password for both the Astro API and the voice-framework dashboard when you choose to use that path). **There are no seeded defaults in code.** For production, set strong values in cPanel / your host’s environment, or rely on registered users in `users.json`.
-
----
-
-### `PUBLIC_API_BASE_URL`
-
-**Type**: String  
-**Default**: `/api` for same-origin local use; production should be an absolute standalone API URL  
-**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
-
-Browser-side pages use this for auth, community upload, portal actions, and public resource fetches. For GitHub Pages production, this should point at the deployed API host, e.g. `https://api.example.com/api`.
-
-**Example**:
-```bash
-PUBLIC_API_BASE_URL=https://api.example.com/api
-```
-
----
-
-### `INTERNAL_API_BASE_URL`
-
-**Type**: String  
-**Default**: Falls back to `PUBLIC_API_BASE_URL`, then `http://localhost:3002/api`  
-**Location**: `website-brisbaneservers.com/src/lib/api-config.ts`
-
-Used by Astro during prerender/build-time fetches. Set this explicitly in CI if the static build needs to fetch from a different internal or preview API URL than the browser should use.
-
-**Example**:
-```bash
-INTERNAL_API_BASE_URL=https://api-preview.example.com/api
-```
-
----
-
-### `PUBLIC_SITE_BASE`
-
-**Type**: String  
-**Default**: `/`  
-**Location**: `website-brisbaneservers.com/astro.config.mjs`
-
-Base path for the static frontend. Use `/` for a custom domain or root deploy. Use `/<repo>/` for GitHub Pages project-site hosting.
-
-**Example**:
-```bash
-PUBLIC_SITE_BASE=/brisbane-servers/
-```
+Used only for optional **environment-configured** admin login (same email/password for both the Astro API and the voice-framework dashboard when you choose to use that path). **There are no seeded defaults in code.** For production, set strong values in cPanel / your host’s environment, or rely on registered users in the auth database (SQLite locally or Postgres when `DATABASE_URL` is set).
 
 ---
 
