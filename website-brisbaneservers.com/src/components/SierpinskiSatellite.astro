@@ -12,7 +12,7 @@
 ---
 
 <div class="sierpinski-satellite" aria-hidden="true">
-  <svg class="satellite-svg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <svg class="satellite-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     <!-- Connection Lines Layer (drawn first, behind nodes) -->
     <g class="connections-layer"></g>
     
@@ -22,18 +22,23 @@
 </div>
 
 <script>
+  const SATELLITE_INIT_ATTR = 'data-sierpinski-initialized';
+
   /**
    * Generate Sierpinski-based satellite network
    * Uses recursive node generation with phi-based spacing
    */
-  function generateSierpinskiSatellite() {
-    const svg = document.querySelector('.satellite-svg');
+  function generateSierpinskiSatellite(container) {
+    const svg = container?.querySelector('.satellite-svg');
     if (!svg) return;
     
     const connectionsLayer = svg.querySelector('.connections-layer');
     const nodesLayer = svg.querySelector('.nodes-layer');
     
     if (!connectionsLayer || !nodesLayer) return;
+
+    connectionsLayer.replaceChildren();
+    nodesLayer.replaceChildren();
     
     // Technology icons (Font Awesome class names)
     const icons = [
@@ -51,17 +56,18 @@
     const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
     
     // Draw connections using azimuth angles
+    let connectionSeq = 0;
     nodes.forEach((node, i) => {
       // Connect to nearby nodes using phi-based relationships
       const connections = findPhiConnections(node, nodes, i);
       connections.forEach(targetNode => {
-        drawConnection(connectionsLayer, node, targetNode);
+        drawConnection(connectionsLayer, node, targetNode, connectionSeq++);
       });
     });
     
     // Draw nodes with icons
     nodes.forEach((node, i) => {
-      drawNode(nodesLayer, node, icons[i % icons.length]);
+      drawNode(nodesLayer, node, icons[i % icons.length], i);
     });
   }
   
@@ -129,36 +135,67 @@
   }
   
   /**
-   * Draw connection line between nodes
+   * Draw connection: quiet base trace + soft pulse that travels the full segment (node → node).
    */
-  function drawConnection(layer, from, to) {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', from.x.toString());
-    line.setAttribute('y1', from.y.toString());
-    line.setAttribute('x2', to.x.toString());
-    line.setAttribute('y2', to.y.toString());
-    // Use design token colors for original purple glow
+  function drawConnection(layer, from, to, seq) {
+    const ns = 'http://www.w3.org/2000/svg';
     const purpleGlowRgb = getComputedStyle(document.documentElement)
       .getPropertyValue('--original-purple-glow-rgb').trim() || '139, 92, 246';
-    line.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.6)`);
-    line.setAttribute('stroke-width', '2');
-    line.setAttribute('opacity', '0.6');
-    line.classList.add('satellite-connection');
-    layer.appendChild(line);
+    const x1 = from.x;
+    const y1 = from.y;
+    const x2 = to.x;
+    const y2 = to.y;
+
+    const base = document.createElementNS(ns, 'line');
+    base.setAttribute('x1', String(x1));
+    base.setAttribute('y1', String(y1));
+    base.setAttribute('x2', String(x2));
+    base.setAttribute('y2', String(y2));
+    base.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.24)`);
+    base.setAttribute('stroke-width', '1.5');
+    base.classList.add('satellite-connection-base');
+    layer.appendChild(base);
+
+    const pulse = document.createElementNS(ns, 'line');
+    pulse.setAttribute('x1', String(x1));
+    pulse.setAttribute('y1', String(y1));
+    pulse.setAttribute('x2', String(x2));
+    pulse.setAttribute('y2', String(y2));
+    pulse.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.62)`);
+    pulse.setAttribute('stroke-width', '2.25');
+    pulse.setAttribute('stroke-linecap', 'round');
+    pulse.setAttribute('pathLength', '100');
+    pulse.setAttribute('stroke-dasharray', '26 74');
+    pulse.setAttribute('stroke-dashoffset', '0');
+    pulse.classList.add('satellite-connection-pulse');
+    pulse.style.setProperty('--satellite-pulse-delay', `${((seq % 24) * 0.18).toFixed(3)}s`);
+    layer.appendChild(pulse);
   }
   
   /**
    * Draw node with icon
    */
-  function drawNode(layer, node, iconClass) {
+  function drawNode(layer, node, iconClass, nodeIndex) {
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     group.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+    const delay = ((nodeIndex % 20) * 0.35).toFixed(3);
+    group.style.setProperty('--satellite-node-delay', `${delay}s`);
+
+    // Soft static bloom behind disks (motion is on edges + core, not big halos)
+    const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    halo.setAttribute('r', (node.size * 1.85).toString());
+    const purpleGlowRgb = getComputedStyle(document.documentElement)
+      .getPropertyValue('--original-purple-glow-rgb').trim() || '139, 92, 246';
+    halo.setAttribute('fill', `rgba(${purpleGlowRgb}, 0.14)`);
+    halo.classList.add('satellite-neuron-halo');
+    group.appendChild(halo);
     
     // Outer white circle
     const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     outerCircle.setAttribute('r', (node.size * 1.2).toString());
     outerCircle.setAttribute('fill', 'white');
     outerCircle.setAttribute('opacity', '0.9');
+    outerCircle.classList.add('satellite-node-ring');
     group.appendChild(outerCircle);
     
     // Inner blue circle - use design token for original blue node color
@@ -167,6 +204,7 @@
     const blueNodeColor = getComputedStyle(document.documentElement)
       .getPropertyValue('--original-blue-node').trim() || '#3b82f6';
     innerCircle.setAttribute('fill', blueNodeColor);
+    innerCircle.classList.add('satellite-node-core');
     group.appendChild(innerCircle);
     
     // Create foreignObject for Font Awesome icon
@@ -194,75 +232,161 @@
     layer.appendChild(group);
   }
   
+  function scheduleSatelliteRender(container) {
+    // Two RAF passes ensure layout settles after zoom/resize before redraw.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        generateSierpinskiSatellite(container);
+      });
+    });
+  }
+
   // Initialize on page load with error handling
-  function initSatellite() {
+  function initSatellite(container) {
     try {
       // Wait a bit to ensure DOM is ready
       setTimeout(() => {
-        generateSierpinskiSatellite();
+        scheduleSatelliteRender(container);
       }, 100);
     } catch (error) {
       console.error('[SierpinskiSatellite] Error generating satellite array:', error);
     }
   }
+
+  function setupSatelliteLifecycle() {
+    document.querySelectorAll('.sierpinski-satellite').forEach((container) => {
+      if (!(container instanceof HTMLElement)) return;
+      if (container.hasAttribute(SATELLITE_INIT_ATTR)) return;
+
+      container.setAttribute(SATELLITE_INIT_ATTR, 'true');
+      initSatellite(container);
+
+      const rerender = () => scheduleSatelliteRender(container);
+      const onWindowResize = () => rerender();
+
+      window.addEventListener('resize', onWindowResize, { passive: true });
+      window.addEventListener('orientationchange', onWindowResize, { passive: true });
+      window.addEventListener('pageshow', rerender, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') rerender();
+      });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', rerender, { passive: true });
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            rerender();
+          }
+        });
+      }, { threshold: 0.01 });
+
+      observer.observe(container);
+    });
+  }
   
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSatellite);
+    document.addEventListener('DOMContentLoaded', setupSatelliteLifecycle, { once: true });
   } else {
-    initSatellite();
+    setupSatelliteLifecycle();
   }
 </script>
 
 <style>
   .sierpinski-satellite {
-    /* In-flow inside .hero-visual (grid column); fills φ major band */
-    position: relative;
-    width: 100%;
-    /* Do not use height:100% — recursive SVG content can extend past viewBox and inflate layout bbox (seen: hero clientHeight ~3542px vs min-height ~832px). */
+    /*
+     * Fill the entire .hero-visual box with absolute inset geometry.
+     * Keeping it out of flow avoids padding-box mismatch and bottom gaps.
+     */
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    width: auto;
     height: auto;
-    max-height: min(82vh, 52rem);
-    min-height: var(--hero-inner-min-height);
+    /* No max-height — capping height with top:0 made the box shorter than the anchor, leaving empty space at the bottom */
     pointer-events: none;
     z-index: 2;
-    opacity: 0.82;
-    filter: blur(0.2px);
-    mix-blend-mode: screen;
-    overflow: hidden;
+    opacity: 0.9;
+    mix-blend-mode: normal;
+    /* visible: paired with .hero-visual mask removal on narrow viewports; avoid clipping node glows */
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
   }
   
   .satellite-svg {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 800 / 600;
-    max-height: min(82vh, 52rem);
-    overflow: hidden;
     display: block;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: visible;
   }
   
-  .satellite-connection {
-    filter: drop-shadow(0 0 3px var(--original-purple-glow));
-    transition: opacity 0.3s ease;
+  .satellite-connection-base {
+    pointer-events: none;
+  }
+
+  .satellite-connection-pulse {
+    --satellite-pulse-delay: 0s;
+    pointer-events: none;
+    animation: satellite-line-pulse 5.25s ease-in-out infinite;
+    animation-delay: var(--satellite-pulse-delay);
+    filter: drop-shadow(0 0 5px rgba(var(--original-purple-glow-rgb), 0.28));
   }
   
   .satellite-node {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    cursor: pointer;
+    --satellite-node-delay: 0s;
+    cursor: default;
+  }
+
+  .satellite-neuron-halo {
+    pointer-events: none;
+    opacity: 1;
+  }
+
+  .satellite-node-ring,
+  .satellite-node-core {
+    transition: filter 0.25s ease, opacity 0.35s ease;
+  }
+
+  .satellite-node-core {
+    animation: satellite-node-synapse 4.5s ease-in-out infinite;
+    animation-delay: var(--satellite-node-delay);
+  }
+
+  .satellite-node:hover .satellite-node-ring {
+    filter: brightness(1.05);
+  }
+
+  .satellite-node:hover .satellite-node-core {
+    filter: brightness(1.08) drop-shadow(0 0 4px rgba(59, 130, 246, 0.4));
+  }
+
+  @keyframes satellite-line-pulse {
+    to {
+      stroke-dashoffset: -100;
+    }
+  }
+
+  /* Rare, soft “firing” at the node — most motion reads on the traveling dash */
+  @keyframes satellite-node-synapse {
+    0%,
+    88%,
+    100% {
+      opacity: 1;
+    }
+    94% {
+      opacity: 0.88;
+    }
   }
   
-  .satellite-node:hover {
-    transform: scale(1.1);
-  }
-  
-  @media (max-width: 768px) {
-    .sierpinski-satellite {
-      min-height: clamp(18rem, 42vh, 36rem);
-      max-height: min(42vh, 36rem);
-      height: auto;
-    }
-    .satellite-svg {
-      max-height: min(42vh, 36rem);
-    }
-  }
 </style>
 
 

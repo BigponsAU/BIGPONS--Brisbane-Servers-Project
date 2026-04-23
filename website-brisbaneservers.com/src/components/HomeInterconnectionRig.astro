@@ -1,0 +1,66 @@
+---
+/**
+ * Home-only chrome: full-height margin constellations + continuous inner “rim” rails.
+ * Band accent colours follow scroll (data-margin-band on rig). No centre spine between sections.
+ */
+import PageMarginSatelliteColumn from './PageMarginSatelliteColumn.astro';
+import GutterEchoConstellationStack from './GutterEchoConstellationStack.astro';
+---
+
+<div class="home-interconnection-rig" data-margin-band="strategy">
+  <div class="home-interconnection-page-margin home-interconnection-page-margin--left" aria-hidden="true">
+    <PageMarginSatelliteColumn side="left" />
+    <GutterEchoConstellationStack />
+  </div>
+  <div class="home-interconnection-page-margin home-interconnection-page-margin--right" aria-hidden="true">
+    <PageMarginSatelliteColumn side="right" />
+    <GutterEchoConstellationStack />
+  </div>
+  <div class="home-interconnection-stage">
+    <slot />
+  </div>
+</div>
+
+<script>
+  /** Pick the home band whose vertical centre is closest to a viewport focal line (stable while scrolling). */
+  function updateMarginBandAccent() {
+    const rig = document.querySelector('.home-interconnection-rig');
+    if (!(rig instanceof HTMLElement)) return;
+
+    const focalY = window.innerHeight * 0.36;
+    let bestBand: string | null = null;
+    let bestScore = -1;
+
+    document.querySelectorAll('[data-interconnection-band]').forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const r = node.getBoundingClientRect();
+      if (r.bottom < 48 || r.top > window.innerHeight - 24) return;
+      const mid = (r.top + r.bottom) / 2;
+      const dist = Math.abs(mid - focalY);
+      const score = (Math.min(r.height, window.innerHeight * 0.85) + 120) / (dist + 48);
+      const band = node.getAttribute('data-interconnection-band');
+      if (!band) return;
+      if (score > bestScore) {
+        bestScore = score;
+        bestBand = band;
+      }
+    });
+
+    if (bestBand) rig.dataset.marginBand = bestBand;
+  }
+
+  function boot() {
+    updateMarginBandAccent();
+    const onScroll = () => {
+      window.requestAnimationFrame(updateMarginBandAccent);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+</script>

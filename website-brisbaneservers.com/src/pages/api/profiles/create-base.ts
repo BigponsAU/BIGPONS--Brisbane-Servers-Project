@@ -86,8 +86,9 @@ export const POST: APIRoute = async ({ request }) => {
         name: 'Brisbane Servers Base Profile',
         description: `Base voice profile from ${combined.length} deduped sources (starters + published)`,
         sourceDocument: `voice-sources:starters=${starterBlocks.length};published=${publishedPublic.length}`,
+        version: '1.0.0',
         isDefault: true, // Set as default
-        isArchived: false,
+        archived: false,
         tags: ['base-profile', 'starter-blocks', 'default']
       });
       console.log(`[API] Created base profile: ${profileMetadata.id}`);

@@ -34,11 +34,16 @@ export const navigation: NavItem[] = [
   },
   {
     label: 'About',
-    href: '/about'
+    href: '/about',
+    children: [
+      { label: 'About Brisbane Servers', href: '/about' },
+      { label: 'Portal Voice Framework', href: '/account' },
+      { label: 'Corrections Welcome', href: '/about#corrections-welcome' }
+    ]
   },
   {
-    label: 'Resource Portal',
-    href: '/portal'
+    label: 'Account',
+    href: '/account'
   }
 ];
 

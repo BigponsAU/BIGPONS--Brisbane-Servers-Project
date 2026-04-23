@@ -1,0 +1,25 @@
+---
+/**
+ * PageHero — shared top-of-page band for inner routes (light “surface” variant).
+ * Uses the same main offset cancel as the dark `Hero` so titles line up with the home fold.
+ */
+interface Props {
+  title: string;
+  lead?: string;
+  eyebrow?: string;
+  class?: string;
+}
+
+const { title, lead, eyebrow, class: className } = Astro.props;
+---
+
+<section class:list={['page-hero', 'page-hero--surface', className]}>
+  <div class="container">
+    <div class="page-hero__inner">
+      {eyebrow && <p class="page-hero__eyebrow">{eyebrow}</p>}
+      <h1 class="page-hero__title">{title}</h1>
+      {lead && <p class="page-hero__lead">{lead}</p>}
+      <slot />
+    </div>
+  </div>
+</section>

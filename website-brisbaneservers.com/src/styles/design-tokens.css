@@ -23,11 +23,13 @@
   --phi-inverse: 0.618033988749895;
   --phi-inv: 0.618033988749895;
   --phi-mod: 1.618033988749895;
+  --phi-phase: 0;
   
-  /* Phi Path Variables for Tartan Design */
+  /* Phi Path Variables for Tartan Design (% of band — gradient stops, layout bands) */
   --path-1: calc(100% / var(--phi)); /* Primary alignment path */
   --path-2: calc(100% / calc(var(--phi) * var(--phi))); /* Secondary path */
   --path-3: calc(100% / calc(var(--phi) * var(--phi) * var(--phi))); /* Tertiary path */
+  /* For stripe pitch × rem/px use var(--phi-inv)^n × length — never multiply --path-* by lengths. */
   
   /* Square Diagonal Constants */
   --sqrt2: 1.414213562;
@@ -51,17 +53,27 @@
   --font-base: clamp(0.875rem, 1rem, 1.125rem);
   --space-base: 1rem;
   
-  /* Layout zoom: native browser zoom scales rem/em; do not multiply layout again via JS */
-  --browser-zoom: 1;
-  --zoom-scale: 1;
-  --inverse-zoom: 1;
-  --page-container-max: 120rem;
-  --page-measure-max: 46.25rem;
+  /*
+   * Layout uses native browser zoom (rem/em) and CSS media queries only.
+   * --lanczos-detected-zoom is for pattern tuning/diagnostics, not layout.
+   * Marketing frame: % of parent plus rem gutters — avoid vw for full-width shell so
+   * layout does not fight rem at extreme zoom. Long lines use --measure-prose /
+   * --page-measure-max on text blocks, not the outer frame.
+   */
+  --page-measure-max: min(46.25rem, 100%);
   --page-section-space: var(--space-2xl);
   --page-density-multiplier: 1;
   --page-accent-strength: 1;
   /* Header offset below fixed bar — rem so it tracks content when zooming (avoids px/rem clash) */
   --site-header-clearance: clamp(4.25rem, 5rem, 6rem);
+  /* Same value as `main` top padding — dark hero uses negative margin to cancel so the band extends under the fixed header */
+  --site-main-padding-top: clamp(
+    calc(var(--space-lg) * 1.2 + var(--site-header-clearance)),
+    calc(var(--space-xl) * var(--phi-inv) + var(--site-header-clearance)),
+    calc(var(--space-xl) * 1.2 + var(--site-header-clearance))
+  );
+  /* Notch + main band — keep in sync: `main` padding-top, `.hero` negative margin, `.page-hero--surface` (site-framework) */
+  --site-main-offset-top: calc(var(--site-main-padding-top) + var(--safe-area-inset-top));
   
   /* Viewport Properties */
   --viewport-width: 100vw;
@@ -159,6 +171,14 @@
   --primary-dark: #0855A8;
   --primary-light: #F0F7FF;
   --primary-ultra-light: #FAFCFF;
+  --primary-ink: #081B36;
+  --primary-ink-rgb: 8, 27, 54;
+  --accent-violet: #8B5CF6;
+  --accent-violet-rgb: 139, 92, 246;
+  --accent-pink: #EC4899;
+  --accent-pink-rgb: 236, 72, 153;
+  --accent-teal: #14B8A6;
+  --accent-teal-rgb: 20, 184, 166;
   
   /* Portal Primary Colors (for tartan design compatibility) */
   --portal-primary: var(--primary-color);
@@ -204,17 +224,37 @@
   --bg-tertiary: #F8F9FA;
   --bg-accent: linear-gradient(135deg, var(--primary-ultra-light) 0%, #F0F7FF 100%);
   --bg-elevated: #FFFFFF;
+  --bg-spectrum: linear-gradient(180deg, #ffffff 0%, #f7f9fc 40%, #eef4fb 100%);
   
   /* Surface Colors */
   --background: var(--bg-secondary);
   --surface: var(--bg-tertiary);
   --surface-elevated: var(--bg-elevated);
   --surface-accent: var(--bg-primary);
+  --surface-subtle: rgba(10, 116, 218, 0.05);
+  --surface-additive: linear-gradient(150deg, rgba(10, 116, 218, 0.08) 0%, rgba(139, 92, 246, 0.06) 55%, rgba(236, 72, 153, 0.04) 100%);
+  --surface-glass: rgba(255, 255, 255, 0.72);
+  --surface-glass-strong: rgba(255, 255, 255, 0.9);
   --dark-surface: #1A1A1A;
+  --dark-surface-rgb: 26, 26, 26;
   
   /* Border Colors */
   --border: #E2E8F0;
   --border-light: #EDF2F7;
+  --border-subtle: var(--border-light);
+  --border-accent: rgba(var(--primary-color-rgb), 0.24);
+  --border-contrast: rgba(255, 255, 255, 0.2);
+  --divider-strong: rgba(15, 23, 42, 0.1);
+
+  /* Marketing cards / sections — classic bordered panels + air */
+  --card-border-marketing: 2px solid var(--border-accent);
+  --card-shadow-marketing: 0 0.35rem 1.25rem rgba(8, 27, 54, 0.07), 0 0.125rem 0.35rem rgba(8, 27, 54, 0.04);
+  --section-block-extra: clamp(0.15rem, 0.35vw, 0.45rem);
+
+  /* Text on dark surfaces */
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: rgba(255, 255, 255, 0.82);
+  --text-on-dark-subtle: rgba(255, 255, 255, 0.68);
   
   /* ============================================
      ORIGINAL BRISBANE SERVERS COLOR PALETTE
@@ -240,6 +280,32 @@
   
   /* Purple/Pink Gradient for Buttons */
   --original-gradient-purple-pink: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  --additive-gradient-primary: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-violet) 46%,
+    var(--accent-pink) 100%
+  );
+  --additive-gradient-soft: linear-gradient(
+    150deg,
+    rgba(var(--primary-color-rgb), 0.12) 0%,
+    rgba(var(--accent-violet-rgb), 0.08) 48%,
+    rgba(var(--accent-pink-rgb), 0.06) 100%
+  );
+  --additive-gradient-dark: linear-gradient(
+    140deg,
+    var(--original-bg-start) 0%,
+    #121b36 44%,
+    #2b1b49 100%
+  );
+  --hero-overlay-gradient: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.14) 38%,
+    rgba(var(--accent-violet-rgb), 0.16) 56%,
+    rgba(var(--accent-violet-rgb), 0.28) 72%,
+    rgba(var(--accent-pink-rgb), 0.22) 100%
+  );
   
   /* Text Colors for Dark Background */
   --original-text-white: #ffffff;
@@ -269,6 +335,8 @@
   --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-primary: 0 10px 25px -5px rgba(10, 116, 218, 0.25);
   --shadow-primary-lg: 0 20px 40px -10px rgba(10, 116, 218, 0.3);
+  --shadow-additive-soft: 0 0.65rem 1.4rem rgba(8, 27, 54, 0.08);
+  --shadow-additive-strong: 0 1.1rem 2.2rem rgba(8, 27, 54, 0.14);
   
   /* ============================================
      BORDER RADIUS
@@ -276,26 +344,37 @@
   
   --radius-sm: 0.5rem;
   --border-radius: 0.75rem;
+  --border-radius-sm: var(--radius-sm);
+  --border-radius-pill: 999px;
   --radius-md: 1rem;
   --radius-lg: 1.25rem;
+  --phi-radius-sm: var(--radius-sm);
+  --phi-radius-md: var(--radius-md);
+  --phi-radius-lg: var(--radius-lg);
+  --phi-radius-atypical-a: clamp(var(--radius-sm), calc(var(--radius-md) * var(--phi-inv)), var(--radius-md));
+  --phi-radius-atypical-b: clamp(var(--border-radius), calc(var(--radius-lg) * var(--phi-inv)), var(--radius-lg));
+  --phi-radius-atypical-cta: var(--border-radius-pill);
+  /* Hairline: 1px ref px scales with zoom; md stroke uses rem for φ rails / borders */
+  --phi-stroke-hairline: 1px;
+  --phi-stroke-md: 0.125rem;
   
   /* ============================================
      TRANSITIONS
      ============================================ */
   
-  /* Standard transitions with phi-based timing */
-  --transition: all 0.618s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.382s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: all 1.618s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Standard transitions: avoid 'all' to prevent layout/property thrash during resize/zoom. */
+  --transition: color 0.24s ease, background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease, opacity 0.24s ease, transform 0.24s ease;
+  --transition-fast: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, transform 0.16s ease;
+  --transition-slow: color 0.42s ease, background-color 0.42s ease, border-color 0.42s ease, box-shadow 0.42s ease, opacity 0.42s ease, transform 0.42s ease;
   
   /* Lanczos-quality transitions - cubic-bezier approximations of Lanczos kernel */
   /* These provide smooth, high-quality interpolation similar to Lanczos resampling */
   /* Cubic-bezier values approximate the Lanczos kernel's smooth interpolation curve */
-  --transition-lanczos: all 0.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos: opacity 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   /* Smooth Lanczos-quality transition - approximates Lanczos kernel smoothing */
-  --transition-lanczos-fast: all 0.382s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos-fast: opacity 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.24s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   /* Fast Lanczos-quality transition */
-  --transition-lanczos-slow: all 1.618s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-lanczos-slow: opacity 0.54s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.54s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   /* Slow Lanczos-quality transition */
   
   /* Lanczos-quality transitions for specific properties */
@@ -365,18 +444,14 @@
      MAX MARGIN/PADDING TOKENS - Zoom-Aware with Phi Scaling
      ============================================ */
   
-  /* Base max values using phi-based calculations */
-  /* These scale with zoom via --zoom-scale and --browser-zoom tokens */
+  /* Base max values (rem-based; scale with native browser zoom) */
   --max-margin-base: calc(var(--space-4xl) * var(--phi));
   --max-padding-base: calc(var(--space-4xl) * var(--phi));
   
   /* Section-specific max margin/padding - Sierpinski pattern */
-  /* Only left/right padding scales with zoom, not top/bottom */
-  --section-max-margin: calc(var(--max-margin-base) * var(--zoom-scale));
-  --section-max-padding-horizontal: calc(var(--max-padding-base) * var(--zoom-scale));
-  /* Horizontal padding scales with zoom */
+  --section-max-margin: var(--max-margin-base);
+  --section-max-padding-horizontal: var(--max-padding-base);
   --section-max-padding-vertical: calc(var(--max-padding-base) * var(--phi-inv));
-  /* Vertical padding does NOT scale with zoom - fixed value */
   
   /* Section max margin/padding with phi variations */
   --section-max-margin-left: calc(var(--section-max-margin) * var(--phi-inv));
@@ -397,22 +472,20 @@
   /* Container max margin/padding - derived from section tokens */
   --container-max-margin: calc(var(--section-max-margin) * var(--phi-inv));
   --container-max-padding-horizontal: calc(var(--section-max-padding-horizontal) * var(--phi-inv));
-  /* Horizontal padding scales with zoom */
   --container-max-padding-vertical: calc(var(--section-max-padding-vertical) * var(--phi-inv));
-  /* Vertical padding does NOT scale with zoom - fixed value */
   --container-max-padding: var(--container-max-padding-vertical);
-  /* Backward compatibility - defaults to vertical (non-scaling) */
   
-  /* Responsive max values that scale with viewport and zoom */
+  /* Responsive max values that scale with viewport */
+  --section-max-padding: var(--section-max-padding-horizontal);
   --section-max-margin-responsive: clamp(
-    calc(var(--space-2xl) * var(--zoom-scale)),
-    calc(4vw * var(--zoom-scale)),
-    calc(var(--section-max-margin) * var(--zoom-scale))
+    var(--space-2xl),
+    4vw,
+    var(--section-max-margin)
   );
   --section-max-padding-responsive: clamp(
-    calc(var(--space-2xl) * var(--zoom-scale)),
-    calc(4vw * var(--zoom-scale)),
-    calc(var(--section-max-padding) * var(--zoom-scale))
+    var(--space-2xl),
+    4vw,
+    var(--section-max-padding)
   );
   
   /* ============================================
@@ -474,6 +547,8 @@
   --lanczos-pattern-scale: 1;
   --lanczos-quality: 1;
   --lanczos-wave-frequency: 1;
+  /* Runtime (optional): detected zoom for pattern tuning — not for layout compensation */
+  --lanczos-detected-zoom: 1;
   
   /* Fourier-filtered azimuth angles - maintain geometric integrity during zoom */
   /* These are set dynamically by LanczosScalingManager with Fourier filtering */
@@ -533,6 +608,7 @@
   
   --accent-primary: var(--primary-color);
   --accent-primary-bg: rgba(10, 116, 218, var(--color-intensity-medium));
+  --accent-success-bg: var(--accent-primary-bg);
   --accent-wisdom: var(--primary-dark);
   --accent-wisdom-bg: rgba(8, 85, 168, var(--color-intensity-normal));
   --accent-calm: var(--primary-color);
@@ -615,6 +691,7 @@
   --form-border-color: var(--border);
   --form-bg: var(--surface-elevated);
   --form-max-width: calc(var(--space-6xl) * var(--phi-inv) * var(--phi));
+  --portal-login-max: min(100%, 28.125rem);
   
   /* Navigation Tokens */
   --nav-padding: var(--space-md);
@@ -645,36 +722,77 @@
   /* Golden split: minor text band (φ⁻²) | major visual (φ⁻¹); sums to 1 */
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
-  /* Cap vh with rem so hero height does not explode/collapse vs typography at extreme zoom */
-  --hero-min-height: clamp(32rem, 80vh, 52rem);
-  --hero-inner-min-height: clamp(28rem, 70vh, 48rem);
-  /* Page rhythm: rem-only mids so spacing tracks browser zoom like typography */
+  /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
+  --hero-min-height: clamp(17rem, 24rem, 30rem);
+  --hero-inner-min-height: clamp(13rem, 19rem, 26rem);
+  /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
+  --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
+  /*
+   * Inset “spectrum”: % of containing block (CSS: % on padding-top/bottom uses the same width
+   * basis as padding-left/right). So vertical gutters expand/contract with the content band like
+   * horizontal inset — portrait rhythm tracks width “expansion” without stretching type.
+   */
   --layout-padding-inline: clamp(
-    calc(var(--space-md) * var(--phi-inv)),
-    calc(var(--space-lg) * var(--phi-inv)),
-    calc(var(--space-xl) * var(--phi))
+    calc(var(--space-sm) * var(--phi-inv)),
+    1.65rem,
+    min(calc(var(--space-lg) * var(--phi)), 3rem)
   );
+  /* Horizontal gutters — never tuck under display cutouts (tracks same zoom basis as --layout-padding-inline) */
+  --layout-padding-inline-start: max(var(--layout-padding-inline), var(--safe-area-inset-left));
+  --layout-padding-inline-end: max(var(--layout-padding-inline), var(--safe-area-inset-right));
   --layout-padding-block-tight: clamp(
-    calc(var(--space-lg) * var(--phi-inv)),
-    calc(var(--space-xl) * var(--phi-inv)),
-    calc(var(--space-2xl) * var(--phi-inv))
+    calc(var(--space-md) * var(--phi-inv)),
+    1.25rem,
+    min(calc(var(--space-2xl) * var(--phi-inv)), 3rem)
   );
-  --layout-section-padding-y: clamp(
-    calc(var(--space-xl) * var(--phi-inv)),
-    calc(var(--space-2xl) * var(--phi-inv)),
-    var(--section-max-padding-vertical)
+  --layout-section-padding-y: clamp(1rem, 1.15rem, 1.35rem);
+  --layout-section-padding-y-alt: clamp(0.9rem, 1.05rem, 1.25rem);
+  /* Nav: compact vertical chrome — stable bar, smaller % than body sections */
+  --nav-chrome-padding-block: clamp(
+    0.5rem,
+    0.75rem,
+    1.05rem
   );
-  --layout-section-padding-y-alt: clamp(
-    calc(var(--space-xl) * var(--phi-sqrt)),
-    calc(var(--space-2xl) * var(--phi-inv)),
-    var(--section-even-max-padding-vertical)
+  /* Footer: roomier vertical rhythm for scanning links / legal copy */
+  --footer-chrome-padding-block: clamp(
+    var(--space-2xl),
+    3rem,
+    var(--space-5xl)
   );
 
-  /* Readable measures & page containers — used by site-framework (φ rhythm, zoom-safe caps) */
-  --measure-narrow: min(38rem, calc(100vw - 2 * var(--layout-padding-inline)));
-  --measure-prose: min(62ch, calc(100vw - 2 * var(--layout-padding-inline)));
-  --measure-article: min(48rem, calc(100vw - 2 * var(--layout-padding-inline)));
-  --container-max-width: min(72rem, calc(100vw - 2 * var(--layout-padding-inline)));
-  --container-max-width-wide: min(88rem, calc(100vw - 2 * var(--layout-padding-inline)));
+  /* Readable measures — ch/% track font + container; padding is on .container, not repeated here */
+  --measure-narrow: min(38rem, 100%);
+  --measure-prose: min(62ch, 100%);
+  --measure-article: min(48rem, 100%);
+  /* Full-width layout frame; readability is controlled by text measures, not outer container caps. */
+  --container-max-width: 100%;
+  --container-max-width-wide: 100%;
+  /*
+   * Info panels (cards, stats, tiles): grid track min/max so columns don’t stretch with 1fr
+   * on wide viewports. % is of the grid container width; rem tracks browser zoom.
+   */
+  --info-panel-track-min: 18.5rem;
+  --info-panel-track-max: clamp(24rem, 24vw, 32rem);
+}
+
+@media (max-width: 768px) {
+  :root {
+    /*
+     * rem-first: large vh min-heights left a tall empty band under the hero visual before the
+     * next section (especially with browser zoom). Copy + graphic + scroll CTA set real height.
+     */
+    --hero-min-height: clamp(17rem, 26rem, 38rem);
+    --hero-inner-min-height: clamp(13rem, 20rem, 28rem);
+    --hero-visual-inner-pad-inline: clamp(0.18rem, min(2.75vw, 0.65rem), 0.8rem);
+  }
+}
+
+@supports (height: 1svh) {
+  @media (max-width: 768px) {
+    :root {
+      --hero-min-height: clamp(17rem, 26rem, 38rem);
+      --hero-inner-min-height: clamp(13rem, 20rem, 28rem);
+    }
+  }
 }
 

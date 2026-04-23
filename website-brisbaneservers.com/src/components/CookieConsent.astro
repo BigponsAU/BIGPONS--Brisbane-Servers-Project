@@ -1,9 +1,6 @@
 ---
 /**
- * Cookie Consent Banner Component
- * 
- * Zoom-aware cookie consent banner that scales synchronously with browser zoom
- * Uses rem-based design tokens for consistent sizing across all zoom levels
+ * Cookie consent — styles in `cookie-consent.css` (viewport-capped bar; native browser zoom).
  */
 import '../styles/cookie-consent.css';
 
@@ -22,7 +19,7 @@ const {
 } = Astro.props;
 ---
 
-<div id="cookie-consent" class="cookie-consent" role="dialog" aria-label="Cookie consent" aria-live="polite" data-zoom-aware="true" style="display: none;" aria-hidden="true">
+<div id="cookie-consent" class="cookie-consent" role="dialog" aria-label="Cookie consent" aria-live="polite" data-zoom-aware="true" aria-hidden="true">
   <div class="cookie-consent-content">
     <div class="cookie-consent-message">
       <p class="cookie-text">
@@ -42,219 +39,6 @@ const {
     </div>
   </div>
 </div>
-
-<style>
-  /* Cookie Consent Banner - Zoom-Aware Styling */
-  /* All sizing uses rem-based design tokens for synchronous scaling with browser zoom */
-  
-  .cookie-consent {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10000;
-    /* Highest z-index to appear above all content */
-    background: var(--bg-elevated);
-    border-top: var(--phi-line-width) solid var(--border-light);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-lg);
-    /* Rem-based padding scales with zoom */
-    transform-origin: bottom center;
-    /* Transform origin for zoom compensation */
-    display: none;
-    /* Hidden by default, shown via JavaScript */
-  }
-
-  .cookie-consent.show {
-    display: block;
-    animation: cookieSlideUp 0.3s ease-out;
-  }
-
-  @keyframes cookieSlideUp {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .cookie-consent-content {
-    max-width: calc(var(--space-base) * 75);
-    /* 75rem max-width - scales with zoom */
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    /* Rem-based gap scales with zoom */
-    align-items: center;
-  }
-
-  @media (min-width: 768px) {
-    .cookie-consent-content {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
-
-  .cookie-consent-message {
-    flex: 1;
-    min-width: 0;
-    /* Allow text to wrap */
-  }
-
-  .cookie-text {
-    font-size: var(--text-base);
-    /* Rem-based font size scales with zoom */
-    line-height: calc(1em * var(--phi));
-    /* Phi-based line height for harmony */
-    color: var(--text-primary);
-    margin: 0;
-    /* Remove default margin */
-    text-align: center;
-    /* Center on mobile */
-  }
-
-  @media (min-width: 768px) {
-    .cookie-text {
-      text-align: left;
-      /* Left-align on larger screens */
-    }
-  }
-
-  .cookie-policy-link {
-    color: var(--primary-color);
-    text-decoration: underline;
-    text-decoration-thickness: var(--phi-line-width);
-    /* Phi-based underline thickness */
-    text-underline-offset: calc(var(--space-xs) * var(--phi-inv));
-    /* Phi-based offset */
-    transition: color var(--transition);
-    /* Smooth color transition */
-  }
-
-  .cookie-policy-link:hover {
-    color: var(--primary-dark);
-  }
-
-  .cookie-policy-link:focus {
-    outline: var(--phi-line-width) solid var(--primary-color);
-    outline-offset: calc(var(--space-xs) * var(--phi-inv));
-    border-radius: var(--radius-sm);
-  }
-
-  .cookie-consent-actions {
-    display: flex;
-    gap: var(--space-md);
-    /* Rem-based gap scales with zoom */
-    flex-shrink: 0;
-    /* Prevent buttons from shrinking */
-  }
-
-  .cookie-btn {
-    padding: var(--space-sm) var(--space-lg);
-    /* Rem-based padding scales with zoom */
-    font-size: var(--text-base);
-    /* Rem-based font size scales with zoom */
-    font-weight: var(--font-weight-medium);
-    line-height: calc(1em * var(--phi));
-    /* Phi-based line height */
-    border: var(--phi-line-width) solid transparent;
-    /* Phi-based border width */
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all var(--transition);
-    /* Smooth transitions */
-    min-width: calc(var(--space-base) * 6);
-    /* Minimum button width - scales with zoom */
-    white-space: nowrap;
-    /* Prevent text wrapping */
-  }
-
-  .cookie-btn:focus {
-    outline: var(--phi-line-width) solid var(--primary-color);
-    outline-offset: calc(var(--space-xs) * var(--phi-inv));
-  }
-
-  .cookie-btn-accept {
-    background: var(--primary-color);
-    color: white;
-  }
-
-  .cookie-btn-accept:hover {
-    background: var(--primary-dark);
-    box-shadow: var(--shadow-md);
-  }
-
-  .cookie-btn-decline {
-    background: transparent;
-    color: var(--text-primary);
-    border-color: var(--border-light);
-  }
-
-  .cookie-btn-decline:hover {
-    background: var(--bg-secondary);
-    border-color: var(--primary-color);
-  }
-
-  /* Zoom Compensation Integration */
-  /* Ensure cookie banner scales correctly with zoom compensation system */
-  html.zoom-compensated .cookie-consent,
-  html[data-zoom-level] .cookie-consent {
-    /* Transform is applied to html, so cookie banner inherits scaling */
-    /* All rem-based values scale automatically */
-  }
-
-  /* Mobile-specific adjustments for zoom scenarios */
-  @media (max-width: 480px) {
-    .cookie-consent {
-      padding: var(--space-md);
-      /* Slightly reduced padding on mobile */
-    }
-
-    .cookie-consent-content {
-      gap: var(--space-sm);
-      /* Reduced gap on mobile */
-    }
-
-    .cookie-text {
-      font-size: var(--text-sm);
-      /* Slightly smaller text on mobile for better fit */
-    }
-
-    .cookie-btn {
-      padding: var(--space-xs) var(--space-md);
-      /* Reduced padding on mobile */
-      font-size: var(--text-sm);
-      /* Smaller font on mobile */
-      min-width: calc(var(--space-base) * 5);
-      /* Smaller minimum width on mobile */
-    }
-
-    .cookie-consent-actions {
-      flex-direction: column;
-      width: 100%;
-      /* Stack buttons on very small screens */
-    }
-
-    .cookie-btn {
-      width: 100%;
-      /* Full-width buttons on mobile */
-    }
-  }
-
-  /* High zoom scenarios - ensure readability */
-  @media (min-resolution: 2dppx) {
-    .cookie-text {
-      /* Maintain crisp text at high zoom/DPI */
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-  }
-</style>
 
 <script>
   /**
@@ -347,8 +131,8 @@ const {
     function showCookieBanner(): void {
       const banner = document.getElementById('cookie-consent');
       if (banner) {
+        banner.style.removeProperty('display');
         banner.classList.add('show');
-        // Ensure banner is accessible
         banner.setAttribute('aria-hidden', 'false');
       }
     }
@@ -357,10 +141,10 @@ const {
       const banner = document.getElementById('cookie-consent');
       if (banner) {
         banner.classList.remove('show');
-        setTimeout(() => {
-          banner.style.display = 'none';
+        window.setTimeout(() => {
+          banner.style.removeProperty('display');
           banner.setAttribute('aria-hidden', 'true');
-        }, 300);
+        }, 280);
       }
     }
     
@@ -410,10 +194,10 @@ const {
       
       // If user has already made a choice, ensure banner stays hidden
       if (consent === 'accepted' || consent === 'declined') {
-        banner.style.display = 'none';
-        banner.setAttribute('aria-hidden', 'true');
         banner.classList.remove('show');
-        return; // Don't attach listeners if already decided
+        banner.style.removeProperty('display');
+        banner.setAttribute('aria-hidden', 'true');
+        return;
       }
       
       // Only show banner if user hasn't made a choice

@@ -3,12 +3,12 @@
  * Runs A/B tests comparing different text generation variants
  */
 
-import { ToneAnalyzer, ToneAnalysis } from '../analyzers/tone-analyzer';
+import { ToneAnalyzer, type ToneAnalysis } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
 import { TextGenerator } from '../generators/text-generator';
 import { Extrapolator } from '../generators/extrapolator';
 import { VoiceMatcher } from '../generators/voice-matcher';
-import {
+import type {
   TestCase,
   TestResult,
   VariantResult,

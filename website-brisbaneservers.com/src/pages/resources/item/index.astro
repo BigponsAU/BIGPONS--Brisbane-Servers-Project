@@ -7,7 +7,7 @@ import { getPageDescriptor } from '~/lib/page-descriptors';
 
 const currentPath = '/resources/item';
 const publicApiBaseUrl = getPublicApiBaseUrl();
-const pageDescriptor = getPageDescriptor('resource-detail');
+const pageDescriptor = getPageDescriptor(currentPath);
 ---
 
 <SiteShell
@@ -15,12 +15,11 @@ const pageDescriptor = getPageDescriptor('resource-detail');
   description="Published Brisbane Servers resource content loaded from the hybrid API pipeline."
   currentPath={currentPath}
   pageId={pageDescriptor.pageId}
+  shellVariant={pageDescriptor.shellVariant}
   valueProfile={pageDescriptor.valueProfile}
-  layoutDensity={pageDescriptor.layoutDensity}
   zoomProfile={pageDescriptor.zoomProfile}
-  surfaceTone={pageDescriptor.surfaceTone}
-  mainClass={pageDescriptor.mainClass}
-  showFooter={pageDescriptor.showFooter}
+  density={pageDescriptor.density}
+  mainClass="main-phi-chassis"
 >
     <Breadcrumbs items={[
       { label: 'Home', href: '/' },
@@ -158,7 +157,7 @@ const pageDescriptor = getPageDescriptor('resource-detail');
   }
 
   .resource-detail-status[data-error='true'] {
-    border-color: rgba(var(--primary-color-rgb), 0.25);
+    border-color: var(--border-accent);
     color: var(--primary-dark);
   }
 
@@ -188,7 +187,7 @@ const pageDescriptor = getPageDescriptor('resource-detail');
   .resource-detail-chip {
     padding: var(--space-xs) var(--space-sm);
     border-radius: var(--border-radius-pill, 999px);
-    background: var(--primary-light);
+    background: var(--surface-additive);
     color: var(--primary-dark);
     font-size: var(--text-sm);
   }

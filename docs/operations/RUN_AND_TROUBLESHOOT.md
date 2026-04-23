@@ -1,5 +1,7 @@
 # Run the App & Troubleshooting
 
+**Production deploy model:** [Deployment pathways](DEPLOYMENT_PATHWAYS.md) (primary: GitHub Pages hybrid).
+
 ## Quick start (hybrid local split)
 
 From **project root**:
@@ -10,7 +12,7 @@ npm run start:hybrid
 
 This starts the hybrid stack:
 
-- **Static frontend + portal UI:** `http://localhost:3000`
+- **Static frontend + account/workspace UI:** `http://localhost:3000`
 - **Standalone API:** `http://localhost:3002/api`
 - **Health:** `http://localhost:3002/api/health`
 

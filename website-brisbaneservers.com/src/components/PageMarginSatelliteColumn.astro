@@ -1,0 +1,56 @@
+---
+/**
+ * Vertical Sierpinski-style graph for the wide empty margins outside the content column.
+ * Pairs with `.home-interconnection-page-margin` (full (100vw − frame) / 2 width).
+ */
+import { buildSectionSatelliteGraph } from '../lib/section-satellite-graph';
+
+interface Props {
+  side: 'left' | 'right';
+}
+
+const { side } = Astro.props;
+
+const graph = buildSectionSatelliteGraph({
+  seedKey: `page-margin|${side}|rail-v1`,
+  viewWidth: side === 'left' ? 138 : 152,
+  viewHeight: 920,
+  maxLevel: 3,
+  rotationDeg: side === 'left' ? -16 : 20,
+});
+
+const { nodes, edges, viewWidth, viewHeight } = graph;
+---
+
+<div class={`home-page-margin-constellation home-page-margin-constellation--${side}`} aria-hidden="true">
+  <svg
+    class="home-page-margin-constellation__svg"
+    viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+    preserveAspectRatio="xMidYMid slice"
+    role="presentation"
+    focusable="false"
+  >
+    <g class="home-page-margin-constellation__edges">
+      {
+        edges.map(({ i, j }) => {
+          const a = nodes[i];
+          const b = nodes[j];
+          if (!a || !b) return null;
+          return <line class="home-page-margin-constellation__edge" x1={a.x} y1={a.y} x2={b.x} y2={b.y} />;
+        })
+      }
+    </g>
+    <g class="home-page-margin-constellation__nodes">
+      {
+        nodes.map((n, idx) => (
+          <circle
+            class={idx === 0 ? 'home-page-margin-constellation__node home-page-margin-constellation__node--hub' : 'home-page-margin-constellation__node'}
+            cx={n.x}
+            cy={n.y}
+            r={Math.max(1.8, n.size * 0.2)}
+          />
+        ))
+      }
+    </g>
+  </svg>
+</div>

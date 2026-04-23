@@ -4,6 +4,7 @@
  */
 
 import * as crypto from 'crypto';
+import { getRuntimeEnv } from './runtime-env';
 
 const SALT_LEN = 16;
 const KEY_LEN = 64;
@@ -29,6 +30,7 @@ export interface AuthUser {
   id: string;
   email: string;
   role: AuthRole;
+  emailVerified?: boolean;
 }
 
 // Simple in-memory session store (in production, use Redis or database)
@@ -72,13 +74,35 @@ export function verifySessionToken(token: string): AuthUser | null {
  */
 export async function verifySessionTokenAsync(token: string): Promise<AuthUser | null> {
   const fromMemory = verifySessionToken(token);
-  if (fromMemory) return fromMemory;
   try {
     const { getSessionUser } = await import('../lib/db/sessions');
-    return await getSessionUser(token);
+    const persisted = await getSessionUser(token);
+    if (persisted) {
+      return persisted;
+    }
   } catch {
-    return null;
+    // Ignore persistence errors so bootstrap admin can still sign in when DB storage is unavailable.
   }
+
+  if (fromMemory) {
+    const adminEmail = getRuntimeEnv('ADMIN_EMAIL') ?? '';
+    const isBootstrapAdmin = Boolean(
+      adminEmail &&
+      fromMemory.email === adminEmail &&
+      (fromMemory.role === 'admin' || fromMemory.role === 'super-admin')
+    );
+    if (isBootstrapAdmin) {
+      return fromMemory;
+    }
+  }
+
+  try {
+    const { deleteSession } = await import('../lib/db/sessions');
+    await deleteSession(token);
+  } catch {
+    // Ignore cleanup failures.
+  }
+  return null;
 }
 
 /**

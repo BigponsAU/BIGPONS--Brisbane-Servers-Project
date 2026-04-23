@@ -4,7 +4,6 @@ import '../styles/symmetry-harmony.css';
 import '../styles/geometric-detailing.css';
 import '../styles/floral-pattern.css';
 import '../styles/tartan-pattern.css';
-import '../styles/banach-fixed-point.css';
 import '../styles/site-framework.css';
 import CookieConsent from '../components/CookieConsent.astro';
 import favicon from '../favicon.png';
@@ -19,6 +18,8 @@ import {
 interface Props {
   title: string;
   description?: string;
+  /** When set, emits an immediate HTTP meta refresh (e.g. legacy /portal → /account/). */
+  immediateRedirectUrl?: string;
   /** Absolute image URL for Open Graph / Twitter (defaults to `/og-default.png` on site origin). */
   ogImage?: string;
   /** When true, adds robots noindex and omits OG/Twitter images and JSON-LD for sensitive routes (e.g. portal). */
@@ -35,6 +36,7 @@ const {
   description = "Access to truth in technology for Australian businesses. Brisbane Servers provides tailored insights, industry-specific guidance, and reality-based tech solutions for SMEs.",
   ogImage,
   noindex = false,
+  immediateRedirectUrl,
   pageId,
   shellVariant,
   valueProfile,
@@ -77,7 +79,10 @@ const jsonLd = JSON.stringify({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=0.5, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
+    {immediateRedirectUrl && (
+      <meta http-equiv="refresh" content={`0;url=${immediateRedirectUrl}`} />
+    )}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#0A74DA" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -173,7 +178,6 @@ const jsonLd = JSON.stringify({
     data-page-id={pageId ?? descriptor.pageId}
     data-shell-variant={shellVariant ?? descriptor.shellVariant}
     data-value-profile={valueProfile ?? descriptor.valueProfile}
-    data-zoom-profile={zoomProfile ?? descriptor.zoomProfile}
     data-page-density={density ?? descriptor.density}
   >
     <!-- Skip to main content link for screen readers -->

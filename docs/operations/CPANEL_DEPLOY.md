@@ -1,6 +1,8 @@
 # cPanel deployment vs GitHub Pages hybrid
 
-The repo now has two supported deployment shapes:
+**Primary production path:** [GitHub Pages hybrid](GITHUB_PAGES_HYBRID.md) — see [DEPLOYMENT_PATHWAYS.md](DEPLOYMENT_PATHWAYS.md). cPanel / Node standalone is an **alternate** host when you want SSR + filesystem-backed API in one process.
+
+The repo has two common deployment shapes:
 
 - `astro.config.mjs`: static frontend build for GitHub Pages
 - `astro.config.cpanel.mjs`: Node standalone build for cPanel or another Node host

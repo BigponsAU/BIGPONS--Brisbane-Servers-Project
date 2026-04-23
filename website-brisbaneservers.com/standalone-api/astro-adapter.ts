@@ -1,7 +1,32 @@
-import type { Express, Request, Response } from 'express';
-
 type AstroMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-type AstroHandler = (context: { request: Request; params: Record<string, string | undefined> }) => Promise<Response> | Response;
+type AstroHandler = (...args: any[]) => Promise<globalThis.Response> | globalThis.Response;
+
+interface MinimalRequest {
+  protocol: string;
+  originalUrl: string;
+  method: string;
+  body?: Buffer;
+  headers: Record<string, string | string[] | undefined>;
+  params: Record<string, string | undefined>;
+  get(name: string): string | undefined;
+}
+
+interface MinimalResponse {
+  status(code: number): MinimalResponse;
+  append(name: string, value: string): void;
+  setHeader(name: string, value: string): void;
+  end(): void;
+  send(body: Buffer): void;
+  json(payload: unknown): void;
+}
+
+interface MinimalExpress {
+  get(path: string, handler: (req: MinimalRequest, res: MinimalResponse) => Promise<void>): void;
+  post(path: string, handler: (req: MinimalRequest, res: MinimalResponse) => Promise<void>): void;
+  put(path: string, handler: (req: MinimalRequest, res: MinimalResponse) => Promise<void>): void;
+  patch(path: string, handler: (req: MinimalRequest, res: MinimalResponse) => Promise<void>): void;
+  delete(path: string, handler: (req: MinimalRequest, res: MinimalResponse) => Promise<void>): void;
+}
 
 export interface AstroRouteModule {
   GET?: AstroHandler;
@@ -16,7 +41,7 @@ export interface RouteDefinition {
   loadModule: () => Promise<AstroRouteModule>;
 }
 
-function toHeaders(req: Request): Headers {
+function toHeaders(req: MinimalRequest): Headers {
   const headers = new Headers();
 
   Object.entries(req.headers).forEach(([key, value]) => {
@@ -32,7 +57,7 @@ function toHeaders(req: Request): Headers {
   return headers;
 }
 
-function createRequest(req: Request): globalThis.Request {
+function createRequest(req: MinimalRequest): globalThis.Request {
   const origin = `${req.protocol}://${req.get('host')}`;
   const url = new URL(req.originalUrl, origin);
   const method = req.method.toUpperCase();
@@ -47,7 +72,7 @@ function createRequest(req: Request): globalThis.Request {
   } as RequestInit & { duplex?: 'half' });
 }
 
-async function writeResponse(target: Response, source: globalThis.Response): Promise<void> {
+async function writeResponse(target: MinimalResponse, source: globalThis.Response): Promise<void> {
   target.status(source.status);
 
   source.headers.forEach((value, key) => {
@@ -67,7 +92,7 @@ async function writeResponse(target: Response, source: globalThis.Response): Pro
   target.send(body);
 }
 
-export function registerAstroRoutes(app: Express, routes: RouteDefinition[]): void {
+export function registerAstroRoutes(app: MinimalExpress, routes: RouteDefinition[]): void {
   routes.forEach(({ path, loadModule }) => {
     (['get', 'post', 'put', 'patch', 'delete'] as const).forEach((expressMethod) => {
       app[expressMethod](path, async (req, res) => {

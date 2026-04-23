@@ -1,5 +1,7 @@
 # Repository Status
 
+> **Note (2026-04):** This file is a **historical snapshot** (dated below). For current deployment truth use [Deployment pathways](../operations/DEPLOYMENT_PATHWAYS.md) (primary: **GitHub Pages hybrid**), [Run & troubleshoot](../operations/RUN_AND_TROUBLESHOOT.md), and [Running notes](../development/RUNNING_NOTES_MAP.md). Do not treat the grade below as live operational status without re-verification.
+
 **Date**: 2025-01-27  
 **Project**: Brisbane Servers Monorepo (Voice Framework + Website)  
 **Status**: ✅ **PRODUCTION READY** - All Critical Issues Resolved

@@ -7,6 +7,11 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/auth/logout', loadModule: () => import('../src/pages/api/auth/logout') },
   { path: '/api/auth/me', loadModule: () => import('../src/pages/api/auth/me') },
   { path: '/api/auth/register', loadModule: () => import('../src/pages/api/auth/register') },
+  { path: '/api/auth/verify-email', loadModule: () => import('../src/pages/api/auth/verify-email') },
+  { path: '/api/auth/resend-verification', loadModule: () => import('../src/pages/api/auth/resend-verification') },
+  { path: '/api/auth/forgot-password', loadModule: () => import('../src/pages/api/auth/forgot-password') },
+  { path: '/api/auth/reset-password', loadModule: () => import('../src/pages/api/auth/reset-password') },
+  { path: '/api/auth/revoke-all', loadModule: () => import('../src/pages/api/auth/revoke-all') },
   { path: '/api/semantic/search', loadModule: () => import('../src/pages/api/semantic/search') },
   { path: '/api/tokens/me', loadModule: () => import('../src/pages/api/tokens/me') },
 
@@ -38,6 +43,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
 
   { path: '/api/analytics/suggestions', loadModule: () => import('../src/pages/api/analytics/suggestions') },
   { path: '/api/admin/users', loadModule: () => import('../src/pages/api/admin/users') },
+  { path: '/api/admin/auth-audit', loadModule: () => import('../src/pages/api/admin/auth-audit') },
   { path: '/api/admin/pipeline-config', loadModule: () => import('../src/pages/api/admin/pipeline-config') },
   { path: '/api/admin/reindex-resource', loadModule: () => import('../src/pages/api/admin/reindex-resource') },
   { path: '/api/admin/vectors-summary', loadModule: () => import('../src/pages/api/admin/vectors-summary') },

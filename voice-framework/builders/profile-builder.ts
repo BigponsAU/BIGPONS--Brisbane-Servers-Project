@@ -3,12 +3,26 @@
  * Automatically generates voice profiles from text samples
  */
 
-import { VoiceProfile, VoiceCharacteristics, ToneProfile, LinguisticPatterns, Vocabulary, NumericalPrecision, StructuralPatterns, Organization, ContentFlow, DomainKnowledge, VoiceMarkers, SemanticDensity, ExtrapolationGuidelines } from '../models/voice-profile';
+import type {
+  VoiceProfile,
+  VoiceCharacteristics,
+  ToneProfile,
+  LinguisticPatterns,
+  Vocabulary,
+  NumericalPrecision,
+  StructuralPatterns,
+  Organization,
+  ContentFlow,
+  DomainKnowledge,
+  VoiceMarkers,
+  SemanticDensity,
+  ExtrapolationGuidelines
+} from '../models/voice-profile';
 import { ToneAnalyzer } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
-import { TextStorage, TextSample } from '../storage/text-storage';
-import { PannedTruth } from '../analyzers/panner';
-import { DocumentVector } from '../storage/vector-storage';
+import { TextStorage, type TextSample } from '../storage/text-storage';
+import type { PannedTruth } from '../analyzers/panner';
+import type { DocumentVector } from '../storage/vector-storage';
 
 export interface ProfileBuilderOptions {
   name: string;

@@ -20,9 +20,12 @@
   "dependencies": {
     "@astrojs/node": "^9.0.0",
     "astro": "^5.15.4",
+    "nodemailer": "^8.0.4",
+    "pg": "^8.13.1",
     "sql.js": "^1.11.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.10",
     "@types/node": "^20.0.0",
     "glob": "^10.3.10",
     "tsx": "^4.7.0",

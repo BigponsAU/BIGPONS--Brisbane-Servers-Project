@@ -3,8 +3,8 @@
  * Executes test suites and generates reports
  */
 
-import { TestHarness, TestSuiteResult } from './test-harness';
-import { TestSuite, TestCase } from './models/test-case';
+import { TestHarness, type TestSuiteResult } from './test-harness';
+import type { TestSuite, TestCase } from './models/test-case';
 import * as fs from 'fs';
 import * as path from 'path';
 

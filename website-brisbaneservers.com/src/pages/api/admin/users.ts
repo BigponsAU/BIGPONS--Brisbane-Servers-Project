@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
-import { loadUsers } from '../../../lib/db/users';
+import { isUserEmailVerified, loadUsers } from '../../../lib/db/users';
 
 /**
  * List all registered users. Admin only.
@@ -20,7 +20,8 @@ export const GET: APIRoute = async ({ request }) => {
       id: u.id,
       email: u.email,
       role: u.role,
-      createdAt: u.createdAt
+      createdAt: u.createdAt,
+      emailVerified: isUserEmailVerified(u)
     }));
     return new Response(
       JSON.stringify({ users: safe, count: safe.length, success: true }),

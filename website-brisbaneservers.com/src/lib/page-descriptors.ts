@@ -1,6 +1,6 @@
 export type PageValueProfile = 'foundation' | 'evidence' | 'utility';
 export type PageZoomProfile = 'immersive' | 'balanced' | 'focused';
-export type PageShellVariant = 'marketing' | 'portal';
+export type PageShellVariant = 'public' | 'portal' | 'marketing';
 export type PageDensity = 'airy' | 'comfortable' | 'compact';
 
 export interface PageDescriptor {
@@ -13,7 +13,7 @@ export interface PageDescriptor {
 
 const defaultDescriptor: PageDescriptor = {
   pageId: 'default',
-  shellVariant: 'marketing',
+  shellVariant: 'public',
   valueProfile: 'foundation',
   zoomProfile: 'balanced',
   density: 'comfortable',
@@ -22,48 +22,55 @@ const defaultDescriptor: PageDescriptor = {
 const exactDescriptors: Record<string, PageDescriptor> = {
   '/': {
     pageId: 'home',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'foundation',
     zoomProfile: 'immersive',
     density: 'airy',
   },
   '/about': {
     pageId: 'about',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'foundation',
     zoomProfile: 'balanced',
     density: 'comfortable',
   },
   '/services': {
     pageId: 'services',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'utility',
     zoomProfile: 'focused',
     density: 'comfortable',
   },
   '/projects': {
     pageId: 'projects',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'evidence',
     zoomProfile: 'balanced',
     density: 'comfortable',
   },
   '/resources': {
     pageId: 'resources',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'evidence',
     zoomProfile: 'focused',
     density: 'comfortable',
   },
   '/contribute': {
     pageId: 'contribute',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
+    valueProfile: 'utility',
+    zoomProfile: 'focused',
+    density: 'compact',
+  },
+  '/account': {
+    pageId: 'account',
+    shellVariant: 'portal',
     valueProfile: 'utility',
     zoomProfile: 'focused',
     density: 'compact',
   },
   '/portal': {
-    pageId: 'portal',
+    pageId: 'account',
     shellVariant: 'portal',
     valueProfile: 'utility',
     zoomProfile: 'focused',
@@ -71,14 +78,14 @@ const exactDescriptors: Record<string, PageDescriptor> = {
   },
   '/privacy-policy': {
     pageId: 'privacy-policy',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'evidence',
     zoomProfile: 'focused',
     density: 'compact',
   },
   '/terms-of-service': {
     pageId: 'terms-of-service',
-    shellVariant: 'marketing',
+    shellVariant: 'public',
     valueProfile: 'evidence',
     zoomProfile: 'focused',
     density: 'compact',
@@ -90,7 +97,7 @@ const prefixDescriptors: Array<{ prefix: string; descriptor: PageDescriptor }> =
     prefix: '/resources/item',
     descriptor: {
       pageId: 'resource-detail',
-      shellVariant: 'marketing',
+      shellVariant: 'public',
       valueProfile: 'evidence',
       zoomProfile: 'focused',
       density: 'compact',
@@ -100,7 +107,7 @@ const prefixDescriptors: Array<{ prefix: string; descriptor: PageDescriptor }> =
     prefix: '/resources/',
     descriptor: {
       pageId: 'resource-topic',
-      shellVariant: 'marketing',
+      shellVariant: 'public',
       valueProfile: 'evidence',
       zoomProfile: 'focused',
       density: 'comfortable',
@@ -110,7 +117,7 @@ const prefixDescriptors: Array<{ prefix: string; descriptor: PageDescriptor }> =
     prefix: '/case-studies/',
     descriptor: {
       pageId: 'case-study',
-      shellVariant: 'marketing',
+      shellVariant: 'public',
       valueProfile: 'evidence',
       zoomProfile: 'balanced',
       density: 'comfortable',

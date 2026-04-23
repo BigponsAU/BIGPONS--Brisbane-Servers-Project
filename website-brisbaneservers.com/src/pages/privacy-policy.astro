@@ -1,40 +1,42 @@
 ---
 import '../styles/legal-pages.css';
 import SiteShell from '../layouts/SiteShell.astro';
-import SemanticText from '../components/SemanticText.astro';
+import PageHero from '../components/PageHero.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/privacy-policy';
-const pageDescriptor = getPageDescriptor('legal');
+const pageDescriptor = getPageDescriptor(currentPath);
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Privacy Policy' },
+];
 ---
 
 <SiteShell
   title="Privacy Policy - Brisbane Servers"
   description="How Brisbane Servers handles personal information, cookies, and analytics on this website. A BIGPONS technology project."
   currentPath={currentPath}
+  breadcrumbs={breadcrumbsTrail}
   pageId={pageDescriptor.pageId}
+  shellVariant={pageDescriptor.shellVariant}
   valueProfile={pageDescriptor.valueProfile}
-  layoutDensity={pageDescriptor.layoutDensity}
   zoomProfile={pageDescriptor.zoomProfile}
-  surfaceTone={pageDescriptor.surfaceTone}
-  mainClass={pageDescriptor.mainClass}
-  showFooter={pageDescriptor.showFooter}
+  density={pageDescriptor.density}
+  mainClass="main-phi-chassis"
 >
-    <section class="section section-tartan-accent phi-line-symmetrical">
+  <PageHero
+    title="Privacy Policy"
+    lead="Last updated: March 2026. Brisbane Servers is operated as part of BIGPONS (ABN 93 297 393 962). This page summarises how we approach privacy on this site; it is not personal legal advice."
+  />
+  <Breadcrumbs items={breadcrumbsTrail} />
+
+    <section class="section section--continuation section-tartan-accent phi-line-symmetrical section--hero-wash">
       <div class="container phi-measure-prose">
-        <h1 class="section-title">
-          <SemanticText text="Privacy Policy" semanticLevel="high" isParent={true} />
-        </h1>
-        <p class="section-description legal-meta">
-          <SemanticText
-            text="Last updated: March 2026. Brisbane Servers is operated as part of BIGPONS (ABN 93 297 393 962). This page summarises how we approach privacy on this site; it is not personal legal advice."
-            semanticLevel="normal"
-          />
-        </p>
 
         <h2 class="h3 legal-h2">Information we may collect</h2>
         <p class="text-content">
-          Depending on how you use the site or portal, we may process information you provide (for example, when you submit a form or create an account), technical data such as IP address and browser type, and usage data to keep the service secure and reliable.
+          Depending on how you use the site or your account workspace, we may process information you provide (for example, when you submit a form or create an account), technical data such as IP address and browser type, and usage data to keep the service secure and reliable.
         </p>
 
         <h2 class="h3 legal-h2">Cookies and similar technologies</h2>

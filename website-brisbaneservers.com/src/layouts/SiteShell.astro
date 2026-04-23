@@ -14,6 +14,7 @@ interface Props {
   description?: string;
   ogImage?: string;
   noindex?: boolean;
+  immediateRedirectUrl?: string;
   currentPath?: string;
   breadcrumbs?: BreadcrumbItem[];
   pageId?: string;
@@ -31,10 +32,11 @@ const {
   description,
   ogImage,
   noindex = false,
+  immediateRedirectUrl,
   currentPath = '',
   breadcrumbs = [],
   pageId,
-  shellVariant = 'marketing',
+  shellVariant = 'public',
   valueProfile,
   zoomProfile,
   density,
@@ -44,7 +46,13 @@ const {
 } = Astro.props;
 
 const shellClassName = ['site-shell', `site-shell--${shellVariant}`].join(' ');
-const mainClassName = ['site-main', mainClass].filter(Boolean).join(' ');
+const mainClassName = [
+  'site-main',
+  shellVariant !== 'portal' ? 'site-main--public' : '',
+  shellVariant === 'marketing' ? 'site-main--marketing' : '',
+  shellVariant === 'public' ? 'site-main--marketing' : '',
+  mainClass,
+].filter(Boolean).join(' ');
 ---
 
 <BaseLayout
@@ -52,6 +60,7 @@ const mainClassName = ['site-main', mainClass].filter(Boolean).join(' ');
   description={description}
   ogImage={ogImage}
   noindex={noindex}
+  immediateRedirectUrl={immediateRedirectUrl}
   pageId={pageId}
   shellVariant={shellVariant}
   valueProfile={valueProfile}

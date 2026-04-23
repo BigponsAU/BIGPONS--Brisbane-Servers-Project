@@ -6,8 +6,8 @@
  * sieving through all extracted truths to find the valuable ones.
  */
 
-import { ShreddedTruth } from './shredder';
-import { VoiceProfile } from '../models/voice-profile';
+import type { ShreddedTruth } from './shredder';
+import type { VoiceProfile } from '../models/voice-profile';
 
 export interface PannedTruth extends ShreddedTruth {
   relevanceScore: number; // 0-1, how well this truth matches the profile

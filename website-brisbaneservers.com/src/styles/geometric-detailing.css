@@ -26,7 +26,7 @@
     background: linear-gradient(180deg,
         transparent 0%,
         rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
-        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(var(--accent-violet-rgb), calc(var(--opacity-subtle) * 1.6)) var(--phi-spiral-3),
         rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-4),
         transparent 100%
     );
@@ -62,7 +62,7 @@
     background: linear-gradient(90deg,
         transparent 0%,
         rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-2),
-        rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 1.5)) var(--phi-spiral-3),
+        rgba(var(--accent-violet-rgb), calc(var(--opacity-subtle) * 1.6)) var(--phi-spiral-3),
         rgba(var(--primary-color-rgb), var(--opacity-subtle)) var(--phi-spiral-4),
         transparent 100%
     );
@@ -109,7 +109,7 @@
             var(--phi-azimuth-2),
             transparent 0%,
             transparent calc(var(--phi-ratio) * 100% - 1px),
-            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+            rgba(var(--accent-violet-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
             transparent calc(var(--phi-ratio) * 100% + 2px)
         );
     opacity: var(--phi-azimuth-opacity);
@@ -138,7 +138,7 @@
             var(--phi-azimuth-4),
             transparent 0%,
             transparent calc(var(--phi-ratio) * 100% - 1px),
-            rgba(var(--primary-color-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
+            rgba(var(--accent-violet-rgb), var(--opacity-subtle)) calc(var(--phi-ratio) * 100%),
             transparent calc(var(--phi-ratio) * 100% + 2px)
         );
     opacity: var(--phi-azimuth-opacity);
@@ -157,7 +157,7 @@
     bottom: 0;
     background: 
         linear-gradient(var(--phi-azimuth-1), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
-        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%),
+        linear-gradient(var(--phi-azimuth-2), transparent 0%, rgba(var(--accent-violet-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%),
         linear-gradient(var(--phi-azimuth-3), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio-inv), transparent 100%),
         linear-gradient(var(--phi-azimuth-4), transparent 0%, rgba(var(--primary-color-rgb), calc(var(--opacity-subtle) * 0.5)) var(--phi-ratio), transparent 100%);
     opacity: calc(var(--phi-azimuth-opacity) * 0.7);

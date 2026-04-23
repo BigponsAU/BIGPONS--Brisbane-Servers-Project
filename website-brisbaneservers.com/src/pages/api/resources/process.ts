@@ -1,12 +1,8 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
-import {
-  loadResources,
-  saveResources,
-  normalizeTopicSlug,
-  type Resource
-} from '../../../lib/resources-api';
+import { loadResources, saveResources } from '../../../lib/resources-api';
+import { buildResourceFromEditorProcess } from '../../../lib/resource-ingestion';
 
 /**
  * Process content directly (without file upload)
@@ -51,7 +47,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     const resourceTitle = title || `${topic} for ${industry}`;
     const shouldPublish = autoPublish === true;
-    const topicSlug = normalizeTopicSlug(topic);
 
     const { textGenerator, extrapolator, voiceMatcher } = await getVoiceFramework();
 
@@ -85,27 +80,20 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const user = authResult.user;
-    const resourceId = `${industry}-${topicSlug}-${Date.now()}`;
-    const resource: Resource = {
-      id: resourceId,
+    const resource = buildResourceFromEditorProcess({
       industry,
-      topic: topicSlug,
+      topic,
       title: resourceTitle,
-      description: processedContent.substring(0, 200) + '...',
-      content: processedContent,
-      generatedAt: new Date().toISOString(),
+      body: processedContent,
       generatedBy: user.email,
       ownerId: user.id,
-      version: 1,
-      status: shouldPublish ? 'published' : 'draft',
-      isStarterBlock: false,
-      visibility: 'private',
+      shouldPublish,
       metadata: {
         wordCount: processedContent.split(/\s+/).length,
         semanticLevel: 'high',
         voiceScore: voiceValidation.score ?? 0
       }
-    };
+    });
 
     const resources = await loadResources();
     resources.push(resource);

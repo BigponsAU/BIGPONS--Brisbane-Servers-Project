@@ -36,8 +36,8 @@ body::before {
       rgba(var(--primary-color-rgb), 0.1) calc(var(--path-2) * 1px),
       transparent calc(var(--path-2) * 1px),
       transparent calc(var(--path-1) * 1px - 1px),
-      rgba(var(--primary-color-rgb), 0.15) calc(var(--path-1) * 1px - 1px),
-      rgba(var(--primary-color-rgb), 0.15) calc(var(--path-1) * 1px),
+      rgba(var(--accent-violet-rgb), 0.16) calc(var(--path-1) * 1px - 1px),
+      rgba(var(--accent-violet-rgb), 0.16) calc(var(--path-1) * 1px),
       transparent calc(var(--path-1) * 1px)
     ),
     /* Diagonal tartan pattern */
@@ -45,8 +45,8 @@ body::before {
       45deg,
       transparent,
       transparent calc(var(--path-3) * 1px - 1px),
-      rgba(var(--primary-color-rgb), 0.06) calc(var(--path-3) * 1px - 1px),
-      rgba(var(--primary-color-rgb), 0.06) calc(var(--path-3) * 1px),
+      rgba(var(--accent-pink-rgb), 0.05) calc(var(--path-3) * 1px - 1px),
+      rgba(var(--accent-pink-rgb), 0.05) calc(var(--path-3) * 1px),
       transparent calc(var(--path-3) * 1px)
     );
   background-size: 
@@ -66,8 +66,7 @@ body::before {
  * breaking the navbar and reflow when zooming.
  */
 body > main,
-body > footer,
-body > .cookie-consent {
+body > footer {
   position: relative;
   z-index: 1;
 }
@@ -76,10 +75,7 @@ body > .cookie-consent {
 header {
   position: fixed;
   z-index: 1000 !important;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 1) 0%, 
-    var(--primary-ultra-light) 100%
-  ) !important;
+  background: linear-gradient(135deg, var(--surface-glass-strong) 0%, var(--primary-ultra-light) 100%) !important;
   isolation: isolate;
 }
 
@@ -137,8 +133,8 @@ main#main-content > * {
     90deg,
     transparent,
     transparent calc(var(--path-2) * 8px - 1px),
-    rgba(var(--primary-color-rgb), 0.2) calc(var(--path-2) * 8px - 1px),
-    rgba(var(--primary-color-rgb), 0.2) calc(var(--path-2) * 8px),
+    rgba(var(--accent-violet-rgb), 0.22) calc(var(--path-2) * 8px - 1px),
+    rgba(var(--accent-violet-rgb), 0.22) calc(var(--path-2) * 8px),
     transparent calc(var(--path-2) * 8px)
   );
   opacity: 0.5;

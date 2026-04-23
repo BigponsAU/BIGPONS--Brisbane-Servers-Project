@@ -30,11 +30,11 @@
     height: var(--space-lg);
     background-image: 
         /* Floral vine pattern using SVG-like curves */
-        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(var(--primary-color-rgb), 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(var(--accent-violet-rgb), 0.11) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(var(--primary-color-rgb), 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(var(--accent-violet-rgb), 0.11) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(var(--primary-color-rgb), 0.15) 0%, transparent 50%);
     background-size: 20% 100%;
     background-repeat: repeat-x;
     background-position: 0 0;
@@ -48,11 +48,11 @@
     right: 0;
     height: var(--space-lg);
     background-image: 
-        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(10, 116, 218, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(10, 116, 218, 0.12) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(10, 116, 218, 0.15) 0%, transparent 50%);
+        radial-gradient(ellipse 60% 40% at 10% 50%, rgba(var(--primary-color-rgb), 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 30% 50%, rgba(var(--accent-violet-rgb), 0.11) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(var(--primary-color-rgb), 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 70% 50%, rgba(var(--accent-violet-rgb), 0.11) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 50%, rgba(var(--primary-color-rgb), 0.15) 0%, transparent 50%);
     background-size: 20% 100%;
     background-repeat: repeat-x;
     background-position: 0 0;
@@ -157,7 +157,7 @@
     top: 0;
     left: 0;
     background-image: 
-        radial-gradient(ellipse 100% 100% at 0% 0%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+        radial-gradient(ellipse 100% 100% at 0% 0%, rgba(var(--primary-color-rgb), 0.2) 0%, transparent 70%);
     border-radius: 0 0 100% 0;
 }
 
@@ -166,7 +166,7 @@
     top: 0;
     right: 0;
     background-image: 
-        radial-gradient(ellipse 100% 100% at 100% 0%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+        radial-gradient(ellipse 100% 100% at 100% 0%, rgba(var(--accent-violet-rgb), 0.2) 0%, transparent 70%);
     border-radius: 0 0 0 100%;
 }
 
@@ -175,7 +175,7 @@
     bottom: 0;
     left: 0;
     background-image: 
-        radial-gradient(ellipse 100% 100% at 0% 100%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+        radial-gradient(ellipse 100% 100% at 0% 100%, rgba(var(--primary-color-rgb), 0.2) 0%, transparent 70%);
     border-radius: 0 100% 0 0;
 }
 
@@ -184,7 +184,7 @@
     bottom: 0;
     right: 0;
     background-image: 
-        radial-gradient(ellipse 100% 100% at 100% 100%, rgba(10, 116, 218, 0.2) 0%, transparent 70%);
+        radial-gradient(ellipse 100% 100% at 100% 100%, rgba(var(--accent-violet-rgb), 0.2) 0%, transparent 70%);
     border-radius: 100% 0 0 0;
 }
 

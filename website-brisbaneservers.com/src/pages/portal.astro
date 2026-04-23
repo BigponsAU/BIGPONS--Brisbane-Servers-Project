@@ -1,17 +1,24 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import { industries } from '../data/industries';
-import { resolvePublicApiUrl } from '../lib/api-config';
+import { resolvePublicApiUrl, resolvePublicSitePath } from '../lib/api-config';
+import { portalVoiceFrameworkSummary, portalVoiceRules } from '../lib/portal-voice-framework';
 
 const publicApiBaseUrl = resolvePublicApiUrl('');
+const accountPath = resolvePublicSitePath('/account/');
+const normalizedPathname = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isLegacyPortalRoute = normalizedPathname === '/portal';
+const initialVerifyToken = Astro.url.searchParams.get('verify') ?? '';
+const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
 ---
 
 <SiteShell 
-  title="Resource Portal - Brisbane Servers"
-  description="Secure portal for managing resources using voice framework integration"
+  title="Account Workspace - Brisbane Servers"
+  description="Secure account workspace for contributions, resources, and voice profile management"
   noindex={true}
-  currentPath="/portal"
-  pageId="portal"
+  immediateRedirectUrl={isLegacyPortalRoute ? accountPath : undefined}
+  currentPath="/account"
+  pageId="account"
   shellVariant="portal"
   valueProfile="utility"
   zoomProfile="focused"
@@ -23,42 +30,112 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       <!-- Login Screen -->
       <div id="login-screen" class="login-screen">
         <div class="login-container">
-          <div class="login-card">
-            <h1>Resource Portal</h1>
-            <p class="login-subtitle">Voice Framework Integration & Content Management</p>
-            <form id="login-form" class="login-form" aria-label="Portal login form">
-              <div class="form-group">
-                <label for="email">Email <span class="sr-only">(required)</span></label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  required 
-                  autocomplete="email"
-                  aria-required="true"
-                  aria-describedby="email-error"
-                />
-                <span id="email-error" class="sr-only">Enter your admin email address</span>
+          <div class="login-grid">
+            <div class="login-card">
+              <h1>Account Workspace</h1>
+              <p class="login-subtitle">Sign in to manage contributions, saved work, resources, and voice settings.</p>
+              <p class="login-subtitle">{portalVoiceFrameworkSummary}</p>
+              <p class="login-note">Browsing resources stays public. Use your account when you want to contribute, save progress, or review your workspace activity.</p>
+              <div id="auth-status-banner" class="auth-status-banner" style="display: none;" role="status" aria-live="polite"></div>
+              <form id="login-form" class="login-form" aria-label="Account sign-in form">
+                <div class="form-group">
+                  <label for="email">Email <span class="sr-only">(required)</span></label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    autocomplete="email"
+                    aria-required="true"
+                    aria-describedby="email-error"
+                  />
+                  <span id="email-error" class="sr-only">Enter your account email address</span>
+                </div>
+                <div class="form-group">
+                  <label for="password">Password <span class="sr-only">(required)</span></label>
+                  <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    autocomplete="current-password"
+                    aria-required="true"
+                    aria-describedby="password-error"
+                  />
+                  <span id="password-error" class="sr-only">Enter your account password</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" aria-describedby="login-submit-hint">
+                  Sign in
+                </button>
+                <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
+                <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+              </form>
+              <form id="reset-password-form" class="login-form auth-help-form" aria-label="Reset password form" style="display: none;">
+                <h3>Set a new password</h3>
+                <div class="form-group">
+                  <label for="reset-password">New password</label>
+                  <input type="password" id="reset-password" name="password" required minlength="8" autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Update password</button>
+                <div id="reset-password-error" class="status-message" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+            <div class="login-card login-card--secondary">
+              <h2>Create an account</h2>
+              <p class="login-subtitle">Set up your workspace to contribute, track tokens, and keep your resources in one place.</p>
+              <ul class="login-benefits">
+                <li>Keep a history of submissions and accepted contributions.</li>
+                <li>See your token balance and recent workspace activity.</li>
+                <li>Return later to continue work without starting from scratch.</li>
+              </ul>
+              <form id="register-form" class="login-form" aria-label="Create account form">
+                <div class="form-group">
+                  <label for="register-email">Email <span class="sr-only">(required)</span></label>
+                  <input
+                    type="email"
+                    id="register-email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    aria-required="true"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="register-password">Password <span class="sr-only">(required)</span></label>
+                  <input
+                    type="password"
+                    id="register-password"
+                    name="password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                    aria-required="true"
+                  />
+                </div>
+                <button type="submit" class="btn btn-secondary btn-block">Create account</button>
+                <div id="register-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+              </form>
+              <div class="auth-help-stack">
+                <form id="resend-verification-form" class="login-form auth-help-form" aria-label="Resend verification email form">
+                  <h3>Resend verification email</h3>
+                  <div class="form-group">
+                    <label for="resend-email">Email</label>
+                    <input type="email" id="resend-email" name="email" required autocomplete="email" />
+                  </div>
+                  <button type="submit" class="btn btn-secondary btn-block">Send verification email</button>
+                  <div id="resend-verification-error" class="status-message" role="status" aria-live="polite"></div>
+                </form>
+                <form id="forgot-password-form" class="login-form auth-help-form" aria-label="Forgot password form">
+                  <h3>Forgot your password?</h3>
+                  <div class="form-group">
+                    <label for="forgot-email">Email</label>
+                    <input type="email" id="forgot-email" name="email" required autocomplete="email" />
+                  </div>
+                  <button type="submit" class="btn btn-secondary btn-block">Send reset link</button>
+                  <div id="forgot-password-error" class="status-message" role="status" aria-live="polite"></div>
+                </form>
               </div>
-              <div class="form-group">
-                <label for="password">Password <span class="sr-only">(required)</span></label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  name="password" 
-                  required 
-                  autocomplete="current-password"
-                  aria-required="true"
-                  aria-describedby="password-error"
-                />
-                <span id="password-error" class="sr-only">Enter your admin password</span>
-              </div>
-              <button type="submit" class="btn btn-primary btn-block" aria-describedby="login-submit-hint">
-                Login
-              </button>
-              <span id="login-submit-hint" class="sr-only">Submit login credentials to access admin portal</span>
-              <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
@@ -68,11 +145,11 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
         <!-- Portal Layout: Sidebar + Header + Main Content -->
         <div class="portal-layout">
           <!-- Sidebar Navigation -->
-          <aside id="portal-sidebar" class="portal-sidebar" role="navigation" aria-label="Portal navigation">
+          <aside id="portal-sidebar" class="portal-sidebar" role="navigation" aria-label="Account workspace navigation">
             <div class="sidebar-header">
               <div class="sidebar-header-content">
-                <h2 class="sidebar-logo">Resource Portal</h2>
-                <p class="sidebar-subtitle">Content Management System</p>
+                <h2 class="sidebar-logo">Account Workspace</h2>
+                <p class="sidebar-subtitle">Your contribution and content workspace</p>
               </div>
               <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,7 +183,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                     <span class="nav-description">Content management</span>
                   </div>
                 </a>
-                <a href="#profiles" class="sidebar-nav-item" data-panel="profiles" onclick="navigateToPanel('profiles'); return false;" title="Voice Profiles - Manage voice characteristics for content generation">
+                <a href="#profiles" class="sidebar-nav-item" data-panel="profiles" data-min-role="editor" onclick="navigateToPanel('profiles'); return false;" title="Voice Profiles - Manage voice characteristics for content generation">
                   <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
                   </svg>
@@ -115,7 +192,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                     <span class="nav-description">Content voice settings</span>
                   </div>
                 </a>
-                <a href="#analytics" class="sidebar-nav-item" data-panel="analytics" onclick="navigateToPanel('analytics'); return false;" title="Analytics - Track resource performance and statistics">
+                <a href="#analytics" class="sidebar-nav-item" data-panel="analytics" data-min-role="editor" onclick="navigateToPanel('analytics'); return false;" title="Analytics - Track resource performance and statistics">
                   <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="20" x2="18" y2="10"></line>
                     <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -149,7 +226,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                   </svg>
                 </button>
                 <div class="header-title-mobile">
-                  <h1 style="margin: 0; font-size: var(--text-lg); font-weight: var(--font-weight-bold); color: var(--portal-text-primary);">Resource Portal</h1>
+                  <h1 style="margin: 0; font-size: var(--text-lg); font-weight: var(--font-weight-bold); color: var(--portal-text-primary);">Account Workspace</h1>
                 </div>
                 <div class="header-search">
                   <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -181,8 +258,8 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                   <section class="admin-section" aria-labelledby="dashboard-heading">
                     <div class="section-header">
                       <div>
-                        <h2 id="dashboard-heading">Dashboard Overview</h2>
-                        <p class="section-subtitle">Welcome to the Resource Portal! Manage content resources, voice profiles, and track analytics. Use the sidebar navigation to explore different sections.</p>
+                        <h2 id="dashboard-heading">Workspace Overview</h2>
+                        <p class="section-subtitle">Manage your contributions, resources, voice profiles, and activity from one signed-in workspace. Use the sidebar to move between the parts that matter to you.</p>
                       </div>
                       <button id="refresh-dashboard" class="btn btn-secondary btn-sm" onclick="loadDashboardData()" aria-label="Refresh dashboard">
                         <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -268,6 +345,12 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                           </li>
                         </ul>
                       </div>
+                      <div class="client-contributions-card">
+                        <h3>Security</h3>
+                        <p class="client-token-help">Revoke all active sessions if you signed in on another machine or want to force a fresh sign-in everywhere.</p>
+                        <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
+                        <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                      </div>
                     </div>
 
                     <!-- Portal Purpose Guide -->
@@ -281,16 +364,22 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                           </svg>
                         </div>
                         <div class="purpose-content">
-                          <h3>What is the Resource Portal?</h3>
-                          <p>The Resource Portal is your content management hub for Brisbane Servers. Here you can:</p>
+                          <h3>What this workspace is for</h3>
+                          <p>Your account workspace gives you a personal place inside Brisbane Servers. Here you can:</p>
                           <ul>
-                            <li><strong>Use Starter Blocks:</strong> Start with pre-built template resources and customize them for your needs</li>
-                            <li><strong>Generate Resources:</strong> Create new content using AI-powered voice framework</li>
-                            <li><strong>Upload & Manage:</strong> Upload existing content and organize by industry/topic</li>
-                            <li><strong>Voice Profiles:</strong> Configure content voice characteristics for consistent branding</li>
-                            <li><strong>Analytics:</strong> Track content performance and voice alignment scores</li>
+                            <li><strong>Use starter blocks:</strong> Begin with proven templates and adapt them to your business context</li>
+                            <li><strong>Create and upload resources:</strong> Build new content or bring in existing material for review</li>
+                            <li><strong>Track contributions:</strong> See recent submissions, token balance, and workspace activity in one place</li>
+                            <li><strong>Manage voice profiles:</strong> Keep generated content aligned with the tone you want to use</li>
+                            <li><strong>Review analytics:</strong> Check performance and voice alignment over time</li>
                           </ul>
-                          <p class="purpose-tip"><strong>Tip:</strong> Use the sidebar navigation (left) to switch between sections. Press <kbd>Ctrl+K</kbd> (or <kbd>Cmd+K</kbd> on Mac) to search. Browse <strong>Starter Blocks</strong> below to find templates you can customize.</p>
+                          <h4>Voice framework (delivery strategy)</h4>
+                          <ul>
+                            {portalVoiceRules.map((rule) => (
+                              <li><strong>{rule.title}:</strong> {rule.description}</li>
+                            ))}
+                          </ul>
+                          <p class="purpose-tip"><strong>Tip:</strong> Public browsing stays open on the main site. Sign in here when you want to contribute, save work, or manage your own workspace. Use the sidebar to switch sections, and press <kbd>Ctrl+K</kbd> (or <kbd>Cmd+K</kbd> on Mac) to search.</p>
                         </div>
                       </div>
                     </div>
@@ -335,13 +424,13 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
                           </svg>
                           <span class="quick-action-label">Upload Resource</span>
                         </button>
-                        <button class="quick-action-card" onclick="navigateToPanel('profiles');">
+                        <button class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('profiles');">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
                           </svg>
                           <span class="quick-action-label">Manage Profiles</span>
                         </button>
-                        <button class="quick-action-card" onclick="navigateToPanel('analytics');">
+                        <button class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('analytics');">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="20" x2="18" y2="10"></line>
                             <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -791,7 +880,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
         </div>
 
               <!-- Voice Profiles Panel -->
-              <div id="profiles-panel" class="portal-panel" role="main" aria-label="Voice profiles management" style="display: none;">
+              <div id="profiles-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Voice profiles management" style="display: none;">
                 <div class="admin-content">
             <section class="admin-section" aria-labelledby="profiles-heading">
               <div class="section-header">
@@ -891,7 +980,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
               </div>
 
               <!-- Analytics Panel -->
-              <div id="analytics-panel" class="portal-panel" role="main" aria-label="Analytics dashboard" style="display: none;">
+              <div id="analytics-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Analytics dashboard" style="display: none;">
                 <div class="admin-content">
             <section class="admin-section" aria-labelledby="analytics-heading">
               <div class="section-header">
@@ -1145,14 +1234,14 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
        ============================================ */
     
     /* Primary Brand Colors */
-    --portal-primary: #0A74DA;
-    --portal-primary-rgb: 10, 116, 218;
-    --portal-primary-dark: #0855A8;
-    --portal-primary-darker: #063D7A;
+    --portal-primary: var(--primary-color);
+    --portal-primary-rgb: var(--primary-color-rgb);
+    --portal-primary-dark: var(--primary-dark);
+    --portal-primary-darker: var(--primary-ink);
     --portal-primary-light: #3B9EFF;
     --portal-primary-lighter: #6BB5FF;
-    --portal-primary-ultra-light: #E8F4FF;
-    --portal-primary-bg: #F0F7FF;
+    --portal-primary-ultra-light: var(--primary-ultra-light);
+    --portal-primary-bg: var(--primary-light);
 
     /* Semantic Colors - Harmonized with Primary */
     --portal-success: #10B981;
@@ -1192,28 +1281,28 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     --portal-neutral-900: #111827;
 
     /* Text Colors */
-    --portal-text-primary: #111827;
-    --portal-text-secondary: #6B7280;
-    --portal-text-tertiary: #9CA3AF;
-    --portal-text-inverse: #FFFFFF;
+    --portal-text-primary: var(--text-primary);
+    --portal-text-secondary: var(--text-secondary);
+    --portal-text-tertiary: var(--text-light);
+    --portal-text-inverse: var(--text-on-dark);
 
     /* Surface Colors */
-    --portal-surface: #FFFFFF;
-    --portal-surface-elevated: #FFFFFF;
-    --portal-surface-subtle: #F9FAFB;
-    --portal-surface-hover: #F3F4F6;
+    --portal-surface: var(--surface);
+    --portal-surface-elevated: var(--surface-elevated);
+    --portal-surface-subtle: var(--surface-subtle);
+    --portal-surface-hover: var(--surface-glass);
 
     /* Border Colors */
-    --portal-border: #E5E7EB;
-    --portal-border-light: #F3F4F6;
-    --portal-border-medium: #D1D5DB;
-    --portal-border-dark: #9CA3AF;
+    --portal-border: var(--border);
+    --portal-border-light: var(--border-light);
+    --portal-border-medium: var(--border-accent);
+    --portal-border-dark: var(--text-light);
 
     /* Background Colors */
-    --portal-bg-primary: #FFFFFF;
-    --portal-bg-secondary: #F9FAFB;
-    --portal-bg-tertiary: #F3F4F6;
-    --portal-bg-accent: linear-gradient(135deg, #F0F7FF 0%, #E8F4FF 100%);
+    --portal-bg-primary: var(--surface-elevated);
+    --portal-bg-secondary: var(--surface);
+    --portal-bg-tertiary: var(--bg-tertiary);
+    --portal-bg-accent: var(--bg-accent);
     --portal-bg-overlay: rgba(17, 24, 39, 0.7);
 
     /* Shadow Colors */
@@ -1232,9 +1321,9 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     --viz-warning: var(--portal-warning);
     --viz-error: var(--portal-error);
     --viz-info: var(--portal-info);
-    --viz-accent-1: #8B5CF6;
-    --viz-accent-2: #EC4899;
-    --viz-accent-3: #14B8A6;
+    --viz-accent-1: var(--accent-violet);
+    --viz-accent-2: var(--accent-pink);
+    --viz-accent-3: var(--accent-teal);
     --viz-accent-4: #F97316;
 
     /* Legacy Variable Mappings for Compatibility */
@@ -1700,7 +1789,15 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
   /* Dashboard Overview Styles */
   .dashboard-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    justify-content: center;
+    align-items: start;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(100%, 14rem),
+        min(100%, min(22rem, var(--info-panel-track-max)))
+      )
+    );
     gap: var(--space-xl);
     margin-bottom: var(--space-2xl);
   }
@@ -2377,11 +2474,18 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
 
   .login-container {
     width: 100%;
-    max-width: 450px;
+    max-width: 980px;
     position: relative;
     z-index: 1;
     padding: var(--space-md);
     box-sizing: border-box;
+  }
+
+  .login-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xl);
+    align-items: stretch;
   }
 
   .login-card {
@@ -2412,6 +2516,27 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       0 30px 80px rgba(0, 0, 0, 0.2),
       0 12px 24px rgba(0, 0, 0, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .login-card:focus-within {
+    border-color: var(--portal-primary);
+    box-shadow: var(--portal-shadow-primary);
+  }
+
+  .login-card input:focus-visible,
+  .login-card button:focus-visible,
+  .login-card select:focus-visible,
+  .login-card textarea:focus-visible {
+    outline: 2px solid var(--portal-primary);
+    outline-offset: 2px;
+  }
+
+  .client-contributions-card + .client-contributions-card {
+    margin-top: var(--space-lg);
+  }
+
+  #revoke-all-sessions-btn {
+    margin-top: var(--space-sm);
   }
 
   /* Sierpinski Triangle Accent - positioned using phi paths */
@@ -2489,6 +2614,16 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     z-index: 1;
   }
 
+  .login-card h2 {
+    text-align: center;
+    margin: 0 0 var(--space-sm);
+    color: var(--text-primary);
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+    position: relative;
+    z-index: 1;
+  }
+
   .login-subtitle {
     text-align: center;
     color: var(--text-secondary);
@@ -2497,6 +2632,61 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     line-height: 1.6;
     position: relative;
     z-index: 1;
+  }
+
+  .login-note {
+    margin: calc(var(--space-xl) * -1) 0 var(--space-xl);
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-status-banner {
+    margin: 0 0 var(--space-lg);
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    background: var(--portal-info-bg);
+    color: var(--portal-info-dark);
+    border: 1px solid rgba(var(--portal-primary-rgb), 0.18);
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .login-benefits {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 var(--space-xl);
+    padding-left: var(--space-lg);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .login-benefits li + li {
+    margin-top: var(--space-xs);
+  }
+
+  .auth-help-stack {
+    display: grid;
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-help-form {
+    gap: var(--space-md);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--portal-border);
+  }
+
+  .auth-help-form h3 {
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--text-primary);
   }
 
   .login-form {
@@ -2564,6 +2754,10 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
+  .login-card--secondary {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 247, 255, 0.96));
+  }
+
   .btn-block {
     width: 100%;
     display: flex;
@@ -2610,6 +2804,12 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
 
   .error-message.show {
     display: block;
+  }
+
+  .status-message {
+    min-height: 1.5rem;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
   }
 
   .admin-dashboard {
@@ -7121,6 +7321,10 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       padding: var(--space-md);
     }
 
+    .login-grid {
+      grid-template-columns: 1fr;
+    }
+
     .login-card {
       padding: var(--space-lg);
       max-width: 100%;
@@ -7607,7 +7811,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     }
 
     .dashboard-stats-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, min(100%, var(--info-panel-track-max)));
       gap: var(--space-lg);
     }
 
@@ -7730,7 +7934,7 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
 
 </style>
 
-<script define:vars={{ publicApiBaseUrl }}>
+<script define:vars={{ publicApiBaseUrl, accountPath, initialVerifyToken, initialResetToken }}>
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
           (function() {
@@ -7805,7 +8009,14 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
           
           // API URL - shared with the static GitHub Pages frontend.
           const VOICE_API_URL = publicApiBaseUrl;
+          const ACCOUNT_PATH = accountPath;
+          const VERIFY_TOKEN = initialVerifyToken;
+          const RESET_TOKEN = initialResetToken;
+          const IS_LEGACY_PORTAL_ROUTE = window.location.pathname.replace(/\/+$/, '') === '/portal';
           const isDev = import.meta.env.MODE === 'development';
+          if (IS_LEGACY_PORTAL_ROUTE) {
+            window.location.replace(ACCOUNT_PATH);
+          }
           if (isDev) {
             console.log('[Portal] Initializing with API URL:', VOICE_API_URL);
             console.log('[Portal] Environment:', {
@@ -7857,6 +8068,54 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
   }
   
   let authToken: string | null = null;
+  let pendingResetToken: string | null = RESET_TOKEN || null;
+
+  function setMessage(id: string, message: string, isError = false): void {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle('show', Boolean(message) && el.classList.contains('error-message'));
+    (el as HTMLElement).style.color = isError ? 'var(--portal-error-dark)' : '';
+  }
+
+  function showAuthBanner(message: string, isError = false): void {
+    const banner = document.getElementById('auth-status-banner') as HTMLElement | null;
+    if (!banner) return;
+    banner.textContent = message;
+    banner.style.display = 'block';
+    banner.style.background = isError ? 'var(--portal-error-bg)' : 'var(--portal-info-bg)';
+    banner.style.color = isError ? 'var(--portal-error-dark)' : 'var(--portal-info-dark)';
+    banner.style.borderColor = isError ? 'rgba(239, 68, 68, 0.18)' : 'rgba(var(--portal-primary-rgb), 0.18)';
+  }
+
+  function maybeAppendPreviewLink(message: string, previewUrl?: string): string {
+    if (!previewUrl) return message;
+    return `${message} Preview link: ${previewUrl}`;
+  }
+
+  async function handleVerificationToken(): Promise<void> {
+    if (!VERIFY_TOKEN) return;
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/verify-email?token=${encodeURIComponent(VERIFY_TOKEN)}`);
+      const data = await response.json();
+      if (response.ok && data.success) {
+        showAuthBanner(data.message || 'Your email has been verified. You can now sign in.');
+        window.history.replaceState({}, '', ACCOUNT_PATH);
+      } else {
+        showAuthBanner(data.error || 'Verification link is invalid or expired.', true);
+      }
+    } catch {
+      showAuthBanner('Verification failed. Please try again.', true);
+    }
+  }
+
+  function showResetPasswordForm(): void {
+    const resetForm = document.getElementById('reset-password-form') as HTMLElement | null;
+    if (resetForm) {
+      resetForm.style.display = 'flex';
+    }
+    showAuthBanner('Choose a new password for your account.');
+  }
 
   // Check for existing session
   function checkAuth(): void {
@@ -7920,12 +8179,121 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
           errorDiv.textContent = data.error || 'Login failed';
           errorDiv.classList.add('show');
         }
+        if (data.code === 'EMAIL_NOT_VERIFIED') {
+          const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
+          if (resendEmail) resendEmail.value = email;
+        }
       }
     } catch (error) {
       if (errorDiv) {
         errorDiv.textContent = 'Connection error. Please try again.';
         errorDiv.classList.add('show');
       }
+    }
+  });
+
+  document.getElementById('register-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const errorDiv = document.getElementById('register-error');
+    if (errorDiv) errorDiv.classList.remove('show');
+
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        form.reset();
+        showAuthBanner(maybeAppendPreviewLink(data.message || 'Account created. Check your email to verify your account.', data.previewUrl));
+      } else {
+        if (errorDiv) {
+          errorDiv.textContent = data.error || 'Account creation failed';
+          errorDiv.classList.add('show');
+        }
+      }
+    } catch (error) {
+      if (errorDiv) {
+        errorDiv.textContent = 'Connection error. Please try again.';
+        errorDiv.classList.add('show');
+      }
+    }
+  });
+
+  document.getElementById('resend-verification-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    setMessage('resend-verification-error', 'Sending verification email...');
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      setMessage('resend-verification-error', maybeAppendPreviewLink(data.message || 'Verification email sent.', data.previewUrl), !response.ok);
+    } catch {
+      setMessage('resend-verification-error', 'Connection error. Please try again.', true);
+    }
+  });
+
+  document.getElementById('forgot-password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    setMessage('forgot-password-error', 'Sending reset link...');
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+      setMessage('forgot-password-error', maybeAppendPreviewLink(data.message || 'If the account exists, a reset link has been sent.', data.previewUrl), !response.ok);
+    } catch {
+      setMessage('forgot-password-error', 'Connection error. Please try again.', true);
+    }
+  });
+
+  document.getElementById('reset-password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!pendingResetToken) {
+      setMessage('reset-password-error', 'Reset link is invalid or missing.', true);
+      return;
+    }
+
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const password = formData.get('password') as string;
+    setMessage('reset-password-error', 'Updating password...');
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: pendingResetToken, password })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        pendingResetToken = null;
+        form.reset();
+        showAuthBanner(data.message || 'Password updated. You can now sign in.');
+        window.history.replaceState({}, '', ACCOUNT_PATH);
+        (document.getElementById('reset-password-form') as HTMLElement | null)?.style.setProperty('display', 'none');
+      }
+      setMessage('reset-password-error', data.message || data.error || 'Password reset failed.', !response.ok);
+    } catch {
+      setMessage('reset-password-error', 'Connection error. Please try again.', true);
     }
   });
 
@@ -7944,6 +8312,37 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
     localStorage.removeItem('authToken');
     showLogin();
   };
+
+  document.getElementById('revoke-all-sessions-btn')?.addEventListener('click', async () => {
+    const statusEl = document.getElementById('revoke-all-sessions-status');
+    if (statusEl) {
+      statusEl.textContent = 'Revoking all sessions...';
+      statusEl.classList.remove('error');
+      statusEl.classList.add('show');
+    }
+
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/revoke-all`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to revoke sessions.');
+      }
+      if (statusEl) {
+        statusEl.textContent = data.message || 'All sessions revoked.';
+      }
+      authToken = null;
+      localStorage.removeItem('authToken');
+      window.setTimeout(() => showLogin(), 500);
+    } catch (error) {
+      if (statusEl) {
+        statusEl.textContent = error instanceof Error ? error.message : 'Unable to revoke sessions.';
+        statusEl.classList.add('error');
+      }
+    }
+  });
 
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('sidebar-logout-btn')?.addEventListener('click', handleLogout);
@@ -7973,6 +8372,9 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
   function showLogin(): void {
     document.getElementById('login-screen')!.style.display = 'flex';
     document.getElementById('admin-dashboard')!.style.display = 'none';
+    if (pendingResetToken) {
+      showResetPasswordForm();
+    }
   }
 
   // Show dashboard
@@ -7995,6 +8397,8 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       sidebarUserInfo.textContent = user.email;
     }
 
+    applyRoleAccess(user);
+
     // Ensure sidebar is visible
     const sidebar = document.getElementById('portal-sidebar');
     if (sidebar) {
@@ -8015,7 +8419,9 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       void syncBaseVoiceProfile(user);
       loadDashboardData();
       loadResources();
-      loadStarterBlocks();
+      if (hasWorkspaceCapability(user, 'editor')) {
+        loadStarterBlocks();
+      }
       // Ensure tree view is shown by default
       const workspace = document.getElementById('resource-workspace');
       const listView = document.getElementById('resources-list-view');
@@ -8027,6 +8433,28 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
       // Set up search and filter event listeners
       setupResourceFilters();
     }, 100);
+  }
+
+  const roleRank: Record<string, number> = {
+    client: 1,
+    viewer: 2,
+    editor: 3,
+    admin: 4,
+    'super-admin': 5
+  };
+
+  function hasWorkspaceCapability(user: { role?: string }, minRole: 'client' | 'viewer' | 'editor' | 'admin'): boolean {
+    const current = roleRank[user?.role || 'client'] ?? 0;
+    return current >= roleRank[minRole];
+  }
+
+  function applyRoleAccess(user: { role?: string; emailVerified?: boolean }): void {
+    document.querySelectorAll<HTMLElement>('[data-min-role]').forEach((el) => {
+      const minRole = el.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin';
+      const allowed = hasWorkspaceCapability(user, minRole);
+      el.style.display = allowed ? '' : 'none';
+      el.setAttribute('aria-hidden', allowed ? 'false' : 'true');
+    });
   }
 
   // Navigate to panel with smooth transitions
@@ -12730,5 +13158,9 @@ const publicApiBaseUrl = resolvePublicApiUrl('');
   });
 
   // Initialize on load
+  void handleVerificationToken();
+  if (pendingResetToken) {
+    showResetPasswordForm();
+  }
   checkAuth();
 </script>

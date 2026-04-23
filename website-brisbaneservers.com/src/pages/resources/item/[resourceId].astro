@@ -7,7 +7,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug } from '~/data/industries';
-import { resolveInternalApiUrl } from '~/lib/api-config';
+import { getPublishedResourceById } from '~/lib/public-published-resources';
 
 // Static hosting keeps query-param detail rendering in `resources/item/index.astro`.
 // This route remains only for explicitly pre-generated paths; none are emitted by default.
@@ -17,27 +17,10 @@ export async function getStaticPaths() {
 
 const { resourceId } = Astro.params;
 
-// Fetch the specific resource from the standalone API.
-const resourceApiUrl = resolveInternalApiUrl(`/resources/public?id=${encodeURIComponent(resourceId!)}`);
-let resource: any = null;
-let industry: any = null;
-
-try {
-  const response = await fetch(resourceApiUrl, {
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    resource = data.resource || null;
-    if (resource) {
-      industry = getIndustryBySlug(resource.industry);
-    }
-  }
-} catch (error) {
-  console.warn('Could not fetch resource from API');
+const resource = await getPublishedResourceById(resourceId!);
+let industry: ReturnType<typeof getIndustryBySlug> = null;
+if (resource) {
+  industry = getIndustryBySlug(resource.industry);
 }
 
 if (!resource) {

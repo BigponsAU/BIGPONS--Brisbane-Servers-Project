@@ -1,5 +1,8 @@
 # Build & Run Checklist
 
+## Design / zoom policy
+- [ ] Layout follows **native browser zoom** + **CSS media-query breakpoints** (no root `transform` for zoom, no JS zoom tier) — see [../docs/development/FEATURE_RECONCILIATION.md](../docs/development/FEATURE_RECONCILIATION.md)
+
 ## Pre-Build Validation
 - [ ] TypeScript compilation passes
 - [ ] Astro config is valid

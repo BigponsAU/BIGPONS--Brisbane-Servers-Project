@@ -3,8 +3,9 @@
  * Generates text matching the voice profile characteristics
  */
 
-import { VoiceProfile } from '../models/voice-profile';
-import { SentencePattern, PhrasePattern, commonSentencePatterns, commonPhrasePatterns } from '../models/text-patterns';
+import type { VoiceProfile } from '../models/voice-profile';
+import type { SentencePattern, PhrasePattern } from '../models/text-patterns';
+import { commonSentencePatterns, commonPhrasePatterns } from '../models/text-patterns';
 import * as voiceProfileData from '../voice-profile.json';
 
 export class TextGenerator {

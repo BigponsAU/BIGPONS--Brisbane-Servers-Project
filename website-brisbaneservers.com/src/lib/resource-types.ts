@@ -44,5 +44,12 @@ export function isPublicResource(resource: Resource): boolean {
   if (resource.status !== 'published') {
     return false;
   }
-  return resource.visibility === undefined || resource.visibility === 'public';
+  if (resource.visibility === undefined || resource.visibility === 'public') {
+    return true;
+  }
+  /** Published starter curriculum is included in anonymous read-only catalog (static builds + public hub). */
+  if (resource.visibility === 'starter') {
+    return true;
+  }
+  return false;
 }

@@ -20,6 +20,10 @@ interface Props {
   secondaryCtaText?: string;
   secondaryCtaHref?: string;
   highlights?: string[];
+  /** Anchor for the bottom scroll CTA (e.g. #services-overview) */
+  scrollTargetId?: string;
+  /** Visible label — makes the control a deliberate “next step”, not decoration */
+  scrollLabel?: string;
 }
 
 const { 
@@ -31,17 +35,16 @@ const {
   secondaryCtaText,
   secondaryCtaHref,
   highlights = [],
+  scrollTargetId = '#inquiry-section',
+  scrollLabel = 'Continue to contact',
 } = Astro.props;
+
+const scrollHref = scrollTargetId.startsWith('#') ? scrollTargetId : `#${scrollTargetId}`;
 ---
 
 <section class="hero hero-original">
   <div class="hero-background-gradient"></div>
-  <!-- Banach fixed-point: convergence motif (outer purple → blue → inner white) -->
-  <div class="fixed-point-anchor" aria-hidden="true">
-    <span class="fixed-point-ring fixed-point-ring-outer"></span>
-    <span class="fixed-point-dot"></span>
-  </div>
-  <!-- Portal-style tartan overlay for fruitful visuals -->
+  <!-- Light tartan mesh — stays behind copy + visual -->
   <div class="hero-tartan-overlay" aria-hidden="true"></div>
   
   <!-- φ split: both columns in layout (no absolute-only gap); stacks on small viewports -->
@@ -82,28 +85,25 @@ const {
             ))}
           </ul>
         )}
+        <!-- Same column as CTAs: avoids wrapper/grid stretch isolating this from the buttons -->
+        <a
+          href={scrollHref}
+          class="hero-scroll-cta"
+          aria-label={`${scrollLabel} — jump to section below`}
+        >
+          <span class="hero-scroll-cta__text">{scrollLabel}</span>
+          <svg class="hero-scroll-cta__chevron" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 15.5 6.7 10.2l1.4-1.4 4 4 4-4 1.4 1.4-6.5 6.3Z"
+            />
+          </svg>
+        </a>
       </div>
     </div>
     <div class="hero-visual">
       <SierpinskiSatellite />
     </div>
   </div>
-  
-  <!-- Sierpinski-styled scroll button -->
-  <a href="#inquiry-section" class="hero-scroll-button" aria-label="Scroll to contact section">
-    <svg class="sierpinski-arrow" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <!-- Sierpinski triangle pattern - recursive triangles -->
-      <g class="sierpinski-triangle-group">
-        <!-- Outer triangle -->
-        <path class="triangle-outer" d="M 50 20 L 20 80 L 80 80 Z" />
-        <!-- Middle triangle (inverted) -->
-        <path class="triangle-middle" d="M 50 50 L 35 70 L 65 70 Z" />
-        <!-- Inner triangle -->
-        <path class="triangle-inner" d="M 50 60 L 45 70 L 55 70 Z" />
-        <!-- Downward arrow indicator -->
-        <path class="arrow-down" d="M 50 70 L 45 80 L 50 75 L 55 80 Z" />
-      </g>
-    </svg>
-  </a>
 </section>
 

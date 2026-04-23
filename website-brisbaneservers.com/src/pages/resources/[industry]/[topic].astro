@@ -1,12 +1,14 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, getTopicBySlug, industries } from '~/data/industries';
-import { resolveInternalApiUrl, resolvePublicApiUrl } from '~/lib/api-config';
+import { resolvePublicApiUrl } from '~/lib/api-config';
+import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
 
 export async function getStaticPaths() {
   const paths: Array<{ params: { industry: string; topic: string } }> = [];
@@ -33,56 +35,40 @@ if (!industry || !topic) {
   return Astro.redirect('/resources');
 }
 
-// Fetch published resources from the standalone API so the route can be prerendered.
-const publicResourcesUrl = resolveInternalApiUrl(
-  `/resources/public?industry=${encodeURIComponent(industrySlug!)}&topic=${encodeURIComponent(topicSlug!)}`
-);
 const publicApiBaseUrl = resolvePublicApiUrl('');
-let publishedResources: any[] = [];
-
-try {
-  const response = await fetch(publicResourcesUrl, {
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    publishedResources = data.resources || [];
-  } else {
-    console.warn('[Resources] API returned non-OK status:', response.status);
-  }
-} catch (error) {
-  // Silently fail - fallback to static content
-  console.warn('[Resources] Could not fetch resources from API, using static content:', error);
-}
+const publishedResources = await getPublishedResourcesForPage({
+  industry: industrySlug!,
+  topic: topicSlug!,
+});
 
 const currentPath = `/resources/${industrySlug}/${topicSlug}`;
 const hasGeneratedContent = publishedResources.length > 0;
 const primaryResource = publishedResources[0] || null;
 
 // Community contributions for this topic are loaded client-side via API.
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Resources', href: '/resources' },
+  { label: industry.name, href: `/resources/${industry.slug}` },
+  { label: topic.name },
+];
 ---
 
 <SiteShell 
   title={`${topic.name} - ${industry.name} Resources - Brisbane Servers`}
   description={topic.description}
   currentPath={currentPath}
-  breadcrumbs={[
-    { label: 'Home', href: '/' },
-    { label: 'Resources', href: '/resources' },
-    { label: industry.name, href: `/resources/${industry.slug}` },
-    { label: topic.name }
-  ]}
+  breadcrumbs={breadcrumbsTrail}
   pageId="resource-topic"
   valueProfile="evidence"
   zoomProfile="focused"
+  mainClass="main-phi-chassis"
 >
     <Hero 
       title={topic.name}
       subtitle={topic.description}
     />
+    <Breadcrumbs items={breadcrumbsTrail} />
 
     <!-- Comprehensive block usage: phi-line-vertical, phi-lateral-angular-2, bg-pattern-angular -->
     <section class="section">

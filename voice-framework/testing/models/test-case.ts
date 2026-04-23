@@ -3,8 +3,8 @@
  * Defines structures for A/B testing text generation and voice matching
  */
 
-import { GenerationOptions } from '../../generators/text-generator';
-import { ExtrapolationOptions } from '../../generators/extrapolator';
+import type { GenerationOptions } from '../../generators/text-generator';
+import type { ExtrapolationOptions } from '../../generators/extrapolator';
 
 export interface TestCase {
   id: string;

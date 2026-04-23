@@ -1,91 +1,5 @@
-// Simplified main script - removed complex state management and scaling systems
-// Focus on essential functionality: navigation, search, forms, and progressive disclosure
-
-// Zoom compensation is disabled - content scales naturally with browser zoom
-// Navbar and footer stay fixed via CSS (px units)
-// Content scales via rem/em/vw/vh units
-
-// Initialize Lanczos scaling manager for geometric pattern quality
-import { getLanczosScalingManager } from './lanczos-scaling';
-
-function applyPageZoomTier(): void {
-    const body = document.body;
-    if (!body) return;
-
-    const viewportWidth = window.innerWidth;
-    const tier =
-        viewportWidth >= 1440 ? 'wide'
-        : viewportWidth <= 900 ? 'compact'
-        : 'balanced';
-
-    body.dataset.zoomTier = tier;
-}
-
-// ===== INITIALIZE SYSTEMS =====
-// Initialize all systems on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit to ensure DOM is fully ready before initializing systems
-    setTimeout(() => {
-        applyPageZoomTier();
-
-        // Zoom compensation is disabled - content now scales naturally with browser zoom
-        // Navbar and footer stay fixed via CSS (px units)
-        // Content scales via rem/em/vw/vh units
-        
-        // Initialize Lanczos scaling for geometric patterns
-        try {
-            getLanczosScalingManager();
-            // Lanczos tokens: init + orientation only (not resize/zoom)
-        } catch (error) {
-            console.error('[Main] Error initializing Lanczos scaling:', error);
-        }
-        
-        // Initialize text-length-aware sizing
-        try {
-            applyTextLengthAwareSizing();
-        } catch (error) {
-            console.error('[Main] Error applying text-length sizing:', error);
-        }
-    }, 100); // Small delay to ensure DOM is fully ready
-});
-
-window.addEventListener('resize', applyPageZoomTier);
-
-// ===== TEXT-LENGTH-AWARE PHI SIZING =====
-/**
- * Apply text-length-aware phi sizing to elements
- * Short text (<100 chars): Tighter spacing, smaller sizing
- * Medium text (100-200 chars): Base phi sizing
- * Long text (>200 chars): Larger sizing, adjusted line-height
- * 
- * NOTE: Applied with requestAnimationFrame to prevent visual glitches during page transitions
- */
-function applyTextLengthAwareSizing(): void {
-    // Use requestAnimationFrame to prevent visual glitches during page transitions
-    requestAnimationFrame(() => {
-        // Elements to check for text length
-        const textElements = document.querySelectorAll(
-            '.card-description, .section-description, .hero-subtitle, .card-title, .section-title, p:not(.footer-description):not(.form-disclaimer)'
-        );
-        
-        textElements.forEach((element) => {
-            const text = element.textContent || '';
-            const textLength = text.length;
-            
-            // Remove existing classes
-            element.classList.remove('text-short', 'text-medium', 'text-long');
-            
-            // Apply appropriate class based on text length
-            if (textLength < 100) {
-                element.classList.add('text-short');
-            } else if (textLength > 200) {
-                element.classList.add('text-long');
-            } else {
-                element.classList.add('text-medium');
-            }
-        });
-    });
-}
+// Simplified main script — navigation, search, forms, progressive disclosure.
+// Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
 // ===== NAVIGATION TOGGLE =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -93,48 +7,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenu = document.querySelector('.mobile-menu') as HTMLElement | null;
     
     if (hamburger && mobileMenu) {
-        // Toggle mobile menu
-        hamburger.addEventListener('click', function() {
+        function setMobileNavOpen(open: boolean) {
+            hamburger.classList.toggle('active', open);
+            mobileMenu.classList.toggle('active', open);
+            hamburger.setAttribute('aria-expanded', String(open));
+            mobileMenu.setAttribute('aria-hidden', String(!open));
+            document.body.classList.toggle('nav-mobile-open', open);
+        }
+
+        hamburger.addEventListener('click', function (e: MouseEvent) {
+            e.stopPropagation();
             const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
-            hamburger.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-            hamburger.setAttribute('aria-expanded', (!isExpanded).toString());
-            mobileMenu.setAttribute('aria-hidden', isExpanded.toString());
-            
-            // Focus management
-            if (!isExpanded) {
+            const next = !isExpanded;
+            setMobileNavOpen(next);
+            if (next) {
                 const firstLink = mobileMenu.querySelector('a') as HTMLElement;
                 firstLink?.focus();
             }
         });
-        
-        // Keyboard support for hamburger
-        hamburger.addEventListener('keydown', function(e: KeyboardEvent) {
+
+        hamburger.addEventListener('keydown', function (e: KeyboardEvent) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 hamburger.click();
             }
             if (e.key === 'Escape' && hamburger.getAttribute('aria-expanded') === 'true') {
-                hamburger.click();
+                setMobileNavOpen(false);
                 hamburger.focus();
             }
         });
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e: MouseEvent) {
+
+        document.addEventListener('click', function (e: MouseEvent) {
+            if (hamburger.getAttribute('aria-expanded') !== 'true') return;
             const target = e.target as HTMLElement;
             if (!hamburger.contains(target) && !mobileMenu.contains(target)) {
-                hamburger.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                hamburger.setAttribute('aria-expanded', 'false');
-                mobileMenu.setAttribute('aria-hidden', 'true');
+                setMobileNavOpen(false);
             }
         });
-        
-        // Close on Escape key
-        document.addEventListener('keydown', function(e: KeyboardEvent) {
+
+        document.addEventListener('keydown', function (e: KeyboardEvent) {
             if (e.key === 'Escape' && hamburger.getAttribute('aria-expanded') === 'true') {
-                hamburger.click();
+                setMobileNavOpen(false);
+                hamburger.focus();
             }
         });
     }
@@ -144,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set active nav link based on current page
     setActiveNavLink();
+
+        // Reflect auth state in account links
+        hydrateAccountLinks();
 });
 
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====
@@ -262,6 +179,33 @@ function setActiveNavLink(): void {
     });
 }
 
+async function hydrateAccountLinks(): Promise<void> {
+    const accountLinks = document.querySelectorAll('[data-account-link="true"]');
+    if (!accountLinks.length) return;
+
+    const token = localStorage.getItem('authToken');
+    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+
+    try {
+        const response = await fetch('/api/auth/me', { headers });
+        const isSignedIn = response.ok;
+
+        accountLinks.forEach((link) => {
+            const anchor = link as HTMLAnchorElement;
+            anchor.href = '/account';
+            anchor.textContent = isSignedIn ? 'Workspace' : 'Sign in';
+            anchor.setAttribute('aria-label', isSignedIn ? 'Open your account workspace' : 'Sign in to your account');
+        });
+    } catch {
+        accountLinks.forEach((link) => {
+            const anchor = link as HTMLAnchorElement;
+            anchor.href = '/account';
+            anchor.textContent = 'Sign in';
+            anchor.setAttribute('aria-label', 'Sign in to your account');
+        });
+    }
+}
+
 // ===== SEMANTIC SEARCH FUNCTIONALITY =====
 interface SearchIndexItem {
     id: string;
@@ -323,7 +267,7 @@ class SemanticSearch {
             if (response.ok) {
                 const data = await response.json();
                 this.loadedIndex = Array.isArray(data?.items) ? data.items : [];
-                console.log('Search index loaded:', this.loadedIndex.length, 'items');
+                console.log('Search index loaded:', this.loadedIndex?.length ?? 0, 'items');
             } else {
                 console.warn('Search index not available (status:', response.status, '), using page content fallback');
             }
@@ -387,7 +331,7 @@ class SemanticSearch {
                 this.searchResults.classList.add('active');
             }
             this.searchInputWrapper?.classList.remove('loading');
-            this.searchInput.setAttribute('aria-busy', 'false');
+            this.searchInput?.setAttribute('aria-busy', 'false');
         }, 300);
     }
     

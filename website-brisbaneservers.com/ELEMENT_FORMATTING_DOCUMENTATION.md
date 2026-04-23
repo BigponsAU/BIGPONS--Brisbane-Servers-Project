@@ -276,16 +276,14 @@
 - **Background**: Linear gradient (135deg, #0f0f23 to #1a1a2e to #16213e)
 - **Color**: `white`
 - **Position**: `relative`
-- **Width**: `calc(100% / var(--browser-zoom))`
+- **Width**: `100%` (full band; scales with native browser zoom like the rest of the page)
 - **Margin**: `0`, `margin-top: auto`
-- **Transform**: `scale(var(--browser-zoom))`
-- **Transform Origin**: `bottom left`
-- **Font Size**: `1rem` (fixed, does NOT scale with zoom)
+- **Transform**: No zoom-compensation `transform` on `<html>`; responsive rules use `@media` breakpoints in CSS
+- **Font Size**: `clamp(0.875rem, 0.92rem, 1rem)` — scales with browser zoom
 - **Z-Index**: `10`
 - **Min Height**: `fit-content`
 - **Overflow**: `hidden`
-- **Zoom Behavior**: **DOES NOT scale with zoom** - counteracts zoom compensation to maintain fixed size
-- **Note**: Footer stays same size regardless of zoom level
+- **Zoom Behavior**: Scales with **native** browser zoom (rem/clamp)
 
 ### .footer-main
 - **Grid Template Columns**: `1fr` (mobile < 600px), multi-column (desktop)
@@ -409,35 +407,19 @@
 
 ### Phi Relationships
 - All spacing tokens use phi-based calculations
-- Spacing scales with zoom via `--zoom-scale` token
-- Horizontal padding scales with zoom, vertical padding fixed
+- Spacing uses **rem**; it scales with **native** browser zoom (no JS zoom compensation)
+- Prefer **rem** and **% of parent** for rhythm; use **vw/vh** sparingly so layout does not fight zoom
 
 ---
 
-## Zoom Behavior
+## Zoom behavior (canonical)
 
-### Current System
-- **Zoom Detection**: Uses `window.outerWidth / window.innerWidth` ratio
-- **Zoom Compensation**: Applies `transform: scale(inverseZoom)` to `html` element
-- **Container Width**: `100% / inverseZoom` to fill viewport after scaling
-- **Body Width**: `100% / inverseZoom`
-- **CSS Variables**: `--browser-zoom`, `--zoom-scale`, `--inverse-zoom`
+See **`docs/development/FEATURE_RECONCILIATION.md`**.
 
-### Elements That Scale
-- All rem-based sizing scales with zoom
-- All vw/vh units scale with zoom
-- Container horizontal padding scales with zoom
-- Most elements scale proportionally
-
-### Elements That Don't Scale
-- **Footer**: Uses `transform: scale(var(--browser-zoom))` to counteract zoom, maintains fixed size
-- **Navbar**: Should stay same size (to be implemented)
-- **Fixed font sizes**: Some elements use `1rem` fixed size
-
-### Issues
-- Zoom scales margin and decreases element size statically through margin size change
-- Need to maintain whole site being zoomed as one unit
-- Footer and navbar should stay same size (not zoom)
+- **Root zoom**: Native browser full-page zoom only; responsive layout uses **CSS media queries** (layout viewport in CSS pixels).
+- **Browser zoom** (Ctrl±, pinch) scales the CSS pixel grid; **rem**, **em**, **px**, and **%** move together.
+- **Viewport meta** allows roughly **25%–500%** pinch range (`minimum-scale=0.25`, `maximum-scale=5.0`).
+- **`--lanczos-detected-zoom`** may be set at runtime for pattern diagnostics; **not** for layout compensation.
 
 ---
 

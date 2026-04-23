@@ -4,9 +4,10 @@ Human-written project documentation lives under **`docs/`**. Use this file as th
 
 ## Start here
 
-1. **Run locally:** [operations/RUN_AND_TROUBLESHOOT.md](operations/RUN_AND_TROUBLESHOOT.md)
-2. **Understand layout:** [project/CODEBASE_WIRE_CARD.md](project/CODEBASE_WIRE_CARD.md)
-3. **Portal + API surface:** [portal/PORTAL.md](portal/PORTAL.md)
+1. **Production deploy (primary):** [operations/DEPLOYMENT_PATHWAYS.md](operations/DEPLOYMENT_PATHWAYS.md) — GitHub Pages hybrid + API
+2. **Run locally:** [operations/RUN_AND_TROUBLESHOOT.md](operations/RUN_AND_TROUBLESHOOT.md)
+3. **Understand layout:** [project/CODEBASE_WIRE_CARD.md](project/CODEBASE_WIRE_CARD.md)
+4. **Account / workspace + API surface:** [portal/PORTAL.md](portal/PORTAL.md)
 
 ## Folder map
 
@@ -21,11 +22,12 @@ Human-written project documentation lives under **`docs/`**. Use this file as th
 
 ## Public site map (IA)
 
-Canonical locations for voice and design narrative on the marketing site:
+Canonical locations for voice and design narrative:
 
-- **Design philosophy (additive semantics)** — [`/about#additive-semantics`](../website-brisbaneservers.com/src/pages/about.astro) (live: `/about#additive-semantics`)
+- **Portal voice framework rules** — [`/account`](../website-brisbaneservers.com/src/pages/portal.astro) and [`src/lib/portal-voice-framework.ts`](../website-brisbaneservers.com/src/lib/portal-voice-framework.ts) (includes `resourceVoiceInterconnection` and `portalAndPublicInterconnectionSummary` tying corpus narrative to public UX)
+- **Home interconnection visuals** — [`index`](../website-brisbaneservers.com/src/pages/index.astro) + [`HomeInterconnectionRig`](../website-brisbaneservers.com/src/components/HomeInterconnectionRig.astro) + margin/section satellite components (see [PORTAL.md](portal/PORTAL.md) system workflow)
 - **Corrections welcome** — [`/about#corrections-welcome`](../website-brisbaneservers.com/src/pages/about.astro)
-- **Resources & contribute** — public `/resources` and `/contribute`; signed-in tools at **`/portal`**
+- **Resources & contribute** — public `/resources` and `/contribute`; signed-in workspace at **`/account`** (legacy `/portal` may redirect)
 
 ---
 
@@ -37,8 +39,10 @@ Canonical locations for voice and design narrative on the marketing site:
 
 ## Operations & deployment
 
+- [Deployment pathways](operations/DEPLOYMENT_PATHWAYS.md) — **Primary: GitHub Pages hybrid**; alternate paths; Cloudflare clarification
+- [GitHub Pages hybrid](operations/GITHUB_PAGES_HYBRID.md) — Static site + standalone API
 - [Run & troubleshoot](operations/RUN_AND_TROUBLESHOOT.md) — Start stack, verify, common failures
-- [cPanel deploy](operations/CPANEL_DEPLOY.md) — Node / cPanel build path
+- [cPanel deploy](operations/CPANEL_DEPLOY.md) — Node / cPanel build path (alternate host)
 - [Semantic runbook](operations/SEMANTIC_RUNBOOK.md) — Embeddings and semantic index
 
 ## Portal
@@ -54,10 +58,14 @@ Canonical locations for voice and design narrative on the marketing site:
 - [Production checklist](project/PRODUCTION_CHECKLIST.md) — Production readiness
 - [Repository fixes summary](project/FIXES_IMPLEMENTED.md) — Hardening and fix log
 - [Test upload guide](project/TEST_UPLOAD_GUIDE.md) — Upload and validation
-- [Layout / φ viewport](project/LAYOUT_PHI_VIEWPORT.md) — Layout notes (with [PHI armature](project/PHI_ARMATURE.md))
+- [PHI armature](project/PHI_ARMATURE.md) — Layout / φ design reference (replaces older “layout viewport” draft; no separate `LAYOUT_PHI_VIEWPORT.md`)
 
 ## Development
 
+- [Resource pipeline & draw-back](development/RESOURCE_PIPELINE_AND_DRAWBACK.md) — Ingestion layers, rollback matrix, atomic JSON persistence
+- [Feature reconciliation](development/FEATURE_RECONCILIATION.md) — Native browser zoom + CSS media queries; no JS zoom tier (avoid duplicate implementations)
+- [Running notes & map](development/RUNNING_NOTES_MAP.md) — Incremental “how it works” during development
+- [Doc inventory](development/DOC_INVENTORY.md) — How Markdown is bucketed in this repo
 - [Environment variables](development/ENV_VARIABLES.md)
 - [Env example](development/ENV_EXAMPLE.md)
 - [Voice quick start](../voice-framework/QUICK_START.md)
@@ -96,4 +104,4 @@ Historical feature write-ups (still useful for deep dives):
 
 ---
 
-*Last updated: 2026-03-22*
+*Last updated: 2026-04-10*

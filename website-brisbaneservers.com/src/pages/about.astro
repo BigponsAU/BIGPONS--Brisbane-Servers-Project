@@ -1,33 +1,41 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 
 const currentPath = '/about';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'About' },
+];
 ---
 
 <SiteShell 
   title="About - Brisbane Servers"
   description="Our mission: Providing access to truth in technology, supporting domestic growth, building Brisbane's innovation authority. Facts-based, open, collaborative."
   currentPath={currentPath}
+  breadcrumbs={breadcrumbsTrail}
   pageId="about"
   valueProfile="foundation"
   zoomProfile="balanced"
+  mainClass="main-phi-chassis"
 >
     <Hero 
       title="About Brisbane Servers"
-      subtitle="Providing access to truth in technology for Australian businesses. Contributing to domestic growth and Brisbane's innovation authority."
+      subtitle="We design and deliver for clear decisions: grounded context, concrete evidence, and practical implementation direction."
     />
+    <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section">
+    <section class="section section--hero-wash">
       <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="container">
         <h2 class="section-title">
-          <SemanticText text="Our Mission" semanticLevel="high" isParent={true} />
+          <SemanticText text="Our Mission Foundation" semanticLevel="high" isParent={true} />
         </h2>
         <CardGrid>
           <Card
@@ -56,6 +64,9 @@ const currentPath = '/about';
         <h2 class="section-title" id="philosophy-heading">
           <SemanticText text="Our Philosophy" semanticLevel="high" isParent={true} />
         </h2>
+        <p class="section-description">
+          <SemanticText text="Our philosophy is operational, not decorative: structure guides attention, color signals hierarchy, and each section helps users decide with confidence." semanticLevel="normal" />
+        </p>
         <CardGrid>
           <Card
             title="Facts as Foundation"
@@ -75,46 +86,8 @@ const currentPath = '/about';
           />
         </CardGrid>
         
-        <div
-          id="additive-semantics"
-          class="evidence-section evidence-section--additive-plain wisdom-section evidence-section--philosophy-stack"
-          aria-labelledby="additive-semantics-heading"
-        >
-          <h3 class="semantic-heading" id="additive-semantics-heading">
-            <SemanticText text="Additive Semantics in Design" semanticLevel="high" isParent={true} />
-          </h3>
-          <div class="semantic-content semantic-content--tight">
-            <p class="philosophy-lead">
-              <SemanticText text="Our design philosophy embraces " semanticLevel="medium" />
-              <strong><SemanticText text="additive semantics" semanticLevel="high" /></strong>
-              <SemanticText text=":" semanticLevel="normal" />
-            </p>
-            <figure class="clause-spine" role="note" aria-label="Core principle">
-              <blockquote class="clause-spine__blockquote" cite="https://brisbaneservers.com/about#additive-semantics">
-                <p class="clause-spine__text">
-                  <q class="additive-semantics-quote">meaning accumulates and builds upon itself rather than replacing previous meaning.</q>
-                </p>
-              </blockquote>
-            </figure>
-            <p class="philosophy-body">
-              <SemanticText text="Each design element—colors, spacing, typography, and structural lines—contributes to a layered understanding that grows more nuanced and complete through combination and context. This approach ensures that every visual element serves both functional and semantic purposes, creating a cohesive system where design choices reinforce and enhance each other." semanticLevel="normal" />
-            </p>
-          </div>
-          <div class="semantic-content">
-            <p>
-              <SemanticText text="Page layout and design symmetry echo that clause: margins and rhythm stay balanced as you zoom, so structure remains legible—not a separate system where proportion replaces the idea above." semanticLevel="normal" />
-            </p>
-          </div>
-          <p class="philosophy-cross-links">
-            <SemanticText text="This layered approach extends in the open through " semanticLevel="normal" />
-            <a href="/resources">Resources</a>
-            <SemanticText text=" and community " semanticLevel="normal" />
-            <a href="/contribute">Contribute</a>
-            <SemanticText text="; the " semanticLevel="normal" />
-            <a href="/portal">Resource portal</a>
-            <SemanticText text=" is where signed-in teams manage voice-aligned content." semanticLevel="normal" />
-          </p>
-        </div>
+        <!-- Anchor kept for backwards-compatible links; philosophy now operationalized in portal voice framework. -->
+        <div id="additive-semantics" class="sr-only" aria-hidden="true"></div>
         
         <div
           id="corrections-welcome"

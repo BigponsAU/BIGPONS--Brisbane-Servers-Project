@@ -2,6 +2,8 @@
 
 ## Overview
 
+This package is part of the Brisbane Servers monorepo. **Website production** is documented under [Deployment pathways](../docs/operations/DEPLOYMENT_PATHWAYS.md) (primary: GitHub Pages hybrid + standalone API). The voice framework is used by the Astro site and tooling; the separate **dashboard** server is optional (see package scripts and [dashboard README](dashboard/README.md)).
+
 This framework captures, analyzes, and generates text in the voice and tone of the Brisbane Servers design system documentation. It provides comprehensive NLP capabilities for:
 
 - **Voice Analysis**: Extracting tone, style, and linguistic patterns from text

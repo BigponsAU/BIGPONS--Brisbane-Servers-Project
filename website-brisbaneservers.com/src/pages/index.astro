@@ -6,7 +6,10 @@ import CardGrid from '../components/CardGrid.astro';
 import SearchBar from '../components/SearchBar.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
+import HomeInterconnectionRig from '../components/HomeInterconnectionRig.astro';
+import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
 import { industries } from '../data/industries';
+import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
 import { safeArrayAccess, createFallback } from '../utils/error-handling';
 
 const currentPath = '/';
@@ -18,7 +21,7 @@ const displayIndustries = industriesFallback(safeIndustries);
 ---
 
 <SiteShell
-  title="Brisbane Servers - Elite Technology Solutions"
+  title="Brisbane Servers - Direction, Connection, Improvement"
   currentPath={currentPath}
   pageId="home"
   valueProfile="foundation"
@@ -28,30 +31,30 @@ const displayIndustries = industriesFallback(safeIndustries);
 >
     <Hero 
       eyebrow="BIGPONS · Access to truth in technology"
-      title="Enterprise Technology Solutions"
-      subtitle="Evidence-based technology consulting for Australian businesses. Tailored insights, documented implementations, and industry-specific guidance that delivers measurable results."
-      ctaText="Explore Solutions"
+      title="Direction, Connection, Improvement"
+      subtitle="This is practical direction to connection and improvement: understand your context, choose what fits, and improve with evidence-backed action."
+      ctaText="See Direction in Practice"
       ctaHref="#services-overview"
-      secondaryCtaText="Our approach"
-      secondaryCtaHref="/about#additive-semantics"
+      secondaryCtaText="Open Portal Voice Framework"
+      secondaryCtaHref="/account"
+      scrollTargetId="#services-overview"
+      scrollLabel="Start with practical direction"
     />
 
-    <!-- Joined backing: one continuous rail, trail, and tartan across all sections -->
-    <div class="banach-joined-backing">
-      <div class="banach-rail-continuous"></div>
-      <div class="banach-trail-continuous"></div>
-      <div class="banach-backing-tartan"></div>
-      <!-- Overlay: tartan on top of sections to connect content (option 2) -->
-      <div class="banach-overlay-tartan" aria-hidden="true"></div>
+    <!-- Unified home section shell + interconnection spine (visual layer; reusable rig pattern) -->
+    <HomeInterconnectionRig>
+    <div class="home-sections-shell">
 
     <!-- Services Overview Section -->
-    <section id="services-overview" class="section section-tartan-accent">
+    <section id="services-overview" class="section section-tartan-accent home-band--strategy" data-interconnection-node data-interconnection-band="strategy">
       <div class="container">
+        <SectionSatelliteConstellation variant="strategy" semanticKey={HOME_BAND_SEMANTIC_KEYS.strategy} />
+        <div class="home-phase-indicator home-phase-indicator--strategy" aria-hidden="true"></div>
         <h2 class="section-title">
           <SemanticText text="What We Offer" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Comprehensive technology consulting services designed to help Australian businesses navigate complex technology decisions and implement solutions that deliver real value." semanticLevel="normal" isChild={true} />
+          <SemanticText text="We clarify your operating reality, map priorities, and set a practical path you can act on now, with costs, constraints, and outcomes visible from the beginning." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={3}>
@@ -78,13 +81,15 @@ const displayIndustries = industriesFallback(safeIndustries);
     </section>
 
     <!-- Industries Served Section -->
-    <section class="section section-tartan-accent" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface home-band--industry" data-interconnection-node data-interconnection-band="industry">
       <div class="container">
+        <SectionSatelliteConstellation variant="industry" semanticKey={HOME_BAND_SEMANTIC_KEYS.industry} />
+        <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Industries We Serve" semanticLevel="high" isParent={true} />
+          <SemanticText text="Industry Context" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Industry-specific technology solutions for Australian businesses. We understand the unique requirements, compliance needs, and proven strategies for your sector." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Regulations, operational constraints, and proven patterns differ by sector, so direction stays connected to your exact industry reality and operating conditions." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={4}>
@@ -95,15 +100,17 @@ const displayIndustries = industriesFallback(safeIndustries);
                 description={industry?.description || 'Learn more about our solutions for this industry.'}
                 icon={industry?.icon || 'fas fa-industry'}
                 href={industry?.slug ? `/resources/${industry.slug}` : '/resources'}
+                actionLabel="View industry resources"
                 size="small"
               />
             ))
           ) : (
             <Card
               title="Industries We Serve"
-              description="We provide technology solutions across multiple industries. Please visit our resources page to learn more."
+              description="We support multiple industries with practical technology direction, connected implementation guidance, and measurable improvement pathways."
               icon="fas fa-industry"
               href="/resources"
+              actionLabel="Browse resources"
               size="medium"
             />
           )}
@@ -118,13 +125,15 @@ const displayIndustries = industriesFallback(safeIndustries);
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="section section-tartan-accent">
+    <section class="section section-tartan-accent home-band--proof section--hero-wash" data-interconnection-node data-interconnection-band="proof">
       <div class="container">
+        <SectionSatelliteConstellation variant="proof" semanticKey={HOME_BAND_SEMANTIC_KEYS.proof} />
+        <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Why Choose Brisbane Servers" semanticLevel="high" isParent={true} />
+          <SemanticText text="Proof & Decision Confidence" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Australian SMEs face unique challenges navigating an overwhelming tech landscape. We provide the clarity, expertise, and access you need to succeed." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Recommendations are backed by implementation proof so each next move is measurable, practical, and tied to real improvement over time." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={2}>
@@ -158,8 +167,9 @@ const displayIndustries = industriesFallback(safeIndustries);
     </section>
 
     <!-- Contact Information Section -->
-    <section class="section section-tartan-accent" style="background: var(--primary-light);">
+    <section class="section section-tartan-accent section-home-band--primary-light home-band--contact" data-interconnection-node data-interconnection-band="contact">
       <div class="container">
+        <SectionSatelliteConstellation variant="contact" semanticKey={HOME_BAND_SEMANTIC_KEYS.contact} />
         <h2 class="section-title section-title--center">
           <SemanticText text="Get In Touch" semanticLevel="high" isParent={true} />
         </h2>
@@ -197,8 +207,9 @@ const displayIndustries = industriesFallback(safeIndustries);
     </section>
 
     <!-- Company Details Section -->
-    <section class="section section-tartan-accent">
+    <section class="section section-tartan-accent home-band--about" data-interconnection-node data-interconnection-band="about">
       <div class="container">
+        <SectionSatelliteConstellation variant="about" semanticKey={HOME_BAND_SEMANTIC_KEYS.about} />
         <h2 class="section-title section-title--center">
           <SemanticText text="About Brisbane Servers" semanticLevel="high" isParent={true} />
         </h2>
@@ -219,16 +230,17 @@ const displayIndustries = industriesFallback(safeIndustries);
         </CardGrid>
         
         <div style="text-align: center; margin-top: var(--space-xl);">
-          <a href="/about#additive-semantics" class="btn btn-secondary">
-            Design philosophy &amp; about us
+          <a href="/account" class="btn btn-secondary">
+            Open Portal Voice Framework
           </a>
         </div>
       </div>
     </section>
 
     <!-- Challenge & Solutions Section (Original Content) -->
-    <section class="section section-tartan-accent" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface home-band--challenge" data-interconnection-node data-interconnection-band="challenge">
       <div class="container">
+        <SectionSatelliteConstellation variant="challenge" semanticKey={HOME_BAND_SEMANTIC_KEYS.challenge} />
         <h2 class="section-title">
           <SemanticText text="The Challenge Australian Businesses Face" semanticLevel="high" isParent={true} />
         </h2>
@@ -239,23 +251,23 @@ const displayIndustries = industriesFallback(safeIndustries);
         <CardGrid layout="grid" columns={3} progressive>
           <Card
             title="Resource Constraints"
-            description="Business operations demand focused attention. Limited capacity for comprehensive technology research, feasibility analysis, and vendor evaluation requires strategic prioritization."
+            description="Running operations leaves limited time for research, feasibility checks, and vendor evaluation, so decision support must be focused."
             icon="fas fa-clock"
           />
           <Card
             title="Information Complexity"
-            description="Multiple information sources, evolving technologies, and diverse vendor claims create complexity. Strategic evaluation determines what applies to your specific business context."
+            description="Competing tools, changing platforms, and conflicting vendor claims create noise. We isolate what fits your context and what does not."
             icon="fas fa-info-circle"
           />
           <Card
             title="Strategic Assessment"
-            description="We evaluate your business context—scale, budget, available grants, industry requirements—to identify solutions that align with your strategic objectives and operational constraints."
+            description="We evaluate your scale, budget, grants, and industry constraints to identify options that are both feasible and worthwhile."
             icon="fas fa-search"
           />
         </CardGrid>
         
         <div class="load-more-btn">
-          <button data-expand-cards>Show More</button>
+          <button data-expand-cards>Show More Examples</button>
         </div>
         
         <SearchBar />
@@ -263,8 +275,9 @@ const displayIndustries = industriesFallback(safeIndustries);
     </section>
 
     <!-- Proven Solutions Section -->
-    <section class="section section-tartan-accent">
+    <section class="section section-tartan-accent home-band--solutions section--hero-wash" data-interconnection-node data-interconnection-band="solutions">
       <div class="container">
+        <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} />
         <h2 class="section-title">
           <SemanticText text="Proven Solutions for Your Business" semanticLevel="high" isParent={true} />
         </h2>
@@ -275,61 +288,51 @@ const displayIndustries = industriesFallback(safeIndustries);
         <CardGrid layout="grid" columns={2} progressive>
           <Card
             title="Industry Expertise"
-            description='Strategic guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services. Proven solutions for your industry. <a href="/resources" class="evidence-citation">View resources</a>'
+            description='Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="/resources" class="evidence-citation">View resources</a>'
             icon="fas fa-industry"
             size="large"
           />
           <Card
             title="Financial Optimization"
-            description='Strategic knowledge of digital transformation grants, business subsidies, and tax incentives aligned with your industry and business objectives. <a href="/projects" class="evidence-citation">View examples</a>'
+            description='Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="/projects" class="evidence-citation">View examples</a>'
             icon="fas fa-dollar-sign"
             size="large"
           />
           <Card
             title="Process Automation"
-            description='Strategic identification of automation opportunities that enhance operational efficiency and enable focus on high-value activities. <a href="/projects" class="evidence-citation">View case studies</a>'
+            description='Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="/projects" class="evidence-citation">View case studies</a>'
             icon="fas fa-cogs"
             size="large"
           />
           <Card
             title="Value-Based Framework"
-            description="Strategic evaluation considers your business scale, budget constraints, available grants, industry requirements, and strategic objectives to deliver optimal recommendations."
+            description="Recommendations are grounded in business scale, budget, available grants, industry requirements, and measurable outcomes."
             icon="fas fa-chart-line"
             size="large"
           />
         </CardGrid>
         
         <div class="load-more-btn">
-          <button data-expand-cards>Show More</button>
-        </div>
-        
-        <div class="evidence-section">
-          <h3>
-            <SemanticText text="Evidence" semanticLevel="high" isParent={true} />
-          </h3>
-          <ul class="evidence-list">
-            <li><a href="/projects">Case studies with implementation details</a></li>
-            <li><a href="/resources">Industry-specific resources with citations</a></li>
-            <li><a href="/about#additive-semantics">Additive semantics &amp; our approach to evidence</a></li>
-          </ul>
+          <button data-expand-cards>Show More Solutions</button>
         </div>
       </div>
     </section>
 
     <!-- Strategic Partnership Section -->
-    <section class="section section-tartan-accent" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface home-band--partnership section--hero-wash" data-interconnection-node data-interconnection-band="partnership">
       <div class="container">
+        <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
         <h2 class="section-title">
           <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="We understand the constraints of business leadership. Our research, evaluation, and documentation processes deliver actionable insights. Strategic guidance that respects your time and resources." semanticLevel="normal" isChild={true} />
+          <SemanticText text="We handle research, evaluation, and documentation so your team can make decisions quickly with clear trade-offs and next steps." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={2}>
           <Card
             title="Efficient Delivery"
-            description="We conduct research, evaluation, and analysis. You focus on strategic decisions. Information is structured for clarity: challenge → evidence → solution → implementation."
+            description="We run the analysis and preparation work; you focus on decisions. Outputs stay clear, actionable, and implementation-ready."
             size="medium"
           />
           <Card
@@ -341,8 +344,11 @@ const displayIndustries = industriesFallback(safeIndustries);
       </div>
     </section>
 
-      <InquiryForm id="inquiry-section" />
+      <div class="home-inquiry-interconnection home-band--inquiry" data-interconnection-node data-interconnection-band="inquiry">
+        <InquiryForm id="inquiry-section" />
+      </div>
     </div>
-    <!-- /banach-joined-backing (inquiry included for visual continuity) -->
+    <!-- /home-sections-shell -->
+    </HomeInterconnectionRig>
   
 </SiteShell>

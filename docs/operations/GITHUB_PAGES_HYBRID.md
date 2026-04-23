@@ -1,6 +1,8 @@
 # GitHub Pages Hybrid Deployment
 
-This repository now supports a hybrid deployment model:
+**This is the primary production pathway.** See the full matrix: [DEPLOYMENT_PATHWAYS.md](DEPLOYMENT_PATHWAYS.md).
+
+This repository supports a hybrid deployment model:
 
 - GitHub Pages serves the static Astro frontend built from `website-brisbaneservers.com/src-static`
 - A separate standalone API host serves the dynamic routes mounted from `website-brisbaneservers.com/src/pages/api/*`

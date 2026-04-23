@@ -3,8 +3,8 @@
  * Extends and expands on existing text while maintaining voice consistency
  */
 
-import { VoiceProfile } from '../models/voice-profile';
-import { ToneAnalyzer, ToneAnalysis } from '../analyzers/tone-analyzer';
+import type { VoiceProfile } from '../models/voice-profile';
+import { ToneAnalyzer, type ToneAnalysis } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
 import { TextGenerator } from './text-generator';
 import { DocumentParser } from '../parsers/document-parser';

@@ -3,8 +3,8 @@
  * Ensures generated text matches the voice profile
  */
 
-import { VoiceProfile } from '../models/voice-profile';
-import { ToneAnalyzer, VoiceMatch } from '../analyzers/tone-analyzer';
+import type { VoiceProfile } from '../models/voice-profile';
+import { ToneAnalyzer, type VoiceMatch } from '../analyzers/tone-analyzer';
 import * as voiceProfileData from '../voice-profile.json';
 
 export class VoiceMatcher {

@@ -9,6 +9,7 @@ import SemanticText from './SemanticText.astro';
  * @property {string} description - The card description text (required)
  * @property {string} [icon] - Font Awesome icon class (e.g., 'fas fa-check')
  * @property {string} [href] - Optional link URL. If provided, card becomes a link
+ * @property {string} [actionLabel] - Visible CTA on link cards (default: "View details")
  * @property {string} [industry] - Industry filter category for filtering
  * @property {'high' | 'medium' | 'normal'} [semanticLevel='medium'] - Semantic text emphasis level
  * @property {'small' | 'medium' | 'large' | 'featured'} [size='medium'] - Card size variant
@@ -20,6 +21,8 @@ interface Props {
   description: string;
   icon?: string;
   href?: string;
+  /** Shown on link cards as a button-like affordance (default: View details) */
+  actionLabel?: string;
   industry?: string;
   semanticLevel?: 'high' | 'medium' | 'normal';
   size?: 'small' | 'medium' | 'large' | 'featured';
@@ -31,7 +34,8 @@ const {
   title = 'Card Title', 
   description = '', 
   icon, 
-  href, 
+  href,
+  actionLabel = 'View details',
   industry,
   semanticLevel = 'medium',
   size = 'medium',
@@ -42,6 +46,7 @@ const {
 const Tag = href ? 'a' : 'div';
 const cardClass = [
   'card',
+  href ? 'card--link' : '',
   industry ? 'resource-item' : '',
   `card-${size}`,
   `card-${layout}`,
@@ -70,6 +75,12 @@ const dataAttr = industry ? { 'data-industry': industry } : {};
     <p class="card-description" set:html={description} />
   )}
   <slot />
+  {href && (
+    <span class="card-link-cta">
+      <span class="card-link-cta__label">{actionLabel}</span>
+      <span class="card-link-cta__icon" aria-hidden="true">→</span>
+    </span>
+  )}
 </Tag>
 
 <style>
@@ -82,18 +93,59 @@ const dataAttr = industry ? { 'data-industry': industry } : {};
     transition: var(--transition);
     text-decoration: none;
     color: inherit;
-    border: var(--phi-line-width) solid var(--border-light);
+    border: var(--phi-line-width) solid var(--site-panel-border, var(--border-light));
     box-shadow: var(--card-shadow);
   }
 
+  .card--link {
+    min-height: 100%;
+  }
+
   .card:hover {
-    box-shadow: var(--card-shadow-hover);
+    box-shadow: var(--shadow-additive-strong, var(--card-shadow-hover));
     transform: translateY(calc(var(--space-xs) * var(--phi-inv) * -1));
+    border-color: var(--border-accent);
   }
 
   .card:focus {
-    outline: var(--phi-line-width) solid var(--primary-color);
-    outline-offset: var(--phi-line-width);
+    outline: none;
+  }
+
+  .card:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+    border-color: var(--primary-color);
+  }
+
+  .card-link-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-top: auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius, 0.5rem);
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+    line-height: 1.25;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .card--link:hover .card-link-cta,
+  .card--link:focus-visible .card-link-cta {
+    background: rgba(var(--primary-color-rgb), 0.14);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+  }
+
+  .card-link-cta__icon {
+    flex-shrink: 0;
+    font-size: 1.1em;
+    line-height: 1;
+    opacity: 0.9;
   }
 
   /* Typography standardized across all card variations */
@@ -115,17 +167,18 @@ const dataAttr = industry ? { 'data-industry': industry } : {};
 
   .card-icon {
     font-size: var(--icon-lg);
-    color: var(--primary-color);
+    color: var(--primary-dark);
     margin-bottom: var(--space-md);
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+    width: fit-content;
+    padding: var(--space-sm);
+    border-radius: var(--phi-radius-atypical-a);
   }
 
   /* Size variations - use component tokens */
   .card-small {
     padding: var(--card-padding-sm);
-  }
-
-  .card-small .card-title {
-    font-size: var(--text-base);
   }
 
   .card-medium {
@@ -136,17 +189,9 @@ const dataAttr = industry ? { 'data-industry': industry } : {};
     padding: var(--card-padding-lg);
   }
 
-  .card-large .card-title {
-    font-size: var(--text-xl);
-  }
-
   .card-featured {
     padding: var(--card-padding-xl);
     border: calc(var(--phi-line-width) * var(--importance-medium)) solid var(--primary-color);
-  }
-
-  .card-featured .card-title {
-    font-size: var(--text-2xl);
   }
 
   /* Layout variations - positions can vary for Gestalt cohesion */
@@ -168,9 +213,9 @@ const dataAttr = industry ? { 'data-industry': industry } : {};
 
   /* Emphasis variation for hierarchy */
   .card-emphasis {
-    background: var(--primary-light);
+    background: var(--surface-additive);
     border-color: var(--primary-color);
-    box-shadow: var(--shadow-primary);
+    box-shadow: var(--shadow-primary-lg);
     border-radius: var(--phi-radius-atypical-b);
   }
 

@@ -1,22 +1,24 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 
 const currentPath = '/services';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Services' },
+];
 ---
 
 <SiteShell 
   title="Services - Brisbane Servers"
-  description="Access and support we provide: consultation, analysis, implementation, and ongoing guidance. We assess your reality and identify what you need."
+  description="Consultation, analysis, implementation, and ongoing support for practical technology decisions in real operating contexts."
   currentPath={currentPath}
-  breadcrumbs={[
-    { label: 'Home', href: '/' },
-    { label: 'Services' }
-  ]}
+  breadcrumbs={breadcrumbsTrail}
   pageId="services"
   valueProfile="utility"
   zoomProfile="focused"
@@ -24,23 +26,24 @@ const currentPath = '/services';
 >
     <Hero 
       title="Access & Support We Provide"
-      subtitle="We assess your reality—size, costs, grants available, industry specifics—and identify what you need. Not selling you what you don't require. Collaborative, tailored, practical."
+      subtitle="We clarify your current position, map feasible options, implement the right changes, and support the result over time."
     />
+    <Breadcrumbs items={breadcrumbsTrail} />
 
     <!-- Services Overview -->
     <!-- Layout A: Horizontal flow with lateral tangents -->
     <!-- Comprehensive block usage: phi-lateral-horizontal, phi-tangent, bg-pattern-phi-radial -->
-    <section class="section phi-line-symmetrical">
+    <section class="section phi-line-symmetrical section--hero-wash">
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="phi-tangent"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="How We Can Help" semanticLevel="high" isParent={true} />
+            <SemanticText text="Service Delivery In Practice" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="Not sure what you need? That's normal—let's figure it out together." semanticLevel="normal" isChild={true} />
+            <SemanticText text="Not sure what you need yet is exactly where this process starts. We build from baseline reality to practical implementation with each step reinforcing the previous one." semanticLevel="normal" isChild={true} />
           </p>
         </div>
         

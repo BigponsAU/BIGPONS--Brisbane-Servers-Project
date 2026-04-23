@@ -1,12 +1,18 @@
 # Admin Portal & Voice Framework
 
-Single-server setup: website, portal, and API run on **http://localhost:3000**. See [Run & troubleshoot](../operations/RUN_AND_TROUBLESHOOT.md) to start; [Credentials](CREDENTIALS.md) for login.
+**Production:** [GitHub Pages hybrid](../operations/GITHUB_PAGES_HYBRID.md) — static site + [standalone API](../../website-brisbaneservers.com/standalone-api/server.ts). See [Deployment pathways](../operations/DEPLOYMENT_PATHWAYS.md).
 
-## Quick start
+**Local (unified):** website and API on **http://localhost:3000**. See [Run & troubleshoot](../operations/RUN_AND_TROUBLESHOOT.md); [Credentials](CREDENTIALS.md) for login.
+
+## Quick start (unified dev)
 
 1. From project root: `npm start`
-2. Open **http://localhost:3000/portal**
+2. Open **http://localhost:3000/account** (legacy **`/portal`** may redirect)
 3. Log in (see [CREDENTIALS.md](CREDENTIALS.md))
+
+## Quick start (GitHub Pages hybrid local)
+
+Use `npm run start:hybrid` from the monorepo root and follow [Run & troubleshoot](../operations/RUN_AND_TROUBLESHOOT.md). Set `PUBLIC_API_BASE_URL` so the static site can reach the standalone API.
 
 ## Features
 
@@ -38,9 +44,19 @@ Single-server setup: website, portal, and API run on **http://localhost:3000**. 
 
 See [Run & troubleshoot](../operations/RUN_AND_TROUBLESHOOT.md) for connection errors, port conflicts, CORS, and login issues.
 
-## Public design philosophy
+## Portal voice framework
 
-The same brand voice and *additive semantics* principles described for the marketing site apply to portal content. Read the canonical write-up at **`/about#additive-semantics`** (e.g. http://localhost:3000/about#additive-semantics when running the site locally). The portal is the signed-in **resource** tool; the About page is the public articulation of how meaning layers in design and copy.
+Additive semantics is treated as an internal delivery rule in the portal, not a standalone public content block. The signed-in **resource** workspace at **`/account`** uses this sequence in UI and copy: **context first, evidence before claims, action last**. See `website-brisbaneservers.com/src/lib/portal-voice-framework.ts` for canonical rules (`portalVoiceRules`, `portalVoiceFrameworkSummary`, `resourceVoiceInterconnection`, `portalAndPublicInterconnectionSummary`).
+
+### System workflow (what is complete vs extended)
+
+**In place today:** auth and session flows for the workspace; resource CRUD, generation, and improvement APIs; voice profile and starter-block flows; public `/resources` prerender uses **`getPublishedResourcesForPage`** (HTTP when the API is up, else reads `voice-framework/storage/resources.json` via the same rules as `GET /api/resources/public`); published **`starter`** visibility is included in the anonymous catalog alongside `public`; voice-aligned copy on resources and portal; **public home** interconnection visuals (page-margin constellations, continuous rim rails, band-level satellites—no centre spine) documented in the wire card.
+
+**Not a single automated pipeline:** adding a Markdown or CMS article does not yet auto-publish through voice analysis without running the existing generate/review flows. Manual articles and API-backed resources both remain valid inputs; “forward compatible” means the storage and API shapes can grow without breaking the site shell.
+
+### Public site UI (interconnection layer)
+
+The marketing home page wraps bands in `HomeInterconnectionRig` with `PageMarginSatelliteColumn` (viewport-side margins) and `SectionSatelliteConstellation` (per-section graphs). That layer is **UX only**; it does not replace portal rules or resource storage. It reinforces the same story as `resourceVoiceInterconnection` on `/resources`.
 
 ## Related docs
 

@@ -1,6 +1,7 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import SearchBar from '../components/SearchBar.astro';
@@ -8,48 +9,24 @@ import IndustryFilters from '../components/IndustryFilters.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 import { industries } from '../data/industries';
-import { resolveInternalApiUrl } from '../lib/api-config';
+import { resourceVoiceInterconnection } from '../lib/portal-voice-framework';
+import { getPublishedResourcesForPage } from '../lib/public-published-resources';
 
-// Fetch published resources from the standalone API so the page can also build statically.
-const publicResourcesUrl = resolveInternalApiUrl('/resources/public');
-let publishedResources: any[] = [];
-
-try {
-  const response = await fetch(publicResourcesUrl, {
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    publishedResources = data.resources || [];
-    // Sort by generated date (most recent first) or voice score
-    publishedResources.sort((a, b) => {
-      const dateA = new Date(a.generatedAt || 0).getTime();
-      const dateB = new Date(b.generatedAt || 0).getTime();
-      return dateB - dateA;
-    });
-  } else {
-    console.warn('[Resources] API returned non-OK status:', response.status);
-  }
-} catch (error) {
-  // Silently fail - resources section will be hidden if no resources
-  console.warn('[Resources] Could not fetch resources from API:', error);
-}
+const publishedResources = await getPublishedResourcesForPage();
 
 const currentPath = '/resources';
 const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most recent
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Resources' },
+];
 ---
 
 <SiteShell 
   title="Resources - Brisbane Servers"
   description="Industry-specific knowledge hub with insights on technology applications, grants, automation opportunities, and reality-based guidance for Australian SMEs."
   currentPath={currentPath}
-  breadcrumbs={[
-    { label: 'Home', href: '/' },
-    { label: 'Resources' }
-  ]}
+  breadcrumbs={breadcrumbsTrail}
   pageId="resources"
   valueProfile="evidence"
   zoomProfile="focused"
@@ -57,8 +34,9 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
 >
     <Hero 
       title="Resources & Insights"
-      subtitle="Industry-specific knowledge to help you understand what's possible, what's real, and what actually works for your business. Facts, documented proof, and practical guidance."
+      subtitle="Each resource is written for clear decisions: context, evidence, and practical next actions in one place."
     />
+    <Breadcrumbs items={breadcrumbsTrail} />
     
     <section class="section" style="padding-top: 0;">
       <div class="container">
@@ -67,23 +45,26 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
     </section>
 
     <!-- What Are Resources Section -->
-    <section class="section phi-line-symmetrical">
+    <section class="section phi-line-symmetrical section--hero-wash">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="What Are Resources?" semanticLevel="high" isParent={true} />
+            <SemanticText text="How Resources Build Meaning" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="Our resources are comprehensive, industry-specific guides created using our voice framework technology. Each resource is validated for voice consistency, ensuring it matches Brisbane Servers' approach to technology consulting: practical, evidence-based, and tailored to Australian business contexts." semanticLevel="normal" isChild={true} />
+            <SemanticText text="Our resources are industry-specific guides reviewed for clear voice alignment, practical relevance, and evidence quality for Australian business contexts." semanticLevel="normal" isChild={true} />
+          </p>
+          <p class="section-description" style="margin-top: var(--space-md); max-width: 62ch;">
+            <SemanticText text={resourceVoiceInterconnection.headline} semanticLevel="normal" isChild={true} />
           </p>
         </div>
         
         <CardGrid columns={3} style="margin-top: var(--space-2xl);">
           <Card
             title="Voice Validated"
-            description="Every resource is validated using our voice matching technology to ensure consistent tone, messaging, and approach. Resources with high voice scores (80%+) are marked as validated."
+            description="Every published resource is checked against our voice profile so guidance stays clear, grounded, and consistent."
             icon="fas fa-check-circle"
           />
           <Card
@@ -93,7 +74,7 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
           />
           <Card
             title="Evidence Based"
-            description="Our resources include documented proof, real-world examples, and practical guidance based on actual implementations. Not theory—reality."
+            description="Resources include documented proof points, field examples, and implementable guidance rather than abstract theory."
             icon="fas fa-book"
           />
         </CardGrid>
@@ -111,7 +92,7 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
               <SemanticText text="Featured Resources" semanticLevel="high" isParent={true} />
             </h2>
             <p class="section-description">
-              <SemanticText text="Recently published resources with validated voice consistency. Each resource provides practical, actionable guidance tailored to specific industries and topics. Click any resource to read the full content." semanticLevel="normal" isChild={true} />
+              <SemanticText text="Recently published resources with validated voice consistency and practical recommendations for specific industries and topics." semanticLevel="normal" isChild={true} />
             </p>
           </div>
           <CardGrid columns={3}>
@@ -120,6 +101,7 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
                 title={resource.title}
                 description={resource.description}
                 href={`/resources/${resource.industry}/${resource.topic}#resource-${resource.id}`}
+                actionLabel="Read resource"
               >
                 <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; font-size: var(--text-sm);">
                   <span style="color: var(--text-secondary);">
@@ -148,13 +130,13 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
         </h2>
         <div class="section-description" style="line-height: 1.8;">
           <p>
-            <SemanticText text="Our resources are generated using advanced AI technology combined with our voice framework system:" semanticLevel="normal" isChild={true} />
+            <SemanticText text="Resources follow a consistent production and review flow:" semanticLevel="normal" isChild={true} />
           </p>
           <p style="margin-top: var(--space-md);">
-            <strong>1. Content Generation:</strong> <SemanticText text="Using industry-specific prompts and our text generation system, we create comprehensive content tailored to your industry and topic." semanticLevel="normal" isChild={true} />
+            <strong>1. Drafting:</strong> <SemanticText text="We generate a focused first draft for the target industry and topic using controlled prompts and source constraints." semanticLevel="normal" isChild={true} />
           </p>
           <p style="margin-top: var(--space-md);">
-            <strong>2. Voice Validation:</strong> <SemanticText text="Every resource is analyzed using our voice matching technology to ensure it aligns with Brisbane Servers' communication style—practical, evidence-based, and focused on real-world solutions." semanticLevel="normal" isChild={true} />
+            <strong>2. Voice Validation:</strong> <SemanticText text="Each draft is scored against our communication profile to keep language practical, evidence-led, and implementation-ready." semanticLevel="normal" isChild={true} />
           </p>
           <p style="margin-top: var(--space-md);">
             <strong>3. Quality Assurance:</strong> <SemanticText text="Resources with high voice scores (typically 80%+) are published. Lower-scoring content is refined or regenerated to meet our standards." semanticLevel="normal" isChild={true} />
@@ -163,7 +145,7 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
             <strong>4. Continuous Improvement:</strong> <SemanticText text="Published resources can be improved using our voice framework, ensuring they remain accurate and aligned with our approach." semanticLevel="normal" isChild={true} />
           </p>
           <p style="margin-top: var(--space-md);">
-            <SemanticText text="This process ensures every resource you read maintains consistency in tone, approach, and quality—whether it's about grant opportunities, automation strategies, or technology implementation." semanticLevel="normal" isChild={true} />
+            <SemanticText text="This flow keeps each resource consistent in voice quality while staying specific to grants, automation opportunities, and implementation decisions." semanticLevel="normal" isChild={true} />
           </p>
         </div>
         
@@ -200,7 +182,6 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
               title={industry.name}
               description={industry.description}
               icon={industry.icon}
-              href={`/resources/${industry.slug}`}
               industry={industry.slug}
             >
               <a href={`/resources/${industry.slug}`} class="btn btn-secondary" style="margin-top: var(--space-lg);">
@@ -225,7 +206,7 @@ const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most r
 
     <InquiryForm 
       title="Questions about your industry? I have an idea..."
-      subtitle="Share your thoughts, questions, or half-formed ideas. We're here to provide clarity and explore what's possible. You don't need to be the expert—we are."
+      subtitle="Share your context and goals, even if they are still forming. We help you connect options to practical next steps."
       locationField={true}
     />
 </SiteShell>

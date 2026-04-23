@@ -102,6 +102,7 @@ export const colorTokens = {
   bgTertiary: '--bg-tertiary',
   bgElevated: '--bg-elevated',
   border: '--border',
+  borderAccent: '--border-accent',
   borderLight: '--border-light',
   wisdom: '--color-wisdom',
   calm: '--color-calm',
@@ -294,6 +295,7 @@ export const designBlockTokenMap: Record<string, string[]> = {
     typographyTokens.base,
     colorTokens.primary,
     colorTokens.surfaceElevated,
+    colorTokens.borderAccent,
     colorTokens.primaryUltraLight,
   ],
   'card-grid': [

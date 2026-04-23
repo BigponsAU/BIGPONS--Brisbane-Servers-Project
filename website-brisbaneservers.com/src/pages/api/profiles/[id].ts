@@ -142,7 +142,6 @@ export const PUT: APIRoute = async ({ params, request }) => {
       JSON.stringify({
         success: true,
         profile: {
-          id: profilesData.profiles[index].metadata.id,
           ...profilesData.profiles[index].metadata,
           profile: profilesData.profiles[index].profile
         }

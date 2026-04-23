@@ -1,28 +1,41 @@
 /**
- * Cookie Consent Banner - Zoom-Aware Styling
- * 
- * Ensures cookie banner text scales synchronously with browser zoom
- * All sizing uses rem-based design tokens for consistent scaling
+ * Cookie consent — bottom bar that stays usable across native browser zoom.
+ * Native browser zoom only (no second zoom system; rem text still scales).
+ *
+ * Caps: viewport-relative max-height + max-width so the bar cannot occupy the full screen
+ * at high zoom; inner area scrolls. Width uses min(…, 100vw) so zoom-out does not leave an
+ * oversized rem-based band wider than the layout viewport.
  */
 
-/* Cookie Consent Banner - Fixed Position with Zoom Compensation */
 .cookie-consent {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 10000;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  max-height: min(48vh, 100vh);
+  max-height: min(48dvh, 100dvh);
+  overflow: hidden;
   background: var(--bg-elevated);
   border-top: var(--phi-line-width) solid var(--border-light);
   box-shadow: var(--shadow-lg);
-  padding: var(--space-lg);
+  /* Moderate padding at zoom extremes (vmin weakly tracks viewport; rem still scales type) */
+  padding: clamp(0.5rem, 2vmin, var(--space-lg)) clamp(0.65rem, 3vmin, var(--space-xl));
+  padding-bottom: max(clamp(0.5rem, 2vmin, var(--space-lg)), var(--safe-area-inset-bottom));
   transform-origin: bottom center;
-  display: none;
-  /* All rem-based values scale automatically with zoom compensation */
+}
+
+/* Keep cookie bar fixed above page chrome even if broad body child rules exist. */
+body > .cookie-consent {
+  position: fixed;
+  z-index: 10000;
 }
 
 .cookie-consent.show {
-  display: block;
+  display: flex;
   animation: cookieSlideUp 0.3s ease-out;
 }
 
@@ -38,12 +51,18 @@
 }
 
 .cookie-consent-content {
-  max-width: calc(var(--space-base) * 75); /* 75rem - scales with zoom */
+  width: 100%;
+  max-width: min(72rem, calc(100vw - 1.25rem));
   margin: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md); /* Rem-based gap - scales with zoom */
-  align-items: center;
+  gap: clamp(0.5rem, 2vmin, var(--space-md));
+  align-items: stretch;
 }
 
 @media (min-width: 768px) {
@@ -60,8 +79,8 @@
 }
 
 .cookie-text {
-  font-size: var(--text-base); /* Rem-based - scales with zoom */
-  line-height: calc(1em * var(--phi)); /* Phi-based line height */
+  font-size: var(--text-base);
+  line-height: calc(1em * var(--phi));
   color: var(--text-primary);
   margin: 0;
   text-align: center;
@@ -85,23 +104,45 @@
   color: var(--primary-dark);
 }
 
+.cookie-policy-link:focus {
+  outline: var(--phi-line-width) solid var(--primary-color);
+  outline-offset: calc(var(--space-xs) * var(--phi-inv));
+  border-radius: var(--radius-sm);
+}
+
 .cookie-consent-actions {
   display: flex;
-  gap: var(--space-md); /* Rem-based gap - scales with zoom */
+  gap: clamp(0.4rem, 1.5vmin, var(--space-md));
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .cookie-consent-actions {
+    justify-content: flex-end;
+  }
 }
 
 .cookie-btn {
-  padding: var(--space-sm) var(--space-lg); /* Rem-based - scales with zoom */
-  font-size: var(--text-base); /* Rem-based - scales with zoom */
+  padding: clamp(0.35rem, 1.5vmin, var(--space-sm)) clamp(0.65rem, 2.5vmin, var(--space-lg));
+  font-size: var(--text-base);
   font-weight: var(--font-weight-medium);
   line-height: calc(1em * var(--phi));
   border: var(--phi-line-width) solid transparent;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all var(--transition);
-  min-width: calc(var(--space-base) * 6); /* Scales with zoom */
-  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  /* Avoid rem-only min-width blowing up layout at high zoom */
+  min-width: min(11rem, 100%);
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.cookie-btn:focus {
+  outline: var(--phi-line-width) solid var(--primary-color);
+  outline-offset: calc(var(--space-xs) * var(--phi-inv));
 }
 
 .cookie-btn-accept {
@@ -125,31 +166,21 @@
   border-color: var(--primary-color);
 }
 
-/* Zoom Compensation Integration */
-html.zoom-compensated .cookie-consent,
-html[data-zoom-level] .cookie-consent {
-  /* Inherits scaling from html transform */
-  /* All rem-based values scale automatically */
-}
-
-/* Mobile adjustments for zoom scenarios */
 @media (max-width: 480px) {
   .cookie-consent {
-    padding: var(--space-md);
-  }
-
-  .cookie-consent-content {
-    gap: var(--space-sm);
+    max-height: min(55vh, 100vh);
+    max-height: min(55dvh, 100dvh);
+    padding: clamp(0.45rem, 2vmin, var(--space-md)) clamp(0.5rem, 2.5vmin, var(--space-lg));
+    padding-bottom: max(clamp(0.45rem, 2vmin, var(--space-md)), var(--safe-area-inset-bottom));
   }
 
   .cookie-text {
-    font-size: var(--text-sm); /* Smaller on mobile, still scales with zoom */
+    font-size: var(--text-sm);
   }
 
   .cookie-btn {
-    padding: var(--space-xs) var(--space-md);
-    font-size: var(--text-sm); /* Smaller on mobile, still scales with zoom */
-    min-width: calc(var(--space-base) * 5);
+    font-size: var(--text-sm);
+    min-width: min(10rem, 100%);
   }
 
   .cookie-consent-actions {
@@ -162,8 +193,8 @@ html[data-zoom-level] .cookie-consent {
   }
 }
 
-
-
-
-
-
+@media (prefers-reduced-motion: reduce) {
+  .cookie-consent.show {
+    animation: none;
+  }
+}

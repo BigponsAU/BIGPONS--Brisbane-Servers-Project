@@ -41,7 +41,7 @@ const BASE_TOKENS = new Set([
   '--phi-sqrt2-product', '--phi-sqrt2-quotient', '--sqrt2-phi-quotient',
   '--diag-angle-1', '--diag-angle-2', '--diag-angle-3', '--diag-angle-4',
   '--base', '--font-base', '--space-base',
-  '--zoom-scale', '--browser-zoom', '--inverse-zoom',
+  '--lanczos-detected-zoom',
   '--viewport-width', '--viewport-height', '--viewport-aspect-ratio', '--viewport-pixel-ratio',
   '--viewport-orientation', '--vbase',
   '--safe-area-inset-top', '--safe-area-inset-right', '--safe-area-inset-bottom', '--safe-area-inset-left',

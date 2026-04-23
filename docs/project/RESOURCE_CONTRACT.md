@@ -2,6 +2,8 @@
 
 Single schema for hub APIs and public read paths. Extends the TypeScript `Resource` type in [website-brisbaneservers.com/src/lib/resources-api.ts](../../website-brisbaneservers.com/src/lib/resources-api.ts).
 
+**Pipeline and draw-back:** intake stages, failure behaviour, and persistence guarantees are described in [RESOURCE_PIPELINE_AND_DRAWBACK.md](../development/RESOURCE_PIPELINE_AND_DRAWBACK.md). JSON storage uses a temp-file replace so a failed save does not truncate `resources.json`.
+
 ## Fields
 
 | Field | Type | Required | Notes |
@@ -39,7 +41,7 @@ Single schema for hub APIs and public read paths. Extends the TypeScript `Resour
 Implemented by `isPublicResource()` in `resources-api.ts`:
 
 - `status === 'published'`
-- `visibility` is `undefined` or `public` (not `private` or `starter` for anonymous public listing)
+- `visibility` is `undefined`, `public`, or **`starter`** (published starter curriculum is listed for anonymous read-only catalog; `private` is excluded)
 
 Community moderation: resources created via community flows may start as `draft` until approved; approve flow promotes to `published` where applicable.
 

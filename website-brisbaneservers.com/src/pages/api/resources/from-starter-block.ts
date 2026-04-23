@@ -110,8 +110,9 @@ export const POST: APIRoute = async ({ request }) => {
         name: profile.voiceName,
         description: profile.sourceDocument || '',
         sourceDocument: `starter-block:${starterBlock.id}`,
+        version: profile.version || '1.0.0',
         isDefault: isDefault,
-        isArchived: false
+        archived: false
       });
 
       profileCreated = true;

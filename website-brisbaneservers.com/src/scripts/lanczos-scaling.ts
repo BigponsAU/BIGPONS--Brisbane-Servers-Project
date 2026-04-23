@@ -572,9 +572,8 @@ export function applyLanczosScaling(scaling: ViewportScaling): void {
     root.style.setProperty('--fourier-azimuth-4', `${scaling.fourierAzimuthAngles[3]}deg`); // 76.4°
   }
   
-  // Set zoom level for reference
   if (scaling.zoomLevel !== undefined) {
-    root.style.setProperty('--browser-zoom', scaling.zoomLevel.toString());
+    root.style.setProperty('--lanczos-detected-zoom', scaling.zoomLevel.toString());
   }
 }
 

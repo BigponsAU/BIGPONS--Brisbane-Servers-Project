@@ -23,15 +23,16 @@ html {
     overflow-x: hidden;
     width: 100%;
     position: relative;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
+    /* Match body shell gradient so no raw canvas white below footer / at edges */
+    background-color: var(--background);
+    background-image: var(--bg-spectrum);
     /* Allow native browser zoom to work properly */
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
-    /* Base font size - fixed at 16px so rem units scale with browser zoom */
-    font-size: 16px;
-    /* This fixed base ensures rem units in content scale with browser zoom */
-    /* Navbar and footer use px units to stay fixed */
+    /* 100% = UA base (typically 16px); rem/em then scale with browser zoom as one unit */
+    font-size: 100%;
     
     /* Legacy mappings for backward compatibility */
     --opacity-light: var(--opacity-soft);
@@ -69,26 +70,23 @@ body {
 }
 
 body[data-value-profile='foundation'] {
-    --page-container-max: 116rem;
-    --page-measure-max: 48rem;
+    --page-measure-max: min(48rem, 100%);
     --page-accent-strength: 0.95;
 }
 
 body[data-value-profile='evidence'] {
-    --page-container-max: 110rem;
-    --page-measure-max: 44rem;
+    --page-measure-max: min(44rem, 100%);
     --page-accent-strength: 0.8;
 }
 
 body[data-value-profile='utility'] {
-    --page-container-max: 104rem;
-    --page-measure-max: 40rem;
+    --page-measure-max: min(40rem, 100%);
     --page-accent-strength: 0.65;
 }
 
 body[data-page-density='airy'] {
     --page-section-space: var(--space-3xl);
-    --page-density-multiplier: 1.08;
+    --page-density-multiplier: 1.02;
 }
 
 body[data-page-density='comfortable'] {
@@ -98,16 +96,7 @@ body[data-page-density='comfortable'] {
 
 body[data-page-density='compact'] {
     --page-section-space: calc(var(--space-xl) * 1.1);
-    --page-density-multiplier: 0.88;
-}
-
-body[data-zoom-profile='immersive'][data-zoom-tier='wide'] {
-    --page-container-max: calc(var(--page-container-max) * 1.04);
-}
-
-body[data-zoom-profile='focused'][data-zoom-tier='compact'] {
-    --page-container-max: calc(var(--page-container-max) * 0.94);
-    --page-measure-max: calc(var(--page-measure-max) * 0.94);
+    --page-density-multiplier: 0.94;
 }
 
 /* Heading Styles - Standardized Typography */
@@ -163,49 +152,38 @@ h6, .h6 {
     letter-spacing: 0;
 }
 
-/* Site content wrapper - scales as one unit with zoom */
-/* Using viewport units for unified scaling - no transform needed */
 .site-content {
     width: 100%;
     min-height: 100vh;
     position: relative;
-    /* All internal elements use rem/vw/vh, so they scale proportionally */
 }
 
-/* Zoom Wrapper - No longer needed, removed */
-/* Content now scales naturally with browser zoom using rem units */
-/* Navbar and footer stay fixed using px units */
-
-/* Header - Fixed size using px units, does NOT scale with browser zoom */
+/* Header chrome uses rem/em like body so browser zoom (Ctrl±) scales uniformly */
 header {
     position: relative;
     z-index: 1000;
-    /* Header uses px units to stay fixed size regardless of browser zoom */
     transform: none;
     transform-origin: top left;
     background: var(--surface-elevated);
     border-bottom: 1px solid var(--border-light);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-additive-soft);
+    backdrop-filter: none;
 }
 
-/* Footer - Fixed size using px units, does NOT scale with browser zoom */
 .footer,
 footer {
-    /* Footer uses px units to stay fixed size regardless of browser zoom */
     transform: none;
     transform-origin: bottom left;
 }
 
 /* === TEXT WIDTH CONSTRAINT === */
-/* Maximum 740px for comfortable eye tracking - cognitive kindness */
+/* Prose width: ch + % of container (scales with zoom); outer gutters live on .container */
 .text-content,
 .section-description,
 .card-description,
 .hero-subtitle,
 p:not(.footer-description):not(.form-disclaimer) {
-    max-width: var(--page-measure-max);
-    /* 740px / 16 = 46.25rem - scales with zoom */
+    max-width: min(100%, var(--measure-prose));
 }
 
 /* ===== MAIN CONTENT WRAPPER ===== */
@@ -214,12 +192,8 @@ main {
     flex: 1;
     /* Take up available space, pushing footer to bottom */
     position: relative;
-    padding-top: clamp(
-        calc(var(--space-lg) * 1.2 + var(--site-header-clearance)),
-        calc(var(--space-xl) * var(--phi-inv) + var(--site-header-clearance)),
-        calc(var(--space-xl) * 1.2 + var(--site-header-clearance))
-    );
-    /* rem-only preferred value — tracks zoom with typography (vh fought rem at extreme zoom) */
+    padding-top: var(--site-main-offset-top);
+    /* rem band + safe-area — tracks browser zoom; pairs with .hero margin-top */
     padding-bottom: clamp(
         calc(var(--space-2xl) * 0.8),
         calc(var(--space-xl) * var(--phi-inv)),
@@ -229,8 +203,8 @@ main {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
-    /* Prevent horizontal overflow */
+    overflow-x: clip;
+    /* Prevent horizontal overflow (match html/body — site-framework) */
     /* Background to match body - prevents white block showing through */
     background: var(--bg-accent);
     background-color: var(--background);
@@ -249,13 +223,13 @@ main#main-content {
 
 .container {
     width: 100%;
-    /* Wide layouts + zoom: cap width in rem (scales with zoom), center with symmetric gutters */
-    max-width: min(var(--page-container-max), 100%);
+    /* Same band as header/sections: parent width minus gutters */
+    max-width: var(--container-max-width);
     margin-inline: auto;
     padding-top: var(--layout-padding-block-tight);
     padding-bottom: var(--layout-padding-block-tight);
-    /* Symmetric φ gutters — same scale as vertical rhythm */
-    padding-inline: var(--layout-padding-inline);
+    /* Symmetric φ gutters + safe-area (same scale as header/footer nav band) */
+    padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
     position: relative;
     /* Full viewport-relative scaling */
     z-index: 1;
@@ -322,7 +296,6 @@ main#main-content {
 
 /* ===== FOOTER ELEMENT STYLING ===== */
 
-/* Footer - Normal position at bottom of page - FIXED SIZE using px units, does NOT scale with browser zoom */
 .footer,
 footer {
     background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
@@ -331,11 +304,10 @@ footer {
     position: relative;
     /* Normal position - flows with content */
     width: 100%;
-    /* Full width - does NOT scale with zoom */
     margin: 0;
     margin-top: auto;
+    flex-shrink: 0;
     /* Push footer to bottom when using flexbox layout */
-    /* Footer stays fixed size - uses px units */
     transform: none;
     transform-origin: bottom left;
     /* Bottom-left origin for footer positioning */
@@ -384,11 +356,9 @@ footer {
 .footer-main {
     display: grid;
     grid-template-columns: 2fr 1fr 1.5fr;
-    /* Three columns: Brand, Services, Company/Contact/Social */
     gap: clamp(32px, 4vw, 56px);
     /* Responsive gap that scales slightly with viewport */
     padding: 32px 0 32px;
-    /* Fixed padding in px - does NOT scale with browser zoom */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     max-width: 100%;
     box-sizing: border-box;
@@ -407,21 +377,17 @@ footer {
     display: flex;
     align-items: center;
     gap: 16px;
-    /* Fixed 16px gap - does NOT scale with browser zoom */
     margin-bottom: 26px;
-    /* Fixed 26px margin - does NOT scale with browser zoom */
 }
 
 .footer-logo {
     width: 42px;
-    /* Fixed 42px size - does NOT scale with browser zoom */
     height: 42px;
     object-fit: contain;
 }
 
 .footer-brand-text {
     font-size: 20px;
-    /* Fixed 20px font size - does NOT scale with browser zoom */
     font-weight: var(--font-weight-bold);
     color: #ffffff;
     /* Solid white color */
@@ -439,9 +405,7 @@ footer {
     line-height: 1.618;
     /* Fixed line height ratio - does NOT scale with browser zoom */
     margin-bottom: 26px;
-    /* Fixed 26px margin - does NOT scale with browser zoom */
     font-size: 14px;
-    /* Fixed 14px font size - does NOT scale with browser zoom */
 }
 
 .footer-description .semantic-text,
@@ -486,10 +450,37 @@ footer {
     position: relative;
 }
 
+/* Primary nav columns: distinct from contact/info blocks (methodology: label + tight link stack) */
+.footer-section--menu .footer-title,
+.footer-subsection--menu > .footer-title {
+    font-size: 0.8125rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-on-dark-subtle);
+    margin-bottom: 1.125rem;
+}
+
+.footer-section--menu .footer-title::after,
+.footer-subsection--menu > .footer-title::after {
+    width: 2.75rem;
+    height: 2px;
+    bottom: -0.35rem;
+    background: linear-gradient(90deg, var(--primary-color), rgba(var(--accent-violet-rgb), 0.55));
+}
+
+@media (min-width: 969px) {
+    .footer-main > .footer-section:nth-child(2) {
+        padding-inline-end: clamp(1.25rem, 2vw, 2rem);
+        margin-inline-end: clamp(0.35rem, 1vw, 1rem);
+        border-inline-end: 1px solid rgba(255, 255, 255, 0.12);
+    }
+}
+
 .footer-right-section {
     display: flex;
     flex-direction: column;
-    gap: clamp(var(--space-xl), 2.5vh, var(--space-2xl));
+    gap: clamp(var(--space-xl), var(--space-xl), var(--space-2xl));
     /* Phi-based gap between subsections */
 }
 
@@ -499,10 +490,8 @@ footer {
 
 .footer-title {
     font-size: 18px;
-    /* Fixed 18px font size - does NOT scale with browser zoom */
     font-weight: var(--font-weight-bold);
     margin-bottom: 16px;
-    /* Fixed 16px margin - does NOT scale with browser zoom */
     color: white;
     position: relative;
 }
@@ -511,12 +500,9 @@ footer {
     content: '';
     position: absolute;
     bottom: -3px;
-    /* Fixed -3px offset - does NOT scale with browser zoom */
     left: 0;
     width: 40px;
-    /* Fixed 40px width - does NOT scale with browser zoom */
     height: 3px;
-    /* Fixed 3px height - does NOT scale with browser zoom */
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
 }
 
@@ -528,19 +514,16 @@ footer {
 
 .footer-links li {
     margin-bottom: var(--space-md);
-    /* Phi-based spacing */
 }
 
 .footer-links a {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
-    font-size: 14px;
-    /* Fixed 14px font size - does NOT scale with browser zoom */
+    font-size: 0.875rem;
     transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 8px;
-    /* Fixed 8px gap - does NOT scale with browser zoom */
     position: relative;
     word-break: break-word;
     max-width: 100%;
@@ -586,12 +569,9 @@ footer {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    /* Fixed 12px gap - does NOT scale with browser zoom */
     margin-bottom: 16px;
-    /* Fixed 16px margin - does NOT scale with browser zoom */
     color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-    /* Fixed 14px font size - does NOT scale with browser zoom */
+    font-size: 0.875rem;
 }
 
 .footer-contact-item i {
@@ -617,12 +597,22 @@ footer {
     /* No top margin as it's within a subsection */
 }
 
-.social-title {
-    font-size: var(--text-sm);
-    /* Consistent with text scale */
+.footer-title--minor {
+    font-size: 0.9375rem;
     font-weight: var(--font-weight-semibold);
     margin-bottom: var(--space-md);
-    /* Reduced margin for subsection */
+    color: var(--text-on-dark-muted);
+}
+
+.footer-title--minor::after {
+    width: 1.5rem;
+    opacity: 0.75;
+}
+
+.social-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-md);
     color: white;
 }
 
@@ -662,7 +652,6 @@ footer {
 
 .footer-bottom {
     padding: 28px 0;
-    /* Fixed padding - does NOT scale with browser zoom */
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.2);
 }
@@ -734,27 +723,33 @@ footer {
 @media (max-width: 1200px) {
     .footer-main {
         grid-template-columns: 1.5fr 1fr 1.5fr;
-        gap: clamp(var(--space-xl), 4vw, var(--space-2xl));
+        gap: clamp(var(--space-xl), var(--space-xl), var(--space-2xl));
         /* Phi-based gap following design system */
     }
     
     .footer-right-section {
-        gap: clamp(var(--space-lg), 2vh, var(--space-xl));
+        gap: clamp(var(--space-lg), var(--space-lg), var(--space-xl));
         /* Reduced gap on medium screens */
     }
 }
 
 @media (max-width: 968px) {
+    .footer-main > .footer-section:nth-child(2) {
+        border-inline-end: none;
+        padding-inline-end: 0;
+        margin-inline-end: 0;
+    }
+
     .footer-main {
         grid-template-columns: 1fr 1fr;
-        gap: clamp(var(--space-xl), 4vw, var(--space-2xl));
+        gap: clamp(var(--space-xl), var(--space-xl), var(--space-2xl));
         /* Phi-based gap following design system */
-        padding: clamp(var(--space-xl), 3vh, var(--space-2xl)) 0 clamp(var(--space-lg), 2vh, var(--space-xl));
+        padding: clamp(var(--space-xl), var(--space-xl), var(--space-2xl)) 0 clamp(var(--space-lg), var(--space-lg), var(--space-xl));
         /* Phi-based padding following design system */
     }
     
     .footer-right-section {
-        gap: clamp(var(--space-lg), 2vh, var(--space-xl));
+        gap: clamp(var(--space-lg), var(--space-lg), var(--space-xl));
         /* Reduced gap on tablets */
     }
 
@@ -774,7 +769,7 @@ footer {
     }
     
     nav {
-        padding: var(--space-sm) clamp(var(--space-md), 4vw, var(--space-lg));
+        padding: var(--space-sm) clamp(var(--space-md), var(--space-md), var(--space-lg));
         /* Reduced padding on tablets */
     }
 }
@@ -782,15 +777,15 @@ footer {
 @media (max-width: 600px) {
     .footer-main {
         grid-template-columns: 1fr;
-        gap: clamp(var(--space-xl), 4vw, var(--space-2xl));
+        gap: clamp(var(--space-xl), var(--space-xl), var(--space-2xl));
         /* Phi-based gap following design system */
-        padding: clamp(var(--space-xl), 3vh, var(--space-2xl)) 0 clamp(var(--space-lg), 2vh, var(--space-xl));
+        padding: clamp(var(--space-xl), var(--space-xl), var(--space-2xl)) 0 clamp(var(--space-lg), var(--space-lg), var(--space-xl));
         /* Phi-based padding following design system */
         text-align: center;
     }
     
     .footer-right-section {
-        gap: clamp(var(--space-lg), 2.5vh, var(--space-xl));
+        gap: clamp(var(--space-lg), var(--space-lg), var(--space-xl));
         /* Phi-based gap on mobile */
         align-items: center;
     }
@@ -822,20 +817,15 @@ footer {
 }
 
 @media (max-width: 480px) {
-    .footer-content {
-        padding: clamp(var(--space-lg), 2.5vw, var(--space-xl)) clamp(var(--space-md), 4vw, var(--space-lg));
-        /* Balanced padding on small mobile */
-    }
-
     .footer-main {
-        padding: clamp(var(--space-md), 1.5vh, var(--space-lg)) 0 clamp(var(--space-sm), 1vh, var(--space-md));
+        padding: clamp(var(--space-md), var(--space-md), var(--space-lg)) 0 clamp(var(--space-sm), var(--space-sm), var(--space-md));
         /* Balanced padding on small mobile */
-        gap: clamp(var(--space-md), 2.5vw, var(--space-lg));
+        gap: clamp(var(--space-md), var(--space-md), var(--space-lg));
         /* Balanced gap on small mobile */
     }
 
     .footer-bottom {
-        padding: clamp(var(--space-sm), 1vh, var(--space-md)) 0;
+        padding: clamp(var(--space-sm), var(--space-sm), var(--space-md)) 0;
         /* Balanced padding on small mobile */
     }
 
@@ -846,7 +836,7 @@ footer {
     }
     
     nav {
-        padding: var(--space-sm) clamp(var(--space-sm), 3vw, var(--space-md));
+        padding: var(--space-sm) clamp(var(--space-sm), var(--space-sm), var(--space-md));
         /* Reduced padding on mobile */
     }
 
@@ -868,16 +858,16 @@ footer {
 
 /* ===== NAVIGATION STYLES ===== */
 
-/* Header - Fixed position - FIXED SIZE using px units, does NOT scale with browser zoom */
 header {
     position: fixed;
     /* Fixed position - anchored to top, relative to viewport */
     top: 0;
     left: 0;
     right: 0;
+    /* Keep chrome below notch; pairs with --site-main-offset-top on main */
+    padding-top: var(--safe-area-inset-top);
     /* Full viewport width via left/right positioning */
     width: 100%;
-    /* Full width - does NOT scale with zoom */
     background: linear-gradient(135deg, 
         rgba(255, 255, 255, 1) 0%, 
         var(--primary-ultra-light) 100%
@@ -891,14 +881,13 @@ header {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
     /* Subtle color shadow - additive semantics */
     transition: var(--transition);
-    /* Header stays fixed size - uses px units */
     transform: none;
     transform-origin: top left;
     /* rem so browser zoom affects chrome (accessibility) */
-    font-size: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    font-size: clamp(0.875rem, 0.92rem, 1rem);
     /* Header height is determined by nav padding + content */
     min-height: fit-content;
-    max-height: min(120px, 22vh);
+    max-height: min(7.5rem, 100%);
     overflow: visible;
     /* Changed to visible to allow dropdown menus to show */
     /* Prevent text rendering glitches during page transitions */
@@ -916,8 +905,7 @@ header::before {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    /* Fixed 3px height - does NOT scale with browser zoom */
+    height: 0.1875rem;
     background: linear-gradient(90deg, 
         transparent var(--gradient-stop-1), 
         var(--primary-color) var(--gradient-stop-2),
@@ -976,14 +964,13 @@ nav {
 }
 
 .nav-brand img {
-    width: 26px;
-    /* Fixed 26px size - does NOT scale with browser zoom */
-    height: 26px;
+    width: 1.625rem;
+    height: 1.625rem;
     object-fit: contain;
 }
 
 .nav-brand-text {
-    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    font-size: clamp(1rem, 1.06rem, 1.125rem);
     font-weight: var(--font-weight-bold);
     color: var(--text-primary);
     /* Solid color - no decorative gradients */
@@ -995,10 +982,9 @@ nav {
 }
 
 .nav-tagline {
-    font-size: clamp(0.8125rem, 0.75rem + 0.2vw, 0.9375rem);
+    font-size: clamp(0.8125rem, 0.875rem, 0.9375rem);
     color: var(--text-secondary);
-    margin-left: 12px;
-    /* Fixed 12px margin - does NOT scale with browser zoom */
+    margin-left: 0.75rem;
     font-weight: var(--font-weight-normal);
     /* Prevent text rendering glitches */
     -webkit-font-smoothing: antialiased;
@@ -1008,7 +994,7 @@ nav {
 
 .nav-menu {
     display: flex;
-    gap: clamp(24px, 2.5vw, 40px);
+    gap: clamp(1.5rem, 1.75rem, 2.5rem);
     /* Responsive gap that scales slightly with viewport */
     align-items: center;
     list-style: none;
@@ -1029,8 +1015,7 @@ nav {
     color: var(--text-primary);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
-    font-size: 16px;
-    /* Fixed 16px font size - does NOT scale with browser zoom */
+    font-size: var(--text-base);
     transition: var(--transition);
     position: relative;
     /* Prevent text rendering glitches */
@@ -1042,21 +1027,17 @@ nav {
 .nav-menu a::after {
     content: '';
     position: absolute;
-    bottom: -3px;
-    /* Fixed -3px offset - does NOT scale with browser zoom */
+    bottom: -0.1875rem;
     left: 0;
     width: 0;
-    height: 3px;
-    /* Fixed 3px height - does NOT scale with browser zoom */
+    height: 0.1875rem;
     background: linear-gradient(90deg, 
         var(--primary-color) var(--gradient-stop-2), 
-        var(--primary-dark) var(--gradient-stop-3)
+        var(--accent-violet) var(--gradient-stop-3)
     );
-    border-radius: 3px;
-    /* Fixed 3px border radius - does NOT scale with browser zoom */
+    border-radius: 0.1875rem;
     transition: width var(--transition);
-    box-shadow: 0 3px 8px rgba(10, 116, 218, var(--opacity-medium));
-    /* Fixed shadow values - does NOT scale with browser zoom */
+    box-shadow: 0 0.1875rem 0.5rem rgba(var(--primary-color-rgb), var(--opacity-medium));
     overflow: visible;
     /* Ensure underline doesn't get clipped */
 }
@@ -1087,8 +1068,7 @@ nav {
 
 .nav-dropdown-toggle::after {
     content: '▼';
-    font-size: 11px;
-    /* Fixed 11px font size - does NOT scale with browser zoom */
+    font-size: 0.6875rem;
     transition: transform 0.3s ease;
 }
 
@@ -1099,31 +1079,27 @@ nav {
 
 .nav-dropdown-menu {
     position: absolute;
-    top: calc(100% + 8px);
-    /* Fixed 8px offset - reduced for tighter spacing */
+    top: calc(100% + 0.5rem);
     left: 0;
     right: auto;
     /* Default to left alignment */
     background: var(--surface-elevated);
     border: 1px solid var(--border-light);
     border-radius: calc(var(--border-radius) * 0.75);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
-    min-width: 220px;
-    /* Increased min-width to accommodate longer text */
+    box-shadow: var(--shadow-additive-soft);
+    min-width: 13.75rem;
     width: max-content;
     /* Width based on content */
-    max-width: min(280px, calc(100vw - 48px));
+    max-width: min(17.5rem, calc(100% - 3rem));
     /* Max width with viewport constraint to prevent overflow */
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-6px);
-    /* Fixed -6px transform - reduced for subtler animation */
+    transform: translateY(-0.375rem);
     transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
     z-index: 1001;
     /* Higher than header z-index to ensure visibility */
     backdrop-filter: blur(10px);
-    padding: 8px 0;
-    /* Increased padding for better bubble coverage */
+    padding: 0.5rem 0;
     overflow: hidden;
     /* Hide overflow to keep bubble shape */
     box-sizing: border-box;
@@ -1155,12 +1131,10 @@ nav {
 
 .nav-dropdown-menu a {
     display: block;
-    padding: 12px 20px;
-    /* Increased padding for better coverage and spacing */
+    padding: 0.75rem 1.25rem;
     color: var(--text-primary);
     text-decoration: none;
-    font-size: 14px;
-    /* Slightly smaller font for compact feel */
+    font-size: 0.875rem;
     transition: var(--transition);
     border-bottom: 1px solid var(--border-light);
     position: relative;
@@ -1178,7 +1152,7 @@ nav {
     left: 0;
     top: 0;
     bottom: 0;
-    width: 3px;
+    width: 0.1875rem;
     background: var(--primary-color);
     transform: scaleY(0);
     transition: transform 0.2s ease;
@@ -1191,8 +1165,7 @@ nav {
 .nav-dropdown-menu a:hover {
     background: var(--surface);
     color: var(--primary-color);
-    padding-left: 20px;
-    /* Reduced padding shift */
+    padding-left: 1.25rem;
 }
 
 .nav-dropdown-menu a:hover::before {
@@ -1212,8 +1185,8 @@ nav {
 
 .nav-menu a[href="/admin"]::before {
     content: '🔒';
-    margin-right: 6px;
-    font-size: 12px;
+    margin-right: 0.375rem;
+    font-size: 0.75rem;
     opacity: 0.7;
 }
 
@@ -1228,18 +1201,17 @@ nav {
 .hamburger {
     display: none;
     flex-direction: column;
-    gap: 5px;
+    flex-shrink: 0;
+    gap: 0.3125rem;
     cursor: pointer;
     background: none;
     border: none;
-    padding: 12px;
-    /* Fixed 12px padding - does NOT scale with browser zoom */
-    min-width: 48px;
-    min-height: 48px;
+    padding: 0.75rem;
+    min-width: 3rem;
+    min-height: 3rem;
     justify-content: center;
     align-items: center;
-    border-radius: 8px;
-    /* Fixed 8px border radius - does NOT scale with browser zoom */
+    border-radius: 0.5rem;
     transition: background 0.2s ease;
 }
 
@@ -1256,20 +1228,16 @@ nav {
 }
 
 .hamburger span {
-    width: 24px;
-    /* Fixed 24px width - does NOT scale with browser zoom */
-    height: 3px;
-    /* Fixed 3px height - does NOT scale with browser zoom */
+    width: 1.5rem;
+    height: 0.1875rem;
     background: var(--text-primary);
-    border-radius: 3px;
-    /* Fixed 3px border radius - does NOT scale with browser zoom */
+    border-radius: 0.1875rem;
     transition: var(--transition);
     display: block;
 }
 
 .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(6px, 6px);
-    /* Fixed transform - does NOT scale with browser zoom */
+    transform: rotate(45deg) translate(0.375rem, 0.375rem);
 }
 
 .hamburger.active span:nth-child(2) {
@@ -1277,8 +1245,7 @@ nav {
 }
 
 .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(4px, -4px);
-    /* Fixed transform - does NOT scale with browser zoom */
+    transform: rotate(-45deg) translate(0.25rem, -0.25rem);
 }
 
 .mobile-menu {
@@ -1287,13 +1254,18 @@ nav {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding: 32px;
-    /* Fixed 32px padding - does NOT scale with browser zoom */
+    z-index: 1002;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08), 0 0.25rem 0.5rem rgba(0, 0, 0, 0.04);
+    padding: clamp(1.25rem, 1.5rem, 2rem);
     flex-direction: column;
-    gap: 32px;
-    /* Fixed 32px gap - does NOT scale with browser zoom */
+    gap: clamp(1rem, 1.25rem, 1.5rem);
+    max-height: min(75vh, calc(100vh - 4rem));
+    max-height: min(75dvh, calc(100dvh - 4rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     /* Prevent text rendering glitches during transitions */
     will-change: transform, opacity;
     backface-visibility: hidden;
@@ -1310,13 +1282,11 @@ nav {
     color: var(--text-primary);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
-    padding: 16px;
-    /* Fixed 16px padding - does NOT scale with browser zoom */
-    border-radius: 8px;
-    /* Fixed 8px border radius - does NOT scale with browser zoom */
+    padding: 1rem;
+    border-radius: 0.5rem;
     transition: var(--transition);
-    font-size: 16px;
-    /* Fixed 16px font size - does NOT scale with browser zoom */
+    font-size: clamp(var(--text-base), 1.05rem, var(--text-lg-practical));
+    line-height: 1.45;
     /* Prevent text rendering glitches */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -1328,30 +1298,25 @@ nav {
 .mobile-menu .breadcrumb-section {
     border-top: 1px solid var(--border-light);
     border-bottom: 1px solid var(--border-light);
-    padding: 16px;
-    /* Fixed 16px padding - does NOT scale with browser zoom */
-    margin: 16px 0;
-    /* Fixed 16px margin - does NOT scale with browser zoom */
+    padding: 1rem;
+    margin: 1rem 0;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    /* Fixed 8px gap - does NOT scale with browser zoom */
+    gap: 0.5rem;
 }
 
 .mobile-menu .breadcrumb-item {
     display: inline-flex;
     align-items: center;
     color: var(--text-secondary);
-    font-size: 14px;
-    /* Fixed 14px font size - does NOT scale with browser zoom */
+    font-size: 0.875rem;
 }
 
 .mobile-menu .breadcrumb-item a {
     color: var(--primary-color);
     padding: 0;
-    font-size: 14px;
-    /* Fixed 14px font size - does NOT scale with browser zoom */
+    font-size: 0.875rem;
     text-decoration: none;
 }
 
@@ -1361,8 +1326,7 @@ nav {
 
 .mobile-menu .breadcrumb-item:not(:last-child)::after {
     content: '/';
-    margin: 0 8px;
-    /* Fixed 8px margin - does NOT scale with browser zoom */
+    margin: 0 0.5rem;
     color: var(--text-secondary);
 }
 
@@ -1381,17 +1345,19 @@ nav {
 
 .hero {
     padding: 0;
+    padding-bottom: clamp(1.25rem, 1.75rem, 2.25rem);
     /* Start-aligned: φ hero is copy-left / visual-right; centering collapses hierarchy at wide viewports */
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     min-height: var(--hero-min-height);
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    margin-top: calc(-1 * clamp(calc(var(--space-lg) * 1.2 + var(--site-header-clearance)), calc(var(--space-xl) * var(--phi-inv) + var(--site-header-clearance)), calc(var(--space-xl) * 1.2 + var(--site-header-clearance))));
+    margin-top: calc(-1 * var(--site-main-offset-top));
 }
 
 /* Blending layer for smooth transition between left and right */
@@ -1422,40 +1388,15 @@ nav {
     /* Multiply blend for deeper, richer color integration */
 }
 
-/* Additional radial blend for Sierpinski area - creates seamless transition */
-.hero::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: calc(100% * var(--hero-visual-span));
-    height: 100%;
-    background: radial-gradient(
-        ellipse at center right,
-        rgba(var(--original-purple-glow-rgb), 0.4) 0%,
-        rgba(var(--original-purple-glow-rgb), 0.3) 25%,
-        rgba(var(--original-purple-glow-rgb), 0.25) 40%,
-        rgba(var(--original-blue-node-rgb), 0.2) 50%,
-        rgba(var(--original-blue-node-rgb), 0.15) 60%,
-        rgba(0, 0, 0, 0.1) 75%,
-        transparent 90%
-    );
-    /* Radial gradient that blends purple and blue tones with black underlay */
-    pointer-events: none;
-    z-index: 1;
-    /* Above base gradient, below satellite */
-    mix-blend-mode: color-dodge;
-    /* Color dodge for vibrant, glowing blend effect */
-}
-
 /* Hero layout: grid places text + visual in φ columns (no hollow flex gap) */
 .hero-inner {
     display: grid;
     grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
-    align-items: stretch;
-    flex: 1 1 auto;
+    /* Wide desktop: height follows content so the visual sits with the copy, not in a tall empty lane */
+    align-items: start;
+    flex: 0 1 auto;
     width: 100%;
-    min-height: var(--hero-inner-min-height);
+    min-height: 0;
     position: relative;
     z-index: 10;
     box-sizing: border-box;
@@ -1467,15 +1408,34 @@ nav {
     min-width: 0;
     min-height: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
+    container-type: inline-size;
+    container-name: hero-visual;
+    overflow: visible;
+    /* Vertical rhythm comes from grid/min-height; block padding + in-flow reflow fought absolute inset:0 — use inline gutters only */
+    padding-block: 0;
+    padding-inline: var(--hero-visual-inner-pad-inline);
+    /*
+     * Radial mask caused a hard vertical seam beside copy + “cut” bands at zoom; blend is from section gradients.
+     */
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* Keep satellite geometry pinned to the full hero visual area. */
+.hero-visual .sierpinski-satellite {
+    position: absolute;
+    inset: 0;
 }
 
 @media (max-width: 768px) {
     .hero-inner {
         grid-template-columns: 1fr;
-        /* rem floor for visual row (replaces min(42vh,28rem)) so it tracks zoom with rem layout, not vh-only */
-        grid-template-rows: auto minmax(28rem, auto);
+        /* Content-sized rows: large minmax() floors disconnected copy from the visual at zoom-in */
+        grid-template-rows: auto auto;
         min-height: 0;
     }
 }
@@ -1486,10 +1446,14 @@ nav {
     min-width: 0;
     width: 100%;
     max-width: none;
-    height: 100%;
+    min-height: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: flex-start;
+    /* Grid row can be tall from .hero-visual; do not let this box stretch to match */
+    height: fit-content;
+    align-self: start;
     padding: var(--space-5xl) clamp(var(--space-lg), calc(var(--space-2xl) * var(--phi-inv)), var(--space-3xl));
     box-sizing: border-box;
 }
@@ -1514,6 +1478,13 @@ nav {
     /* φ-stack: title → subtitle → CTA track the column like a fixed arc */
     gap: calc(var(--space-xl) * var(--phi-inv));
     box-sizing: border-box;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.hero-text-content > .hero-scroll-cta {
+    flex: 0 0 auto;
+    margin-top: 0;
 }
 
 .hero-title,
@@ -1542,8 +1513,8 @@ nav {
     right: -10%;
     bottom: -20%;
     background: radial-gradient(ellipse at left center,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(0, 0, 0, 0.4) 40%,
+        rgba(0, 0, 0, 0.56) 0%,
+        rgba(var(--primary-ink-rgb), 0.38) 40%,
         transparent 70%
     );
     /* Dark backdrop gradient to improve text visibility */
@@ -1559,7 +1530,7 @@ nav {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--original-bg-gradient);
+    background: var(--additive-gradient-dark);
     z-index: 0;
     pointer-events: none;
     /* Base dark gradient background */
@@ -1573,17 +1544,7 @@ nav {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(0, 0, 0, 0.15) 40%,
-        rgba(0, 0, 0, 0.1) 48%,
-        rgba(var(--original-purple-glow-rgb), 0.1) 50%,
-        rgba(var(--original-purple-glow-rgb), 0.2) 55%,
-        rgba(var(--original-purple-glow-rgb), 0.3) 60%,
-        rgba(var(--original-purple-glow-rgb), 0.35) 70%,
-        rgba(var(--original-purple-glow-rgb), 0.4) 100%
-    );
+    background: var(--hero-overlay-gradient);
     /* Smooth blend from dark left to purple-tinted right */
     z-index: 1;
     pointer-events: none;
@@ -1598,12 +1559,12 @@ nav {
     /* rem-only preferred value (no vw): tracks zoom with --font-base like spacing; vw in fallback fought rem at Ctrl± zoom */
     font-size: clamp(
         calc(var(--text-2xl-practical) * var(--phi-inv)),
-        calc(var(--text-4xl-practical) * var(--phi-inv)),
-        calc(var(--text-5xl-practical) * var(--phi))
+        calc(var(--text-3xl-practical) * var(--phi-inv)),
+        calc(var(--text-4xl-practical) * var(--phi))
     );
     font-weight: var(--font-weight-extrabold);
     /* PRIMARY: Solid white text - always visible */
-    color: #ffffff !important;
+    color: var(--text-on-dark) !important;
     /* Direct white color - ensure visibility */
     display: block !important;
     visibility: visible !important;
@@ -1612,7 +1573,7 @@ nav {
     background: none !important;
     -webkit-background-clip: unset !important;
     background-clip: unset !important;
-    -webkit-text-fill-color: #ffffff !important;
+    -webkit-text-fill-color: var(--text-on-dark) !important;
     line-height: 1.2;
     /* Tighter line height for large text */
     letter-spacing: -0.02em;
@@ -1655,7 +1616,7 @@ section.hero .hero-subtitle .semantic-child,
 .hero-subtitle span.semantic-text,
 .hero-subtitle span.semantic-medium,
 .hero-subtitle span.semantic-child {
-    color: var(--original-text-white) !important;
+    color: var(--text-on-dark) !important;
     display: inline !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -1669,7 +1630,7 @@ section.hero .hero-subtitle .semantic-child,
         0 0 10px rgba(139, 92, 246, 0.5);
     /* Ensure text is visible with shadows */
     background: none !important;
-    -webkit-text-fill-color: var(--original-text-white) !important;
+    -webkit-text-fill-color: var(--text-on-dark) !important;
     /* Override any scoped styles from SemanticText component - including dark colors */
     font-weight: inherit !important;
 }
@@ -1680,7 +1641,7 @@ section.hero .hero-subtitle .semantic-child,
         calc(var(--text-lg-practical) * var(--phi-inv)),
         calc(var(--text-xl-practical) * var(--phi))
     );
-    color: #ffffff !important;
+    color: var(--text-on-dark-muted) !important;
     /* Direct white color - ensure visibility */
     margin-left: 0;
     margin-right: 0;
@@ -1718,16 +1679,16 @@ section.hero .hero-subtitle .semantic-child,
     .hero-text-content h1 {
         font-size: clamp(
             calc(var(--text-2xl-practical) * var(--phi-inv)),
-            calc(3.85cqi + 1rem),
-            calc(var(--text-5xl-practical) * var(--phi))
+            calc(2.35cqi + 0.85rem),
+            calc(var(--text-4xl-practical) * var(--phi))
         );
     }
 
     .hero-subtitle {
         font-size: clamp(
             var(--text-base),
-            calc(1.55cqi + 0.65rem),
-            calc(var(--text-xl-practical) * var(--phi))
+            calc(1.05cqi + 0.55rem),
+            calc(var(--text-lg-practical) * var(--phi))
         );
     }
 }
@@ -1749,109 +1710,52 @@ section.hero .hero-subtitle .semantic-child,
     margin-top: 0;
 }
 
-/* Sierpinski-styled scroll button at bottom of hero */
-.hero-scroll-button {
-    position: absolute;
-    bottom: var(--space-xl);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    /* High z-index to ensure visibility */
-    display: flex;
+/* Hero “next section” control — in-flow (usually last child of .hero-text-content) */
+.hero-scroll-cta {
+    position: relative;
+    align-self: flex-start;
+    z-index: 15;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: clamp(3rem, 3.5rem, 4rem);
-    height: clamp(3rem, 3.5rem, 4rem);
-    cursor: pointer;
-    transition: var(--transition);
-    opacity: 0.8;
-    /* Slightly transparent for subtle appearance */
-    animation: float 3s ease-in-out infinite;
-    /* Floating animation */
+    gap: 0.5rem;
+    padding: 0.5rem 1rem 0.5rem 1.15rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.03em;
+    color: var(--text-on-dark);
+    background: rgba(var(--primary-ink-rgb), 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0.35rem 1.25rem rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.hero-scroll-button:hover {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-5px);
-    /* Lift on hover */
+.hero-scroll-cta:hover {
+    background: rgba(var(--primary-ink-rgb), 0.65);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
 }
 
-/* Home: scroll cue is left-anchored (see site-framework) — no -50% centering */
-.main-home .hero-scroll-button:hover {
-    transform: translateY(-5px);
+.hero-scroll-cta__chevron {
+    flex-shrink: 0;
+    opacity: 0.92;
 }
 
-.sierpinski-arrow {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 0 10px rgba(var(--original-purple-glow-rgb), 0.6));
-    /* Purple glow matching Sierpinski design */
-}
-
-.sierpinski-triangle-group {
-    transform-origin: center;
-    transition: transform 0.3s ease;
-}
-
-.hero-scroll-button:hover .sierpinski-triangle-group {
-    transform: scale(1.1);
-    /* Slight scale on hover */
-}
-
-.triangle-outer {
-    fill: var(--original-text-white);
-    opacity: 0.9;
-    stroke: rgba(var(--original-purple-glow-rgb), 0.8);
-    stroke-width: 1;
-}
-
-.triangle-middle {
-    fill: rgba(var(--original-purple-glow-rgb), 0.6);
-    opacity: 0.8;
-    stroke: rgba(var(--original-purple-glow-rgb), 0.9);
-    stroke-width: 0.5;
-}
-
-.triangle-inner {
-    fill: var(--original-text-white);
-    opacity: 0.9;
-    stroke: rgba(var(--original-purple-glow-rgb), 0.8);
-    stroke-width: 0.5;
-}
-
-.arrow-down {
-    fill: rgba(var(--original-purple-glow-rgb), 0.9);
-    opacity: 1;
-}
-
-@keyframes float {
-    0%, 100% {
-        transform: translateX(-50%) translateY(0);
-    }
-    50% {
-        transform: translateX(-50%) translateY(-10px);
+@media (prefers-reduced-motion: reduce) {
+    .hero-scroll-cta {
+        transition: none;
     }
 }
 
-@keyframes float-hero-home {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-.main-home .hero-scroll-button {
-    animation: float-hero-home 3s ease-in-out infinite;
-}
-
-/* Responsive adjustments for scroll button */
 @media (max-width: 768px) {
-    .hero-scroll-button {
-        width: clamp(2.5rem, 2.75rem, 3rem);
-        height: clamp(2.5rem, 2.75rem, 3rem);
-        bottom: var(--space-lg);
+    .hero-scroll-cta {
+        align-self: center;
+        max-width: calc(100% - 2rem);
+        justify-content: center;
+        text-align: center;
+        flex-wrap: wrap;
     }
 }
 
@@ -1870,12 +1774,12 @@ section.hero .hero-subtitle .semantic-child,
 }
 
 .btn-primary {
-    background: var(--original-gradient-purple-pink);
+    background: var(--additive-gradient-primary);
     /* Original purple/pink gradient for buttons - matches old webpage */
-    color: white;
+    color: var(--text-on-dark);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(var(--original-purple-glow-rgb), 0.4);
+    box-shadow: 0 10px 25px -5px rgba(var(--accent-violet-rgb), 0.4);
     /* Purple glow shadow matching original design */
     font-size: calc(var(--text-base) * var(--size-card-title));
     /* Importance-based sizing: medium importance = moderate size */
@@ -1916,7 +1820,7 @@ section.hero .hero-subtitle .semantic-child,
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 40px -10px rgba(var(--original-purple-glow-rgb), 0.5);
+    box-shadow: 0 20px 40px -10px rgba(var(--accent-violet-rgb), 0.45);
     /* Enhanced purple glow on hover - original design */
 }
 
@@ -1926,9 +1830,9 @@ section.hero .hero-subtitle .semantic-child,
 }
 
 .btn-secondary {
-    background: white;
+    background: var(--surface-glass-strong);
     color: var(--primary-color);
-    border: 2px solid var(--primary-color);
+    border: 2px solid var(--border-accent);
 }
 
 .btn-secondary:hover {
@@ -1954,7 +1858,7 @@ section.hero .hero-subtitle .semantic-child,
 
 .search-input {
     width: 100%;
-    padding: clamp(var(--space-md), 1.5vw, var(--space-lg)) clamp(var(--space-lg), 2vw, 3rem);
+    padding: clamp(var(--space-md), var(--space-md), var(--space-lg)) clamp(var(--space-lg), var(--space-xl), 3rem);
     /* Responsive padding scales with zoom */
     border: 2px solid var(--border);
     border-radius: var(--border-radius);
@@ -2110,11 +2014,11 @@ section.hero .hero-subtitle .semantic-child,
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: clamp(var(--space-sm), 1.5vw, var(--space-md));
+    padding: clamp(var(--space-sm), var(--space-sm), var(--space-md));
     /* Responsive padding scales with zoom */
     border: 2px solid var(--border);
     border-radius: var(--border-radius);
-    font-size: clamp(0.875rem, 1.2vw, var(--text-base));
+    font-size: clamp(0.875rem, 0.95rem, var(--text-base));
     /* Minimum 14px for readability - important for forms at zoom */
     font-family: inherit;
     transition: var(--transition);
@@ -2344,7 +2248,15 @@ section.hero .hero-subtitle .semantic-child,
 
 .card-grid.progressive {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    justify-content: center;
+    align-items: start;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(
+            min(100%, var(--info-panel-track-min)),
+            min(100%, var(--info-panel-track-max))
+        )
+    );
     gap: var(--space-xl);
 }
 
@@ -2380,23 +2292,11 @@ section.hero .hero-subtitle .semantic-child,
 /* ===== SECTION STYLES ===== */
 /* Enhanced spacing using golden ratio for harmonious proportions */
 
-/* Zoom compensation: Ensure sections and containers scale uniformly with html transform */
-html.zoom-compensated .section,
-html[data-zoom-level] .section,
-html.zoom-compensated .container,
-html[data-zoom-level] .container {
-    /* Sections and containers scale uniformly with html transform */
-    transform: none;
-    /* Remove any conflicting transforms */
-    box-sizing: border-box;
-    /* Ensure consistent box model */
-    /* Viewport units (vw, vh, vmin) scale correctly with html transform */
-    /* The transform on html handles all scaling uniformly */
-}
+/* Legacy: html.zoom-compensated / data-zoom-level — removed; use native browser zoom only */
 
 .section {
-    padding-top: calc(var(--layout-section-padding-y) * var(--page-density-multiplier));
-    padding-bottom: calc(var(--layout-section-padding-y) * var(--page-density-multiplier));
+    padding-top: calc((var(--layout-section-padding-y) + var(--section-block-extra, 0px)) * var(--page-density-multiplier));
+    padding-bottom: calc((var(--layout-section-padding-y) + var(--section-block-extra, 0px)) * var(--page-density-multiplier));
     padding-left: clamp(0, 0, var(--section-max-padding-left));
     padding-right: clamp(0, 0, var(--section-max-padding-right));
     /* Horizontal padding scales with zoom using phi-based tokens - max values scale */
@@ -2490,7 +2390,7 @@ html[data-zoom-level] .container {
 .section .container {
     position: relative;
     /* Container inherits responsive scaling from base .container class */
-    /* Zoom compensation: Containers scale uniformly with html transform */
+    /* No layout zoom transform — native browser zoom only */
     transform: none;
     /* Remove any conflicting transforms */
     box-sizing: border-box;
@@ -2676,17 +2576,17 @@ html[data-zoom-level] .container {
     }
 
 .section-title {
-    /* Individual sizing using phi-sqrt for visual balance */
-    font-size: clamp(calc(var(--text-2xl-practical) * var(--phi-sqrt)), calc(2.25rem * var(--phi-sqrt)), calc(var(--text-4xl-practical) * var(--phi-sqrt)));
+    /* Live-site scale: bold, high-contrast headings with generous line height */
+    font-size: clamp(1.85rem, 1.1rem + 2.1vw, 3.15rem);
     font-weight: var(--font-weight-extrabold);
     margin-bottom: calc(var(--space-lg) * var(--phi));
     margin-top: 0;
-    color: var(--primary-dark);
-    letter-spacing: calc(-0.025em * var(--phi-inv));
-    line-height: calc(1em * var(--phi));
+    color: var(--text-primary);
+    letter-spacing: calc(-0.03em * var(--phi-inv));
+    line-height: 1.12;
     position: relative;
     width: 100%;
-    max-width: min(46.25rem, 100%);
+    max-width: min(100%, var(--measure-prose));
     text-align: left;
 }
 
@@ -2717,7 +2617,7 @@ html[data-zoom-level] .container {
     line-height: calc(1em * var(--phi));
     letter-spacing: calc(0.005em * var(--phi-inv));
     width: 100%;
-    max-width: min(46.25rem, 100%);
+    max-width: min(100%, var(--measure-prose));
     text-align: left;
     position: relative;
     text-rendering: optimizeLegibility;
@@ -2727,8 +2627,15 @@ html[data-zoom-level] .container {
 
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(18.75rem, 1fr));
-    /* 300px / 16 = 18.75rem - scales with zoom */
+    justify-content: center;
+    align-items: start;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(
+            min(100%, var(--info-panel-track-min)),
+            min(100%, var(--info-panel-track-max))
+        )
+    );
     gap: var(--space-xl);
     position: relative;
 }
@@ -2766,9 +2673,8 @@ html[data-zoom-level] .container {
     transition: var(--transition);
     position: relative;
     overflow: hidden;
-    /* Cards scale proportionally with zoom */
     min-height: fit-content;
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, 
@@ -2926,26 +2832,10 @@ html[data-zoom-level] .container {
 }
 
 .card:hover {
-    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.2deg));
-    /* Angular hover effect with phi-based rotation */
+    transform: translateY(calc(-1 * var(--space-xs) * var(--phi)));
     box-shadow: var(--shadow-lg), 0 0 0 calc(2px * var(--size-card-title)) var(--accent-primary-bg);
-    /* Importance-based shadow with color accent - additive semantics */
     border-left-width: calc(6px * var(--size-card-title));
-    /* Larger colored border on hover - importance-based */
     border-color: var(--border);
-}
-
-/* Angular hover effects for cards */
-.card:nth-child(5n):hover {
-    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.5deg));
-}
-
-.card:nth-child(8n):hover {
-    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * -0.3deg));
-}
-
-.card:nth-child(13n):hover {
-    transform: translateY(calc(-1 * var(--space-md) * var(--phi))) rotate(calc(var(--phi-phase, 0) * 0.2deg));
 }
 
 .card:active {
@@ -2995,11 +2885,11 @@ i[class*="fa-"],
 }
 
 .card:hover .card-icon {
-    transform: scale(1.1) rotate(5deg);
+    transform: translateY(calc(-1 * var(--space-xs))) scale(1.04);
 }
 
 .card:hover .card-icon i {
-    transform: scale(1.15);
+    transform: scale(1.06);
     color: var(--primary-color);
     filter: drop-shadow(0 2px 4px rgba(var(--primary-color-rgb), 0.3));
 }
@@ -3025,7 +2915,7 @@ i[class*="fa-"],
 
 .search-bar:hover .search-icon,
 .search-bar:focus-within .search-icon {
-    transform: scale(1.1) rotate(10deg);
+    transform: scale(1.06);
     color: var(--primary-color);
 }
 
@@ -3042,20 +2932,6 @@ button:hover i[class*="fa-"],
 .card:hover i[class*="fa-"] {
     transform: scale(1.1);
     color: var(--primary-color);
-}
-
-/* Smooth icon animations */
-@keyframes iconPulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.card-icon:hover {
-    animation: iconPulse 2s ease-in-out infinite;
 }
 
 /* Icon tartan accent on hover */
@@ -3101,8 +2977,7 @@ button:hover i[class*="fa-"],
     /* Left-aligned for optimal reading */
     flex-grow: 1;
     /* Cards expand to fill available space */
-    max-width: 46.25rem;
-    /* 740px / 16 = 46.25rem - Text width constraint, scales with zoom */
+    max-width: min(100%, var(--measure-prose));
 }
 
 /* Text-Length-Aware Phi Sizing */
@@ -3166,8 +3041,7 @@ p.text-long {
     text-align: left;
     /* Left-aligned for readability */
     /* Text-length-aware: longer titles get adjusted sizing */
-    max-width: 46.25rem;
-    /* 740px constraint */
+    max-width: min(100%, var(--measure-prose));
     position: relative;
 }
 
@@ -3197,23 +3071,8 @@ p.text-long {
     /* Different spacing to match sizing */
 }
 
-/* ===== RESPONSIVE & ZOOM COMPENSATION ===== */
-/* Comprehensive scaling for all screen sizes with zoom compensation */
-/* 
- * ZOOM COMPENSATION SYSTEM:
- * - JavaScript detects browser zoom level and applies inverse CSS zoom
- * - Website maintains exact 100% visual appearance regardless of browser zoom
- * - All font sizes and spacing maintain topological consistency
- * - Phi ratios and design system relationships preserved at all zoom levels
- * - Transform-origin: top-left for zoom compensation
- * - Viewport units (vw/vh) only used for truly viewport-dependent features
- * 
- * VIEWPORT ENHANCEMENTS:
- * - Safe area insets for devices with notches
- * - Orientation-based adjustments
- * - Pixel ratio considerations
- * - Container queries where beneficial
- */
+/* ===== RESPONSIVE WIDTH BREAKPOINTS ===== */
+/* Responsive width breakpoints (CSS pixels; layout follows media queries under browser zoom). */
 
 /* Ultra-wide screens (1920px+) */
 @media (min-width: 1920px) {
@@ -3225,7 +3084,7 @@ p.text-long {
     /* .container max-width set globally (min(120rem, 100%)) — avoid narrower 87.5rem band */
 }
 
-/* Large screens and zoom out scenarios */
+/* Large desktop widths */
 @media (min-width: 1400px) and (max-width: 1919px) {
     :root {
         --is-desktop: 1;
@@ -3293,6 +3152,12 @@ p.text-long {
         --is-tablet: 0;
         --viewport-spacing-multiplier: 0.9;
     }
+
+    body.nav-mobile-open {
+        overflow: hidden;
+        touch-action: none;
+    }
+
     .nav-menu {
         display: none;
     }
@@ -3357,14 +3222,14 @@ p.text-long {
 /* Mobile portrait - enhanced viewport considerations */
 @media (max-width: 600px) {
     .container {
-        padding-left: max(var(--layout-padding-inline), var(--safe-area-inset-left));
-        padding-right: max(var(--layout-padding-inline), var(--safe-area-inset-right));
+        padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
         padding-top: var(--layout-padding-block-tight);
         padding-bottom: var(--layout-padding-block-tight);
     }
     
     .hero {
-        padding: var(--layout-padding-block-tight) var(--layout-padding-inline);
+        padding-block: var(--layout-padding-block-tight);
+        padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
         /* rem caps only (no vh): matches earlier 600px hero rules and avoids vw/rem fight at zoom */
         min-height: clamp(26rem, 34rem, 44rem);
     }
@@ -3398,7 +3263,7 @@ p.text-long {
     }
     
     .card-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, min(100%, var(--info-panel-track-max)));
         gap: var(--space-lg);
     }
     
@@ -3464,7 +3329,7 @@ p.text-long {
 @media (min-resolution: 0.75dppx) {
     /* Zoomed out scenarios - maintain proportions */
     .section {
-        padding: clamp(var(--space-xl), 3vw, var(--space-4xl)) 0;
+        padding: clamp(var(--space-xl), var(--space-2xl), var(--space-4xl)) 0;
     }
 }
 
@@ -3486,13 +3351,25 @@ p.text-long {
 /* Container queries support (where beneficial) */
 @container (min-width: 768px) {
     .card-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(
+            2,
+            minmax(
+                min(100%, var(--info-panel-track-min)),
+                min(100%, var(--info-panel-track-max))
+            )
+        );
     }
 }
 
 @container (min-width: 1024px) {
     .card-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(
+            3,
+            minmax(
+                min(100%, var(--info-panel-track-min)),
+                min(100%, var(--info-panel-track-max))
+            )
+        );
     }
 }
 
@@ -3523,18 +3400,28 @@ p.text-long {
 }
 
 /* ===== BREADCRUMBS ===== */
+/* F-pattern: first horizontal scan below header — hierarchy before main content (desktop/tablet).
+   Hidden on small viewports where the mobile menu carries the same trail. */
 .breadcrumbs {
-    display: none !important;
-    /* Hide breadcrumbs completely */
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
+    position: relative;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    height: auto;
+    width: 100%;
+    margin: 0;
+    padding-block: clamp(var(--space-xs), var(--space-sm), var(--space-md));
+    padding-inline: 0;
+    overflow: visible;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.97) 0%,
+        rgba(247, 249, 252, 0.88) 100%
+    );
+    border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+    z-index: 1;
 }
 
-/* Hide breadcrumbs on mobile - they're shown in burger menu instead */
 @media (max-width: 600px) {
     .breadcrumbs {
         display: none;
@@ -3561,16 +3448,11 @@ p.text-long {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    /* Smaller gap for compact appearance */
     flex-wrap: wrap;
-    padding-top: 0;
-    /* Remove default container vertical padding */
-    padding-bottom: 0;
-    /* Remove default container vertical padding */
-    padding-left: 0;
-    /* Remove left padding - breadcrumbs nav already has horizontal padding */
-    padding-right: 0;
-    /* Remove right padding - breadcrumbs nav already has horizontal padding */
+    padding-block: 0;
+    padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .breadcrumbs a {
@@ -3617,7 +3499,12 @@ p.text-long {
 .topic-cards {
     margin-top: var(--space-lg);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    justify-content: center;
+    align-items: start;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 8.75rem), min(100%, 14rem))
+    );
     gap: var(--space-md);
 }
 
@@ -3667,7 +3554,7 @@ p.text-long {
 }
 
 .filter-btn {
-    padding: clamp(var(--space-xs), 1vw, var(--space-sm)) clamp(var(--space-md), 2vw, var(--space-lg));
+    padding: clamp(var(--space-xs), var(--space-xs), var(--space-sm)) clamp(var(--space-md), var(--space-md), var(--space-lg));
     /* Responsive padding scales with zoom */
     border: 1.5px solid var(--border);
     background: var(--surface-elevated);
@@ -4010,31 +3897,6 @@ p.text-long {
 
 .card:nth-child(3n+3) {
     --harmonic-phase: var(--phi-inv);
-}
-
-/* Angular transforms based on position */
-.card:nth-child(5n) {
-    transform: rotate(calc(var(--phi-phase, 0) * 0.5deg));
-    transform-origin: center;
-}
-
-.card:nth-child(8n) {
-    transform: rotate(calc(var(--phi-phase, 0) * -0.3deg));
-    transform-origin: center;
-}
-
-.card:nth-child(13n) {
-    transform: rotate(calc(var(--phi-phase, 0) * 0.2deg));
-    transform-origin: center;
-}
-
-/* Combined angular and vertical transforms */
-.card:nth-child(21n):hover {
-    transform: translateY(calc(var(--space-md) * var(--phi) * -1)) rotate(calc(var(--phi-phase, 0) * 0.5deg)) scale(1.02);
-}
-
-.card:nth-child(34n):hover {
-    transform: translateY(calc(var(--space-md) * var(--phi) * -1)) rotate(calc(var(--phi-phase, 0) * -0.3deg)) scale(1.03);
 }
 
 /* ===== PAGE-SPECIFIC LAYOUT CLASSES ===== */
@@ -4492,7 +4354,7 @@ textarea {
 /* Mobile-specific touch improvements */
 @media (max-width: 600px) {
     /* Larger touch targets on mobile */
-    button,
+    button:not(.hamburger),
     a.btn,
     .nav-menu a,
     .mobile-menu a,
@@ -4596,6 +4458,30 @@ a:focus {
     text-decoration-thickness: 2px;
 }
 
+/* Card-as-link: full tile is the hit target, not an inline text link */
+a.card {
+    color: var(--text-primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.card:hover,
+a.card:focus,
+a.card:focus-visible {
+    color: var(--text-primary);
+    text-decoration: none;
+    text-decoration-thickness: unset;
+    text-underline-offset: unset;
+}
+
+a.card .card-title {
+    color: var(--text-primary);
+}
+
+a.card .card-description {
+    color: var(--text-secondary);
+}
+
 /* Search results accessibility */
 .search-result-item {
     display: block;
@@ -4618,7 +4504,8 @@ a:focus {
 }
 
 .mobile-menu[aria-hidden="false"] {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Hamburger button states */
@@ -4658,7 +4545,7 @@ a:focus {
     }
     
     .search-results {
-        max-height: 60vh;
+        max-height: min(24rem, 100%);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -4730,7 +4617,7 @@ a:focus {
 /* Small mobile devices */
 @media (max-width: 480px) {
     /* Even larger touch targets on small screens */
-    button,
+    button:not(.hamburger),
     a.btn,
     .nav-menu a,
     .mobile-menu a,

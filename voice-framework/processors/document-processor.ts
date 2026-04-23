@@ -4,13 +4,13 @@
  * Enhanced with vectorization, panning, and profile creation capabilities
  */
 
-import { DocumentParser, ParsedDocument } from '../parsers/document-parser';
-import { Shredder, ShreddedTruth } from '../analyzers/shredder';
-import { TextStorage, SemanticPrinciple } from '../storage/text-storage';
-import { VectorStorage, DocumentVector } from '../storage/vector-storage';
-import { Panner, PannedResult } from '../analyzers/panner';
+import { DocumentParser, type ParsedDocument } from '../parsers/document-parser';
+import { Shredder, type ShreddedTruth } from '../analyzers/shredder';
+import { TextStorage, type SemanticPrinciple } from '../storage/text-storage';
+import { VectorStorage, type DocumentVector } from '../storage/vector-storage';
+import { Panner, type PannedResult } from '../analyzers/panner';
 import { ProfileBuilder } from '../builders/profile-builder';
-import { VoiceProfile } from '../models/voice-profile';
+import type { VoiceProfile } from '../models/voice-profile';
 
 export interface ProcessedDocument {
   document: ParsedDocument;

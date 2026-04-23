@@ -19,6 +19,7 @@ interface ProfileMetadata {
   sourceDocument?: string;
   tags?: string[];
   isDefault?: boolean;
+  archived?: boolean;
   id: string;
   createdAt: string;
   updatedAt: string;

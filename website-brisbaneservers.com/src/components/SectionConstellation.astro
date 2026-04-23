@@ -1,0 +1,143 @@
+---
+/**
+ * Section constellation — small network motifs derived from the hero satellite language.
+ * Each variant uses the same viewBox and similar node/link rhythm, with distinct topology
+ * and optional SVG group transforms (mirror / flip) for variation.
+ */
+interface Props {
+  variant?: 'strategy' | 'industry' | 'proof' | 'contact' | 'about' | 'challenge' | 'solutions' | 'partnership';
+}
+
+type LineSeg = { x1: number; y1: number; x2: number; y2: number };
+type NodeSpec = { cx: number; cy: number; r: number; hub?: boolean };
+
+const { variant = 'strategy' } = Astro.props;
+
+const TOPOLOGIES: Record<'base' | 'fan' | 'mesh', { lines: LineSeg[]; nodes: NodeSpec[] }> = {
+  base: {
+    lines: [
+      { x1: 26, y1: 36, x2: 92, y2: 26 },
+      { x1: 92, y1: 26, x2: 146, y2: 56 },
+      { x1: 146, y1: 56, x2: 188, y2: 40 },
+      { x1: 92, y1: 26, x2: 76, y2: 96 },
+      { x1: 76, y1: 96, x2: 136, y2: 118 },
+      { x1: 136, y1: 118, x2: 188, y2: 94 },
+      { x1: 76, y1: 96, x2: 42, y2: 138 },
+      { x1: 42, y1: 138, x2: 112, y2: 152 },
+      { x1: 112, y1: 152, x2: 172, y2: 144 },
+      { x1: 136, y1: 118, x2: 172, y2: 144 },
+      { x1: 146, y1: 56, x2: 136, y2: 118 },
+    ],
+    nodes: [
+      { cx: 26, cy: 36, r: 4 },
+      { cx: 92, cy: 26, r: 4.5 },
+      { cx: 146, cy: 56, r: 4.5 },
+      { cx: 188, cy: 40, r: 4 },
+      { cx: 76, cy: 96, r: 4.5 },
+      { cx: 136, cy: 118, r: 4.5, hub: true },
+      { cx: 188, cy: 94, r: 4 },
+      { cx: 42, cy: 138, r: 4 },
+      { cx: 112, cy: 152, r: 4.5 },
+      { cx: 172, cy: 144, r: 4 },
+    ],
+  },
+  fan: {
+    lines: [
+      { x1: 34, y1: 42, x2: 108, y2: 28 },
+      { x1: 108, y1: 28, x2: 176, y2: 38 },
+      { x1: 108, y1: 28, x2: 74, y2: 88 },
+      { x1: 176, y1: 38, x2: 194, y2: 82 },
+      { x1: 74, y1: 88, x2: 110, y2: 128 },
+      { x1: 194, y1: 82, x2: 152, y2: 108 },
+      { x1: 152, y1: 108, x2: 110, y2: 128 },
+      { x1: 34, y1: 42, x2: 74, y2: 88 },
+      { x1: 52, y1: 154, x2: 110, y2: 128 },
+      { x1: 168, y1: 146, x2: 110, y2: 128 },
+      { x1: 110, y1: 128, x2: 108, y2: 28 },
+      { x1: 74, y1: 88, x2: 152, y2: 108 },
+    ],
+    nodes: [
+      { cx: 34, cy: 42, r: 4 },
+      { cx: 108, cy: 28, r: 4.5 },
+      { cx: 176, cy: 38, r: 4 },
+      { cx: 194, cy: 82, r: 4 },
+      { cx: 74, cy: 88, r: 4.5 },
+      { cx: 152, cy: 108, r: 4.5 },
+      { cx: 110, cy: 128, r: 5, hub: true },
+      { cx: 52, cy: 154, r: 4 },
+      { cx: 168, cy: 146, r: 4.5 },
+    ],
+  },
+  mesh: {
+    lines: [
+      { x1: 24, y1: 36, x2: 98, y2: 48 },
+      { x1: 98, y1: 48, x2: 172, y2: 34 },
+      { x1: 172, y1: 34, x2: 198, y2: 76 },
+      { x1: 98, y1: 48, x2: 64, y2: 104 },
+      { x1: 64, y1: 104, x2: 132, y2: 114 },
+      { x1: 198, y1: 76, x2: 132, y2: 114 },
+      { x1: 40, y1: 152, x2: 64, y2: 104 },
+      { x1: 132, y1: 114, x2: 182, y2: 138 },
+      { x1: 118, y1: 72, x2: 132, y2: 114 },
+      { x1: 182, y1: 138, x2: 210, y2: 124 },
+      { x1: 64, y1: 104, x2: 118, y2: 72 },
+      { x1: 24, y1: 36, x2: 118, y2: 72 },
+    ],
+    nodes: [
+      { cx: 24, cy: 36, r: 4 },
+      { cx: 98, cy: 48, r: 4.5 },
+      { cx: 172, cy: 34, r: 4 },
+      { cx: 198, cy: 76, r: 4 },
+      { cx: 64, cy: 104, r: 4.5 },
+      { cx: 132, cy: 114, r: 5, hub: true },
+      { cx: 40, cy: 152, r: 4 },
+      { cx: 182, cy: 138, r: 4.5 },
+      { cx: 118, cy: 72, r: 4 },
+      { cx: 210, cy: 124, r: 4 },
+    ],
+  },
+};
+
+const VARIANT_MAP: Record<
+  NonNullable<Props['variant']>,
+  { topology: keyof typeof TOPOLOGIES; graphTransform?: string }
+> = {
+  strategy: { topology: 'base' },
+  industry: { topology: 'base', graphTransform: 'translate(220,0) scale(-1,1)' },
+  proof: { topology: 'fan' },
+  contact: { topology: 'fan', graphTransform: 'translate(0,180) scale(1,-1)' },
+  about: { topology: 'mesh' },
+  challenge: { topology: 'mesh', graphTransform: 'translate(220,0) scale(-1,1)' },
+  solutions: { topology: 'base', graphTransform: 'translate(220,180) scale(-1,-1)' },
+  partnership: { topology: 'fan', graphTransform: 'translate(220,0) scale(-1,1)' },
+};
+
+const config = VARIANT_MAP[variant] ?? VARIANT_MAP.strategy;
+const graph = TOPOLOGIES[config.topology];
+const graphTransform = config.graphTransform;
+---
+
+<div class={`section-constellation section-constellation--${variant}`} aria-hidden="true">
+  <svg viewBox="0 0 220 180" role="presentation" focusable="false">
+    <g
+      class="section-constellation__graph"
+      {...(graphTransform ? { transform: graphTransform } : {})}
+    >
+      <g class="section-constellation__links">
+        {graph.lines.map((ln) => (
+          <line x1={ln.x1} y1={ln.y1} x2={ln.x2} y2={ln.y2} />
+        ))}
+      </g>
+      <g class="section-constellation__nodes">
+        {graph.nodes.map((n) => (
+          <circle
+            class={n.hub ? 'section-constellation__hub' : undefined}
+            cx={n.cx}
+            cy={n.cy}
+            r={n.r}
+          />
+        ))}
+      </g>
+    </g>
+  </svg>
+</div>

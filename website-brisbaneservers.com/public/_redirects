@@ -1,0 +1,3 @@
+# Netlify / compatible static hosts: permanent redirect legacy portal URL to account workspace
+/portal        /account/        301
+/portal/       /account/        301

@@ -84,8 +84,18 @@ Important areas:
 - `src/pages/` contains marketing pages, legal pages, resource pages, and `portal.astro`.
 - `src/pages/api/` contains the main application API.
 - `src/lib/` contains repositories, storage paths, semantic indexing, vectors, contributions, and rate limiting.
+- `src/lib/section-satellite-graph.ts` — deterministic Sierpinski-style graphs for SSR section/margin constellations.
+- `src/lib/public-published-resources.ts` — prerender: fetch public API when up, else `loadResources()` + `isPublicResource()` (matches `GET /api/resources/public`).
+- `src/lib/portal-voice-framework.ts` — portal voice rules plus **resource / public interconnection** copy constants used on `/resources` and in docs.
 - `src/utils/` contains auth logic and voice-framework integration helpers.
 - `scripts/` contains build-time validation and verification steps.
+
+Home interconnection (public UI only):
+
+- `src/components/HomeInterconnectionRig.astro` — page-margin constellations + continuous inner rim rails; `data-margin-band` follows scroll.
+- `src/components/GutterEchoConstellationStack.astro` — same-seed echoes of each band’s section satellite (`src/data/home-band-satellite-seeds.ts`) scaled in the gutter when that band is active.
+- `src/components/PageMarginSatelliteColumn.astro` — tall graph for the wide margins outside `--site-frame-wide`.
+- `src/components/SectionSatelliteConstellation.astro` — per-band satellite field; `src/pages/index.astro` passes `semanticKey` per section.
 
 Framework and adapter:
 
@@ -119,6 +129,7 @@ Important areas:
 
 ### Public site
 
+- Home (`index`) uses `HomeInterconnectionRig` for viewport-side margin constellations, rim rails, and band satellites (large viewports); see `site-framework.css` under `.main-home .home-interconnection-*`.
 - Marketing pages such as `index`, `about`, `services`, and `projects`
 - Case studies
 - Legal pages
@@ -274,8 +285,8 @@ flowchart TD
 |---|---|---|---|
 | Public visitor | `/` | Explore solutions, view resources, open industry pages | Navigates through marketing and public resource surfaces |
 | Resource reader | `/resources` | Search, filter by industry, open topic or resource cards | Reads published resource content assembled from public API data |
-| Portal editor | `/portal` | Login, generate, upload, improve, edit, publish | Mutates resources and can trigger semantic indexing |
-| Portal admin | `/portal` | All editor actions plus analytics and moderation flows | Uses broader management and admin-only endpoints |
+| Workspace editor | `/account` | Login, generate, upload, improve, edit, publish | Mutates resources and can trigger semantic indexing (legacy `/portal` may redirect) |
+| Workspace admin | `/account` | All editor actions plus analytics and moderation flows | Uses broader management and admin-only endpoints |
 | Internal operator | repo root | `npm start` | Starts Astro website and Express dashboard together |
 
 ## Variation By Operational Intent

@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { VoiceProfile } from '../models/voice-profile';
+import type { VoiceProfile } from '../models/voice-profile';
 import { ToneAnalyzer } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
 
@@ -19,6 +19,8 @@ export interface ProfileMetadata {
   updatedAt: Date;
   tags?: string[];
   isDefault?: boolean;
+  /** When true, profile is hidden from default listings (optional). */
+  archived?: boolean;
 }
 
 export interface ProfileEntry {

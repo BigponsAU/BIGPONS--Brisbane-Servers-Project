@@ -1,0 +1,18 @@
+---
+/**
+ * Per-band echoes of the in-section Sierpinski graph — same seeds as `HOME_BAND_SEMANTIC_KEYS`.
+ * Visibility is driven by `.home-interconnection-rig[data-margin-band]` on the parent rig.
+ */
+import SectionSatelliteConstellation from './SectionSatelliteConstellation.astro';
+import { HOME_BAND_ORDER, HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
+---
+
+<div class="home-page-margin-echo-stack" aria-hidden="true">
+  {
+    HOME_BAND_ORDER.map((band) => (
+      <div class="home-page-margin-echo" data-echo-band={band}>
+        <SectionSatelliteConstellation mode="gutter-echo" variant={band} semanticKey={HOME_BAND_SEMANTIC_KEYS[band]} />
+      </div>
+    ))
+  }
+</div>

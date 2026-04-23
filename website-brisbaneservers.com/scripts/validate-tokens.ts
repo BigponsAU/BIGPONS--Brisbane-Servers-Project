@@ -46,7 +46,7 @@ const KNOWN_TOKENS = new Set([
   '--phi-sqrt2-product', '--phi-sqrt2-quotient', '--sqrt2-phi-quotient',
   '--diag-angle-1', '--diag-angle-2', '--diag-angle-3', '--diag-angle-4',
   '--base', '--font-base', '--space-base',
-  '--zoom-scale', '--browser-zoom', '--inverse-zoom',
+  '--lanczos-detected-zoom',
   '--viewport-width', '--viewport-height', '--viewport-aspect-ratio', '--viewport-pixel-ratio',
   '--viewport-orientation', '--vbase',
   '--safe-area-inset-top', '--safe-area-inset-right', '--safe-area-inset-bottom', '--safe-area-inset-left',
@@ -173,8 +173,11 @@ const KNOWN_TOKENS = new Set([
   '--grid-cell-diag', '--grid-cell-diag-v',
 
   // Layout measure / containers
-  '--layout-padding-inline', '--layout-padding-block-tight',
+  '--layout-padding-inline', '--layout-padding-inline-start', '--layout-padding-inline-end',
+  '--layout-padding-block-tight',
+  '--site-header-clearance', '--site-main-padding-top', '--site-main-offset-top',
   '--layout-section-padding-y', '--layout-section-padding-y-alt',
+  '--nav-chrome-padding-block', '--footer-chrome-padding-block',
   '--container-max-width', '--container-max-width-wide',
   '--measure-prose', '--measure-narrow', '--measure-article',
 

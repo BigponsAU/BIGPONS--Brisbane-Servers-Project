@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { pid, platform } from 'node:process';
 import type { Resource } from '../resource-types';
 import { RESOURCES_FILE } from '../storage-paths';
 import type { ResourceRepository } from './resource-repository';
@@ -30,7 +31,26 @@ export class JsonResourceRepository implements ResourceRepository {
   }
 
   async saveAll(resources: Resource[]): Promise<void> {
-    await fs.mkdir(path.dirname(RESOURCES_FILE), { recursive: true });
-    await fs.writeFile(RESOURCES_FILE, JSON.stringify(resources, null, 2));
+    const dir = path.dirname(RESOURCES_FILE);
+    const base = path.basename(RESOURCES_FILE);
+    const tmp = path.join(dir, `.${base}.${pid}.${Date.now()}.tmp`);
+    const payload = JSON.stringify(resources, null, 2);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(tmp, payload, 'utf-8');
+    try {
+      if (platform === 'win32') {
+        try {
+          await fs.rename(tmp, RESOURCES_FILE);
+        } catch {
+          await fs.rm(RESOURCES_FILE, { force: true });
+          await fs.rename(tmp, RESOURCES_FILE);
+        }
+      } else {
+        await fs.rename(tmp, RESOURCES_FILE);
+      }
+    } catch (e) {
+      await fs.unlink(tmp).catch(() => {});
+      throw e;
+    }
   }
 }

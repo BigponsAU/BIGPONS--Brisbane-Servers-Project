@@ -3,7 +3,7 @@
  * Analyzes text to extract tone characteristics and match against voice profile
  */
 
-import { VoiceProfile, VoiceCharacteristics } from '../models/voice-profile';
+import type { VoiceProfile, VoiceCharacteristics } from '../models/voice-profile';
 import * as voiceProfileData from '../voice-profile.json';
 
 export class ToneAnalyzer {

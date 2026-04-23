@@ -37,30 +37,50 @@ const gridStyle = [
     display: grid;
     gap: var(--space-xl);
     width: 100%;
+    justify-content: start;
+    align-items: start;
   }
 
-  /* Standard grid layout */
+  /* Fluid tracks: enforce a minimum card width, let rows fill available space. */
   .card-grid-grid {
-    grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+    grid-template-columns: repeat(
+      var(--grid-columns, 3),
+      minmax(
+        min(100%, var(--info-panel-track-min)),
+        1fr
+      )
+    );
   }
 
   @media (max-width: 1024px) {
     .card-grid-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(
+        2,
+        minmax(
+          min(100%, var(--info-panel-track-min)),
+          1fr
+        )
+      );
       gap: var(--space-lg);
     }
   }
 
   @media (max-width: 768px) {
     .card-grid-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--space-lg);
     }
   }
 
   /* Masonry layout - allows card size variation */
   .card-grid-masonry {
-    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-column-masonry), 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(
+        min(100%, var(--grid-min-column-masonry)),
+        min(100%, var(--info-panel-track-max))
+      )
+    );
     grid-auto-rows: auto;
     gap: var(--space-xl);
   }
@@ -73,7 +93,13 @@ const gridStyle = [
 
   /* Asymmetric layout - allows featured cards and variations */
   .card-grid-asymmetric {
-    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-column-asymmetric), 1fr));
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(100%, var(--grid-min-column-asymmetric)),
+        min(100%, var(--info-panel-track-max))
+      )
+    );
     grid-auto-flow: dense;
     gap: var(--space-xl);
   }

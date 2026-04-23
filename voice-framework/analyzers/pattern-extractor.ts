@@ -3,9 +3,9 @@
  * Extracts linguistic and structural patterns from text
  */
 
-import { TextPattern, SentencePattern, PhrasePattern, TerminologyPattern } from '../models/text-patterns';
+import type { TextPattern, SentencePattern, PhrasePattern, TerminologyPattern } from '../models/text-patterns';
 import * as voiceProfileData from '../voice-profile.json';
-import { VoiceProfile } from '../models/voice-profile';
+import type { VoiceProfile } from '../models/voice-profile';
 
 export class PatternExtractor {
   private voiceProfile: VoiceProfile;

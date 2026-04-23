@@ -1,0 +1,65 @@
+---
+import { buildSectionSatelliteGraph, type SectionSatelliteVariant } from '../lib/section-satellite-graph';
+
+interface Props {
+  variant?: SectionSatelliteVariant;
+  /** Short slice of section copy — perturbs topology without mirroring the system layer. */
+  semanticKey?: string;
+  /** Gutter echo: same graph/seed as section, styled for margin stack (library “growth”). */
+  mode?: 'section' | 'gutter-echo';
+}
+
+const { variant = 'strategy', semanticKey = '', mode = 'section' } = Astro.props;
+
+const seedKey = `${variant}|${semanticKey.slice(0, 120)}`;
+const rotationDeg =
+  ({ strategy: -6, industry: 9, proof: -11, contact: 5, about: 14, challenge: -9, solutions: 7, partnership: -4 } as const)[variant] ?? 0;
+
+const { nodes, edges, viewWidth, viewHeight } = buildSectionSatelliteGraph({
+  seedKey,
+  viewWidth: 440,
+  viewHeight: 300,
+  maxLevel: 3,
+  rotationDeg,
+});
+---
+
+<div
+  class:list={[
+    'section-satellite',
+    `section-satellite--${variant}`,
+    mode === 'gutter-echo' && 'section-satellite--gutter-echo',
+  ]}
+  aria-hidden="true"
+>
+  <svg
+    class="section-satellite__svg"
+    viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+    role="presentation"
+    focusable="false"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <g class="section-satellite__edges">
+      {
+        edges.map(({ i, j }) => {
+          const a = nodes[i];
+          const b = nodes[j];
+          if (!a || !b) return null;
+          return <line class="section-satellite__edge" x1={a.x} y1={a.y} x2={b.x} y2={b.y} />;
+        })
+      }
+    </g>
+    <g class="section-satellite__nodes">
+      {
+        nodes.map((n, idx) => (
+          <circle
+            class={idx === 0 ? 'section-satellite__node section-satellite__node--hub' : 'section-satellite__node'}
+            cx={n.x}
+            cy={n.y}
+            r={Math.max(2.2, n.size * 0.22)}
+          />
+        ))
+      }
+    </g>
+  </svg>
+</div>

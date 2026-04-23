@@ -85,6 +85,10 @@ out
 voice-framework/dist/
 voice-framework/test-results/
 
+# Local voice-framework auth store (never publish)
+voice-framework/storage/auth-tokens.json
+voice-framework/storage/auth.db
+
 # Local tooling state
 website-brisbaneservers.com/.wrangler/
 .cursor/*.log

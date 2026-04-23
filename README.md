@@ -36,7 +36,7 @@ npm run start:hybrid
 - **Static frontend:** `http://localhost:3000`
 - **Standalone API:** `http://localhost:3002/api`
 
-See [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) to run or fix issues. [GitHub Pages hybrid](docs/operations/GITHUB_PAGES_HYBRID.md) for deployment. [Credentials](docs/portal/CREDENTIALS.md) for login. [Portal](docs/portal/PORTAL.md) for portal features.
+See [Deployment pathways](docs/operations/DEPLOYMENT_PATHWAYS.md) for the **primary** setup (GitHub Pages hybrid). [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) for local runs. [Credentials](docs/portal/CREDENTIALS.md) for login. [Portal / account](docs/portal/PORTAL.md) for workspace features.
 
 **Full documentation map:** [docs/README.md](docs/README.md) (start there if the repo feels large).
 
@@ -66,12 +66,14 @@ See [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) to run or fix 
 ## Documentation
 
 - [Documentation hub](docs/README.md) — indexed list of every doc and where it lives
+- [Deployment pathways](docs/operations/DEPLOYMENT_PATHWAYS.md) — **Primary: GitHub Pages hybrid**; alternate hosts; Cloudflare clarification
 - [Codebase wire card](docs/project/CODEBASE_WIRE_CARD.md) — fast architecture map
-- [Portal](docs/portal/PORTAL.md) — Admin portal and API overview
+- [Portal / account](docs/portal/PORTAL.md) — Workspace and API overview
 - [Credentials](docs/portal/CREDENTIALS.md) — Login and env credentials
 - [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md) — Start app and common issues
 - [GitHub Pages hybrid](docs/operations/GITHUB_PAGES_HYBRID.md) — Static frontend + standalone API deployment
-- [Repository status](docs/project/REPOSITORY_STATUS.md) — Status and overview
+- [Running notes & map](docs/development/RUNNING_NOTES_MAP.md) — How pieces connect during development
+- [Repository status](docs/project/REPOSITORY_STATUS.md) — Historical snapshot (see hub for current deploy truth)
 - [Environment variables](docs/development/ENV_VARIABLES.md) — Environment configuration
 - [Hybrid API contract](docs/development/HYBRID_API_CONTRACT.md) — Shared frontend/backend route contract
 - [Design tokens](docs/design/DESIGN_TOKENS_REFERENCE.md) — Design system tokens
@@ -111,9 +113,7 @@ npm test
 
 ## Status
 
-✅ **Production Ready** - All critical issues resolved
-
-See [Repository status](docs/project/REPOSITORY_STATUS.md) for detailed status information.
+See [Repository status](docs/project/REPOSITORY_STATUS.md) for a dated snapshot. **Current deploy and run truth:** [Deployment pathways](docs/operations/DEPLOYMENT_PATHWAYS.md) and [Run & troubleshoot](docs/operations/RUN_AND_TROUBLESHOOT.md).
 
 ## License
 

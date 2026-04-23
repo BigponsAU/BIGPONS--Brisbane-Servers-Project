@@ -1,41 +1,45 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
+import Hero from '~/components/Hero.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
 
 const currentPath = '/contribute';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Resources', href: '/resources' },
+  { label: 'Contribute' },
+];
 const publicApiBaseUrl = resolvePublicApiUrl('');
-const portalPath = resolvePublicSitePath('/portal/');
+const accountPath = resolvePublicSitePath('/account/');
 ---
 
 <SiteShell
   title="Contribute - Brisbane Servers"
   description="Join our community: share your experience, earn tokens, and help improve industry resources. Your contributions are checked against our voice profile and shown alongside a community note."
   currentPath={currentPath}
-  breadcrumbs={[
-    { label: 'Home', href: '/' },
-    { label: 'Resources', href: '/resources' },
-    { label: 'Contribute' }
-  ]}
+  breadcrumbs={breadcrumbsTrail}
   pageId="contribute"
   valueProfile="utility"
   zoomProfile="focused"
   density="compact"
+  mainClass="main-phi-chassis"
 >
-    <section class="contribute-hero section">
-      <div class="container">
-        <h1 class="contribute-title">Contribute to Community Resources</h1>
-        <p class="contribute-lead">
-          Share your experience, get your perspective validated against our base voice profile, and earn tokens that can unlock future benefits.
-        </p>
-      </div>
-    </section>
+    <Hero
+      eyebrow="Community"
+      title="Contribute to Community Resources"
+      subtitle="Community input adds field-tested context. We verify submissions and publish clearer guidance the whole ecosystem can use."
+      scrollTargetId="#contribute-get-started"
+      scrollLabel="Get started below"
+    />
+    <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section">
+    <section class="section section--hero-wash">
       <div class="container">
         <div class="contribute-blocks">
           <div class="contribute-block">
             <h2>Why contribute?</h2>
-            <p>Your real-world experience helps other businesses. We combine your input with our voice framework so the result stays accurate, on-brand, and useful. You stay credited; the community gets a single, trusted view.</p>
+            <p>Your real-world experience helps other businesses. We combine your input with our voice framework so results stay accurate, clear, and useful. You stay credited while the community gets stronger decision support.</p>
           </div>
           <div class="contribute-block">
             <h2>How the pipeline works</h2>
@@ -46,17 +50,17 @@ const portalPath = resolvePublicSitePath('/portal/');
             <ul>
               <li><strong>Tokens</strong> — Valuable contributions earn tokens (stored in a single ledger). We plan to use these for things like server runtime or discounts.</li>
               <li><strong>Visibility</strong> — Your contribution and the community note appear on the topic page with clear attribution.</li>
-              <li><strong>Portal access</strong> — Log in to the portal to see your contributions, token balance, and history.</li>
+              <li><strong>Account workspace</strong> — Sign in to see your contributions, token balance, saved work, and history.</li>
             </ul>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section contribute-cta">
+    <section id="contribute-get-started" class="section contribute-cta">
       <div class="container">
         <h2 class="contribute-cta-title">Get started</h2>
-        <p class="contribute-cta-lead">Create an account to contribute from any topic page, or log in if you already have one.</p>
+        <p class="contribute-cta-lead">Create an account to contribute from any topic page. Browsing stays open; sign in when you want to save work, manage contributions, or track tokens.</p>
         <div class="auth-cards">
           <div class="auth-card">
             <h3>Register</h3>
@@ -78,13 +82,13 @@ const portalPath = resolvePublicSitePath('/portal/');
           </div>
         </div>
         <p class="contribute-portal-link">
-          Already use the portal? <a href={portalPath}>Open Resource Portal</a>
+          Already have an account? <a href={accountPath}>Open your account workspace</a>
         </p>
       </div>
     </section>
 </SiteShell>
 
-<script define:vars={{ apiBaseUrl: publicApiBaseUrl, portalPath }}>
+<script define:vars={{ apiBaseUrl: publicApiBaseUrl, accountPath }}>
   const registerForm = document.getElementById('register-form') as HTMLFormElement;
   const loginForm = document.getElementById('login-form') as HTMLFormElement;
   const registerStatus = document.getElementById('register-status');
@@ -108,9 +112,9 @@ const portalPath = resolvePublicSitePath('/portal/');
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setStatus(registerStatus, 'Account created. Redirecting to portal…');
-        if (data.token) localStorage.setItem('authToken', data.token);
-        window.location.href = portalPath;
+        setStatus(registerStatus, data.previewUrl
+          ? `Account created. Check your email to verify your account. Preview link: ${data.previewUrl}`
+          : 'Account created. Check your email to verify your account before signing in.');
       } else {
         setStatus(registerStatus, data.error || 'Registration failed', true);
       }
@@ -131,9 +135,9 @@ const portalPath = resolvePublicSitePath('/portal/');
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setStatus(loginStatus, 'Logged in. Redirecting to portal…');
+        setStatus(loginStatus, 'Logged in. Redirecting to your workspace…');
         if (data.token) localStorage.setItem('authToken', data.token);
-        window.location.href = portalPath;
+        window.location.href = accountPath;
       } else {
         setStatus(loginStatus, data.error || 'Login failed', true);
       }
@@ -144,9 +148,6 @@ const portalPath = resolvePublicSitePath('/portal/');
 </script>
 
 <style>
-  .contribute-hero { padding-top: var(--space-2xl); }
-  .contribute-title { font-size: var(--text-3xl); margin-bottom: var(--space-md); }
-  .contribute-lead { font-size: var(--text-lg); color: var(--text-secondary); max-width: 60ch; }
   .contribute-blocks { display: grid; gap: var(--space-xl); margin-top: var(--space-xl); }
   .contribute-block {
     padding: var(--space-lg);

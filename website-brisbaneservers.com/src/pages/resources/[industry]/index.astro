@@ -2,12 +2,13 @@
 // Published resources can now be pulled from the standalone API during prerender.
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, industries } from '~/data/industries';
-import { resolveInternalApiUrl } from '~/lib/api-config';
+import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
 
 export async function getStaticPaths() {
   return industries.map((industry) => ({
@@ -22,48 +23,31 @@ if (!industry) {
   return Astro.redirect('/resources');
 }
 
-// Fetch published resources from the standalone API so the route can be prerendered.
-const publicResourcesUrl = resolveInternalApiUrl(`/resources/public?industry=${encodeURIComponent(industrySlug!)}`);
-let publishedResources: any[] = [];
-
-try {
-  const response = await fetch(publicResourcesUrl, {
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-  
-  if (response.ok) {
-    const data = await response.json();
-    publishedResources = data.resources || [];
-  } else {
-    console.warn('[Resources] API returned non-OK status:', response.status);
-  }
-} catch (error) {
-  // Silently fail - resources section will be hidden if no resources
-  console.warn('[Resources] Could not fetch resources from API:', error);
-}
+const publishedResources = await getPublishedResourcesForPage({ industry: industrySlug! });
 
 const currentPath = `/resources/${industrySlug}`;
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Resources', href: '/resources' },
+  { label: industry.name },
+];
 ---
 
 <SiteShell 
   title={`${industry.name} Resources - Brisbane Servers`}
   description={industry.description}
   currentPath={currentPath}
-  breadcrumbs={[
-    { label: 'Home', href: '/' },
-    { label: 'Resources', href: '/resources' },
-    { label: industry.name }
-  ]}
+  breadcrumbs={breadcrumbsTrail}
   pageId="resource-industry"
   valueProfile="evidence"
   zoomProfile="focused"
+  mainClass="main-phi-chassis"
 >
     <Hero 
       title={`${industry.name} Technology Solutions`}
       subtitle={industry.description}
     />
+    <Breadcrumbs items={breadcrumbsTrail} />
 
     <!-- Comprehensive block usage: phi-line-vertical, phi-tangent, bg-pattern-phi-radial -->
     <section class="section">
@@ -90,6 +74,7 @@ const currentPath = `/resources/${industrySlug}`;
                   description={topic.description}
                   icon={topic.icon}
                   href={`/resources/${industry.slug}/${topic.slug}`}
+                  actionLabel="Open topic"
                 />
               ))}
             </CardGrid>
@@ -110,6 +95,7 @@ const currentPath = `/resources/${industrySlug}`;
                   title={resource.title}
                   description={resource.description}
                   href={`/resources/item/?id=${resource.id}`}
+                  actionLabel="Open resource"
                 >
                   <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
                     <span style="font-size: var(--text-sm); color: var(--text-secondary);">

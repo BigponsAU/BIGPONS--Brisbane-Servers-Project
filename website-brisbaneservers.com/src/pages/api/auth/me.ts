@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
+import { findUserById, isUserEmailVerified } from '../../../lib/db/users';
 
 /**
  * Get current user endpoint
@@ -21,9 +22,14 @@ export const GET: APIRoute = async ({ request }) => {
     );
   }
   
+  const stored = await findUserById(authResult.user.id).catch(() => null);
+  const user = stored
+    ? { ...authResult.user, emailVerified: isUserEmailVerified(stored) }
+    : authResult.user;
+
   return new Response(
     JSON.stringify({
-      user: authResult.user,
+      user,
       success: true
     }),
     {
