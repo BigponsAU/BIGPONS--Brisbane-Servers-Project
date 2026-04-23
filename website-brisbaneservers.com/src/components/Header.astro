@@ -75,7 +75,10 @@ function isActive(href: string): boolean {
           <li role="none">
             <a 
               href={item.href} 
-              class={isActive(item.href) ? 'active' : ''}
+              class={[
+                isActive(item.href) ? 'active' : '',
+                item.href === '/account' ? 'nav-account-cta' : '',
+              ].filter(Boolean).join(' ')}
               data-account-link={item.href === '/account' ? 'true' : undefined}
               role="menuitem"
               aria-current={isActive(item.href) ? 'page' : undefined}
@@ -144,7 +147,10 @@ function isActive(href: string): boolean {
         ) : (
           <a 
             href={item.href} 
-            class={isActive(item.href) ? 'active' : ''}
+            class={[
+              isActive(item.href) ? 'active' : '',
+              item.href === '/account' ? 'nav-account-cta' : '',
+            ].filter(Boolean).join(' ')}
             data-account-link={item.href === '/account' ? 'true' : undefined}
             role="menuitem"
             aria-current={isActive(item.href) ? 'page' : undefined}

@@ -46,7 +46,10 @@ export interface BuildResourceFromEditorProcessInput {
   industry: string;
   topic: string;
   title: string;
+  /** Full body after processing. */
   body: string;
+  /** Catalogue / card blurb (voice-generated, not a fixed substring of body). */
+  description: string;
   generatedBy: string;
   ownerId: string;
   shouldPublish: boolean;
@@ -69,7 +72,7 @@ export function buildResourceFromEditorProcess(
     industry,
     topic: topicSlug,
     title: input.title,
-    description: body.substring(0, 200) + (body.length > 200 ? '...' : ''),
+    description: input.description,
     content: body,
     generatedAt: new Date().toISOString(),
     generatedBy: input.generatedBy,

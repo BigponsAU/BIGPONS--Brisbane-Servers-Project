@@ -6,6 +6,13 @@ export type Visibility = 'public' | 'private' | 'starter';
 
 export type ProcessingStatus = 'ready' | 'queued' | 'ocr' | 'embedding' | 'failed';
 
+/** How the voice profile for this resource write was chosen (see resource-voice-profile.ts). */
+export type VoiceProfileResolutionKind =
+  | 'requested'
+  | 'default'
+  | 'library_ephemeral'
+  | 'bundled';
+
 export interface Resource {
   id: string;
   industry: string;
@@ -24,6 +31,9 @@ export interface Resource {
     wordCount?: number;
     semanticLevel?: 'high' | 'medium' | 'normal';
     voiceScore?: number;
+    /** Stored profile id when creation used a saved default or explicit selection. */
+    voiceProfileId?: string;
+    voiceProfileResolution?: VoiceProfileResolutionKind;
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;

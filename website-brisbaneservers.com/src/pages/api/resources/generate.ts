@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { Extrapolator, TextGenerator, VoiceMatcher } from '@voice-framework';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import {
@@ -11,6 +12,10 @@ import {
 import { buildRagContext } from '../../../lib/semantic/rag';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { isDevelopmentMode } from '../../../utils/runtime-env';
+import {
+  generateResourceCatalogDescription,
+  resolveResourceVoiceProfile
+} from '../../../lib/resource-voice-profile';
 
 /**
  * Generate a new resource
@@ -37,7 +42,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { industry, topic, title, options } = body;
+    const { industry, topic, title, options, profileId } = body;
     
     if (!industry || !topic) {
       return new Response(
@@ -53,12 +58,19 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Get voice framework components
-    const { textGenerator, extrapolator, voiceMatcher } = await getVoiceFramework();
-
-    // Generate resource content
     const resourceTitle = title || `${topic} for ${industry}`;
     const resources = await loadResources();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
+    const resolved = await resolveResourceVoiceProfile({
+      requestedProfileId: profileId,
+      profileManager,
+      profileBuilder,
+      resources
+    });
+
+    const textGenerator = new TextGenerator(resolved.profile);
+    const extrapolator = new Extrapolator(resolved.profile);
+    const voiceMatcher = new VoiceMatcher(resolved.profile);
     const existingPre = resources.find(
       (r) => r.industry === industry && topicsMatch(r.topic, topic)
     );
@@ -90,7 +102,15 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const voiceValidation = voiceMatcher.validateVoice(extrapolatedContent);
-    
+
+    const description = generateResourceCatalogDescription({
+      voiceProfile: resolved.profile,
+      title: resourceTitle,
+      industry,
+      topicLabel: topic,
+      bodyExcerpt: extrapolatedContent
+    });
+
     // Normalize topic to slug format for consistency
     const topicSlug = normalizeTopicSlug(topic);
 
@@ -104,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.log(`[API] Found existing resource for ${industry}/${topic}, updating instead of creating duplicate`);
       
       existingResource.title = resourceTitle;
-      existingResource.description = extrapolatedContent.substring(0, 200) + '...';
+      existingResource.description = description;
       existingResource.content = extrapolatedContent;
       existingResource.generatedAt = new Date().toISOString();
       existingResource.generatedBy = authResult.user.email;
@@ -112,7 +132,9 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.metadata = {
         wordCount: extrapolatedContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore: voiceValidation.score || 0
+        voiceScore: voiceValidation.score || 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution
       };
 
       await saveResources(resources);
@@ -130,6 +152,10 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({
           resource: indexed,
+          voiceProfile: {
+            resolution: resolved.resolution,
+            profileId: resolved.voiceProfileId ?? null
+          },
           rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
           voiceValidation: {
             score: voiceValidation.score || 0,
@@ -154,7 +180,7 @@ export const POST: APIRoute = async ({ request }) => {
       industry,
       topic: topicSlug, // Use normalized slug
       title: resourceTitle,
-      description: extrapolatedContent.substring(0, 200) + '...',
+      description,
       content: extrapolatedContent,
       generatedAt: new Date().toISOString(),
       generatedBy: authResult.user.email,
@@ -163,7 +189,9 @@ export const POST: APIRoute = async ({ request }) => {
       metadata: {
         wordCount: extrapolatedContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore: voiceValidation.score || 0
+        voiceScore: voiceValidation.score || 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution
       }
     };
 
@@ -181,10 +209,14 @@ export const POST: APIRoute = async ({ request }) => {
     console.log(`[API] POST /api/resources/generate - Success (${duration}ms)`);
     
     return new Response(
-      JSON.stringify({
-        resource: indexedNew,
-        rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
-        voiceValidation: {
+        JSON.stringify({
+          resource: indexedNew,
+          voiceProfile: {
+            resolution: resolved.resolution,
+            profileId: resolved.voiceProfileId ?? null
+          },
+          rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+          voiceValidation: {
           score: voiceValidation.score || 0,
           isValid: voiceValidation.isValid || false,
           issues: voiceValidation.issues || [],

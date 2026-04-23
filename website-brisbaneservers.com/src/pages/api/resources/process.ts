@@ -1,13 +1,18 @@
 import type { APIRoute } from 'astro';
+import { Extrapolator, TextGenerator, VoiceMatcher } from '@voice-framework';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import { loadResources, saveResources } from '../../../lib/resources-api';
 import { buildResourceFromEditorProcess } from '../../../lib/resource-ingestion';
+import {
+  generateResourceCatalogDescription,
+  resolveResourceVoiceProfile
+} from '../../../lib/resource-voice-profile';
 
 /**
  * Process content directly (without file upload)
  * POST /api/resources/process
- * Body: { content: string, industry: string, topic: string, title?: string, autoPublish?: boolean }
+ * Body: { content, industry, topic, title?, autoPublish?, profileId? }
  */
 export const POST: APIRoute = async ({ request }) => {
   const startTime = Date.now();
@@ -29,7 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { content, industry, topic, title, autoPublish } = body;
+    const { content, industry, topic, title, autoPublish, profileId } = body;
 
     if (!content || !industry || !topic) {
       return new Response(
@@ -48,7 +53,18 @@ export const POST: APIRoute = async ({ request }) => {
     const resourceTitle = title || `${topic} for ${industry}`;
     const shouldPublish = autoPublish === true;
 
-    const { textGenerator, extrapolator, voiceMatcher } = await getVoiceFramework();
+    const resources = await loadResources();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
+    const resolved = await resolveResourceVoiceProfile({
+      requestedProfileId: profileId,
+      profileManager,
+      profileBuilder,
+      resources
+    });
+
+    const textGenerator = new TextGenerator(resolved.profile);
+    const extrapolator = new Extrapolator(resolved.profile);
+    const voiceMatcher = new VoiceMatcher(resolved.profile);
 
     const seedText = `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
     const generatedContent = textGenerator.generateText(seedText, {
@@ -79,23 +95,33 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
+    const description = generateResourceCatalogDescription({
+      voiceProfile: resolved.profile,
+      title: resourceTitle,
+      industry,
+      topicLabel: topic,
+      bodyExcerpt: processedContent
+    });
+
     const user = authResult.user;
     const resource = buildResourceFromEditorProcess({
       industry,
       topic,
       title: resourceTitle,
       body: processedContent,
+      description,
       generatedBy: user.email,
       ownerId: user.id,
       shouldPublish,
       metadata: {
         wordCount: processedContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore: voiceValidation.score ?? 0
+        voiceScore: voiceValidation.score ?? 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution
       }
     });
 
-    const resources = await loadResources();
     resources.push(resource);
     await saveResources(resources);
 
@@ -105,6 +131,10 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         resource,
+        voiceProfile: {
+          resolution: resolved.resolution,
+          profileId: resolved.voiceProfileId ?? null
+        },
         voiceValidation: {
           score: voiceValidation.score ?? 0,
           isValid: voiceValidation.isValid ?? false,

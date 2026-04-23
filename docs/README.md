@@ -65,6 +65,7 @@ Canonical locations for voice and design narrative:
 - [Resource pipeline & draw-back](development/RESOURCE_PIPELINE_AND_DRAWBACK.md) — Ingestion layers, rollback matrix, atomic JSON persistence
 - [Feature reconciliation](development/FEATURE_RECONCILIATION.md) — Native browser zoom + CSS media queries; no JS zoom tier (avoid duplicate implementations)
 - [Running notes & map](development/RUNNING_NOTES_MAP.md) — Incremental “how it works” during development
+- [Project next steps report](development/PROJECT_NEXT_STEPS_REPORT.md) — Priorities after checkpoints (deploy, auth, resources, quality)
 - [Doc inventory](development/DOC_INVENTORY.md) — How Markdown is bucketed in this repo
 - [Environment variables](development/ENV_VARIABLES.md)
 - [Env example](development/ENV_EXAMPLE.md)

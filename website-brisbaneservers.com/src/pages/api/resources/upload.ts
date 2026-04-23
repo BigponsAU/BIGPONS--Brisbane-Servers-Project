@@ -9,6 +9,10 @@ import {
   type Resource
 } from '../../../lib/resources-api';
 import type { ProcessingStatus } from '../../../lib/resource-types';
+import {
+  generateResourceCatalogDescription,
+  resolveResourceVoiceProfile
+} from '../../../lib/resource-voice-profile';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 
 function classifyUploadedFile(
@@ -97,32 +101,33 @@ export const POST: APIRoute = async ({ request }) => {
     const classified = classifyUploadedFile(file, raw);
     const content = classified.text;
     const resourceTitle = title || file.name.replace(/\.[^/.]+$/, '');
-    
-    let processedContent = content;
-    let voiceValidation: any = { score: 0, isValid: false, issues: [], strengths: [] };
+    const profileIdRaw = formData.get('profileId') as string | null;
+    const requestedProfileId = profileIdRaw?.trim() || undefined;
 
-    // Process through voice framework if requested
+    const topicSlug = normalizeTopicSlug(topic);
+    const resources = await loadResources();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
+    const resolved = await resolveResourceVoiceProfile({
+      requestedProfileId,
+      profileManager,
+      profileBuilder,
+      resources
+    });
+
+    let processedContent = content;
+    let voiceValidation: {
+      score: number;
+      isValid: boolean;
+      issues: string[];
+      strengths: string[];
+    } = { score: 0, isValid: false, issues: [], strengths: [] };
+
     if (autoProcess) {
-      const { textGenerator: baseTextGenerator, extrapolator, voiceMatcher: baseVoiceMatcher, profileManager } = await getVoiceFramework();
-      
-      // Get base profile to build upon
-      let baseProfile = null;
-      try {
-        baseProfile = profileManager.getDefaultProfile();
-        if (baseProfile) {
-          console.log(`[API] Using base profile: ${baseProfile.voiceName}`);
-        }
-      } catch (error) {
-        console.warn('[API] No default profile found, proceeding without base profile');
-      }
-      
-      // Create generators with base profile if available
-      const { TextGenerator } = await import('@voice-framework/generators/text-generator');
-      const { VoiceMatcher } = await import('@voice-framework/generators/voice-matcher');
-      
-      const textGenerator = baseProfile ? new TextGenerator(baseProfile) : baseTextGenerator;
-      const voiceMatcher = baseProfile ? new VoiceMatcher(baseProfile) : baseVoiceMatcher;
-      
+      const { TextGenerator, VoiceMatcher, Extrapolator } = await import('@voice-framework');
+      const textGenerator = new TextGenerator(resolved.profile);
+      const voiceMatcher = new VoiceMatcher(resolved.profile);
+      const extrapolator = new Extrapolator(resolved.profile);
+
       const seedText = `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
       const generatedContent = textGenerator.generateText(seedText, {
         length: 'long',
@@ -131,22 +136,24 @@ export const POST: APIRoute = async ({ request }) => {
         style: 'descriptive'
       });
 
-      // Combine user content with generated content (base profile influences generation)
       processedContent = extrapolator.extrapolate(content + '\n\n' + generatedContent, {
         expansionLevel: 'moderate',
         addExamples: true,
         addDetails: true
       });
 
-      // Validate against base profile
       voiceValidation = voiceMatcher.validateVoice(processedContent);
     }
 
-    // Normalize topic to slug format for consistency
-    const topicSlug = normalizeTopicSlug(topic);
+    const description = generateResourceCatalogDescription({
+      voiceProfile: resolved.profile,
+      title: resourceTitle,
+      industry,
+      topicLabel: topic,
+      bodyExcerpt: processedContent
+    });
 
     // Check for existing resource with same industry + topic
-    const resources = await loadResources();
     const existingResource = resources.find(
       r => r.industry === industry && topicsMatch(r.topic, topic)
     );
@@ -159,7 +166,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
       
       existingResource.title = resourceTitle;
-      existingResource.description = processedContent.substring(0, 200) + '...';
+      existingResource.description = description;
       existingResource.content = processedContent;
       existingResource.generatedAt = new Date().toISOString();
       existingResource.generatedBy = authResult.user.email;
@@ -170,7 +177,9 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.metadata = {
         wordCount: processedContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore: voiceValidation.score || 0
+        voiceScore: voiceValidation.score || 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution
       };
       existingResource.processingStatus = classified.processingStatus;
       existingResource.sourceRef = {
@@ -197,6 +206,10 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({
           resource: indexedEx,
+          voiceProfile: {
+            resolution: resolved.resolution,
+            profileId: resolved.voiceProfileId ?? null
+          },
           voiceValidation,
           success: true,
           processed: autoProcess,
@@ -216,7 +229,7 @@ export const POST: APIRoute = async ({ request }) => {
       industry,
       topic: topicSlug, // Use normalized slug
       title: resourceTitle,
-      description: processedContent.substring(0, 200) + '...',
+      description,
       content: processedContent,
       generatedAt: new Date().toISOString(),
       generatedBy: authResult.user.email,
@@ -231,7 +244,9 @@ export const POST: APIRoute = async ({ request }) => {
       metadata: {
         wordCount: processedContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore: voiceValidation.score || 0
+        voiceScore: voiceValidation.score || 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution
       }
     };
 
@@ -252,12 +267,16 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     return new Response(
-      JSON.stringify({
-        resource: indexedNew,
-        voiceValidation,
-        success: true,
-        processed: autoProcess
-      }),
+        JSON.stringify({
+          resource: indexedNew,
+          voiceProfile: {
+            resolution: resolved.resolution,
+            profileId: resolved.voiceProfileId ?? null
+          },
+          voiceValidation,
+          success: true,
+          processed: autoProcess
+        }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json' }

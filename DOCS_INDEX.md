@@ -13,4 +13,5 @@
 | Architecture (fast) | [docs/project/CODEBASE_WIRE_CARD.md](docs/project/CODEBASE_WIRE_CARD.md) |
 | Zoom / responsive layout policy | [docs/development/FEATURE_RECONCILIATION.md](docs/development/FEATURE_RECONCILIATION.md) |
 | Live map / gotchas | [docs/development/RUNNING_NOTES_MAP.md](docs/development/RUNNING_NOTES_MAP.md) |
+| Next steps / priorities | [docs/development/PROJECT_NEXT_STEPS_REPORT.md](docs/development/PROJECT_NEXT_STEPS_REPORT.md) |
 | Repo status (snapshot) | [docs/project/REPOSITORY_STATUS.md](docs/project/REPOSITORY_STATUS.md) |

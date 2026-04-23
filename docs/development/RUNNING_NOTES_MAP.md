@@ -33,6 +33,7 @@ Native browser full-page zoom (no transform on <html>)
 
 | Date | Verified / changed |
 |------|---------------------|
+| 2026-04-24 | Pushed resource voice resolution + catalogue descriptions (`resource-voice-profile`, ingestion/types), API wiring, account nav CTA; added `PROJECT_NEXT_STEPS_REPORT.md`; `npm run build` OK. |
 | 2026-04-10 | Plan execution: added `DEPLOYMENT_PATHWAYS.md`, doc hub + `PORTAL.md` stub + `REPOSITORY_STATUS` banner. |
 | 2026-04-10 | `npm run build` in `website-brisbaneservers.com` passed (pre/post checks OK). Build-time API fetches log `ECONNREFUSED` when no standalone API — expected; see hybrid runbook. |
 | 2026-04-10 | Viewport alignment pass: `--site-main-offset-top`, `--layout-padding-inline-start/end`, header safe-top, `html` scroll-padding + notch, cookie banner bottom safe inset; shell/hero/footer gutters unified. |
