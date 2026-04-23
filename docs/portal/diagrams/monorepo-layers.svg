@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" role="img" aria-labelledby="t2 d2">
+  <title id="t2">Monorepo main directories</title>
+  <desc id="d2">docs, voice-framework, website package, standalone-api under website for hybrid hosting.</desc>
+  <style>
+    .root { fill: #f4f4f5; stroke: #27272a; stroke-width: 1.5; rx: 8; }
+    .box { fill: #fff; stroke: #3f3f46; stroke-width: 1.25; rx: 6; }
+    .h { font: 700 12px system-ui, sans-serif; fill: #18181b; }
+    .p { font: 10px system-ui, sans-serif; fill: #52525b; }
+    .a { stroke: #71717a; stroke-width: 1.25; fill: none; marker-end: url(#mk); }
+  </style>
+  <defs>
+    <marker id="mk" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#3f3f46"/>
+    </marker>
+  </defs>
+  <rect class="root" x="12" y="12" width="616" height="176"/>
+  <text class="h" x="320" y="34" text-anchor="middle">Repository root (O1 monorepo)</text>
+
+  <rect class="box" x="32" y="52" width="168" height="56"/>
+  <text class="h" x="116" y="74" text-anchor="middle">docs/</text>
+  <text class="p" x="116" y="92" text-anchor="middle">runbooks, portal maps</text>
+
+  <rect class="box" x="236" y="52" width="168" height="56"/>
+  <text class="h" x="320" y="74" text-anchor="middle">voice-framework/</text>
+  <text class="p" x="320" y="92" text-anchor="middle">NLP, generators, storage pkg</text>
+
+  <rect class="box" x="440" y="52" width="168" height="56"/>
+  <text class="h" x="524" y="74" text-anchor="middle">website-brisb...</text>
+  <text class="p" x="524" y="92" text-anchor="middle">Astro + src/pages/api</text>
+
+  <rect class="box" x="440" y="124" width="168" height="48"/>
+  <text class="h" x="524" y="146" text-anchor="middle">standalone-api/</text>
+  <text class="p" x="524" y="162" text-anchor="middle">Node host, route-manifest.ts</text>
+
+  <line class="a" x1="524" y1="108" x2="524" y2="124"/>
+</svg>

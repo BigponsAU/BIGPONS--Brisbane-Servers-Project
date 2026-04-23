@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 88" role="img" aria-labelledby="t1 d1">
+  <title id="t1">Account workspace  data flow to backend</title>
+  <desc id="d1">Browser at /account, portal.astro client script, Astro /api routes, src/lib, @voice-framework, persistent storage.</desc>
+  <defs>
+    <marker id="m" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#3f3f46"/>
+    </marker>
+  </defs>
+  <style>
+    .b { fill: #fafafa; stroke: #3f3f46; stroke-width: 1.25; rx: 6; }
+    .t { font: 600 11px system-ui, Segoe UI, sans-serif; fill: #18181b; }
+    .s { font: 10px system-ui, Segoe UI, sans-serif; fill: #52525b; }
+    .a { stroke: #71717a; stroke-width: 1.25; fill: none; marker-end: url(#m); }
+  </style>
+  <rect class="b" x="8" y="22" width="100" height="44"/>
+  <text class="t" x="58" y="42" text-anchor="middle">Browser</text>
+  <text class="s" x="58" y="56" text-anchor="middle">/account</text>
+
+  <rect class="b" x="128" y="22" width="118" height="44"/>
+  <text class="t" x="187" y="42" text-anchor="middle">portal.astro</text>
+  <text class="s" x="187" y="56" text-anchor="middle">+ client script</text>
+
+  <rect class="b" x="266" y="22" width="96" height="44"/>
+  <text class="t" x="314" y="42" text-anchor="middle">/api/*</text>
+  <text class="s" x="314" y="56" text-anchor="middle">Astro routes</text>
+
+  <rect class="b" x="382" y="22" width="88" height="44"/>
+  <text class="t" x="426" y="42" text-anchor="middle">src/lib</text>
+  <text class="s" x="426" y="56" text-anchor="middle">auth, DB</text>
+
+  <rect class="b" x="490" y="22" width="112" height="44"/>
+  <text class="t" x="546" y="42" text-anchor="middle">@voice-framework</text>
+  <text class="s" x="546" y="56" text-anchor="middle">generators</text>
+
+  <rect class="b" x="622" y="22" width="130" height="44"/>
+  <text class="t" x="687" y="42" text-anchor="middle">Storage</text>
+  <text class="s" x="687" y="56" text-anchor="middle">JSON / SQLite / PG</text>
+
+  <line class="a" x1="108" y1="44" x2="128" y2="44"/>
+  <line class="a" x1="246" y1="44" x2="266" y2="44"/>
+  <line class="a" x1="362" y1="44" x2="382" y2="44"/>
+  <line class="a" x1="470" y1="44" x2="490" y2="44"/>
+  <line class="a" x1="602" y1="44" x2="622" y2="44"/>
+</svg>

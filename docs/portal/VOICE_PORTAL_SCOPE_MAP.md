@@ -12,12 +12,19 @@ These do not live in the repo but help you **see shape** before reading files.
 
 | Tool | Use for |
 |------|---------|
-| **GitDiagram** | Replace `github.com` with `gitdiagram.com` in the repo URL for an interactive tree-style map of this GitHub project. |
+| **GitDiagram** | [gitdiagram.com/BigponsAU/BIGPONS--Brisbane-Servers-Project](https://gitdiagram.com/BigponsAU/BIGPONS--Brisbane-Servers-Project) — same path as GitHub, host swapped. **Expect flakiness:** the app often sits on “Checking cached state…” / “Step 0/3” for **large** repos or while its cache builds, so the page may **never finish** through no fault of your URL. If it does not load, use GitHub’s **Code** tab, your IDE tree, or the **Mermaid + SVG** in this repo (sections below). |
 | **VS Code Git Graph** (extension) | Branch/merge history and who touched what over time. |
 | **Built-in Source Control graph** | Same machine as Cursor/VS Code — commit timeline without an extension. |
 | **Gource** | Optional eye-candy: animated history of files and authors (good for demos, heavy setup). |
 
 For **this** codebase, the diagrams and tables below are maintained **in-repo** so they stay aligned with `standalone-api/route-manifest.ts` and the actual file tree.
+
+### Mermaid vs SVG in this repo
+
+- **Mermaid** (below and in [CODEBASE_WIRE_CARD.md](../project/CODEBASE_WIRE_CARD.md)) — Editable in Markdown; GitHub renders fenced ` ```mermaid ` blocks when you view the file on the website.
+- **Static SVG** — Same ideas without a Mermaid renderer; good for slides, wikis, or print. Files live under [`docs/portal/diagrams/`](diagrams/):
+  - [`monorepo-layers.svg`](diagrams/monorepo-layers.svg)
+  - [`account-backend-flow.svg`](diagrams/account-backend-flow.svg)
 
 ---
 
@@ -38,6 +45,8 @@ flowchart TB
   web --> standalone["standalone-api/ — Node host for hybrid"]
   standalone --> web_api
 ```
+
+![Monorepo layers (SVG)](diagrams/monorepo-layers.svg)
 
 **One-line roles**
 
@@ -84,6 +93,8 @@ flowchart LR
   API --> VF
   Lib --> Store
 ```
+
+![Account workspace to storage (SVG)](diagrams/account-backend-flow.svg)
 
 ---
 
