@@ -60,6 +60,7 @@ The marketing home page wraps bands in `HomeInterconnectionRig` with `PageMargin
 
 ## Related docs
 
+- [Voice portal scope map](VOICE_PORTAL_SCOPE_MAP.md) — Visual monorepo map, `/account` ↔ `/api` wiring, `route-manifest` reminder
 - [Starter blocks](../archive/implementation/STARTER_BLOCKS_IMPLEMENTATION.md) — Templates and “Use This Block”
 - [Base profile](../archive/implementation/BASE_PROFILE_IMPLEMENTATION.md) — Voice profile from starter resources
 - [Documentation hub](../README.md) — Full doc list

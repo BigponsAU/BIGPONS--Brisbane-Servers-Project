@@ -48,6 +48,7 @@ Canonical locations for voice and design narrative:
 ## Portal
 
 - [Portal](portal/PORTAL.md) — Features and API summary
+- [Voice portal scope map](portal/VOICE_PORTAL_SCOPE_MAP.md) — Repo + `/account` UI map, API tables, where backend logic lives
 - [Credentials](portal/CREDENTIALS.md) — Default and production admin auth
 
 ## Architecture & contracts

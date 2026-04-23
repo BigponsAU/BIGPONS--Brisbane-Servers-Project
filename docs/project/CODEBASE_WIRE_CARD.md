@@ -4,7 +4,7 @@ Purpose: a fast architecture card for understanding how this repository is wired
 
 Scope: this document covers the monorepo at `O1/`, with emphasis on `website-brisbaneservers.com/`, `voice-framework/`, and `docs/`.
 
-**Navigation:** the full Markdown index (paths, runbooks, archive) is [Documentation hub](../README.md).
+**Navigation:** the full Markdown index (paths, runbooks, archive) is [Documentation hub](../README.md). For **portal UI ↔ API** wiring and hybrid `route-manifest` sync, see [Voice portal scope map](../portal/VOICE_PORTAL_SCOPE_MAP.md).
 
 Inference note: some conclusions below are inferred from code structure and configuration, not from running the full stack in production.
 
