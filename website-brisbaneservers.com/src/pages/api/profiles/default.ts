@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdmin } from '../../../utils/auth';
+import { requireEditor } from '../../../utils/auth';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -33,13 +33,13 @@ async function loadDefaultProfile(): Promise<any> {
 /**
  * Get default voice profile
  * GET /api/profiles/default
- * Requires: Admin authentication
+ * Requires: Editor authentication (same as list profiles; portal editors use this)
  */
 export const GET: APIRoute = async ({ request }) => {
   const startTime = Date.now();
   
   // Check authentication
-  const authResult = await requireAdmin(request);
+  const authResult = await requireEditor(request);
   if ('error' in authResult) {
     return new Response(
       JSON.stringify({

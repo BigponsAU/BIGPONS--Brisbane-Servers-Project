@@ -13,66 +13,81 @@
             THREE.OrbitControls = function(camera, domElement) {
                 this.camera = camera;
                 this.domElement = domElement;
-                this.enableDamping = false;
-                this.dampingFactor = 0.05;
-                this.minDistance = 0;
+                this.enableDamping = true;
+                this.dampingFactor = 0.08;
+                this.minDistance = 5;
                 this.maxDistance = Infinity;
+                this.rotateSpeed = 0.0019;
+                this.zoomSpeed = 0.00035;
                 
-                let isMouseDown = false;
-                let mouseX = 0, mouseY = 0;
-                let targetRotationX = 0, targetRotationY = 0;
-                let rotationX = 0, rotationY = 0;
+                let isPointerDown = false;
+                let lastX = 0;
+                let lastY = 0;
+                let pendingTheta = 0;
+                let pendingPhi = 0;
+                let thetaVelocity = 0;
+                let phiVelocity = 0;
+                const target = new THREE.Vector3(0, 0, 0);
                 
-                const onMouseDown = (e) => {
-                    isMouseDown = true;
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
+                const onPointerDown = (e) => {
+                    isPointerDown = true;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
                 };
                 
-                const onMouseMove = (e) => {
-                    if (!isMouseDown) return;
-                    const deltaX = e.clientX - mouseX;
-                    const deltaY = e.clientY - mouseY;
-                    targetRotationY += deltaX * 0.01;
-                    targetRotationX += deltaY * 0.01;
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
+                const onPointerMove = (e) => {
+                    if (!isPointerDown) return;
+                    const deltaX = e.clientX - lastX;
+                    const deltaY = e.clientY - lastY;
+                    pendingTheta -= deltaX * this.rotateSpeed;
+                    pendingPhi -= deltaY * this.rotateSpeed;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
                 };
                 
-                const onMouseUp = () => {
-                    isMouseDown = false;
+                const onPointerUp = () => {
+                    isPointerDown = false;
                 };
                 
                 const onWheel = (e) => {
                     e.preventDefault();
-                    const delta = e.deltaY * 0.01;
+                    // Normalize high-resolution wheel deltas so one tick is incremental
+                    const normalized = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120);
+                    const delta = normalized * this.zoomSpeed;
                     const distance = camera.position.length();
                     const newDistance = Math.max(this.minDistance, Math.min(this.maxDistance, distance + delta));
                     camera.position.normalize().multiplyScalar(newDistance);
                 };
                 
-                domElement.addEventListener('mousedown', onMouseDown);
-                domElement.addEventListener('mousemove', onMouseMove);
-                domElement.addEventListener('mouseup', onMouseUp);
-                domElement.addEventListener('wheel', onWheel);
+                domElement.addEventListener('pointerdown', onPointerDown);
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
+                domElement.addEventListener('wheel', onWheel, { passive: false });
                 
                 this.update = () => {
                     if (this.enableDamping) {
-                        rotationX += (targetRotationX - rotationX) * this.dampingFactor;
-                        rotationY += (targetRotationY - rotationY) * this.dampingFactor;
+                        thetaVelocity += pendingTheta * this.dampingFactor;
+                        phiVelocity += pendingPhi * this.dampingFactor;
+                        thetaVelocity *= 0.72;
+                        phiVelocity *= 0.72;
                     } else {
-                        rotationX = targetRotationX;
-                        rotationY = targetRotationY;
+                        thetaVelocity = pendingTheta;
+                        phiVelocity = pendingPhi;
                     }
+                    pendingTheta = 0;
+                    pendingPhi = 0;
                     
                     const spherical = new THREE.Spherical();
-                    spherical.setFromVector3(camera.position);
-                    spherical.theta += rotationY;
-                    spherical.phi += rotationX;
+                    const offset = camera.position.clone().sub(target);
+                    spherical.setFromVector3(offset);
+                    spherical.theta += thetaVelocity;
+                    spherical.phi += phiVelocity;
                     spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
                     
-                    camera.position.setFromSpherical(spherical);
-                    camera.lookAt(0, 0, 0);
+                    offset.setFromSpherical(spherical);
+                    camera.position.copy(target).add(offset);
+                    camera.lookAt(target);
                 };
             };
         }
@@ -120,6 +135,25 @@
                     </div>
                 </div>
 
+                <!-- Session Panel -->
+                <div class="sidebar-panel">
+                    <button class="panel-header" data-panel="session" aria-expanded="true" aria-controls="sessionPanel" type="button">
+                        <span class="panel-icon" aria-hidden="true">🔐</span>
+                        <span class="panel-title">Session</span>
+                        <span class="panel-toggle" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="panel-content" id="sessionPanel" role="region" aria-labelledby="session-panel-title">
+                        <div class="panel-section">
+                            <h4 id="session-panel-title">Dashboard Authentication</h4>
+                            <input id="authEmail" class="panel-select" type="email" placeholder="Admin email" autocomplete="username" />
+                            <input id="authPassword" class="panel-select" type="password" placeholder="Password" autocomplete="current-password" />
+                            <button class="btn btn-secondary btn-sm" id="authLoginBtn" aria-label="Sign in to dashboard API">Sign In</button>
+                            <button class="btn btn-secondary btn-sm" id="authLogoutBtn" aria-label="Sign out from dashboard API">Sign Out</button>
+                            <div id="authStatus" class="panel-info" role="status" aria-live="polite">Checking session…</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Profiles Panel -->
                 <div class="sidebar-panel">
                     <button class="panel-header" data-panel="profiles" aria-expanded="true" aria-controls="profilesPanel" type="button">
@@ -133,6 +167,9 @@
                             <select id="quickProfileSelect" class="panel-select" aria-label="Select voice profile">
                                 <option value="">Select Profile...</option>
                             </select>
+                            <button class="btn btn-secondary btn-sm" id="setDefaultProfileBtn" aria-label="Set selected voice profile as default">Set Default</button>
+                            <button class="btn btn-secondary btn-sm" id="deleteProfileBtn" aria-label="Delete selected voice profile">Delete Selected</button>
+                            <button class="btn btn-secondary btn-sm" id="pruneProfilesBtn" aria-label="Prune duplicate legacy profiles">Prune Legacy Profiles</button>
                             <div id="currentProfile" class="panel-info" role="status" aria-live="polite"></div>
                         </div>
                     </div>
@@ -702,8 +739,14 @@
                                     <label for="topologyProfile">Profile:</label>
                                     <select id="topologyProfile"></select>
                                 </div>
+
+                                <div class="form-group">
+                                    <label for="topologySensitivity">Sensitivity: <span id="topologySensitivityValue">50%</span></label>
+                                    <input id="topologySensitivity" type="range" min="10" max="100" step="1" value="50" />
+                                </div>
                                 
                                 <button id="refreshTopologyBtn" class="btn btn-secondary">Refresh</button>
+                                <button id="resetTopologyCameraBtn" class="btn btn-secondary">Reset Camera</button>
                             </div>
                             
                             <div id="topologyCanvas" style="width: 100%; height: 600px; border: 1px solid var(--border-color); border-radius: 0.5rem; background: #0a0a0a;"></div>
@@ -767,6 +810,25 @@
                         <button class="btn btn-secondary btn-sm" id="clearAllInputs" aria-label="Clear all input fields">Clear All</button>
                         <button class="btn btn-secondary btn-sm" id="loadFromStorage" aria-label="Load content from storage">Load from Storage</button>
                     </div>
+                </div>
+                <div class="contextual-panel">
+                    <h3>Active Voice Profile</h3>
+                    <div id="profileHealthCard" class="profile-health-card" role="status" aria-live="polite">
+                        Loading profile state...
+                    </div>
+                    <div class="quick-actions" role="group" aria-label="Voice profile quick actions">
+                        <button class="btn btn-secondary btn-sm" id="useSiteVoiceProfileBtn">Use Site Voice Profile</button>
+                        <button class="btn btn-secondary btn-sm" id="reloadProfilesBtn">Reload Profiles</button>
+                    </div>
+                </div>
+                <div class="contextual-panel">
+                    <h3>Profile Corpus</h3>
+                    <p class="panel-info">Grow and rebuild the active profile from linked resources.</p>
+                    <div class="quick-actions" role="group" aria-label="Profile corpus actions">
+                        <button class="btn btn-primary btn-sm" id="syncDefaultCorpusBtn">Sync BIGPONS Corpus</button>
+                        <button class="btn btn-secondary btn-sm" id="rebuildActiveProfileBtn">Rebuild Active Profile</button>
+                    </div>
+                    <div id="corpusPanelOutput" class="pipeline-check-output" role="status" aria-live="polite"></div>
                 </div>
             </aside>
         </main>

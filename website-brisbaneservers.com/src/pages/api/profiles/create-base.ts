@@ -1,15 +1,47 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
-import { loadResources, isPublicResource, type Resource } from '../../../lib/resources-api';
+import { loadResources, type Resource } from '../../../lib/resources-api';
+import { resourcesForSiteVoiceCorpus } from '../../../lib/resource-voice-profile';
+
+const BIFPONS_NAME = 'BIFPONS';
+const BIFPONS_TAG = 'bifpons-site-corpus';
+
+export interface CreateBaseProfileBody {
+  /** Limit corpus to one industry slug (e.g. healthcare). */
+  industry?: string;
+  /** Build only from these resource ids (must exist, non-archived, with content). */
+  resourceIds?: string[];
+}
+
+function pickCorpus(resources: Resource[], body: CreateBaseProfileBody): Resource[] {
+  let base = resourcesForSiteVoiceCorpus(resources);
+  if (body.industry && String(body.industry).trim()) {
+    const ind = String(body.industry).trim().toLowerCase();
+    base = base.filter((r) => (r.industry || '').toLowerCase() === ind);
+  }
+  if (Array.isArray(body.resourceIds) && body.resourceIds.length > 0) {
+    const want = new Set(body.resourceIds.map((id) => String(id).trim()).filter(Boolean));
+    base = base.filter((r) => want.has(r.id));
+  }
+  return base.filter((r) => r.content && r.content.trim().length > 0);
+}
+
+function findExistingBifpons(existingProfiles: { name: string; tags?: string[]; id: string }[]) {
+  return existingProfiles.find(
+    (p) =>
+      p.tags?.includes(BIFPONS_TAG) ||
+      p.name === BIFPONS_NAME ||
+      p.name === 'Brisbane Servers Base Profile'
+  );
+}
 
 /**
- * Create or update base voice profile from starter blocks plus all published public resources
- * (deduped by id). Aligns portal voice with premade + live site content.
+ * Create or update the **BIFPONS** site voice profile from the resource corpus (starters + all published).
+ * Optional JSON body: `{ industry?, resourceIds? }` to narrow sources (resource combinations / industry slice).
  * POST /api/profiles/create-base
  */
 export const POST: APIRoute = async ({ request }) => {
-  // Check authentication
   const authResult = await requireEditor(request);
   if ('error' in authResult) {
     return new Response(
@@ -25,20 +57,31 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
+  let body: CreateBaseProfileBody = {};
+  try {
+    const ct = request.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const raw = await request.text();
+      if (raw && raw.trim()) {
+        const parsed = JSON.parse(raw) as CreateBaseProfileBody;
+        if (parsed && typeof parsed === 'object') {
+          body = parsed;
+        }
+      }
+    }
+  } catch {
+    body = {};
+  }
+
   try {
     const resources = await loadResources();
-    const starterBlocks = resources.filter((r) => r.isStarterBlock === true);
-    const publishedPublic = resources.filter((r) => isPublicResource(r));
-
-    const byId = new Map<string, Resource>();
-    for (const r of starterBlocks) byId.set(r.id, r);
-    for (const r of publishedPublic) byId.set(r.id, r);
-    const combined = [...byId.values()].filter((r) => r.content && r.content.trim().length > 0);
+    const combined = pickCorpus(resources, body);
 
     if (combined.length === 0) {
       return new Response(
         JSON.stringify({
-          error: 'No starter blocks or published resources found to build a voice profile',
+          error:
+            'No resources match this build. Try clearing filters, or ensure published resources / starters exist with content.',
           code: 'NO_VOICE_SOURCE_CONTENT',
           success: false
         }),
@@ -49,59 +92,68 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Get voice framework components
     const { profileBuilder, profileManager } = await getVoiceFramework();
 
-    const allContent = combined.map((block) => block.content);
-    
-    // Build profile from all starter block content
-    const profile = await profileBuilder.buildFromSamples(
-      allContent,
-      {
-        name: 'Brisbane Servers Base Profile',
-        description: `Base voice profile from ${starterBlocks.length} starter block(s) and ${publishedPublic.length} published resource(s) (deduped: ${combined.length} sources)`,
-        sourceDocument: `voice-sources:starters=${starterBlocks.length};published=${publishedPublic.length}`
-      }
-    );
+    const starterCount = combined.filter((r) => r.isStarterBlock).length;
+    const publishedCount = combined.length - starterCount;
+    const corpusIds = combined.map((r) => r.id).slice(0, 200);
 
-    // Check if base profile already exists
+    const allContent = combined.map((block) => block.content);
+    const industryNote = body.industry ? `industry=${body.industry};` : '';
+    const idsNote =
+      Array.isArray(body.resourceIds) && body.resourceIds.length > 0
+        ? `pickedIds=${body.resourceIds.length};`
+        : '';
+
+    const profile = await profileBuilder.buildFromSamples(allContent, {
+      name: BIFPONS_NAME,
+      description: `BIFPONS site voice from ${combined.length} resources (${starterCount} starters, ${publishedCount} published). ${industryNote}${idsNote}`,
+      sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`
+    });
+
     const existingProfiles = profileManager.getAllProfiles();
-    const existingBaseProfile = existingProfiles.find(
-      (p) =>
-        p.name === 'Brisbane Servers Base Profile' ||
-        (p.name.includes('Base Profile') &&
-          (p.sourceDocument?.includes('starter-blocks') || p.sourceDocument?.includes('voice-sources')))
-    );
+    const existingBifpons = findExistingBifpons(existingProfiles);
 
     let profileMetadata;
-    if (existingBaseProfile) {
-      // Update existing base profile
-      await profileManager.updateProfile(existingBaseProfile.id, profile);
-      await profileManager.setDefaultProfile(existingBaseProfile.id);
-      profileMetadata = existingBaseProfile;
-      console.log(`[API] Updated base profile: ${existingBaseProfile.id}`);
-    } else {
-      // Create new base profile
-      profileMetadata = await profileManager.createProfile(profile, {
-        name: 'Brisbane Servers Base Profile',
-        description: `Base voice profile from ${combined.length} deduped sources (starters + published)`,
-        sourceDocument: `voice-sources:starters=${starterBlocks.length};published=${publishedPublic.length}`,
-        version: '1.0.0',
-        isDefault: true, // Set as default
-        archived: false,
-        tags: ['base-profile', 'starter-blocks', 'default']
+    const corpusMeta = {
+      corpusResourceIds: corpusIds
+    };
+
+    if (existingBifpons) {
+      await profileManager.updateProfile(existingBifpons.id, profile, {
+        name: BIFPONS_NAME,
+        description: `BIFPONS — rebuilt from ${combined.length} on-repo resources (${starterCount} starters, ${publishedCount} published).`,
+        sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`,
+        tags: [BIFPONS_TAG, 'site-corpus', 'default-candidate'],
+        ...corpusMeta
       });
-      console.log(`[API] Created base profile: ${profileMetadata.id}`);
+      await profileManager.setDefaultProfile(existingBifpons.id);
+      profileMetadata = profileManager.getAllProfiles().find((p) => p.id === existingBifpons.id) ?? existingBifpons;
+    } else {
+      profileMetadata = await profileManager.createProfile(profile, {
+        name: BIFPONS_NAME,
+        description: `BIFPONS — site voice from ${combined.length} resources (${starterCount} starters, ${publishedCount} published).`,
+        sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`,
+        version: '1.0.0',
+        isDefault: true,
+        archived: false,
+        tags: [BIFPONS_TAG, 'site-corpus', 'default-candidate'],
+        ...corpusMeta
+      });
+      await profileManager.setDefaultProfile(profileMetadata.id);
     }
+
+    const wasUpdate = Boolean(existingBifpons);
 
     return new Response(
       JSON.stringify({
         profile: profileMetadata,
         success: true,
-        message: `Base profile ${existingBaseProfile ? 'updated' : 'created'} from ${combined.length} voice sources (${starterBlocks.length} starters, ${publishedPublic.length} published)`,
-        starterBlocksCount: starterBlocks.length,
-        publishedResourcesCount: publishedPublic.length,
+        message: `BIFPONS profile ${wasUpdate ? 'updated' : 'created'} from ${combined.length} voice sources`,
+        starterBlocksCount: starterCount,
+        publishedResourcesCount: publishedCount,
         combinedSourcesCount: combined.length,
+        corpusResourceIds: corpusIds,
         isDefault: true
       }),
       {
@@ -111,7 +163,7 @@ export const POST: APIRoute = async ({ request }) => {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[API] Error creating base profile:', error);
+    console.error('[API] Error creating BIFPONS profile:', error);
     return new Response(
       JSON.stringify({
         error: message,

@@ -19,6 +19,7 @@
     "test:examples": "ts-node examples/usage-examples.ts",
     "analyze": "ts-node -e \"import('./analyzers/tone-analyzer').then(m => console.log('Analyzer loaded'))\"",
     "dashboard": "tsx dashboard/server.ts",
+    "docker:build": "docker build -f Dockerfile -t voice-framework-dashboard .",
     "start": "npm run dashboard",
     "website-to-profile": "tsx website-to-profile.ts"
   },

@@ -23,6 +23,7 @@ interface ProfileMetadata {
   id: string;
   createdAt: string;
   updatedAt: string;
+  corpusResourceIds?: string[];
 }
 
 interface ProfileData {
@@ -101,22 +102,24 @@ export const GET: APIRoute = async ({ request }) => {
         createdAt: p.metadata.createdAt,
         updatedAt: p.metadata.updatedAt,
         sourceDocument: p.metadata.sourceDocument,
+        corpusResourceIds: p.metadata.corpusResourceIds,
         voiceName: p.profile?.voiceName,
         characteristics: p.profile?.characteristics
       }));
     }
     
-    // Add default profile if it exists and isn't already in the list
+    const hasStoredDefault = Boolean(profilesData?.defaultProfileId);
+    // Add bundled fallback profile when not already represented (never steal default flag from BIFPONS / storage)
     if (defaultProfile) {
       const defaultExists = profiles.some(p => p.id === 'default' || p.voiceName === defaultProfile.voiceName);
       if (!defaultExists) {
         profiles.unshift({
           id: 'default',
           name: defaultProfile.voiceName || 'Default Voice Profile',
-          description: 'Default voice profile from voice-profile.json',
+          description: 'Bundled fallback from voice-profile.json (used when no storage default matches).',
           version: defaultProfile.version || '1.0.0',
           tags: ['default', 'system'],
-          isDefault: true,
+          isDefault: !hasStoredDefault,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           sourceDocument: defaultProfile.sourceDocument,

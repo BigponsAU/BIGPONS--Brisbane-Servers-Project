@@ -14,6 +14,7 @@ import {
   resolveResourceVoiceProfile
 } from '../../../lib/resource-voice-profile';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
+import { validateResourceSourceText } from '../../../lib/resource-submission-guard';
 
 function classifyUploadedFile(
   file: File,
@@ -100,6 +101,20 @@ export const POST: APIRoute = async ({ request }) => {
     const raw = await file.text();
     const classified = classifyUploadedFile(file, raw);
     const content = classified.text;
+    const sourceGuard = validateResourceSourceText(content);
+    if (!sourceGuard.ok) {
+      return new Response(
+        JSON.stringify({
+          error: sourceGuard.message,
+          code: sourceGuard.code,
+          success: false
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
     const resourceTitle = title || file.name.replace(/\.[^/.]+$/, '');
     const profileIdRaw = formData.get('profileId') as string | null;
     const requestedProfileId = profileIdRaw?.trim() || undefined;

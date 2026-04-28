@@ -519,6 +519,23 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         </div>
 
                   <!-- Resources Panel Content -->
+          <section class="admin-section" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
+            <div class="section-header">
+              <div>
+                <h2 id="resource-voice-profile-heading" class="sr-only">Voice profile for resources</h2>
+                <p class="section-subtitle" style="margin: 0;">Voice profile used for upload, paste/process, and generate below. Choose a saved profile or leave on Auto to match the server default and library-derived voice.</p>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom: var(--space-lg);">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="resource-voice-profile-select">Voice profile</label>
+                <select id="resource-voice-profile-select" name="resourceVoiceProfile" aria-describedby="resource-voice-profile-hint">
+                  <option value="">Auto (saved default or library-derived)</option>
+                </select>
+                <small id="resource-voice-profile-hint" style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">Profiles load from the Voice Profiles panel. Open Profiles once or use Refresh there to update this list.</small>
+              </div>
+            </div>
+          </section>
           <!-- Resource Upload Section -->
           <section class="admin-section admin-section-collapsible" aria-labelledby="upload-resource-heading">
             <div class="section-header">
@@ -536,7 +553,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                   <label for="upload-file">Upload File</label>
                   <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.doc,.docx" />
                   <small style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">
-                    Supported: Text, Markdown, HTML files
+                    Supported: Text, Markdown, HTML files. Empty tests, very short paste-ins, or obvious noise are rejected before processing.
                   </small>
                 </div>
                 <div class="form-row">
@@ -586,7 +603,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
             </div>
             <div id="create-from-content-content" class="section-content" style="display: none;">
               <div class="card" style="position: relative; overflow: hidden;">
-                <p class="section-subtitle" style="margin-bottom: var(--space-md);">Paste or type content below. It will be processed through the voice framework (no file upload).</p>
+                <p class="section-subtitle" style="margin-bottom: var(--space-md);">Paste or type content below. It will be processed through the voice framework (no file upload). For quality control, very short text, keyboard spam, or low-variance gibberish is rejected server-side.</p>
                 <form id="create-from-content-form" class="resource-form" aria-label="Create from content form">
                   <div class="form-group">
                     <label for="process-content">Content</label>
@@ -886,7 +903,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
               <div class="section-header">
                 <div>
                   <h2 id="profiles-heading">Voice Profiles</h2>
-                  <p class="section-subtitle">Manage voice characteristics and profile settings for content generation</p>
+                  <p class="section-subtitle">The storage default (often <strong>BIFPONS</strong> after you sync) drives generation when Resources is set to Auto. Rings, matrix, and vertex views reflect that profile’s inferred characteristics.</p>
                 </div>
                 <div class="section-actions">
                   <div class="quick-filters" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
@@ -950,7 +967,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                   <h3>Voice Profile Management</h3>
                 </div>
                 <div class="guidance-content">
-                  <p><strong>Base Profile:</strong> Create a base profile from all starter resources. This becomes the foundation that SMEs build upon with their documents.</p>
+                  <p><strong>BIFPONS site voice:</strong> Build or refresh the default profile from <strong>resource combinations</strong> in this repo — all published resources plus starters (optional: one industry only). Ring and vertex views read the same stored characteristics.</p>
                   <p><strong>Active Profiles:</strong> Currently available for content generation. Set one as default to use automatically.</p>
                   <p><strong>Archived Profiles:</strong> Hidden from active use but preserved for reference. Unarchive to reactivate.</p>
                   <p><strong>Analyze Duplicates:</strong> Find profiles with similar characteristics that may need consolidation.</p>
@@ -958,15 +975,24 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                 </div>
               </div>
               
-              <!-- Base Profile Creation -->
+              <!-- BIFPONS site voice (resource-driven profile) -->
               <div class="profile-create-base-card" style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: var(--portal-surface-elevated); border: 2px solid var(--portal-border); border-radius: var(--border-radius);">
-                <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">Foundation profile</h3>
-                <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Create a base profile from all starter resources. This becomes the default voice for content generation.</p>
-                <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Create base profile from starter resources">
+                <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">BIFPONS — site voice profile</h3>
+                <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Synthesises voice from <strong>published resources + starters</strong> in storage (same material the site can run on localhost:3000). Narrow by industry to align tone with one vertical; leave &quot;All&quot; for the full corpus. This profile is set as the storage default when the build succeeds.</p>
+                <div class="form-group" style="margin-bottom: var(--space-md); max-width: 28rem;">
+                  <label for="bifpons-industry-filter">Industry slice (optional)</label>
+                  <select id="bifpons-industry-filter" aria-label="Limit BIFPONS corpus to one industry">
+                    <option value="">All industries (full published + starters)</option>
+                    {industries.map((industry) => (
+                      <option value={industry.slug}>{industry.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Build or refresh BIFPONS profile from resources">
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v20M2 12h20"></path>
                   </svg>
-                  Create Base Profile from Starter Resources
+                  Build / refresh BIFPONS from resources
                 </button>
               </div>
               
@@ -8355,8 +8381,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       const res = await fetch(`${VOICE_API_URL}/profiles/create-base`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${authToken}`
         }
       });
       if (res.ok && import.meta.env.MODE === 'development') {
@@ -8537,6 +8562,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         listView.classList.add('hidden');
       }
       loadResources();
+      void ensureWorkspaceVoiceProfiles();
     } else if (panelName === 'profiles') {
       // Ensure profiles panel is ready before loading
       setTimeout(() => {
@@ -9091,6 +9117,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
           industry: formData.get('industry'),
           topic: formData.get('topic'),
           title: formData.get('title') || undefined,
+          profileId: getWorkspaceVoiceProfileIdForApi(),
           options: {
             length: formData.get('length'),
             includeExamples: (document.getElementById('include-examples') as HTMLInputElement)?.checked
@@ -10667,6 +10694,88 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
     return div.innerHTML;
   }
 
+  const PORTAL_RESOURCE_VOICE_PROFILE_KEY = 'portalResourceVoiceProfileId';
+
+  function getWorkspaceVoiceProfileIdForApi(): string | undefined {
+    const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+    const v = sel?.value?.trim();
+    return v ? v : undefined;
+  }
+
+  function populateWorkspaceVoiceProfileSelect(profiles: any[]): void {
+    const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+    if (!sel) return;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    const auto = document.createElement('option');
+    auto.value = '';
+    auto.textContent = 'Auto (saved default or library-derived)';
+    sel.appendChild(auto);
+    for (const p of profiles) {
+      if (!p?.id) continue;
+      const opt = document.createElement('option');
+      opt.value = String(p.id);
+      const label = p.name || p.voiceName || p.id;
+      opt.textContent = p.isDefault ? `${label} (default)` : label;
+      sel.appendChild(opt);
+    }
+    const stored = localStorage.getItem(PORTAL_RESOURCE_VOICE_PROFILE_KEY) || '';
+    const ids = new Set(profiles.map((p: any) => String(p.id)));
+    if (stored && ids.has(stored)) {
+      sel.value = stored;
+    } else {
+      const def = profiles.find((p: any) => p.isDefault);
+      if (def) sel.value = String(def.id);
+      else if (profiles.length > 0) sel.value = String(profiles[0].id);
+      else sel.value = '';
+    }
+    if (sel.value) {
+      localStorage.setItem(PORTAL_RESOURCE_VOICE_PROFILE_KEY, sel.value);
+    } else {
+      localStorage.removeItem(PORTAL_RESOURCE_VOICE_PROFILE_KEY);
+    }
+  }
+
+  function initWorkspaceVoiceProfileSelect(): void {
+    const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+    if (!sel || (sel as unknown as { _voiceProfileBound?: boolean })._voiceProfileBound) return;
+    (sel as unknown as { _voiceProfileBound?: boolean })._voiceProfileBound = true;
+    sel.addEventListener('change', () => {
+      if (sel.value) {
+        localStorage.setItem(PORTAL_RESOURCE_VOICE_PROFILE_KEY, sel.value);
+      } else {
+        localStorage.removeItem(PORTAL_RESOURCE_VOICE_PROFILE_KEY);
+      }
+    });
+  }
+
+  async function ensureWorkspaceVoiceProfiles(): Promise<void> {
+    const cached = (window as any).allProfiles as any[] | undefined;
+    if (Array.isArray(cached) && cached.length > 0) {
+      populateWorkspaceVoiceProfileSelect(cached);
+      return;
+    }
+    if (!authToken) return;
+    try {
+      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (!data.success || !Array.isArray(data.profiles)) return;
+      (window as any).allProfiles = data.profiles;
+      populateWorkspaceVoiceProfileSelect(data.profiles);
+    } catch (e) {
+      if (import.meta.env.MODE === 'development') {
+        console.warn('[Portal] ensureWorkspaceVoiceProfiles:', e);
+      }
+    }
+  }
+
   // Upload Resource Handler
   document.getElementById('upload-resource-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -10725,6 +10834,8 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       if (title) uploadFormData.append('title', title);
       uploadFormData.append('autoProcess', (document.getElementById('upload-auto-process') as HTMLInputElement)?.checked ? 'true' : 'false');
       uploadFormData.append('autoPublish', (document.getElementById('upload-auto-publish') as HTMLInputElement)?.checked ? 'true' : 'false');
+      const uploadProfileId = getWorkspaceVoiceProfileIdForApi();
+      if (uploadProfileId) uploadFormData.append('profileId', uploadProfileId);
 
       const response = await fetch(`${VOICE_API_URL}/resources/upload`, {
         method: 'POST',
@@ -10845,7 +10956,14 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       const response = await fetch(`${VOICE_API_URL}/resources/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-        body: JSON.stringify({ content, industry, topic, title: title || undefined, autoPublish })
+        body: JSON.stringify({
+          content,
+          industry,
+          topic,
+          title: title || undefined,
+          autoPublish,
+          profileId: getWorkspaceVoiceProfileIdForApi()
+        })
       });
       const data = await response.json();
       if (response.ok && data.success) {
@@ -11179,37 +11297,48 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
     });
   });
 
-  // Create Base Profile from Starter Resources
+  // Build / refresh BIFPONS profile from on-repo resources (optional industry slice)
   async function createBaseProfile(): Promise<void> {
     const btn = document.getElementById('create-base-profile-btn') as HTMLButtonElement;
     if (!btn) return;
     
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Creating base profile...';
+    btn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIFPONS from resources...';
     
     try {
+      const industryEl = document.getElementById('bifpons-industry-filter') as HTMLSelectElement | null;
+      const industry = industryEl?.value?.trim() || undefined;
+      const body = industry ? { industry } : {};
+
       const response = await fetch(`${VOICE_API_URL}/profiles/create-base`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        showNotification(`Base profile ${data.message}! ${data.starterBlocksCount} starter blocks processed.`, 'success');
-        // Reload profiles to show the new base profile
-        setTimeout(() => loadProfiles(), 500);
+        const n = data.combinedSourcesCount ?? 0;
+        showNotification(
+          `${data.message || 'BIFPONS updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
+          'success'
+        );
+        setTimeout(() => {
+          loadProfiles();
+          void ensureWorkspaceVoiceProfiles();
+        }, 500);
       } else {
-        showNotification(`Failed to create base profile: ${data.error || 'Unknown error'}`, 'error');
+        showNotification(`BIFPONS build failed: ${data.error || 'Unknown error'}`, 'error');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Connection error';
-      showNotification(`Failed to create base profile: ${errorMsg}`, 'error');
-      console.error('[Portal] Base profile creation error:', error);
+      showNotification(`BIFPONS build failed: ${errorMsg}`, 'error');
+      console.error('[Portal] BIFPONS profile build error:', error);
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
@@ -11297,7 +11426,9 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       }
 
       const profiles = Array.isArray(data.profiles) ? data.profiles : [];
-      
+      (window as any).allProfiles = profiles;
+      populateWorkspaceVoiceProfileSelect(profiles);
+
       if (profiles.length === 0) {
         listDiv.innerHTML = `
           <div class="loading-message" style="padding: var(--space-3xl);">
@@ -11306,10 +11437,11 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
               </svg>
               <div style="text-align: center;">
-                <p style="font-size: var(--text-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-sm);">No voice profiles found</p>
-                <p style="color: var(--text-secondary); font-size: var(--text-sm);">
-                  Voice profiles will appear here once they are created through the Voice Framework.
+                <p style="font-size: var(--text-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-sm);">No saved profiles yet</p>
+                <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-md); max-width: 32rem;">
+                  The server still resolves voice automatically (bundled default or library-derived) for resource pipelines. Create a <strong>base profile</strong> from starter resources to persist a voice you can pick in Resources, or continue with Auto in the voice profile dropdown there.
                 </p>
+                <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build BIFPONS from resources</button>
               </div>
             </div>
           </div>
@@ -11317,8 +11449,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         return;
       }
 
-      // Store profiles globally for filtering
-      (window as any).allProfiles = profiles;
+      // Store profiles globally for filtering (already set above)
       
       // Helper function to render profile ring preview SVG string
       function renderProfileRingPreviewSVG(profileId: string, characteristics: any): string {
@@ -11810,10 +11941,19 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       </div>
     `;
 
+    const corpusCount = Array.isArray((profile as { corpusResourceIds?: string[] }).corpusResourceIds)
+      ? (profile as { corpusResourceIds: string[] }).corpusResourceIds.length
+      : 0;
+    const vertexCorpusNote =
+      corpusCount > 0
+        ? `<p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--text-secondary);">Voice markers below are inferred from the profile; the <strong>${corpusCount}</strong> listed corpus resources in the header shaped the underlying samples.</p>`
+        : '';
+
     // Vertex Graph (Node connections)
     const vertexHtml = `
       <div class="profile-visualization-section">
         <h3>Vertex Connections</h3>
+        ${vertexCorpusNote}
         <div class="vertex-container">
           ${renderVertexGraph(voiceMarkers, domainKnowledge)}
         </div>
@@ -12196,6 +12336,30 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         const data = await response.json();
         const profile = data.profiles?.find((p: any) => p.id === id);
         if (profile) {
+          const corpusIds: string[] = Array.isArray(profile.corpusResourceIds) ? profile.corpusResourceIds : [];
+          const idToTitle = new Map(
+            (currentResources || []).map((r: { id?: string; title?: string; topic?: string }) => [
+              r.id || '',
+              r.title || r.topic || r.id || ''
+            ])
+          );
+          const corpusListHtml = corpusIds
+            .slice(0, 32)
+            .map((rid: string) => {
+              const label = idToTitle.get(rid) || rid;
+              return `<li style="margin-bottom: 4px;"><span style="font-family: monospace; font-size: 0.85em;">${escapeHtml(rid)}</span> — ${escapeHtml(String(label))}</li>`;
+            })
+            .join('');
+          const corpusMore = corpusIds.length > 32 ? `<li style="color: var(--text-secondary);">…and ${corpusIds.length - 32} more</li>` : '';
+          const corpusSection =
+            corpusIds.length > 0
+              ? `<div style="margin-bottom: var(--space-lg); padding: var(--space-md); background: var(--portal-surface-elevated); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
+                  <h3 style="margin-bottom: var(--space-sm);">Resource corpus (topology reference)</h3>
+                  <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-sm);">${corpusIds.length} on-repo resources contributed text to this profile. Rings, matrix, and vertex views below summarise the resulting voice characteristics (not individual files).</p>
+                  <ul style="margin: 0; padding-left: 1.25rem; max-height: 12rem; overflow-y: auto; font-size: var(--text-sm);">${corpusListHtml}${corpusMore}</ul>
+                </div>`
+              : '';
+
           // Create a modal-like display for profile details with visualizations
           const modal = document.createElement('div');
           modal.className = 'modal';
@@ -12225,9 +12389,17 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                     <p><strong>Archived:</strong> ${profile.archived ? 'Yes' : 'No'}</p>
                   </div>
                 </div>
+                ${corpusSection}
               </div>
-              <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Close</button>
+              <div class="modal-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center;">
+                ${profile.id !== 'default' ? `
+                  ${!profile.isDefault ? `<button type="button" class="btn btn-success btn-sm" onclick="setDefaultProfile('${escapeHtml(profile.id)}', true)">Set as default</button>` : ''}
+                  ${profile.archived
+                    ? `<button type="button" class="btn btn-warning btn-sm" onclick="unarchiveProfile('${escapeHtml(profile.id)}', this)">Unarchive</button>`
+                    : `<button type="button" class="btn btn-secondary btn-sm" onclick="archiveProfile('${escapeHtml(profile.id)}', this)">Archive</button>`
+                  }
+                ` : '<span style="color: var(--text-secondary); font-size: var(--text-sm);">Bundled default is read-only. Use <strong>Build / refresh BIFPONS</strong> above to save a site corpus voice in storage.</span>'}
+                <button type="button" class="btn btn-secondary" onclick="this.closest('.modal')?.remove(); document.body.style.overflow = '';">Close</button>
               </div>
             </div>
           `;
@@ -12252,18 +12424,18 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
   };
 
   // Archive Profile
-  (window as any).archiveProfile = async (id: string) => {
-    const btn = event?.target as HTMLButtonElement;
-    const profileItem = btn?.closest('.profile-item');
-    const originalText = btn?.textContent || 'Archive';
+  (window as any).archiveProfile = async (id: string, btn?: HTMLButtonElement | null) => {
+    const trigger = btn ?? (typeof window !== 'undefined' ? ((window as unknown as { event?: Event }).event?.target as HTMLButtonElement) : undefined);
+    const profileItem = trigger?.closest('.profile-item');
+    const originalText = trigger?.textContent || 'Archive';
     
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Archiving...';
+    if (trigger) {
+      trigger.disabled = true;
+      trigger.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Archiving...';
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/${id}`, {
+      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -12274,7 +12446,8 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
 
       if (response.ok) {
         showNotification('Profile archived successfully.', 'success');
-        // Add fade-out animation
+        document.querySelector('.modal')?.remove();
+        document.body.style.overflow = '';
         if (profileItem) {
           profileItem.style.transition = 'opacity 0.3s ease';
           profileItem.style.opacity = '0.5';
@@ -12286,35 +12459,35 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         const errorData = await response.json().catch(() => ({}));
         const errorMsg = errorData.error || 'Unknown error';
         showNotification(`Failed to archive profile: ${errorMsg}`, 'error');
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = originalText;
+        if (trigger) {
+          trigger.disabled = false;
+          trigger.textContent = originalText;
         }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Network error';
       showNotification(`Error archiving profile: ${errorMsg}`, 'error');
       console.error('[Portal] Error archiving profile:', error);
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = originalText;
+      if (trigger) {
+        trigger.disabled = false;
+        trigger.textContent = originalText;
       }
     }
   };
 
   // Unarchive Profile
-  (window as any).unarchiveProfile = async (id: string) => {
-    const btn = event?.target as HTMLButtonElement;
-    const profileItem = btn?.closest('.profile-item');
-    const originalText = btn?.textContent || 'Unarchive';
+  (window as any).unarchiveProfile = async (id: string, btn?: HTMLButtonElement | null) => {
+    const trigger = btn ?? (typeof window !== 'undefined' ? ((window as unknown as { event?: Event }).event?.target as HTMLButtonElement) : undefined);
+    const profileItem = trigger?.closest('.profile-item');
+    const originalText = trigger?.textContent || 'Unarchive';
     
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Unarchiving...';
+    if (trigger) {
+      trigger.disabled = true;
+      trigger.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Unarchiving...';
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/${id}`, {
+      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -12325,7 +12498,8 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
 
       if (response.ok) {
         showNotification('Profile unarchived successfully.', 'success');
-        // Add fade-in animation
+        document.querySelector('.modal')?.remove();
+        document.body.style.overflow = '';
         if (profileItem) {
           profileItem.style.transition = 'opacity 0.3s ease';
           profileItem.style.opacity = '1';
@@ -12337,18 +12511,18 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
         const errorData = await response.json().catch(() => ({}));
         const errorMsg = errorData.error || 'Unknown error';
         showNotification(`Failed to unarchive profile: ${errorMsg}`, 'error');
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = originalText;
+        if (trigger) {
+          trigger.disabled = false;
+          trigger.textContent = originalText;
         }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Network error';
       showNotification(`Error unarchiving profile: ${errorMsg}`, 'error');
       console.error('[Portal] Error unarchiving profile:', error);
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = originalText;
+      if (trigger) {
+        trigger.disabled = false;
+        trigger.textContent = originalText;
       }
     }
   };
@@ -12423,10 +12597,12 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
           ` : ''}
           <div class="resource-actions">
             <button class="btn btn-secondary btn-sm" onclick="viewProfile('${escapeHtml(profile.id)}')">View Details</button>
-            ${!profile.isDefault ? `<button class="btn btn-success btn-sm" onclick="setDefaultProfile('${escapeHtml(profile.id)}')">Set as Default</button>` : ''}
-            ${profile.archived 
-              ? `<button class="btn btn-warning btn-sm" onclick="unarchiveProfile('${escapeHtml(profile.id)}')">Unarchive</button>`
-              : `<button class="btn btn-secondary btn-sm" onclick="archiveProfile('${escapeHtml(profile.id)}')">Archive</button>`
+            ${profile.id !== 'default' && !profile.isDefault ? `<button class="btn btn-success btn-sm" onclick="setDefaultProfile('${escapeHtml(profile.id)}')">Set as Default</button>` : ''}
+            ${profile.id === 'default'
+              ? ''
+              : profile.archived
+              ? `<button class="btn btn-warning btn-sm" onclick="unarchiveProfile('${escapeHtml(profile.id)}', this)">Unarchive</button>`
+              : `<button class="btn btn-secondary btn-sm" onclick="archiveProfile('${escapeHtml(profile.id)}', this)">Archive</button>`
             }
           </div>
         </div>
@@ -12443,11 +12619,42 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
     }, 100);
   };
 
-  // Set Default Profile
-  (window as any).setDefaultProfile = async (id: string) => {
-    if (!confirm('Set this profile as the default voice profile? This will make it the active profile for all resource generation.')) return;
-    
-    showNotification('Default profile setting functionality will be implemented in a future update. For now, profiles are managed through the Voice Framework storage system.', 'info');
+  // Set Default Profile (persists defaultProfileId + isDefault flags in voice-framework/storage/profiles.json)
+  (window as any).setDefaultProfile = async (id: string, skipConfirm?: boolean) => {
+    if (id === 'default') {
+      showNotification(
+        'The bundled default cannot be stored as the workspace default. Create a base profile from starters, then set that as default.',
+        'info'
+      );
+      return;
+    }
+    if (!skipConfirm) {
+      if (!confirm('Set this profile as the default voice profile? New resource runs that use “Auto” will prefer this saved profile when present.')) return;
+    }
+    try {
+      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isDefault: true })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        showNotification('Default voice profile updated.', 'success');
+        document.querySelector('.modal')?.remove();
+        document.body.style.overflow = '';
+        await loadProfiles();
+        await ensureWorkspaceVoiceProfiles();
+      } else {
+        showNotification(typeof data.error === 'string' ? data.error : 'Failed to set default profile', 'error');
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Network error';
+      showNotification(`Error setting default profile: ${errorMsg}`, 'error');
+      console.error('[Portal] setDefaultProfile:', error);
+    }
   };
 
   // Analyze Profile Duplicates (Neural Library Analysis)
@@ -12961,6 +13168,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
   
   // Make functions globally accessible
   (window as any).loadProfiles = loadProfiles;
+  (window as any).createBaseProfile = createBaseProfile;
   (window as any).filterProfiles = filterProfiles;
   (window as any).archiveProfile = archiveProfile;
   (window as any).unarchiveProfile = unarchiveProfile;
@@ -13022,6 +13230,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
   document.addEventListener('DOMContentLoaded', () => {
     const filterAll = document.getElementById('filter-all');
     if (filterAll) filterAll.classList.add('active');
+    initWorkspaceVoiceProfileSelect();
 
     // Ensure sidebar is visible on page load if dashboard is shown
     const dashboard = document.getElementById('admin-dashboard');

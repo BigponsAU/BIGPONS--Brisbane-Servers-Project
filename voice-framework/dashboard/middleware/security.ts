@@ -7,6 +7,38 @@ import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 
+function parseAllowedOrigins(): string[] {
+  const raw = process.env.ALLOWED_ORIGINS;
+  if (!raw?.trim()) {
+    return ['http://localhost:3000'];
+  }
+  return raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+}
+
+/**
+ * When ALLOW_GITHUB_PAGES=1, allow any https origin whose host is github.io or *.github.io
+ * (GitHub Pages sends Origin: https://<user>.github.io even for project sites under /repo/).
+ */
+function isGithubPagesBrowserOrigin(origin: string): boolean {
+  const enabled =
+    process.env.ALLOW_GITHUB_PAGES === '1' || process.env.ALLOW_GITHUB_PAGES === 'true';
+  if (!enabled) {
+    return false;
+  }
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== 'https:') {
+      return false;
+    }
+    return url.hostname === 'github.io' || url.hostname.endsWith('.github.io');
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Rate limiting configuration
  * Limits each IP to 100 requests per 15 minutes
@@ -119,16 +151,14 @@ export function getRateLimiterForEndpoint(endpoint: string): ReturnType<typeof r
  */
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-      : ['http://localhost:3000'];
+    const allowedOrigins = parseAllowedOrigins();
 
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || isGithubPagesBrowserOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

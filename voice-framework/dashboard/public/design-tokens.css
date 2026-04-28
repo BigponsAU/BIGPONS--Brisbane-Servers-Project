@@ -1,83 +1,92 @@
 /**
  * DASHBOARD DESIGN TOKENS
- * 
- * Shared design tokens from the main design system.
- * This file imports tokens from the website design system
- * and provides dashboard-specific overrides where needed.
- * 
- * For full token definitions, see: website-brisbaneservers.com/src/styles/design-tokens.css
+ *
+ * Website-aligned token subset for the standalone dashboard surface.
+ * Keeps naming compatible with existing dashboard CSS while matching
+ * the production visual language used on localhost:3000.
  */
 
-/* Import base design tokens - using relative path to website styles */
-/* Note: In a real deployment, this would need to be accessible from the dashboard */
-/* For now, we'll define dashboard-specific tokens that map to the design system */
-
 :root {
-  /* Map dashboard colors to design system */
+  --phi: 1.618033988749895;
+  --phi-inv: 0.618033988749895;
+  --phi-quarter: 0.4045;
+  --phi-half: 0.809;
+
   --primary-color: #0A74DA;
+  --primary-color-rgb: 10, 116, 218;
   --primary-dark: #0855A8;
   --primary-light: #F0F7FF;
   --primary-ultra-light: #FAFCFF;
-  
-  /* Dashboard-specific dark theme colors */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --border-color: #475569;
-  --card-bg: #1e293b;
-  
-  /* Semantic colors mapped to design system */
+  --primary-ink: #081B36;
+
+  --accent-violet: #8B5CF6;
+  --accent-violet-rgb: 139, 92, 246;
+  --accent-pink: #EC4899;
+  --accent-pink-rgb: 236, 72, 153;
+  --accent-teal: #14B8A6;
+  --accent-teal-rgb: 20, 184, 166;
+
+  --text-primary: #1A1A1A;
+  --text-secondary: #6b7280;
+  --text-light: #9ca3af;
+  --text-on-dark: #FFFFFF;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #FAFBFC;
+  --bg-tertiary: #F8F9FA;
+  --bg-accent: linear-gradient(135deg, var(--primary-ultra-light) 0%, #F0F7FF 100%);
+  --bg-spectrum: linear-gradient(180deg, #ffffff 0%, #f7f9fc 40%, #eef4fb 100%);
+  --card-bg: #FFFFFF;
+
+  --surface-glass: rgba(255, 255, 255, 0.72);
+  --surface-glass-strong: rgba(255, 255, 255, 0.9);
+
+  --border-color: #E2E8F0;
+  --border-light: #EDF2F7;
+  --border-accent: rgba(var(--primary-color-rgb), 0.24);
+  --divider-strong: rgba(15, 23, 42, 0.1);
+
   --success-color: var(--primary-color);
   --warning-color: var(--primary-dark);
   --error-color: var(--primary-dark);
   --secondary-color: var(--primary-dark);
-  
-  /* Spacing tokens from design system */
-  --space-xs: clamp(0.25rem, calc(1rem * 0.4045 * 0.5), 0.5rem);
-  --space-sm: clamp(0.5rem, calc(1rem * 0.4045 * 0.75), 1rem);
-  --space-md: clamp(0.75rem, calc(1rem * 0.809 * 0.5), 1.5rem);
-  --space-lg: clamp(1rem, calc(1rem * 0.5), 2rem);
-  --space-xl: clamp(1.618rem, calc(1rem * 1.618 * 0.5), calc(2rem * 1.618));
-  --space-2xl: clamp(2.618rem, calc(1rem * 1.618 * 1.618 * 0.5), calc(4rem * 1.618));
-  
-  /* Typography tokens from design system */
+
+  --space-xs: clamp(0.25rem, calc(1rem * var(--phi-quarter) * 0.5), 0.5rem);
+  --space-sm: clamp(0.5rem, calc(1rem * var(--phi-quarter) * 0.75), 1rem);
+  --space-md: clamp(0.75rem, calc(1rem * var(--phi-half) * 0.5), 1.5rem);
+  --space-lg: clamp(1rem, 0.5rem, 2rem);
+  --space-xl: clamp(1.618rem, calc(1rem * var(--phi) * 0.5), calc(2rem * var(--phi)));
+  --space-2xl: clamp(2.618rem, calc(1rem * var(--phi) * var(--phi) * 0.5), calc(4rem * var(--phi)));
+  --space-3xl: clamp(4.236rem, calc(1rem * 4.236 * 0.5), calc(6rem * var(--phi)));
+
   --text-xs: calc(1rem * 0.75);
   --text-sm: calc(1rem * 0.875);
   --text-base: 1rem;
-  --text-lg: calc(1rem * 1.618);
-  --text-xl: calc(1rem * 1.618 * 1.618);
-  
-  /* Font weights */
+  --text-lg: calc(1rem * var(--phi));
+  --text-xl: calc(1rem * var(--phi) * var(--phi));
+
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* Border radius */
-  --border-radius: 0.75rem;
+
   --radius-sm: 0.5rem;
+  --border-radius: 0.75rem;
   --radius-md: 1rem;
   --radius-lg: 1.25rem;
-  
-  /* Shadows */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 15px -3px rgba(8, 27, 54, 0.08), 0 4px 6px -2px rgba(8, 27, 54, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(8, 27, 54, 0.12), 0 10px 10px -5px rgba(8, 27, 54, 0.08);
   --shadow-primary: 0 10px 25px -5px rgba(10, 116, 218, 0.25);
-  
-  /* Transitions */
-  --transition: all 0.618s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.382s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Opacity */
-  --opacity-subtle: 0.03;
-  --opacity-soft: 0.08;
-  --opacity-medium: 0.15;
-  --opacity-strong: 0.3;
-  --opacity-full: 1;
+  --shadow-additive-soft: 0 0.65rem 1.4rem rgba(8, 27, 54, 0.08);
+
+  --transition: color 0.24s ease, background-color 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease, opacity 0.24s ease, transform 0.24s ease;
+  --transition-fast: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, transform 0.16s ease;
+
+  --additive-gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-violet) 46%, var(--accent-pink) 100%);
+  --additive-gradient-soft: linear-gradient(150deg, rgba(var(--primary-color-rgb), 0.12) 0%, rgba(var(--accent-violet-rgb), 0.08) 48%, rgba(var(--accent-pink-rgb), 0.06) 100%);
 }
 
 

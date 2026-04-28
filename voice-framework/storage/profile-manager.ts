@@ -21,6 +21,14 @@ export interface ProfileMetadata {
   isDefault?: boolean;
   /** When true, profile is hidden from default listings (optional). */
   archived?: boolean;
+  /** Resource ids whose text was used to build this profile (site corpus). */
+  corpusResourceIds?: string[];
+  /** Total resources currently linked to this profile corpus. */
+  corpusResourceCount?: number;
+  /** Resources considered indexed for semantic use in this corpus. */
+  corpusIndexedCount?: number;
+  /** Last time this profile was rebuilt/synced from its corpus. */
+  corpusLastBuiltAt?: string;
 }
 
 export interface ProfileEntry {
@@ -135,7 +143,11 @@ export class ProfileManager {
    * Get all profile metadata
    */
   getAllProfiles(): ProfileMetadata[] {
-    return this.data.profiles.map(p => p.metadata);
+    const effectiveDefaultId = this.data.defaultProfileId || this.data.profiles[0]?.metadata.id;
+    return this.data.profiles.map(p => ({
+      ...p.metadata,
+      isDefault: p.metadata.isDefault || p.metadata.id === effectiveDefaultId
+    }));
   }
 
   /**

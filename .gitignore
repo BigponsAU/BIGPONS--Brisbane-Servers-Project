@@ -89,6 +89,10 @@ voice-framework/test-results/
 voice-framework/storage/auth-tokens.json
 voice-framework/storage/auth.db
 
+# Local storage backups and ephemeral test output (do not publish)
+voice-framework/storage/*.pre-curated-backup.json
+voice-framework/storage/test-results.json
+
 # Local tooling state
 website-brisbaneservers.com/.wrangler/
 .cursor/*.log

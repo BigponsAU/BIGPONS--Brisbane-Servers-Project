@@ -1,0 +1,46 @@
+# Build and publish the voice-framework dashboard image to GHCR.
+# Deploy that image on Render, Fly, etc., then point GitHub Actions variable
+# PUBLIC_API_BASE_URL at https://<your-host>/api for the Pages site build.
+name: Publish Voice Dashboard (Docker / GHCR)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'voice-framework/**'
+      - '.github/workflows/deploy-voice-dashboard-docker.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Image name (lowercase for GHCR)
+        id: image
+        run: |
+          owner_lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "name=ghcr.io/${owner_lower}/voice-framework-dashboard" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./voice-framework
+          file: ./voice-framework/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ github.sha }}

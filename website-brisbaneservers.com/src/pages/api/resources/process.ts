@@ -8,6 +8,7 @@ import {
   generateResourceCatalogDescription,
   resolveResourceVoiceProfile
 } from '../../../lib/resource-voice-profile';
+import { validateResourceSourceText } from '../../../lib/resource-submission-guard';
 
 /**
  * Process content directly (without file upload)
@@ -41,6 +42,21 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({
           error: 'Content, industry, and topic are required',
           code: 'MISSING_FIELDS',
+          success: false
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const sourceGuard = validateResourceSourceText(String(content));
+    if (!sourceGuard.ok) {
+      return new Response(
+        JSON.stringify({
+          error: sourceGuard.message,
+          code: sourceGuard.code,
           success: false
         }),
         {

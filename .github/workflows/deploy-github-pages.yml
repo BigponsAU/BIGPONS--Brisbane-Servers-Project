@@ -1,3 +1,5 @@
+# Static site only. Pair with a hosted voice dashboard API; see DEPLOYMENT.md and repository
+# variables PUBLIC_API_BASE_URL / INTERNAL_API_BASE_URL.
 name: Deploy to GitHub Pages
 
 on:
@@ -42,6 +44,7 @@ jobs:
           INTERNAL_API_BASE_URL: ${{ vars.INTERNAL_API_BASE_URL }}
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
           PUBLIC_SITE_BASE: ${{ vars.PUBLIC_SITE_BASE }}
+          SKIP_HOSTED_API_CHECK: ${{ vars.SKIP_HOSTED_API_CHECK }}
         run: |
           repo_name="${GITHUB_REPOSITORY#*/}"
           # Project site lives at https://<owner>.github.io/<repo>/ — base + site origin must match.

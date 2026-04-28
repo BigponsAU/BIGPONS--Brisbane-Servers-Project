@@ -51,6 +51,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 let server: Server | null = null;
 
+// Behind Render / Fly / nginx — required for correct client IPs and rate limiting
+if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY === '1') {
+  app.set('trust proxy', 1);
+}
+
 // Security middleware (must be before other middleware)
 app.use(corsMiddleware);
 app.use(createTimeoutMiddleware(30000)); // 30 second timeout
@@ -69,6 +74,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
+
+app.use('/api', (_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
 
 // Initialize framework components
 const toneAnalyzer = new ToneAnalyzer();
@@ -122,13 +134,13 @@ function checkDefaultCredentials(): void {
     // Register API routes with rate limiting
     app.use('/api', apiLimiter);
     app.use('/api/auth', createAuthRoutes());
-    app.use('/api', createAnalysisRoutes(toneAnalyzer, patternExtractor, shredder));
-    app.use('/api', createGenerationRoutes(textGenerator, extrapolator, voiceMatcher));
-    app.use('/api', createStorageRoutes(textStorage, profileManager));
+    app.use('/api', createAnalysisRoutes(toneAnalyzer, patternExtractor, shredder, profileManager));
+    app.use('/api', createGenerationRoutes(textGenerator, extrapolator, voiceMatcher, profileManager));
+    app.use('/api', createStorageRoutes(textStorage, profileManager, profileBuilder));
     app.use('/api', createDocumentRoutes(documentProcessor, uploadsDir, profileManager));
     app.use('/api', createTestingRoutes(testRunner));
     app.use('/api', createTopologyRoutes(textStorage, profileManager));
-    app.use('/api/resources', createResourceRoutes(textGenerator, extrapolator, voiceMatcher));
+    app.use('/api/resources', createResourceRoutes(textGenerator, extrapolator, voiceMatcher, profileManager));
     
     // Profile Builder route with validation
     app.post('/api/profile-builder/build', validateProfileBuilder, async (req: Request, res: Response) => {
@@ -167,7 +179,10 @@ app.get('/api/health', async (req: Request, res: Response) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve dashboard (catch-all for SPA)
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

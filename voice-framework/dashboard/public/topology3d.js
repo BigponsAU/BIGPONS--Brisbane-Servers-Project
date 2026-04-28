@@ -19,6 +19,14 @@ class Topology3D {
         this.connections = [];
         this.currentView = 'all'; // 'all', 'profile', or profileId
         this.selectedProfile = null;
+        this.defaultCameraPosition = new THREE.Vector3(0, 10, 20);
+        this.controlDefaults = {
+            dampingFactor: 0.08,
+            rotateSpeed: 0.28,
+            zoomSpeed: 0.12,
+            minDistance: 5,
+            maxDistance: 50,
+        };
 
         this.init();
     }
@@ -35,7 +43,7 @@ class Topology3D {
             0.1,
             1000
         );
-        this.camera.position.set(0, 10, 20);
+        this.camera.position.copy(this.defaultCameraPosition);
         this.camera.lookAt(0, 0, 0);
 
         // Create renderer
@@ -49,9 +57,12 @@ class Topology3D {
             if (typeof THREE.OrbitControls !== 'undefined') {
                 this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.minDistance = 5;
-                this.controls.maxDistance = 50;
+                this.controls.dampingFactor = this.controlDefaults.dampingFactor;
+                this.controls.minDistance = this.controlDefaults.minDistance;
+                this.controls.maxDistance = this.controlDefaults.maxDistance;
+                this.controls.rotateSpeed = this.controlDefaults.rotateSpeed;
+                this.controls.zoomSpeed = this.controlDefaults.zoomSpeed;
+                this.controls.enablePan = false;
             }
         } catch (error) {
             console.warn('OrbitControls not available, using basic camera controls');
@@ -293,19 +304,35 @@ class Topology3D {
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
     }
 
+    setInteractionSensitivity(level = 50) {
+        if (!this.controls) return;
+        const numeric = Number(level);
+        const clamped = Number.isFinite(numeric) ? Math.max(10, Math.min(100, numeric)) : 50;
+        const factor = clamped / 50;
+
+        this.controls.rotateSpeed = this.controlDefaults.rotateSpeed * factor;
+        this.controls.zoomSpeed = this.controlDefaults.zoomSpeed * factor;
+        this.controls.dampingFactor = Math.min(0.2, this.controlDefaults.dampingFactor * factor);
+    }
+
+    resetCamera() {
+        if (!this.camera) return;
+        this.camera.position.copy(this.defaultCameraPosition);
+        this.camera.lookAt(0, 0, 0);
+        if (this.controls && this.controls.target) {
+            this.controls.target.set(0, 0, 0);
+            if (typeof this.controls.update === 'function') {
+                this.controls.update();
+            }
+        }
+    }
+
     animate() {
         requestAnimationFrame(() => this.animate());
 
         if (this.controls) {
             this.controls.update();
         }
-
-        // Rotate principle spheres slightly
-        this.scene.children.forEach(child => {
-            if (child.userData.isPrinciple && child.rotation) {
-                child.rotation.y += 0.01;
-            }
-        });
 
         this.renderer.render(this.scene, this.camera);
     }

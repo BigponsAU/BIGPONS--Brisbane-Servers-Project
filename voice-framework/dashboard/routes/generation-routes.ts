@@ -9,11 +9,14 @@ import { Extrapolator } from '../../generators/extrapolator';
 import { VoiceMatcher } from '../../generators/voice-matcher';
 import { handleRouteError } from '../utils/error-handler';
 import { validateGenerate, validateExtrapolate, validateExtrapolateProject, validateMatchVoice } from '../middleware/validation';
+import { ProfileManager } from '../../storage/profile-manager';
+import { getRequestRuntimeProfile, sendProfileNotFound } from '../utils/profile-runtime';
 
 export function createGenerationRoutes(
   textGenerator: TextGenerator,
   extrapolator: Extrapolator,
-  voiceMatcher: VoiceMatcher
+  voiceMatcher: VoiceMatcher,
+  profileManager?: ProfileManager
 ): Router {
   const router = Router();
 
@@ -69,15 +72,19 @@ export function createGenerationRoutes(
         });
       }
 
-      const generated = textGenerator.generateText(topic, options || {});
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const generator = runtimeProfile.profile ? new TextGenerator(runtimeProfile.profile) : textGenerator;
+      const generated = generator.generateText(topic, options || {});
       const duration = Date.now() - startTime;
 
       console.log(`[API] POST /api/generate - Success (${duration}ms)`, { generatedLength: generated.length });
       res.json({
         text: generated,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/generate - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -128,15 +135,19 @@ export function createGenerationRoutes(
         });
       }
 
-      const extrapolated = extrapolator.extrapolate(text, options || {});
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const activeExtrapolator = runtimeProfile.profile ? new Extrapolator(runtimeProfile.profile) : extrapolator;
+      const extrapolated = activeExtrapolator.extrapolate(text, options || {});
       const duration = Date.now() - startTime;
 
       console.log(`[API] POST /api/extrapolate - Success (${duration}ms)`, { extrapolatedLength: extrapolated.length });
       res.json({
         text: extrapolated,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/extrapolate - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -231,15 +242,19 @@ export function createGenerationRoutes(
         return res.status(400).json({ error: 'Text is required', success: false });
       }
 
-      const match = voiceMatcher.scoreMatch(text);
-      const validation = voiceMatcher.validateVoice(text);
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
+      const match = matcher.scoreMatch(text);
+      const validation = matcher.validateVoice(text);
 
       res.json({
         match,
         validation,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       handleRouteError(error, res, 500);
     }
   });

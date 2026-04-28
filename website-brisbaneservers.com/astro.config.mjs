@@ -42,8 +42,10 @@ export default defineConfig({
         usePolling: false,
         interval: 100
       },
-      // API routes are now handled by Astro API endpoints (no proxy needed)
-      // HMR is handled by Astro automatically
+      // During local unified dev, proxy /api calls to the dashboard API host.
+      proxy: {
+        '/api': 'http://localhost:3001'
+      },
     },
     build: {
       cssCodeSplit: false,

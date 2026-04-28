@@ -61,8 +61,8 @@ The dashboard server exposes the following API endpoints:
 - `POST /api/match-voice` - Match text against voice profile
 
 ### Testing Endpoints
-- `POST /api/run-tests` - Run A/B test suite
-- `GET /api/test-results/:testId?` - Get test results (placeholder)
+- `POST /api/run-tests` - Run A/B test suite and persist result history
+- `GET /api/test-results/:testId?` - Get test history summary or a specific stored test run
 
 ### Storage Endpoints
 - `GET /api/storage/samples` - Get all text samples (with optional filters)

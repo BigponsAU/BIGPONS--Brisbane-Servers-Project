@@ -8,6 +8,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import * as net from 'net';
 import * as http from 'http';
+import * as fs from 'fs';
 import { Extrapolator } from './voice-framework/generators/extrapolator';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -26,6 +27,8 @@ const STARTUP_TIMEOUT = 120000; // 2 minutes total timeout for startup
 let websiteProcess: ChildProcess | null = null;
 let dashboardProcess: ChildProcess | null = null;
 let extrapolator: Extrapolator;
+let dashboardEnv: NodeJS.ProcessEnv = process.env;
+let websiteEnv: NodeJS.ProcessEnv = process.env;
 
 // Initialize extrapolator for status messages
 try {
@@ -105,7 +108,7 @@ async function checkPorts(): Promise<boolean> {
 /**
  * Check if a service is healthy by making an HTTP request
  * 
- * For website (static site): Accepts 200 (OK) or 404 (server responding but route not found)
+ * For website checks: Accepts 200 (OK) or 404 (server responding but route not found)
  * For dashboard: Expects 200 from /api/health endpoint
  */
 function checkHealth(url: string, timeout: number = 5000): Promise<boolean> {
@@ -159,22 +162,18 @@ async function waitForHealth(
  * Verify both services are healthy
  * 
  * Health Check Strategy:
- * - Website (port 3000): Try `/api/health` first (200 = ok); fallback to `/` (200/404).
+ * - Website (port 3000): Check `/` to avoid noisy Astro dev 404 logs during warm-up.
  * - Dashboard (port 3001): `/api/health` returns detailed health status.
  */
 async function verifyHealth(): Promise<boolean> {
   console.log('\n🔍 ' + generateStatusMessage('Ascertaining service health with systematic verification...'));
   
-  const websiteHealthUrl = `http://localhost:${WEBSITE_PORT}/api/health`;
   const websiteUrl = `http://localhost:${WEBSITE_PORT}`;
   // Dashboard: Has dedicated /api/health endpoint for detailed health status
   const dashboardUrl = `http://localhost:${DASHBOARD_PORT}/api/health`;
   
   process.stdout.write(`   Checking website (${WEBSITE_PORT})`);
-  let websiteHealthy = await waitForHealth('website', websiteHealthUrl);
-  if (!websiteHealthy) {
-    websiteHealthy = await waitForHealth('website (root)', websiteUrl);
-  }
+  const websiteHealthy = await waitForHealth('website (root)', websiteUrl);
   console.log(websiteHealthy ? ' ✅' : ' ❌');
   
   process.stdout.write(`   Checking dashboard (${DASHBOARD_PORT})`);
@@ -196,6 +195,7 @@ function startWebsite(): ChildProcess {
     ['run', 'dev'],
     {
       cwd: websiteDir,
+      env: websiteEnv,
       stdio: 'inherit',
       shell: isWindows
     }
@@ -214,10 +214,51 @@ function startDashboard(): ChildProcess {
     ['run', 'dashboard'],
     {
       cwd: dashboardDir,
+      env: dashboardEnv,
       stdio: 'inherit',
       shell: isWindows
     }
   );
+}
+
+function parseDotEnvFile(filePath: string): Record<string, string> {
+  if (!fs.existsSync(filePath)) return {};
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  const vars: Record<string, string> = {};
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const separator = trimmed.indexOf('=');
+    if (separator <= 0) continue;
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim().replace(/^['"]|['"]$/g, '');
+    if (key) vars[key] = value;
+  }
+  return vars;
+}
+
+function loadDashboardEnv(): NodeJS.ProcessEnv {
+  const dashboardDir = path.join(__dirname, 'voice-framework');
+  const envPath = path.join(dashboardDir, '.env');
+  const envFromFile = parseDotEnvFile(envPath);
+  const merged: NodeJS.ProcessEnv = { ...process.env, ...envFromFile };
+
+  if (!merged.ADMIN_EMAIL || !merged.ADMIN_PASSWORD) {
+    console.warn('⚠️  Dashboard login credentials are not configured.');
+    console.warn(`   Create ${envPath} with ADMIN_EMAIL and ADMIN_PASSWORD (or set them in your shell).`);
+  }
+  return merged;
+}
+
+function loadWebsiteEnv(): NodeJS.ProcessEnv {
+  const merged: NodeJS.ProcessEnv = { ...process.env };
+  if (!merged.PUBLIC_API_BASE_URL) {
+    merged.PUBLIC_API_BASE_URL = `http://localhost:${DASHBOARD_PORT}/api`;
+  }
+  if (!merged.INTERNAL_API_BASE_URL) {
+    merged.INTERNAL_API_BASE_URL = merged.PUBLIC_API_BASE_URL;
+  }
+  return merged;
 }
 
 /**
@@ -264,6 +305,9 @@ async function main() {
       throw new Error('Ports are not available. Please free the ports and try again.');
     }
     
+    dashboardEnv = loadDashboardEnv();
+    websiteEnv = loadWebsiteEnv();
+
     // Start services
     console.log('\n🚀 Starting services...');
     console.log(`   Website: http://localhost:${WEBSITE_PORT}`);

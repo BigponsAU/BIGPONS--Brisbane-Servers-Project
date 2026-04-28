@@ -38,9 +38,20 @@ export interface SemanticRelationship {
   createdAt: Date;
 }
 
+export interface ArchivedPrincipleRecord {
+  id: string;
+  originalId: string;
+  principle: string;
+  description?: string;
+  category?: string;
+  archivedAt: Date;
+  reason: string;
+}
+
 export interface TextStorageData {
   samples: TextSample[];
   principles: SemanticPrinciple[];
+  archivedPrinciples: ArchivedPrincipleRecord[];
   relationships: SemanticRelationship[];
   version: string;
   lastUpdated: Date;
@@ -55,6 +66,7 @@ export class TextStorage {
     this.data = {
       samples: [],
       principles: [],
+      archivedPrinciples: [],
       relationships: [],
       version: '1.0.0',
       lastUpdated: new Date()
@@ -83,6 +95,12 @@ export class TextStorage {
             ...p,
             createdAt: new Date(p.createdAt)
           })),
+          archivedPrinciples: Array.isArray(parsed.archivedPrinciples)
+            ? parsed.archivedPrinciples.map((p: any) => ({
+                ...p,
+                archivedAt: new Date(p.archivedAt)
+              }))
+            : [],
           relationships: parsed.relationships.map((r: any) => ({
             ...r,
             createdAt: new Date(r.createdAt)
@@ -153,6 +171,38 @@ export class TextStorage {
   }
 
   /**
+   * Normalize human-readable text for storage/display.
+   */
+  private normalizeText(text: string): string {
+    return text
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Heuristic: true when a label has semantic signal (not just numbers/symbols).
+   */
+  private hasSemanticSignal(text: string): boolean {
+    const normalized = this.normalizeText(text);
+    if (!normalized) return false;
+    const words = normalized.split(/\s+/).filter(Boolean);
+    if (words.length < 2) return false;
+    if (!words.some((word) => /[A-Za-z]{4,}/.test(word))) return false;
+    const letters = (normalized.match(/[A-Za-z]/g) || []).length;
+    const digits = (normalized.match(/[0-9]/g) || []).length;
+    const symbolCount = (normalized.match(/[^A-Za-z0-9\s.,;:!?'"()\-/%]/g) || []).length;
+    const symbolRatio = symbolCount / Math.max(normalized.length, 1);
+    const codeLikePattern = /\b(var|const|let|function|return|opacity|calc|rgba|background)\b|--|=>|\{|\}|\[|\]|::/i;
+    if (letters < 3) return false;
+    if (digits > letters * 2) return false;
+    if (symbolRatio > 0.2) return false;
+    if (/[{}[\]|=>]/.test(normalized)) return false;
+    if (codeLikePattern.test(normalized)) return false;
+    return true;
+  }
+
+  /**
    * Add a text sample
    */
   async addSample(sample: Omit<TextSample, 'id' | 'createdAt' | 'updatedAt'>): Promise<TextSample> {
@@ -163,6 +213,7 @@ export class TextStorage {
     
     const newSample: TextSample = {
       ...sample,
+      text: this.normalizeText(sample.text),
       id: this.generateId(),
       createdAt: new Date(),
       updatedAt: new Date()
@@ -239,8 +290,17 @@ export class TextStorage {
    * Add a semantic principle
    */
   async addPrinciple(principle: Omit<SemanticPrinciple, 'id' | 'createdAt'>): Promise<SemanticPrinciple> {
+    const normalizedPrinciple = this.normalizeText(principle.principle || '');
+    if (!this.hasSemanticSignal(normalizedPrinciple)) {
+      throw new Error('Principle must contain meaningful semantic text (not only numbers/symbols)');
+    }
     const newPrinciple: SemanticPrinciple = {
       ...principle,
+      principle: normalizedPrinciple,
+      description: principle.description ? this.normalizeText(principle.description) : principle.description,
+      examples: Array.isArray(principle.examples)
+        ? principle.examples.map((example) => this.normalizeText(example)).filter(Boolean)
+        : principle.examples,
       id: this.generateId(),
       createdAt: new Date()
     };
@@ -334,6 +394,12 @@ export class TextStorage {
         ...p,
         createdAt: new Date(p.createdAt)
       })),
+      archivedPrinciples: Array.isArray((data as any).archivedPrinciples)
+        ? (data as any).archivedPrinciples.map((p: any) => ({
+            ...p,
+            archivedAt: new Date(p.archivedAt)
+          }))
+        : [],
       relationships: data.relationships.map(r => ({
         ...r,
         createdAt: new Date(r.createdAt)
@@ -350,6 +416,7 @@ export class TextStorage {
     return {
       totalSamples: this.data.samples.length,
       totalPrinciples: this.data.principles.length,
+      archivedPrinciples: this.data.archivedPrinciples.length,
       totalRelationships: this.data.relationships.length,
       categories: {
         samples: [...new Set(this.data.samples.map(s => s.category).filter(Boolean))],
@@ -384,6 +451,128 @@ export class TextStorage {
     }
     
     return { removedSamples, removedPrinciples };
+  }
+
+  /**
+   * Remove low-signal/noisy semantic entries across text storage.
+   */
+  async cleanupSemanticNoise(dryRun: boolean = false): Promise<{
+    removedLowSignalPrinciples: number;
+    sanitizedSamples: number;
+    sanitizedPrinciples: number;
+  }> {
+    let removedLowSignalPrinciples = 0;
+    let sanitizedSamples = 0;
+    let sanitizedPrinciples = 0;
+
+    const nextSamples = this.data.samples.map((sample) => {
+      const normalizedText = this.normalizeText(sample.text || '');
+      if (normalizedText !== sample.text) {
+        sanitizedSamples += 1;
+      }
+      return { ...sample, text: normalizedText };
+    });
+
+    const nextPrinciples: SemanticPrinciple[] = [];
+    for (const principle of this.data.principles) {
+      const normalizedPrinciple = this.normalizeText(principle.principle || '');
+      if (!this.hasSemanticSignal(normalizedPrinciple)) {
+        removedLowSignalPrinciples += 1;
+        continue;
+      }
+
+      const normalizedDescription = principle.description
+        ? this.normalizeText(principle.description)
+        : principle.description;
+      const normalizedExamples = Array.isArray(principle.examples)
+        ? principle.examples.map((example) => this.normalizeText(example)).filter(Boolean)
+        : principle.examples;
+
+      if (
+        normalizedPrinciple !== principle.principle ||
+        normalizedDescription !== principle.description ||
+        JSON.stringify(normalizedExamples || []) !== JSON.stringify(principle.examples || [])
+      ) {
+        sanitizedPrinciples += 1;
+      }
+
+      nextPrinciples.push({
+        ...principle,
+        principle: normalizedPrinciple,
+        description: normalizedDescription,
+        examples: normalizedExamples,
+      });
+    }
+
+    if (!dryRun) {
+      this.data.samples = nextSamples;
+      this.data.principles = nextPrinciples;
+      await this.save();
+    }
+
+    return {
+      removedLowSignalPrinciples,
+      sanitizedSamples,
+      sanitizedPrinciples,
+    };
+  }
+
+  /**
+   * Aggressive principle cleanup for legacy fragment-heavy corpora.
+   * Keeps only stronger semantic phrases.
+   */
+  async cleanupPrincipleFragmentsAggressive(dryRun: boolean = false): Promise<{
+    removedAggressivePrinciples: number;
+    archivedAggressivePrinciples: number;
+  }> {
+    let removedAggressivePrinciples = 0;
+    let archivedAggressivePrinciples = 0;
+    const codeLikePattern = /\b(var|const|let|function|return|opacity|calc|rgba|background|clamp)\b|--|=>|\{|\}|\[|\]|::/i;
+
+    const nextPrinciples: SemanticPrinciple[] = [];
+    for (const principle of this.data.principles) {
+      const normalized = this.normalizeText(principle.principle || '');
+      const words = normalized.split(/\s+/).filter(Boolean);
+      const longWords = words.filter((word) => /[A-Za-z]{4,}/.test(word));
+      const digits = (normalized.match(/[0-9]/g) || []).length;
+      const letters = (normalized.match(/[A-Za-z]/g) || []).length;
+
+      const keep =
+        words.length >= 4 &&
+        longWords.length >= 2 &&
+        letters >= 8 &&
+        digits <= Math.max(2, Math.floor(letters / 4)) &&
+        !codeLikePattern.test(normalized);
+
+      if (!keep) {
+        removedAggressivePrinciples += 1;
+        archivedAggressivePrinciples += 1;
+        if (!dryRun) {
+          this.data.archivedPrinciples.push({
+            id: this.generateId(),
+            originalId: principle.id,
+            principle: normalized,
+            description: principle.description,
+            category: principle.category,
+            archivedAt: new Date(),
+            reason: 'aggressive_fragment_cleanup'
+          });
+        }
+        continue;
+      }
+
+      nextPrinciples.push({
+        ...principle,
+        principle: normalized,
+      });
+    }
+
+    if (!dryRun && removedAggressivePrinciples > 0) {
+      this.data.principles = nextPrinciples;
+      await this.save();
+    }
+
+    return { removedAggressivePrinciples, archivedAggressivePrinciples };
   }
 
   /**

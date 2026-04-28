@@ -1,6 +1,7 @@
 /**
  * Resolve which VoiceProfile drives resource creation and catalogue-style descriptions.
- * Mirrors portal "base profile" sources (starters + published) when no default is stored.
+ * Mirrors public library sources (starters + public catalogue) when no default is stored.
+ * The saved **BIFPONS** profile uses the wider site corpus — see `resourcesForSiteVoiceCorpus` in this file.
  */
 
 import { voiceProfileData } from '@voice-framework';
@@ -28,7 +29,29 @@ export interface ResolveResourceVoiceProfileParams {
 }
 
 /**
- * Published starters + public catalogue entries, deduped by id (same rules as POST /api/profiles/create-base).
+ * Site voice corpus: starter curriculum + every **published** resource (any visibility except archived),
+ * deduped by id. Matches what the marketing site can ship as published pages and internal published copy.
+ * Same rules as POST /api/profiles/create-base (BIFPONS build).
+ */
+export function resourcesForSiteVoiceCorpus(resources: Resource[]): Resource[] {
+  const byId = new Map<string, Resource>();
+  for (const r of resources) {
+    if (!r.content?.trim()) continue;
+    if (r.status === 'archived') continue;
+    if (r.isStarterBlock === true) {
+      byId.set(r.id, r);
+      continue;
+    }
+    if (r.status === 'published') {
+      byId.set(r.id, r);
+    }
+  }
+  return [...byId.values()];
+}
+
+/**
+ * Starters + **public** published catalogue (anonymous-safe). Used for ephemeral library-derived voice
+ * when no saved default exists — not the full signed-in BIFPONS corpus (see {@link resourcesForSiteVoiceCorpus}).
  */
 export function resourcesForLibraryVoiceSources(resources: Resource[]): Resource[] {
   const starterBlocks = resources.filter((r) => r.isStarterBlock === true);

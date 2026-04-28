@@ -297,6 +297,19 @@ export const validateAddPrinciple = [
     .withMessage('Principle must be a string')
     .isLength({ min: 1, max: 10000 })
     .withMessage('Principle must be between 1 and 10000 characters')
+    .custom((value: string) => {
+      const text = String(value || '').trim();
+      const words = text.split(/\s+/).filter(Boolean);
+      const hasLongWord = words.some((word: string) => /[A-Za-z]{4,}/.test(word));
+      const letters = (text.match(/[A-Za-z]/g) || []).length;
+      const symbolCount = (text.match(/[^A-Za-z0-9\s.,;:!?'"()\-/%]/g) || []).length;
+      const symbolRatio = symbolCount / Math.max(text.length, 1);
+      const codeLikePattern = /\b(var|const|let|function|return|opacity|calc|rgba|background)\b|--|=>|\{|\}|\[|\]|::/i;
+      if (letters < 3 || words.length < 2 || !hasLongWord || symbolRatio > 0.2 || /[{}[\]|=>]/.test(text) || codeLikePattern.test(text)) {
+        throw new Error('Principle must include meaningful words, not only numbers/symbols');
+      }
+      return true;
+    })
     .trim(),
   body('description')
     .optional()
@@ -379,6 +392,14 @@ export const validateStorageCleanup = [
     .optional()
     .isBoolean()
     .withMessage('dryRun must be a boolean'),
+  body('deep')
+    .optional()
+    .isBoolean()
+    .withMessage('deep must be a boolean'),
+  body('aggressive')
+    .optional()
+    .isBoolean()
+    .withMessage('aggressive must be a boolean'),
   validate
 ];
 

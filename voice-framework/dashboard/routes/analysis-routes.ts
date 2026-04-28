@@ -9,11 +9,14 @@ import { PatternExtractor } from '../../analyzers/pattern-extractor';
 import { Shredder } from '../../analyzers/shredder';
 import { handleRouteError } from '../utils/error-handler';
 import { validateAnalyze, validateExtractPatterns, validateShred, validateCompareTruths } from '../middleware/validation';
+import { ProfileManager } from '../../storage/profile-manager';
+import { getRequestRuntimeProfile, sendProfileNotFound } from '../utils/profile-runtime';
 
 export function createAnalysisRoutes(
   toneAnalyzer: ToneAnalyzer,
   patternExtractor: PatternExtractor,
-  shredder: Shredder
+  shredder: Shredder,
+  profileManager?: ProfileManager
 ): Router {
   const router = Router();
 
@@ -62,17 +65,21 @@ export function createAnalysisRoutes(
         });
       }
 
-      const analysis = toneAnalyzer.analyzeText(text);
-      const match = toneAnalyzer.compareToProfile(analysis);
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const analyzer = runtimeProfile.profile ? new ToneAnalyzer(runtimeProfile.profile) : toneAnalyzer;
+      const analysis = analyzer.analyzeText(text);
+      const match = analyzer.compareToProfile(analysis);
       const duration = Date.now() - startTime;
 
       console.log(`[API] POST /api/analyze - Success (${duration}ms)`);
       res.json({
         analysis,
         match,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/analyze - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -115,15 +122,19 @@ export function createAnalysisRoutes(
         });
       }
 
-      const patterns = patternExtractor.extractPatterns(text);
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const extractor = runtimeProfile.profile ? new PatternExtractor(runtimeProfile.profile) : patternExtractor;
+      const patterns = extractor.extractPatterns(text);
       const duration = Date.now() - startTime;
 
       console.log(`[API] POST /api/extract-patterns - Success (${duration}ms)`);
       res.json({
         patterns,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/extract-patterns - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);

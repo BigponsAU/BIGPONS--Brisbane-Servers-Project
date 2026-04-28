@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+.vscode
+coverage
+.nyc_output
+**/*.test.ts
+**/vitest.config.*
+uploads
+dashboard/uploads

@@ -1,0 +1,39 @@
+# Render Blueprint — deploy the voice-framework dashboard as a Docker web service.
+# https://render.com/docs/blueprint-spec
+#
+# In Render: New → Blueprint → connect this repo → apply.
+# Then set GitHub repository variables (Settings → Secrets and variables → Actions → Variables):
+#   PUBLIC_API_BASE_URL = https://<this-service>.onrender.com/api
+# so the GitHub Pages workflow bakes the correct API origin into the static site.
+#
+# Free web instances do not support persistent disks; JSON storage resets on restarts
+# unless you upgrade and attach a disk mounted at /app/storage (see DEPLOYMENT.md).
+
+services:
+  - type: web
+    name: voice-framework-dashboard
+    runtime: docker
+    dockerfilePath: ./voice-framework/Dockerfile
+    dockerContext: ./voice-framework
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      # Comma-separated browser origins allowed to call the API (credentials).
+      # GitHub Pages uses Origin https://<user>.github.io — add that here, plus any custom domain.
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # Optional: also allow any https://*.github.io Origin (see dashboard middleware).
+      - key: ALLOW_GITHUB_PAGES
+        value: "1"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Trust X-Forwarded-* from Render edge (rate limit + logs)
+      - key: TRUST_PROXY
+        value: "1"

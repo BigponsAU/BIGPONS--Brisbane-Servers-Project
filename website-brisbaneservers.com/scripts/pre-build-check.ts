@@ -275,6 +275,55 @@ function checkCSSVariables(): ValidationResult {
 }
 
 /**
+ * GitHub Pages CI builds need an absolute HTTPS API base so the static site can reach the hosted dashboard.
+ */
+function checkHostedApiForGithubPages(): ValidationResult {
+  const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+  const siteUrl = (process.env.PUBLIC_SITE_URL ?? '').toLowerCase();
+  const apiUrl = (process.env.PUBLIC_API_BASE_URL ?? '').trim();
+  const skip = process.env.SKIP_HOSTED_API_CHECK === '1' || process.env.SKIP_HOSTED_API_CHECK === 'true';
+
+  if (skip) {
+    return {
+      name: 'Hosted API (GitHub Pages CI)',
+      passed: true,
+      message: 'Skipped (SKIP_HOSTED_API_CHECK is set)'
+    };
+  }
+
+  if (!isGithubActions) {
+    return {
+      name: 'Hosted API (GitHub Pages CI)',
+      passed: true,
+      message: 'Skipped (local build — enforced on GitHub Actions when PUBLIC_SITE_URL is GitHub Pages)'
+    };
+  }
+
+  if (!siteUrl.includes('github.io')) {
+    return {
+      name: 'Hosted API (GitHub Pages CI)',
+      passed: true,
+      message: 'Skipped (PUBLIC_SITE_URL is not GitHub Pages)'
+    };
+  }
+
+  if (!apiUrl || !/^https:\/\//i.test(apiUrl)) {
+    return {
+      name: 'Hosted API (GitHub Pages CI)',
+      passed: false,
+      message:
+        'Set repository variable PUBLIC_API_BASE_URL to your deployed voice dashboard HTTPS API root (e.g. https://your-service.onrender.com/api). See DEPLOYMENT.md at repo root. To bypass temporarily, set Actions variable SKIP_HOSTED_API_CHECK=1.'
+    };
+  }
+
+  return {
+    name: 'Hosted API (GitHub Pages CI)',
+    passed: true,
+    message: 'PUBLIC_API_BASE_URL is an HTTPS URL suitable for GitHub Pages'
+  };
+}
+
+/**
  * Run all validation checks
  */
 function runChecks(): void {
@@ -285,6 +334,7 @@ function runChecks(): void {
   results.push(checkDependencies());
   results.push(checkViewportMeta());
   results.push(checkCSSVariables());
+  results.push(checkHostedApiForGithubPages());
 
   // Print results
   let allPassed = true;

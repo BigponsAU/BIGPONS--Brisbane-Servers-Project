@@ -13,6 +13,9 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import { ProfileManager } from '../../storage/profile-manager';
+import { getRequestRuntimeProfile, sendProfileNotFound } from '../utils/profile-runtime';
+import { attachResourceToProfileCorpus } from '../utils/profile-corpus';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +38,7 @@ export interface Resource {
     wordCount?: number;
     semanticLevel?: 'high' | 'medium' | 'normal';
     voiceScore?: number;
+    profileId?: string;
   };
 }
 
@@ -82,10 +86,25 @@ async function saveResources(resources: Resource[]): Promise<void> {
   await fs.writeFile(RESOURCES_FILE, JSON.stringify(resources, null, 2));
 }
 
+async function linkResourceToProfileCorpus(
+  profileManager: ProfileManager | undefined,
+  profileId: string | undefined,
+  resourceId: string
+): Promise<void> {
+  if (!profileManager || !profileId) return;
+  try {
+    await attachResourceToProfileCorpus(profileManager, profileId, resourceId);
+  } catch (error) {
+    // Non-fatal: resource save should still succeed even if corpus link fails.
+    console.warn('[RESOURCE] Failed to link resource to profile corpus', { profileId, resourceId, error });
+  }
+}
+
 export function createResourceRoutes(
   textGenerator: TextGenerator,
   extrapolator: Extrapolator,
-  voiceMatcher: VoiceMatcher
+  voiceMatcher: VoiceMatcher,
+  profileManager?: ProfileManager
 ): Router {
   const router = Router();
 
@@ -104,6 +123,10 @@ export function createResourceRoutes(
     
     try {
       const { industry, topic, title, options } = req.body;
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const generator = runtimeProfile.profile ? new TextGenerator(runtimeProfile.profile) : textGenerator;
+      const activeExtrapolator = runtimeProfile.profile ? new Extrapolator(runtimeProfile.profile) : extrapolator;
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
       
       if (!industry || !topic) {
         return res.status(400).json({ 
@@ -119,7 +142,7 @@ export function createResourceRoutes(
       
       // Process synchronously - wait for all steps to complete
       // Generate main content
-      const generatedContent = textGenerator.generateText(seedText, {
+      const generatedContent = generator.generateText(seedText, {
         length: options?.length || 'long',
         includeExamples: options?.includeExamples !== false,
         includeStructure: true,
@@ -127,14 +150,14 @@ export function createResourceRoutes(
       });
 
       // Extrapolate for richer content
-      const extrapolatedContent = extrapolator.extrapolate(generatedContent, {
+      const extrapolatedContent = activeExtrapolator.extrapolate(generatedContent, {
         expansionLevel: 'moderate',
         addExamples: true,
         addDetails: true
       });
 
       // Validate voice match
-      const voiceValidation = voiceMatcher.validateVoice(extrapolatedContent);
+      const voiceValidation = matcher.validateVoice(extrapolatedContent);
       
       // Get user from request (set by auth middleware)
       const user = (req as any).user;
@@ -157,7 +180,8 @@ export function createResourceRoutes(
         metadata: {
           wordCount: extrapolatedContent.split(/\s+/).length,
           semanticLevel: 'high',
-          voiceScore: voiceValidation.score || 0
+          voiceScore: voiceValidation.score || 0,
+          profileId: runtimeProfile.id
         }
       };
 
@@ -165,6 +189,7 @@ export function createResourceRoutes(
       const resources = await loadResources();
       resources.push(resource);
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id, resource.id);
 
       const duration = Date.now() - startTime;
       console.log(`[API] POST /api/resources/generate - Success (${duration}ms)`);
@@ -172,6 +197,7 @@ export function createResourceRoutes(
       // Return complete resource with all voice validation data
       res.json({
         resource,
+        profileId: runtimeProfile.id,
         voiceValidation: {
           score: voiceValidation.score || 0,
           isValid: voiceValidation.isValid || false,
@@ -181,6 +207,7 @@ export function createResourceRoutes(
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/resources/generate - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -334,6 +361,8 @@ export function createResourceRoutes(
   router.post('/from-starter-block', requireEditor, async (req: Request, res: Response) => {
     try {
       const { starterBlockId, industry, topic, customizations } = req.body;
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
       const user = (req as any).user;
       
       if (!starterBlockId) {
@@ -373,13 +402,14 @@ export function createResourceRoutes(
         status: 'draft',
         metadata: {
           ...starterBlock.metadata,
-          wordCount: (customizations?.content || starterBlock.content).split(/\s+/).length
+          wordCount: (customizations?.content || starterBlock.content).split(/\s+/).length,
+          profileId: runtimeProfile.id || starterBlock.metadata?.profileId
         }
       };
 
       // If customizations include content, process through voice framework
       if (customizations?.content) {
-        const voiceValidation = voiceMatcher.validateVoice(customizations.content);
+        const voiceValidation = matcher.validateVoice(customizations.content);
         newResource.metadata = {
           ...newResource.metadata,
           voiceScore: voiceValidation.score || 0
@@ -388,12 +418,15 @@ export function createResourceRoutes(
 
       resources.push(newResource);
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || starterBlock.metadata?.profileId, newResource.id);
 
       res.json({
         resource: newResource,
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       handleRouteError(error, res, 500);
     }
   });
@@ -434,7 +467,7 @@ export function createResourceRoutes(
   router.put('/:id', requireEditor, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const { profileId, ...updates } = req.body || {};
       const resources = await loadResources();
       const index = resources.findIndex(r => r.id === id);
 
@@ -477,21 +510,26 @@ export function createResourceRoutes(
 
       // Re-validate voice if content changed
       if (updates.content) {
-        const voiceValidation = voiceMatcher.validateVoice(updates.content);
+        const runtimeProfile = getRequestRuntimeProfile({ ...req, body: { ...updates, profileId } } as Request, profileManager);
+        const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
+        const voiceValidation = matcher.validateVoice(updates.content);
         resources[index].metadata = {
           ...resources[index].metadata,
           voiceScore: voiceValidation.score || 0,
-          wordCount: updates.content.split(/\s+/).length
+          wordCount: updates.content.split(/\s+/).length,
+          profileId: runtimeProfile.id || resources[index].metadata?.profileId
         };
       }
 
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, resources[index].metadata?.profileId, resources[index].id);
 
       res.json({
         resource: resources[index],
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       handleRouteError(error, res, 500);
     }
   });
@@ -567,6 +605,10 @@ export function createResourceRoutes(
       }
 
       const { industry, topic, title, autoProcess, autoPublish } = req.body;
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const generator = runtimeProfile.profile ? new TextGenerator(runtimeProfile.profile) : textGenerator;
+      const activeExtrapolator = runtimeProfile.profile ? new Extrapolator(runtimeProfile.profile) : extrapolator;
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
       
       if (!industry || !topic) {
         // Clean up uploaded file
@@ -600,7 +642,7 @@ export function createResourceRoutes(
       if (shouldProcess) {
         // Generate enhanced content
         const seedText = `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
-        const generatedContent = textGenerator.generateText(seedText, {
+        const generatedContent = generator.generateText(seedText, {
           length: 'long',
           includeExamples: true,
           includeStructure: true,
@@ -608,14 +650,14 @@ export function createResourceRoutes(
         });
 
         // Extrapolate for richer content
-        processedContent = extrapolator.extrapolate(content + '\n\n' + generatedContent, {
+        processedContent = activeExtrapolator.extrapolate(content + '\n\n' + generatedContent, {
           expansionLevel: 'moderate',
           addExamples: true,
           addDetails: true
         });
 
         // Validate voice match
-        voiceValidation = voiceMatcher.validateVoice(processedContent);
+        voiceValidation = matcher.validateVoice(processedContent);
       }
 
       // Get user from request
@@ -639,7 +681,8 @@ export function createResourceRoutes(
         metadata: {
           wordCount: processedContent.split(/\s+/).length,
           semanticLevel: 'high',
-          voiceScore: voiceValidation.score || 0
+          voiceScore: voiceValidation.score || 0,
+          profileId: runtimeProfile.id
         }
       };
 
@@ -647,17 +690,20 @@ export function createResourceRoutes(
       const resources = await loadResources();
       resources.push(resource);
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id, resource.id);
 
       const duration = Date.now() - startTime;
       console.log(`[API] POST /api/resources/upload - Success (${duration}ms)`);
 
       res.json({
         resource,
+        profileId: runtimeProfile.id,
         voiceValidation,
         success: true,
         processed: shouldProcess
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/resources/upload - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -676,6 +722,10 @@ export function createResourceRoutes(
     
     try {
       const { content, industry, topic, title, autoPublish } = req.body;
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const generator = runtimeProfile.profile ? new TextGenerator(runtimeProfile.profile) : textGenerator;
+      const activeExtrapolator = runtimeProfile.profile ? new Extrapolator(runtimeProfile.profile) : extrapolator;
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
       
       if (!content || !industry || !topic) {
         return res.status(400).json({
@@ -690,7 +740,7 @@ export function createResourceRoutes(
 
       // Process through voice framework synchronously
       const seedText = `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
-      const generatedContent = textGenerator.generateText(seedText, {
+      const generatedContent = generator.generateText(seedText, {
         length: 'long',
         includeExamples: true,
         includeStructure: true,
@@ -698,23 +748,23 @@ export function createResourceRoutes(
       });
 
       // Extrapolate for richer content
-      let processedContent = extrapolator.extrapolate(content + '\n\n' + generatedContent, {
+      let processedContent = activeExtrapolator.extrapolate(content + '\n\n' + generatedContent, {
         expansionLevel: 'moderate',
         addExamples: true,
         addDetails: true
       });
 
       // Validate voice match
-      let voiceValidation = voiceMatcher.validateVoice(processedContent);
+      let voiceValidation = matcher.validateVoice(processedContent);
       
       // Ensure voice consistency - if score is low, regenerate
       if ((voiceValidation.score || 0) < 0.6) {
-        const regeneratedContent = textGenerator.generateText(seedText, {
+        const regeneratedContent = generator.generateText(seedText, {
           length: 'long',
           includeExamples: true,
           style: 'descriptive'
         });
-        const revalidated = voiceMatcher.validateVoice(regeneratedContent);
+        const revalidated = matcher.validateVoice(regeneratedContent);
         if ((revalidated.score || 0) > (voiceValidation.score || 0)) {
           processedContent = regeneratedContent;
           voiceValidation = revalidated;
@@ -743,7 +793,8 @@ export function createResourceRoutes(
         metadata: {
           wordCount: processedContent.split(/\s+/).length,
           semanticLevel: 'high',
-          voiceScore: voiceValidation.score || 0
+          voiceScore: voiceValidation.score || 0,
+          profileId: runtimeProfile.id
         }
       };
 
@@ -751,16 +802,19 @@ export function createResourceRoutes(
       const resources = await loadResources();
       resources.push(resource);
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id, resource.id);
 
       const duration = Date.now() - startTime;
       console.log(`[API] POST /api/resources/process - Success (${duration}ms)`);
 
       res.json({
         resource,
+        profileId: runtimeProfile.id,
         voiceValidation,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       const duration = Date.now() - startTime;
       console.error(`[API] POST /api/resources/process - Error after ${duration}ms:`, error);
       handleRouteError(error, res, 500);
@@ -776,6 +830,10 @@ export function createResourceRoutes(
     try {
       const { id } = req.params;
       const { options } = req.body;
+      const runtimeProfile = getRequestRuntimeProfile(req, profileManager);
+      const generator = runtimeProfile.profile ? new TextGenerator(runtimeProfile.profile) : textGenerator;
+      const activeExtrapolator = runtimeProfile.profile ? new Extrapolator(runtimeProfile.profile) : extrapolator;
+      const matcher = runtimeProfile.profile ? new VoiceMatcher(runtimeProfile.profile) : voiceMatcher;
       const user = (req as any).user;
       const resources = await loadResources();
       const resource = resources.find(r => r.id === id);
@@ -798,14 +856,14 @@ export function createResourceRoutes(
       }
 
       // Extrapolate existing content synchronously
-      const improvedContent = extrapolator.extrapolate(resource.content, {
+      const improvedContent = activeExtrapolator.extrapolate(resource.content, {
         expansionLevel: options?.expansionLevel || 'moderate',
         addExamples: options?.addExamples !== false,
         addDetails: true
       });
 
       // Validate voice
-      const voiceValidation = voiceMatcher.validateVoice(improvedContent);
+      const voiceValidation = matcher.validateVoice(improvedContent);
 
       // Ensure voice consistency - if score is low, regenerate
       let finalContent = improvedContent;
@@ -813,12 +871,12 @@ export function createResourceRoutes(
       
       if (finalVoiceScore < 0.6) {
         const seedText = `${resource.title}. ${resource.topic} solutions for ${resource.industry} businesses.`;
-        const regeneratedContent = textGenerator.generateText(seedText, {
+        const regeneratedContent = generator.generateText(seedText, {
           length: 'long',
           includeExamples: true,
           style: 'descriptive'
         });
-        const revalidated = voiceMatcher.validateVoice(regeneratedContent);
+        const revalidated = matcher.validateVoice(regeneratedContent);
         if ((revalidated.score || 0) > finalVoiceScore) {
           finalContent = regeneratedContent;
           finalVoiceScore = revalidated.score || 0;
@@ -836,17 +894,21 @@ export function createResourceRoutes(
         metadata: {
           ...resource.metadata,
           wordCount: finalContent.split(/\s+/).length,
-          voiceScore: finalVoiceScore
+          voiceScore: finalVoiceScore,
+          profileId: runtimeProfile.id || resource.metadata?.profileId
         }
       };
 
       await saveResources(resources);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || resources[index].metadata?.profileId, resources[index].id);
 
       res.json({
         resource: resources[index],
+        profileId: runtimeProfile.id,
         success: true
       });
     } catch (error: unknown) {
+      if (sendProfileNotFound(error, res)) return;
       handleRouteError(error, res, 500);
     }
   });

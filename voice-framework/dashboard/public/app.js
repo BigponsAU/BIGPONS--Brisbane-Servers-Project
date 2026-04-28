@@ -37,6 +37,149 @@ function getErrorMessage(error) {
     return 'An unknown error occurred';
 }
 
+function parseServerErrorText(errorText) {
+    const text = typeof errorText === 'string' ? errorText.trim() : '';
+    if (!text) return 'Unknown server error';
+
+    const cannotRouteMatch = text.match(/Cannot\s+(GET|POST|PUT|DELETE|PATCH)\s+([^\s<]+)/i);
+    if (cannotRouteMatch) {
+        const method = cannotRouteMatch[1].toUpperCase();
+        const route = cannotRouteMatch[2];
+        return `Route unavailable (${method} ${route}). Restart dashboard server to load latest API routes.`;
+    }
+
+    const preBlock = text.match(/<pre>([\s\S]*?)<\/pre>/i);
+    if (preBlock && preBlock[1]) {
+        return preBlock[1].trim();
+    }
+
+    return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function getAuthHeaders() {
+    return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+}
+
+function isAuthenticated() {
+    return Boolean(authToken && currentUser);
+}
+
+async function initializeAuthSession() {
+    if (!authToken) {
+        currentUser = null;
+        updateAuthUi();
+        return;
+    }
+
+    try {
+        const result = await apiCall('auth/me', 'GET');
+        currentUser = result.user || null;
+        updateAuthUi();
+    } catch (_error) {
+        authToken = '';
+        currentUser = null;
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        updateAuthUi();
+    }
+}
+
+async function handleAuthLogin() {
+    const emailEl = document.getElementById('authEmail');
+    const passwordEl = document.getElementById('authPassword');
+    const email = (emailEl?.value || '').trim();
+    const password = passwordEl?.value || '';
+
+    if (!email || !password) {
+        updateStatus('error', 'Email and password are required');
+        return;
+    }
+
+    try {
+        const result = await apiCall('auth/login', 'POST', { email, password });
+        if (!result?.token || !result?.user) {
+            throw new Error('Login succeeded but no session token was returned');
+        }
+        authToken = result.token;
+        currentUser = result.user;
+        localStorage.setItem(AUTH_TOKEN_KEY, authToken);
+        if (passwordEl) passwordEl.value = '';
+        updateAuthUi();
+        updateStatus('success', `Signed in as ${currentUser.email}`);
+        await loadResourcesList();
+    } catch (error) {
+        updateStatus('error', `Sign in failed: ${getErrorMessage(error)}`);
+    }
+}
+
+async function handleAuthLogout() {
+    try {
+        if (authToken) {
+            await apiCall('auth/logout', 'POST', {});
+        }
+    } catch (_error) {
+        // Ignore logout API failures; always clear local session state.
+    } finally {
+        authToken = '';
+        currentUser = null;
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        updateAuthUi();
+        updateStatus('success', 'Signed out');
+        loadResourcesList();
+    }
+}
+
+function updateAuthUi() {
+    const statusEl = document.getElementById('authStatus');
+    const loginBtn = document.getElementById('authLoginBtn');
+    const logoutBtn = document.getElementById('authLogoutBtn');
+    const emailEl = document.getElementById('authEmail');
+    const passwordEl = document.getElementById('authPassword');
+
+    const signedIn = isAuthenticated();
+    if (statusEl) {
+        statusEl.textContent = signedIn
+            ? `Signed in: ${currentUser.email} (${currentUser.role})`
+            : 'Signed out. Resource management requires sign-in.';
+    }
+    if (loginBtn) loginBtn.disabled = signedIn;
+    if (logoutBtn) logoutBtn.disabled = !signedIn;
+    if (emailEl) emailEl.disabled = signedIn;
+    if (passwordEl) passwordEl.disabled = signedIn;
+}
+
+function normalizeReadablePreview(text, maxLen = 200) {
+    const raw = typeof text === 'string' ? text : '';
+    if (!raw) return '';
+    const compact = raw
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (!compact) return '';
+    const symbolCount = (compact.match(/[^A-Za-z0-9\s.,;:!?'"()\-/%]/g) || []).length;
+    const symbolRatio = symbolCount / Math.max(compact.length, 1);
+    if (symbolRatio > 0.28) return '[Filtered noisy sample content]';
+    if (compact.length <= maxLen) return compact;
+    return `${compact.substring(0, maxLen)}...`;
+}
+
+function hasSemanticSignalText(text) {
+    const value = String(text || '').trim();
+    if (!value) return false;
+    const words = value.split(/\s+/).filter(Boolean);
+    const hasLongWord = words.some(word => /[A-Za-z]{4,}/.test(word));
+    const letters = (value.match(/[A-Za-z]/g) || []).length;
+    const digits = (value.match(/[0-9]/g) || []).length;
+    const symbolCount = (value.match(/[^A-Za-z0-9\s.,;:!?'"()\-/%]/g) || []).length;
+    const symbolRatio = symbolCount / Math.max(value.length, 1);
+    const codeLikePattern = /\b(var|const|let|function|return|opacity|calc|rgba|background)\b|--|=>|\{|\}|\[|\]|::/i;
+    if (letters < 3 || words.length < 2 || !hasLongWord) return false;
+    if (digits > letters * 2) return false;
+    if (symbolRatio > 0.2) return false;
+    if (/[{}[\]|=>]/.test(value)) return false;
+    if (codeLikePattern.test(value)) return false;
+    return true;
+}
+
 // State
 let currentSection = 'workspace';
 let currentAnalysisType = 'all';
@@ -46,6 +189,14 @@ let testResults = [];
 let lastAnalysisResult = null;
 let lastGeneratedText = null;
 let topology3D = null;
+const TOPOLOGY_SENSITIVITY_KEY = 'voiceDashboardTopologySensitivity';
+const AUTH_TOKEN_KEY = 'voiceDashboardAuthToken';
+let topologySensitivity = Number(localStorage.getItem(TOPOLOGY_SENSITIVITY_KEY) || '50');
+let selectedProfileId = localStorage.getItem('voiceDashboardSelectedProfileId') || '';
+let defaultProfileId = '';
+let dashboardProfiles = [];
+let authToken = localStorage.getItem(AUTH_TOKEN_KEY) || '';
+let currentUser = null;
 
 // Markov Chain Tracker Integration
 function wrapFunction(functionName, fn, context = {}) {
@@ -80,7 +231,7 @@ function wrapFunction(functionName, fn, context = {}) {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('[INIT] DOMContentLoaded - Starting initialization');
     const initStartTime = performance.now();
     
@@ -101,6 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('[INIT] Initializing event listeners...');
         initializeEventListeners();
+
+        console.log('[INIT] Initializing auth session...');
+        await initializeAuthSession();
         
         console.log('[INIT] Checking health...');
         checkHealth();
@@ -455,12 +609,62 @@ function initializeEventListeners() {
     
     const quickProfileSelect = getElement('quickProfileSelect');
     if (quickProfileSelect) {
-        quickProfileSelect.addEventListener('change', (e) => {
-            if (e.target.value) {
-                // Profile selection handled
-            }
-        });
+        quickProfileSelect.addEventListener('change', (e) => applySelectedProfile(e.target.value));
     }
+
+    const setDefaultProfileBtn = getElement('setDefaultProfileBtn');
+    if (setDefaultProfileBtn) {
+        setDefaultProfileBtn.addEventListener('click', setSelectedProfileAsDefault);
+    }
+
+    const deleteProfileBtn = getElement('deleteProfileBtn');
+    if (deleteProfileBtn) {
+        deleteProfileBtn.addEventListener('click', deleteSelectedProfile);
+    }
+
+    const pruneProfilesBtn = getElement('pruneProfilesBtn');
+    if (pruneProfilesBtn) {
+        pruneProfilesBtn.addEventListener('click', pruneLegacyProfiles);
+    }
+
+    const authLoginBtn = getElement('authLoginBtn');
+    if (authLoginBtn) {
+        authLoginBtn.addEventListener('click', handleAuthLogin);
+    }
+
+    const authLogoutBtn = getElement('authLogoutBtn');
+    if (authLogoutBtn) {
+        authLogoutBtn.addEventListener('click', handleAuthLogout);
+    }
+
+    const useSiteVoiceProfileBtn = getElement('useSiteVoiceProfileBtn');
+    if (useSiteVoiceProfileBtn) {
+        useSiteVoiceProfileBtn.addEventListener('click', useSiteVoiceProfile);
+    }
+
+    const reloadProfilesBtn = getElement('reloadProfilesBtn');
+    if (reloadProfilesBtn) {
+        reloadProfilesBtn.addEventListener('click', loadProfilesToSelect);
+    }
+
+    const syncDefaultCorpusBtn = getElement('syncDefaultCorpusBtn');
+    if (syncDefaultCorpusBtn) {
+        syncDefaultCorpusBtn.addEventListener('click', syncDefaultCorpus);
+    }
+
+    const rebuildActiveProfileBtn = getElement('rebuildActiveProfileBtn');
+    if (rebuildActiveProfileBtn) {
+        rebuildActiveProfileBtn.addEventListener('click', rebuildActiveProfileCorpus);
+    }
+
+    ['profileSelect', 'panningProfile', 'panningProfileContent', 'topologyProfile'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+            select.addEventListener('change', (e) => {
+                if (e.target.value) applySelectedProfile(e.target.value, { syncControls: true });
+            });
+        }
+    });
 
     // Library Actions
     const libraryLoadSamplesBtn = getElement('libraryLoadSamples');
@@ -595,6 +799,7 @@ function initializeEventListeners() {
 
     const resourcesListEl = document.getElementById('resourcesList');
     if (resourcesListEl) {
+        resourcesListEl.addEventListener('click', onResourceActionClick);
         resourcesListEl.addEventListener('click', onResourceCardHeadClick);
         resourcesListEl.addEventListener('keydown', onResourceCardHeadKeydown);
     }
@@ -661,6 +866,24 @@ function initializeEventListeners() {
             }
         });
     }
+
+    const topologySensitivityInput = getElement('topologySensitivity');
+    if (topologySensitivityInput) {
+        topologySensitivityInput.value = String(clampTopologySensitivity(topologySensitivity));
+        updateTopologySensitivityLabel(topologySensitivityInput.value);
+        topologySensitivityInput.addEventListener('input', (e) => {
+            applyTopologySensitivity(e.target.value, { persist: true });
+        });
+    }
+
+    const resetTopologyCameraBtn = getElement('resetTopologyCameraBtn');
+    if (resetTopologyCameraBtn) {
+        resetTopologyCameraBtn.addEventListener('click', () => {
+            if (topology3D && typeof topology3D.resetCamera === 'function') {
+                topology3D.resetCamera();
+            }
+        });
+    }
 }
 
 // API Calls
@@ -673,8 +896,11 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         
         const options = {
             method,
+            cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache',
+                ...getAuthHeaders(),
             },
         };
 
@@ -692,11 +918,22 @@ async function apiCall(endpoint, method = 'GET', data = null) {
             try {
                 errorData = JSON.parse(errorText);
             } catch {
-                errorData = { error: errorText };
+                errorData = { error: parseServerErrorText(errorText) };
+            }
+            if (response.status === 401 && endpoint !== 'auth/login') {
+                currentUser = null;
+                updateAuthUi();
             }
             throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
         }
         
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            const raw = await response.text();
+            const preview = raw.slice(0, 120).replace(/\s+/g, ' ').trim();
+            throw new Error(`Expected JSON from /api/${endpoint}, got ${contentType || 'unknown type'} (${preview || 'empty response'})`);
+        }
+
         const result = await response.json();
         // Health endpoint doesn't have success field, so check for status or success
         const isSuccess = result.success !== false && (result.success === true || result.status === 'ok' || response.ok);
@@ -812,7 +1049,7 @@ async function handleUnifiedAnalyze() {
         let outputText = '';
 
         if (runAll || currentAnalysisType === 'all' || currentAnalysisType === 'tone') {
-            const toneResult = await apiCall('analyze', 'POST', { text });
+            const toneResult = await apiCall('analyze', 'POST', { text, profileId: getActiveProfileId() });
             results.tone = toneResult;
             outputText += `\n=== TONE ANALYSIS ===\n`;
             outputText += `Technical Term Density: ${typeof toneResult.analysis.technicalTermDensity === 'number' ? toneResult.analysis.technicalTermDensity.toFixed(2) : toneResult.analysis.technicalTermDensity}\n`;
@@ -826,7 +1063,7 @@ async function handleUnifiedAnalyze() {
         }
 
         if (runAll || currentAnalysisType === 'all' || currentAnalysisType === 'patterns') {
-            const patternResult = await apiCall('extract-patterns', 'POST', { text });
+            const patternResult = await apiCall('extract-patterns', 'POST', { text, profileId: getActiveProfileId() });
             results.patterns = patternResult;
             outputText += `\n=== PATTERN EXTRACTION ===\n`;
             
@@ -847,7 +1084,7 @@ async function handleUnifiedAnalyze() {
         }
 
         if (runAll || currentAnalysisType === 'all' || currentAnalysisType === 'shredder') {
-            const shredResult = await apiCall('shred', 'POST', { text });
+            const shredResult = await apiCall('shred', 'POST', { text, profileId: getActiveProfileId() });
             results.shredder = shredResult;
             outputText += `\n=== SHREDDER ANALYSIS ===\n`;
             outputText += `Total Truths: ${shredResult.analysis.summary.totalTruths}\n`;
@@ -958,6 +1195,7 @@ async function handleUnifiedGenerate() {
         if (mode === 'generate' || mode === 'generate-validate') {
             const result = await apiCall('generate', 'POST', {
                 topic: input,
+                profileId: getActiveProfileId(),
                 options: { length, style, includeExamples: true }
             });
             generatedText = result.text;
@@ -965,6 +1203,7 @@ async function handleUnifiedGenerate() {
         } else if (mode === 'extrapolate') {
             const result = await apiCall('extrapolate', 'POST', {
                 text: input,
+                profileId: getActiveProfileId(),
                 options: { expansionLevel }
             });
             generatedText = result.text;
@@ -974,7 +1213,7 @@ async function handleUnifiedGenerate() {
         let outputText = generatedText;
 
         if (mode === 'generate-validate' && generatedText) {
-            const matchResult = await apiCall('match-voice', 'POST', { text: generatedText });
+            const matchResult = await apiCall('match-voice', 'POST', { text: generatedText, profileId: getActiveProfileId() });
             validationResult = matchResult;
             outputText += `\n\n=== VOICE VALIDATION ===\n`;
             outputText += `Match Score: ${typeof matchResult.match?.overallMatch === 'number' ? (matchResult.match.overallMatch * 100).toFixed(1) : 'N/A'}%\n`;
@@ -1087,7 +1326,7 @@ async function extrapolateGenerated() {
 async function validateGenerated() {
     if (!lastGeneratedText) return;
     try {
-        const result = await apiCall('match-voice', 'POST', { text: lastGeneratedText });
+        const result = await apiCall('match-voice', 'POST', { text: lastGeneratedText, profileId: getActiveProfileId() });
         const output = getElement('unifiedGenerateOutput');
         if (!output) {
             console.error('[VALIDATE] Output element not found');
@@ -1121,7 +1360,7 @@ async function loadRecentSamples() {
             container.innerHTML = '<div class="panel-list-item">No samples</div>';
         } else {
             container.innerHTML = result.samples.slice(0, 5).map(s => 
-                `<div class="panel-list-item" title="${(s.text || '').substring(0, 100)}">${(s.text || '').substring(0, 50)}...</div>`
+                `<div class="panel-list-item" title="${escapeHtml(normalizeReadablePreview(s.text || '', 120))}">${escapeHtml(normalizeReadablePreview(s.text || '', 65))}</div>`
             ).join('');
         }
     } catch (error) {
@@ -1143,10 +1382,11 @@ async function loadRecentPrinciples() {
             return;
         }
         
-        if (result.principles.length === 0) {
+        const cleanPrinciples = result.principles.filter(p => hasSemanticSignalText(p.principle));
+        if (cleanPrinciples.length === 0) {
             container.innerHTML = '<div class="panel-list-item">No principles</div>';
         } else {
-            container.innerHTML = result.principles.slice(0, 5).map(p => 
+            container.innerHTML = cleanPrinciples.slice(0, 5).map(p => 
                 `<div class="panel-list-item">${p.principle || 'Unnamed principle'}</div>`
             ).join('');
         }
@@ -1169,25 +1409,281 @@ async function loadProfilesToSelect() {
         
         if (!quickSelect || !profileSelect) return;
         
-        quickSelect.innerHTML = '<option value="">Select Profile...</option>';
-        profileSelect.innerHTML = '<option value="">Default Profile</option>';
+        quickSelect.innerHTML = '<option value="">Select profile...</option>';
+        profileSelect.innerHTML = '<option value="">Stored default profile</option>';
         
         if (result && result.profiles && Array.isArray(result.profiles)) {
-            result.profiles.forEach(profile => {
-                if (profile && profile.metadata) {
-                    const option = `<option value="${profile.metadata.id || ''}">${profile.metadata.name || 'Unnamed'}</option>`;
-                    quickSelect.innerHTML += option;
-                    profileSelect.innerHTML += option;
-                    
-                    if (profile.metadata.isDefault && currentProfile) {
-                        currentProfile.textContent = `Default: ${profile.metadata.name || 'Unnamed'}`;
-                    }
-                }
+            dashboardProfiles = result.profiles.map(normalizeProfileMeta).filter(Boolean);
+            const defaultProfile = dashboardProfiles.find(profile => profile.isDefault);
+            defaultProfileId = defaultProfile?.id || dashboardProfiles[0]?.id || '';
+
+            dashboardProfiles.forEach(profile => {
+                const suffix = profile.isDefault ? ' - default' : '';
+                const option = `<option value="${escapeHtml(profile.id || '')}">${escapeHtml(profile.name || 'Unnamed')}${suffix}</option>`;
+                quickSelect.innerHTML += option;
+                profileSelect.innerHTML += option;
             });
+
+            const storedStillExists = dashboardProfiles.some(profile => profile.id === selectedProfileId);
+            applySelectedProfile(storedStillExists ? selectedProfileId : defaultProfileId, { persist: false, syncControls: true });
+            await refreshCorpusPanel();
+            updateProfileActionButtons();
+        } else {
+            dashboardProfiles = [];
+            defaultProfileId = '';
+            selectedProfileId = '';
+            localStorage.removeItem('voiceDashboardSelectedProfileId');
+            if (currentProfile) currentProfile.textContent = 'No profiles available';
+            updateProfileHealthCard();
+            const output = document.getElementById('corpusPanelOutput');
+            if (output) output.innerHTML = '<p class="profile-health-warning">No profiles available.</p>';
+            updateProfileActionButtons();
         }
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         console.error('Error loading profiles:', errorMessage, error);
+        dashboardProfiles = [];
+        updateProfileHealthCard(`Profiles unavailable: ${errorMessage}`);
+        updateProfileActionButtons();
+    }
+}
+
+function normalizeProfileMeta(profile) {
+    if (!profile) return null;
+    const meta = profile.metadata || profile;
+    if (!meta.id) return null;
+    return meta;
+}
+
+function applySelectedProfile(profileId, options = {}) {
+    const { persist = true, syncControls = true } = options;
+    selectedProfileId = profileId || '';
+
+    if (persist) {
+        if (selectedProfileId) localStorage.setItem('voiceDashboardSelectedProfileId', selectedProfileId);
+        else localStorage.removeItem('voiceDashboardSelectedProfileId');
+    }
+
+    if (syncControls) {
+        ['quickProfileSelect', 'profileSelect', 'panningProfile', 'panningProfileContent', 'topologyProfile'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select && Array.from(select.options || []).some(option => option.value === selectedProfileId)) {
+                select.value = selectedProfileId;
+            }
+        });
+    }
+
+    const profile = dashboardProfiles.find(item => item.id === getActiveProfileId());
+    const currentProfile = document.getElementById('currentProfile');
+    if (currentProfile) {
+        currentProfile.textContent = profile
+            ? `Active: ${profile.name || 'Unnamed'}${profile.id === defaultProfileId ? ' (default)' : ' (session)'}`
+            : 'Active: stored default profile';
+    }
+    updateProfileHealthCard();
+    refreshCorpusPanel();
+    updateProfileActionButtons();
+}
+
+function updateProfileActionButtons() {
+    const deleteBtn = document.getElementById('deleteProfileBtn');
+    const pruneBtn = document.getElementById('pruneProfilesBtn');
+    const quickSelect = document.getElementById('quickProfileSelect');
+    if (!deleteBtn || !quickSelect) return;
+
+    const selectedId = (quickSelect.value || '').trim();
+    const selected = dashboardProfiles.find(profile => profile.id === selectedId);
+    const blocked = !selected || dashboardProfiles.length <= 1 || selected.isDefault;
+    deleteBtn.disabled = blocked;
+    if (!selected) {
+        deleteBtn.title = 'Select a non-default profile to delete';
+    } else if (dashboardProfiles.length <= 1) {
+        deleteBtn.title = 'Cannot delete the only profile';
+    } else if (selected.isDefault) {
+        deleteBtn.title = 'Set another default profile first';
+    } else {
+        deleteBtn.title = 'Delete selected profile';
+    }
+
+    if (pruneBtn) {
+        const pruneBlocked = dashboardProfiles.length <= 1;
+        pruneBtn.disabled = pruneBlocked;
+        pruneBtn.title = pruneBlocked ? 'Need at least two profiles to prune' : 'Prune duplicate legacy profiles';
+    }
+}
+
+function getActiveProfileId() {
+    return selectedProfileId || defaultProfileId || '';
+}
+
+async function setSelectedProfileAsDefault() {
+    const id = getActiveProfileId();
+    if (!id) {
+        updateStatus('error', 'Select a profile first');
+        return;
+    }
+    try {
+        await apiCall('profiles/default', 'POST', { id });
+        defaultProfileId = id;
+        selectedProfileId = id;
+        localStorage.setItem('voiceDashboardSelectedProfileId', id);
+        await loadProfilesToSelect();
+        updateStatus('success', 'Default profile updated');
+    } catch (error) {
+        updateStatus('error', `Could not set default profile: ${getErrorMessage(error)}`);
+    }
+}
+
+async function deleteSelectedProfile() {
+    const quickSelect = document.getElementById('quickProfileSelect');
+    const id = (quickSelect?.value || '').trim();
+    if (!id) {
+        updateStatus('error', 'Select a profile from the Profiles panel before deleting');
+        return;
+    }
+
+    if (dashboardProfiles.length <= 1) {
+        updateStatus('error', 'Cannot delete the only profile');
+        return;
+    }
+
+    const profile = dashboardProfiles.find(item => item.id === id);
+    if (!profile) {
+        updateStatus('error', 'Selected profile is invalid or out of date. Reload profiles and try again.');
+        return;
+    }
+    if (profile.isDefault) {
+        updateStatus('error', 'Set another default profile before deleting this one');
+        return;
+    }
+
+    const label = profile?.name || id;
+    const confirmed = confirm(`Delete profile "${label}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+        await apiCall(`profiles/${encodeURIComponent(id)}`, 'DELETE');
+        if (selectedProfileId === id) {
+            selectedProfileId = '';
+            localStorage.removeItem('voiceDashboardSelectedProfileId');
+        }
+        await loadProfilesToSelect();
+        await refreshCorpusPanel();
+        updateStatus('success', `Deleted profile: ${label}`);
+    } catch (error) {
+        updateStatus('error', `Could not delete profile: ${getErrorMessage(error)}`);
+    }
+}
+
+async function pruneLegacyProfiles() {
+    const confirmed = confirm('Prune legacy duplicate profiles? Keeps default and latest profile per name.');
+    if (!confirmed) return;
+
+    updateStatus('loading', 'Pruning legacy profiles...');
+    try {
+        const result = await apiCall('profiles/prune', 'POST', {});
+        await loadProfilesToSelect();
+        await refreshCorpusPanel();
+        const removedCount = Array.isArray(result.removedIds) ? result.removedIds.length : 0;
+        updateStatus('success', `Pruned ${removedCount} legacy profile${removedCount === 1 ? '' : 's'}`);
+    } catch (error) {
+        updateStatus('error', `Could not prune profiles: ${getErrorMessage(error)}`);
+    }
+}
+
+async function useSiteVoiceProfile() {
+    await syncDefaultCorpus();
+}
+
+function updateProfileHealthCard(message) {
+    const card = document.getElementById('profileHealthCard');
+    if (!card) return;
+
+    if (message) {
+        card.innerHTML = `<p class="profile-health-warning">${escapeHtml(message)}</p>`;
+        return;
+    }
+
+    const active = dashboardProfiles.find(profile => profile.id === getActiveProfileId());
+    const defaultProfile = dashboardProfiles.find(profile => profile.id === defaultProfileId);
+
+    if (!active) {
+        card.innerHTML = `
+            <p class="profile-health-warning">No active profile selected.</p>
+            <p>Use the site voice profile action to bind generation, analysis, topology, resources, and moderation metadata.</p>
+        `;
+        return;
+    }
+
+    card.innerHTML = `
+        <p class="profile-health-name">${escapeHtml(active.name || 'Unnamed profile')}</p>
+        <p>${active.id === defaultProfileId ? 'Stored default' : 'Session override'}</p>
+        <p>Default: ${escapeHtml(defaultProfile?.name || 'not set')}</p>
+        <p>Corpus: ${(active.corpusResourceCount ?? active.corpusResourceIds?.length ?? 0)} resources linked</p>
+        <p>Pipeline: generation, analysis, resources, topology</p>
+    `;
+}
+
+async function refreshCorpusPanel() {
+    const output = document.getElementById('corpusPanelOutput');
+    const profileId = getActiveProfileId();
+    if (!output) return;
+    if (!profileId) {
+        output.innerHTML = '<p class="profile-health-warning">Select or set a default profile to view corpus status.</p>';
+        return;
+    }
+
+    try {
+        const result = await apiCall(`profiles/${encodeURIComponent(profileId)}/corpus`, 'GET');
+        const corpus = result.corpus || {};
+        const metadata = result.metadata || {};
+        output.innerHTML = `
+            <p><strong>${escapeHtml(metadata.name || profileId)}</strong></p>
+            <p>Corpus resources: ${Number(corpus.resourceCount || 0)}</p>
+            <p>Indexed resources: ${Number(corpus.indexedCount || 0)}</p>
+            <p>Last rebuilt: ${escapeHtml(corpus.lastBuiltAt || 'not rebuilt yet')}</p>
+        `;
+    } catch (error) {
+        const message = getErrorMessage(error);
+        output.innerHTML = `<p class="profile-health-warning">Could not load corpus: ${escapeHtml(message)}</p>`;
+    }
+}
+
+async function syncDefaultCorpus() {
+    const output = document.getElementById('corpusPanelOutput');
+    if (output) output.textContent = 'Syncing BIGPONS corpus...';
+    updateStatus('loading', 'Syncing BIGPONS corpus...');
+    try {
+        const result = await apiCall('profiles/default/sync-corpus', 'POST', {});
+        await loadProfilesToSelect();
+        await refreshCorpusPanel();
+        updateStatus('success', `Synced BIGPONS corpus (${result.corpus?.resourceCount || 0} resources)`);
+    } catch (error) {
+        const message = getErrorMessage(error);
+        if (output) output.innerHTML = `<p class="profile-health-warning">Sync failed: ${escapeHtml(message)}</p>`;
+        updateStatus('error', 'BIGPONS sync failed');
+    }
+}
+
+async function rebuildActiveProfileCorpus() {
+    const output = document.getElementById('corpusPanelOutput');
+    const profileId = getActiveProfileId();
+    if (!profileId) {
+        if (output) output.innerHTML = '<p class="profile-health-warning">Select a profile first.</p>';
+        updateStatus('error', 'Select a profile first');
+        return;
+    }
+    if (output) output.textContent = 'Rebuilding active profile from corpus...';
+    updateStatus('loading', 'Rebuilding profile...');
+    try {
+        const result = await apiCall(`profiles/${encodeURIComponent(profileId)}/rebuild-from-corpus`, 'POST', {});
+        await loadProfilesToSelect();
+        await refreshCorpusPanel();
+        updateStatus('success', `Rebuilt ${result.metadata?.name || 'profile'} from corpus`);
+    } catch (error) {
+        const message = getErrorMessage(error);
+        if (output) output.innerHTML = `<p class="profile-health-warning">Rebuild failed: ${escapeHtml(message)}</p>`;
+        updateStatus('error', 'Profile rebuild failed');
     }
 }
 
@@ -1244,10 +1740,10 @@ async function loadLibrarySamples() {
         } else {
             container.innerHTML = result.samples.map(s => `
                 <div class="library-item">
-                    <div style="font-weight: 500; margin-bottom: 0.5rem;">${(s.text || '').substring(0, 200)}${(s.text || '').length > 200 ? '...' : ''}</div>
+                    <div style="font-weight: 500; margin-bottom: 0.5rem;">${escapeHtml(normalizeReadablePreview(s.text || '', 220))}</div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                        Category: ${s.category || 'uncategorized'} | 
-                        Tags: ${(s.tags || []).join(', ') || 'none'}
+                        Category: ${escapeHtml(s.category || 'uncategorized')} | 
+                        Tags: ${escapeHtml((s.tags || []).join(', ') || 'none')}
                     </div>
                 </div>
             `).join('');
@@ -1269,10 +1765,11 @@ async function loadLibraryPrinciples() {
             return;
         }
         
-        if (result.principles.length === 0) {
+        const cleanPrinciples = result.principles.filter(p => hasSemanticSignalText(p.principle));
+        if (cleanPrinciples.length === 0) {
             container.innerHTML = '<p class="empty-state">No principles stored yet.</p>';
         } else {
-            container.innerHTML = result.principles.map(p => `
+            container.innerHTML = cleanPrinciples.map(p => `
                 <div class="library-item">
                     <div style="font-weight: 500; margin-bottom: 0.5rem;">${p.principle || 'Unnamed principle'}</div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary);">
@@ -1298,16 +1795,17 @@ async function loadLibraryProfiles() {
             return;
         }
         
-        if (result.profiles.length === 0) {
+        const profiles = result.profiles.map(normalizeProfileMeta).filter(Boolean);
+        if (profiles.length === 0) {
             container.innerHTML = '<p class="empty-state">No profiles stored yet.</p>';
         } else {
-            container.innerHTML = result.profiles.map(p => `
+            container.innerHTML = profiles.map(profile => `
                 <div class="library-item">
                     <div style="font-weight: 500; margin-bottom: 0.5rem;">
-                        ${p.metadata.name} ${p.metadata.isDefault ? '(Default)' : ''}
+                        ${escapeHtml(profile.name || 'Unnamed profile')} ${profile.isDefault ? '(Default)' : ''}
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                        v${p.metadata.version} | ${p.metadata.description || 'No description'}
+                        v${escapeHtml(profile.version || 'n/a')} | ${escapeHtml(profile.description || 'No description')}
                     </div>
                 </div>
             `).join('');
@@ -1324,11 +1822,12 @@ async function loadLibraryDefaultProfile() {
     
     try {
         const result = await apiCall('profiles/default', 'GET');
+        const metadata = result.metadata || normalizeProfileMeta(result.profile) || {};
         container.innerHTML = `
             <div class="library-item">
-                <div style="font-weight: 500; margin-bottom: 0.5rem;">${result.profile.metadata.name} (Default)</div>
+                <div style="font-weight: 500; margin-bottom: 0.5rem;">${escapeHtml(metadata.name || 'Unnamed profile')} (Default)</div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                    v${result.profile.metadata.version} | ${result.profile.metadata.description || 'No description'}
+                    v${escapeHtml(metadata.version || 'n/a')} | ${escapeHtml(metadata.description || 'No description')}
                 </div>
             </div>
         `;
@@ -1562,30 +2061,33 @@ function displayTestResults(result, container) {
         return;
     }
     
-    let html = `<h3>Test Suite: ${result.suiteName || 'Unknown'}</h3>`;
-    html += `<p><strong>Total Tests:</strong> ${result.totalTests || 0}</p>`;
-    html += `<p><strong>Passed:</strong> ${result.passedTests || 0}</p>`;
-    html += `<p><strong>Failed:</strong> ${result.failedTests || 0}</p>`;
+    const summary = result.summary || {};
+    const testItems = Array.isArray(result.results) ? result.results : [];
+    let html = `<h3>Test Suite: ${escapeHtml(result.suiteName || 'Unknown')}</h3>`;
+    html += `<p><strong>Total Tests:</strong> ${Number(summary.total || 0)}</p>`;
+    html += `<p><strong>Passed:</strong> ${Number(summary.passed || 0)}</p>`;
+    html += `<p><strong>Failed:</strong> ${Number(summary.failed || 0)}</p>`;
+    html += `<p><strong>Pass Rate:</strong> ${Number(summary.passRate || 0).toFixed(1)}%</p>`;
 
-    if (!result.testResults || !Array.isArray(result.testResults)) {
+    if (!testItems.length) {
         html += '<p class="empty-state">No test results to display</p>';
         container.innerHTML = html;
         container.className = 'output-area';
         return;
     }
 
-    result.testResults.forEach(testResult => {
+    testItems.forEach(testResult => {
         html += `<div class="test-result">`;
-        html += `<h3>${testResult.testName}</h3>`;
-        html += `<p>${testResult.description || ''}</p>`;
+        html += `<h3>${escapeHtml(testResult.testCaseName || 'Unnamed test')}</h3>`;
+        html += `<p>${testResult.passed ? 'Passed' : 'Failed'} in ${Number(testResult.duration || 0)}ms</p>`;
 
-        if (testResult.comparison && testResult.comparison.variants && Array.isArray(testResult.comparison.variants)) {
+        if (testResult.variantResults && Array.isArray(testResult.variantResults)) {
             html += `<div class="comparison-result">`;
-            testResult.comparison.variants.forEach((variant, index) => {
+            testResult.variantResults.forEach((variant, index) => {
                 if (index < 2) {
-                    const isWinner = index === testResult.comparison.winnerIndex;
+                    const isWinner = testResult.comparison?.winner === variant.variantId;
                     html += `<div class="variant-result ${isWinner ? 'winner' : ''}">`;
-                    html += `<h4>${variant.name} ${isWinner ? '🏆' : ''}</h4>`;
+                    html += `<h4>${escapeHtml(variant.variantName || `Variant ${index + 1}`)} ${isWinner ? '🏆' : ''}</h4>`;
                     html += `<div class="metrics">`;
                     if (variant.metrics && typeof variant.metrics === 'object') {
                         Object.entries(variant.metrics).forEach(([key, value]) => {
@@ -1615,23 +2117,31 @@ function displayAllResults() {
                       document.getElementById('resultsContainer');
     if (!container) return;
     
-    if (!Array.isArray(testResults) || testResults.length === 0) {
-        container.innerHTML = '<p class="empty-state">No test results yet. Run tests to see results here.</p>';
-        return;
-    }
+    container.innerHTML = '<p class="empty-state">Loading test history...</p>';
+    apiCall('test-results', 'GET')
+        .then((response) => {
+            const records = Array.isArray(response.results) ? response.results : [];
+            if (!records.length) {
+                container.innerHTML = '<p class="empty-state">No test results yet. Run tests to see results here.</p>';
+                return;
+            }
 
-    let html = '';
-    testResults.forEach((test, index) => {
-        html += `<div class="test-result">`;
-        html += `<h3>Test Run ${index + 1}</h3>`;
-        html += `<p><strong>Suite:</strong> ${test.suite}</p>`;
-        html += `<p><strong>Time:</strong> ${new Date(test.timestamp).toLocaleString()}</p>`;
-        html += `<p><strong>Total Tests:</strong> ${test.result.totalTests}</p>`;
-        html += `<p><strong>Passed:</strong> ${test.result.passedTests}</p>`;
-        html += `</div>`;
-    });
-
-    container.innerHTML = html;
+            let html = '';
+            records.forEach((record, index) => {
+                html += `<div class="test-result">`;
+                html += `<h3>Test Run ${index + 1}</h3>`;
+                html += `<p><strong>Suite:</strong> ${escapeHtml(record.suiteName || record.suiteType || 'unknown')}</p>`;
+                html += `<p><strong>Time:</strong> ${new Date(record.createdAt).toLocaleString()}</p>`;
+                html += `<p><strong>Total Tests:</strong> ${Number(record.summary?.total || 0)}</p>`;
+                html += `<p><strong>Passed:</strong> ${Number(record.summary?.passed || 0)}</p>`;
+                html += `<p><strong>Failed:</strong> ${Number(record.summary?.failed || 0)}</p>`;
+                html += `</div>`;
+            });
+            container.innerHTML = html;
+        })
+        .catch((error) => {
+            container.innerHTML = `<p class="empty-state">Could not load test history: ${escapeHtml(getErrorMessage(error))}</p>`;
+        });
 }
 
 // Utility Functions
@@ -1776,19 +2286,20 @@ async function loadPanningProfiles() {
         const panningProfile = getElement('panningProfile');
         const panningProfileContent = getElement('panningProfileContent');
         
-        const profiles = result && result.profiles ? result.profiles : [];
+        const profiles = result && result.profiles ? result.profiles.map(normalizeProfileMeta).filter(Boolean) : [];
         
         [panningProfile, panningProfileContent].forEach(select => {
             if (select) {
                 select.innerHTML = '<option value="">Select Profile...</option>';
                 profiles.forEach(profile => {
-                    if (profile && profile.metadata) {
-                        const option = document.createElement('option');
-                        option.value = profile.metadata.id || '';
-                        option.textContent = profile.metadata.name || 'Unnamed Profile';
-                        select.appendChild(option);
-                    }
+                    const option = document.createElement('option');
+                    option.value = profile.id || '';
+                    option.textContent = `${profile.name || 'Unnamed Profile'}${profile.isDefault ? ' - default' : ''}`;
+                    select.appendChild(option);
                 });
+                if (getActiveProfileId() && Array.from(select.options || []).some(option => option.value === getActiveProfileId())) {
+                    select.value = getActiveProfileId();
+                }
             }
         });
     } catch (error) {
@@ -2195,11 +2706,43 @@ function initializeTopology() {
         if (!topology3D) {
             topology3D = new Topology3D('topologyCanvas');
         }
+        applyTopologySensitivity(topologySensitivity, { persist: false });
         topology3D.loadData('all');
         updateTopologyInfo();
     } else {
         document.getElementById('topologyInfo').innerHTML = 
             '<p class="error">Three.js not loaded. Please check your internet connection.</p>';
+    }
+}
+
+function clampTopologySensitivity(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 50;
+    return Math.max(10, Math.min(100, Math.round(numeric)));
+}
+
+function updateTopologySensitivityLabel(value) {
+    const label = document.getElementById('topologySensitivityValue');
+    if (label) {
+        label.textContent = `${clampTopologySensitivity(value)}%`;
+    }
+}
+
+function applyTopologySensitivity(value, { persist = true } = {}) {
+    const clamped = clampTopologySensitivity(value);
+    topologySensitivity = clamped;
+    updateTopologySensitivityLabel(clamped);
+
+    const input = document.getElementById('topologySensitivity');
+    if (input && Number(input.value) !== clamped) {
+        input.value = String(clamped);
+    }
+
+    if (persist) {
+        localStorage.setItem(TOPOLOGY_SENSITIVITY_KEY, String(clamped));
+    }
+    if (topology3D && typeof topology3D.setInteractionSensitivity === 'function') {
+        topology3D.setInteractionSensitivity(clamped);
     }
 }
 
@@ -2210,14 +2753,15 @@ async function loadTopologyProfiles() {
         select.innerHTML = '<option value="">All Profiles</option>';
         
         if (result && result.profiles && Array.isArray(result.profiles)) {
-            result.profiles.forEach(profile => {
-                if (profile) {
-                    const option = document.createElement('option');
-                    option.value = profile.id || profile.metadata?.id || '';
-                    option.textContent = profile.metadata?.name || 'Unnamed Profile';
-                    select.appendChild(option);
-                }
+            result.profiles.map(normalizeProfileMeta).filter(Boolean).forEach(profile => {
+                const option = document.createElement('option');
+                option.value = profile.id || '';
+                option.textContent = `${profile.name || 'Unnamed Profile'}${profile.isDefault ? ' - default' : ''}`;
+                select.appendChild(option);
             });
+            if (getActiveProfileId() && Array.from(select.options || []).some(option => option.value === getActiveProfileId())) {
+                select.value = getActiveProfileId();
+            }
         }
     } catch (error) {
         const errorMessage = getErrorMessage(error);
@@ -2234,7 +2778,7 @@ async function updateTopologyInfo() {
             infoDiv.innerHTML = `
                 <p><strong>Total Principles:</strong> ${result.total}</p>
                 <p><strong>Connections:</strong> ${result.connections.length}</p>
-                <p>Use mouse to rotate, zoom, and pan the 3D view.</p>
+                <p>Use the sensitivity slider for control feel and Reset Camera to re-center instantly.</p>
             `;
         }
     } catch (error) {
@@ -2788,6 +3332,16 @@ async function handleResourceUpload() {
     const autoPublishCheckbox = document.getElementById('resourceAutoPublish');
     const statusDiv = document.getElementById('resourceUploadStatus');
     const uploadBtn = document.getElementById('uploadResourceBtn');
+
+    if (!isAuthenticated()) {
+        if (statusDiv) {
+            statusDiv.textContent = 'Sign in from the Session panel before uploading resources.';
+            statusDiv.className = 'output-area error';
+            statusDiv.style.display = 'block';
+        }
+        updateStatus('error', 'Authentication required for resource upload');
+        return;
+    }
     
     if (!fileInput?.files?.[0]) {
         if (statusDiv) {
@@ -2826,13 +3380,25 @@ async function handleResourceUpload() {
         if (titleInput?.value) formData.append('title', titleInput.value);
         formData.append('autoProcess', autoProcessCheckbox?.checked ? 'true' : 'false');
         formData.append('autoPublish', autoPublishCheckbox?.checked ? 'true' : 'false');
+        if (getActiveProfileId()) formData.append('profileId', getActiveProfileId());
         
         const response = await fetch(`${API_BASE}/api/resources/upload`, {
             method: 'POST',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache',
+                ...getAuthHeaders(),
+            },
             body: formData
         });
         
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try {
+            data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+            data = { error: parseServerErrorText(responseText) };
+        }
         
         if (response.ok && data.success) {
             if (statusDiv) {
@@ -2878,6 +3444,16 @@ async function handleResourceProcess() {
     const autoPublishCheckbox = document.getElementById('resourceContentAutoPublish');
     const statusDiv = document.getElementById('resourceProcessStatus');
     const processBtn = document.getElementById('processResourceContentBtn');
+
+    if (!isAuthenticated()) {
+        if (statusDiv) {
+            statusDiv.textContent = 'Sign in from the Session panel before processing resources.';
+            statusDiv.className = 'output-area error';
+            statusDiv.style.display = 'block';
+        }
+        updateStatus('error', 'Authentication required for resource processing');
+        return;
+    }
     
     if (!contentTextarea?.value.trim()) {
         if (statusDiv) {
@@ -2914,7 +3490,8 @@ async function handleResourceProcess() {
             industry: industrySelect.value,
             topic: topicInput.value,
             title: titleInput?.value || undefined,
-            autoPublish: autoPublishCheckbox?.checked || false
+            autoPublish: autoPublishCheckbox?.checked || false,
+            profileId: getActiveProfileId()
         });
         
         if (result.success) {
@@ -2956,6 +3533,11 @@ async function loadResourcesList() {
     const listDiv = document.getElementById('resourcesList');
     if (!listDiv) return;
 
+    if (!isAuthenticated()) {
+        listDiv.innerHTML = '<p class="resource-list-empty">Sign in from the Session panel to view and manage resources.</p>';
+        return;
+    }
+
     listDiv.innerHTML = '<p class="resource-list-empty">Loading resources…</p>';
 
     try {
@@ -2976,6 +3558,9 @@ async function loadResourcesList() {
                 const topic = escapeHtml(resource.topic);
                 const desc = escapeHtml((resource.description || '').slice(0, 300));
                 const searchText = `${title} ${industry} ${topic}`.toLowerCase();
+                const profileInfo = escapeHtml(resource.metadata?.profileId || 'none');
+                const canPublish = resource.status !== 'published';
+                const canArchive = resource.status !== 'archived';
 
                 return `
                     <article class="resource-card" data-resource-id="${escapeHtml(resource.id)}" data-resource-search="${searchText}">
@@ -2992,6 +3577,12 @@ async function loadResourcesList() {
                                 <span class="resource-card__score resource-card__score--${scoreClass}">Voice ${scoreText}</span>
                             </div>
                             <p class="resource-card__description">${desc}${(resource.description || '').length > 300 ? '…' : ''}</p>
+                            <p class="resource-card__description">Profile: ${profileInfo}</p>
+                            <div class="output-actions" style="display:flex;">
+                                <button type="button" class="btn btn-secondary btn-sm" data-resource-action="improve" data-resource-id="${escapeHtml(resource.id)}">Improve</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-resource-action="publish" data-resource-id="${escapeHtml(resource.id)}" ${canPublish ? '' : 'disabled'}>Publish</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-resource-action="archive" data-resource-id="${escapeHtml(resource.id)}" ${canArchive ? '' : 'disabled'}>Archive</button>
+                            </div>
                         </div>
                     </article>
                 `;
@@ -3002,6 +3593,61 @@ async function loadResourcesList() {
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         listDiv.innerHTML = `<p class="resource-list-empty">Error: ${errorMessage}</p>`;
+    }
+}
+
+function onResourceActionClick(e) {
+    const actionBtn = e.target.closest('[data-resource-action]');
+    if (!actionBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const action = actionBtn.getAttribute('data-resource-action');
+    const resourceId = actionBtn.getAttribute('data-resource-id');
+    if (!action || !resourceId) return;
+    handleResourceLifecycleAction(action, resourceId, actionBtn);
+}
+
+async function handleResourceLifecycleAction(action, resourceId, actionBtn) {
+    if (!isAuthenticated()) {
+        updateStatus('error', 'Sign in before running resource lifecycle actions');
+        return;
+    }
+
+    const originalLabel = actionBtn.textContent;
+    actionBtn.disabled = true;
+    actionBtn.textContent = 'Working...';
+
+    try {
+        if (action === 'improve') {
+            await apiCall(`resources/${encodeURIComponent(resourceId)}/improve`, 'POST', {
+                options: { expansionLevel: 'moderate', addExamples: true },
+                profileId: getActiveProfileId()
+            });
+            updateStatus('success', 'Resource improved');
+        } else if (action === 'publish') {
+            await apiCall(`resources/${encodeURIComponent(resourceId)}`, 'PUT', {
+                status: 'published',
+                profileId: getActiveProfileId()
+            });
+            updateStatus('success', 'Resource published');
+        } else if (action === 'archive') {
+            await apiCall(`resources/${encodeURIComponent(resourceId)}`, 'PUT', {
+                status: 'archived',
+                profileId: getActiveProfileId()
+            });
+            updateStatus('success', 'Resource archived');
+        } else {
+            throw new Error(`Unsupported action: ${action}`);
+        }
+
+        await loadResourcesList();
+        await refreshCorpusPanel();
+    } catch (error) {
+        updateStatus('error', `Resource action failed: ${getErrorMessage(error)}`);
+    } finally {
+        actionBtn.textContent = originalLabel;
+        actionBtn.disabled = false;
     }
 }
 

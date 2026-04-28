@@ -13,7 +13,8 @@
     "install:all": "cd website-brisbaneservers.com && npm install && cd ../voice-framework && npm install",
     "seed:resources": "npx tsx scripts/seed-resources.ts",
     "mark:starter-blocks": "npx tsx scripts/mark-starter-blocks.ts",
-    "create-base-profile": "npx tsx scripts/create-base-profile.ts"
+    "create-base-profile": "npx tsx scripts/create-base-profile.ts",
+    "docker:dashboard": "docker build -f voice-framework/Dockerfile -t voice-framework-dashboard voice-framework"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
