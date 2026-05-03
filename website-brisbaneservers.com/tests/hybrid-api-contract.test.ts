@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { standaloneApiRoutes } from '../standalone-api/route-manifest';
 import { getInternalApiBaseUrl, resolvePublicApiUrl } from '../src/lib/api-config';
+import { isPublicResource, type Resource } from '../src/lib/resource-types';
 
 describe('Hybrid API contract coverage', () => {
   it('includes required portal and auth endpoints', () => {
@@ -20,6 +21,7 @@ describe('Hybrid API contract coverage', () => {
       '/api/resources/:id',
       '/api/profiles',
       '/api/profiles/:id',
+      '/api/profiles/default/sync-corpus',
       '/api/tokens/me',
       '/api/community/by-topic',
       '/api/community/contributions',
@@ -54,5 +56,31 @@ describe('Hybrid API contract coverage', () => {
     } else {
       process.env.INTERNAL_API_BASE_URL = originalInternal;
     }
+  });
+
+  it('keeps the public resource boundary aligned with the website library', () => {
+    const baseResource = {
+      id: 'starter',
+      industry: 'retail',
+      topic: 'automation',
+      title: 'Starter',
+      description: 'Starter block',
+      content: 'Starter content',
+      generatedAt: '2026-01-01T00:00:00.000Z',
+      version: 1,
+      status: 'published',
+    } satisfies Omit<Resource, 'visibility'>;
+
+    const resources: Resource[] = [
+      { ...baseResource, id: 'starter', isStarterBlock: true, visibility: 'starter' },
+      { ...baseResource, id: 'public', visibility: 'public' },
+      { ...baseResource, id: 'legacy-public' },
+      { ...baseResource, id: 'private', visibility: 'private' },
+      { ...baseResource, id: 'draft', status: 'draft', visibility: 'public' },
+      { ...baseResource, id: 'archived-starter', status: 'archived', isStarterBlock: true, visibility: 'starter' },
+    ];
+    const visible = resources.filter(isPublicResource);
+
+    expect(visible.map((resource) => resource.id)).toEqual(['starter', 'public', 'legacy-public']);
   });
 });

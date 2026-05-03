@@ -903,7 +903,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
               <div class="section-header">
                 <div>
                   <h2 id="profiles-heading">Voice Profiles</h2>
-                  <p class="section-subtitle">The storage default (often <strong>BIFPONS</strong> after you sync) drives generation when Resources is set to Auto. Rings, matrix, and vertex views reflect that profile’s inferred characteristics.</p>
+                  <p class="section-subtitle">The storage default (often <strong>BIGPONS</strong> after you sync) drives generation when Resources is set to Auto. Rings, matrix, and vertex views reflect that profile’s inferred characteristics.</p>
                 </div>
                 <div class="section-actions">
                   <div class="quick-filters" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
@@ -967,7 +967,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                   <h3>Voice Profile Management</h3>
                 </div>
                 <div class="guidance-content">
-                  <p><strong>BIFPONS site voice:</strong> Build or refresh the default profile from <strong>resource combinations</strong> in this repo — all published resources plus starters (optional: one industry only). Ring and vertex views read the same stored characteristics.</p>
+                  <p><strong>BIGPONS site voice:</strong> Build or refresh the default profile from <strong>resource combinations</strong> in this repo — the public website resource library plus starters (optional: one industry only). Ring and vertex views read the same stored characteristics.</p>
                   <p><strong>Active Profiles:</strong> Currently available for content generation. Set one as default to use automatically.</p>
                   <p><strong>Archived Profiles:</strong> Hidden from active use but preserved for reference. Unarchive to reactivate.</p>
                   <p><strong>Analyze Duplicates:</strong> Find profiles with similar characteristics that may need consolidation.</p>
@@ -975,24 +975,24 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                 </div>
               </div>
               
-              <!-- BIFPONS site voice (resource-driven profile) -->
+              <!-- BIGPONS site voice (resource-driven profile) -->
               <div class="profile-create-base-card" style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: var(--portal-surface-elevated); border: 2px solid var(--portal-border); border-radius: var(--border-radius);">
-                <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">BIFPONS — site voice profile</h3>
-                <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Synthesises voice from <strong>published resources + starters</strong> in storage (same material the site can run on localhost:3000). Narrow by industry to align tone with one vertical; leave &quot;All&quot; for the full corpus. This profile is set as the storage default when the build succeeds.</p>
+                <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">BIGPONS — site voice profile</h3>
+                <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Synthesises voice from the <strong>public website resource library</strong> in storage. Narrow by industry to align tone with one vertical; leave &quot;All&quot; for the full corpus. This profile is set as the storage default when the build succeeds.</p>
                 <div class="form-group" style="margin-bottom: var(--space-md); max-width: 28rem;">
-                  <label for="bifpons-industry-filter">Industry slice (optional)</label>
-                  <select id="bifpons-industry-filter" aria-label="Limit BIFPONS corpus to one industry">
-                    <option value="">All industries (full published + starters)</option>
+                  <label for="bigpons-industry-filter">Industry slice (optional)</label>
+                  <select id="bigpons-industry-filter" aria-label="Limit BIGPONS corpus to one industry">
+                    <option value="">All industries (public website library)</option>
                     {industries.map((industry) => (
                       <option value={industry.slug}>{industry.name}</option>
                     ))}
                   </select>
                 </div>
-                <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Build or refresh BIFPONS profile from resources">
+                <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Build or refresh BIGPONS profile from resources">
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v20M2 12h20"></path>
                   </svg>
-                  Build / refresh BIFPONS from resources
+                  Build / refresh BIGPONS from resources
                 </button>
               </div>
               
@@ -11297,17 +11297,17 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
     });
   });
 
-  // Build / refresh BIFPONS profile from on-repo resources (optional industry slice)
+  // Build / refresh BIGPONS profile from on-repo resources (optional industry slice)
   async function createBaseProfile(): Promise<void> {
     const btn = document.getElementById('create-base-profile-btn') as HTMLButtonElement;
     if (!btn) return;
     
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIFPONS from resources...';
+    btn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIGPONS from resources...';
     
     try {
-      const industryEl = document.getElementById('bifpons-industry-filter') as HTMLSelectElement | null;
+      const industryEl = document.getElementById('bigpons-industry-filter') as HTMLSelectElement | null;
       const industry = industryEl?.value?.trim() || undefined;
       const body = industry ? { industry } : {};
 
@@ -11325,7 +11325,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
       if (response.ok && data.success) {
         const n = data.combinedSourcesCount ?? 0;
         showNotification(
-          `${data.message || 'BIFPONS updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
+          `${data.message || 'BIGPONS updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
           'success'
         );
         setTimeout(() => {
@@ -11333,12 +11333,12 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
           void ensureWorkspaceVoiceProfiles();
         }, 500);
       } else {
-        showNotification(`BIFPONS build failed: ${data.error || 'Unknown error'}`, 'error');
+        showNotification(`BIGPONS build failed: ${data.error || 'Unknown error'}`, 'error');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Connection error';
-      showNotification(`BIFPONS build failed: ${errorMsg}`, 'error');
-      console.error('[Portal] BIFPONS profile build error:', error);
+      showNotification(`BIGPONS build failed: ${errorMsg}`, 'error');
+      console.error('[Portal] BIGPONS profile build error:', error);
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
@@ -11441,7 +11441,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                 <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-md); max-width: 32rem;">
                   The server still resolves voice automatically (bundled default or library-derived) for resource pipelines. Create a <strong>base profile</strong> from starter resources to persist a voice you can pick in Resources, or continue with Auto in the voice profile dropdown there.
                 </p>
-                <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build BIFPONS from resources</button>
+                <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build BIGPONS from resources</button>
               </div>
             </div>
           </div>
@@ -12398,7 +12398,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
                     ? `<button type="button" class="btn btn-warning btn-sm" onclick="unarchiveProfile('${escapeHtml(profile.id)}', this)">Unarchive</button>`
                     : `<button type="button" class="btn btn-secondary btn-sm" onclick="archiveProfile('${escapeHtml(profile.id)}', this)">Archive</button>`
                   }
-                ` : '<span style="color: var(--text-secondary); font-size: var(--text-sm);">Bundled default is read-only. Use <strong>Build / refresh BIFPONS</strong> above to save a site corpus voice in storage.</span>'}
+                ` : '<span style="color: var(--text-secondary); font-size: var(--text-sm);">Bundled default is read-only. Use <strong>Build / refresh BIGPONS</strong> above to save a site corpus voice in storage.</span>'}
                 <button type="button" class="btn btn-secondary" onclick="this.closest('.modal')?.remove(); document.body.style.overflow = '';">Close</button>
               </div>
             </div>

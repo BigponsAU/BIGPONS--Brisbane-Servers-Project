@@ -4,8 +4,9 @@ import { getVoiceFramework } from '../../../utils/voice-framework';
 import { loadResources, type Resource } from '../../../lib/resources-api';
 import { resourcesForSiteVoiceCorpus } from '../../../lib/resource-voice-profile';
 
-const BIFPONS_NAME = 'BIFPONS';
-const BIFPONS_TAG = 'bifpons-site-corpus';
+const BIGPONS_NAME = 'BIGPONS (Brisbane Servers)';
+const BIGPONS_TAG = 'bigpons-default';
+const LEGACY_BIFPONS_TAG = 'bifpons-site-corpus';
 
 export interface CreateBaseProfileBody {
   /** Limit corpus to one industry slug (e.g. healthcare). */
@@ -27,17 +28,19 @@ function pickCorpus(resources: Resource[], body: CreateBaseProfileBody): Resourc
   return base.filter((r) => r.content && r.content.trim().length > 0);
 }
 
-function findExistingBifpons(existingProfiles: { name: string; tags?: string[]; id: string }[]) {
+function findExistingBigpons(existingProfiles: { name: string; tags?: string[]; id: string }[]) {
   return existingProfiles.find(
     (p) =>
-      p.tags?.includes(BIFPONS_TAG) ||
-      p.name === BIFPONS_NAME ||
+      p.tags?.includes(BIGPONS_TAG) ||
+      p.tags?.includes(LEGACY_BIFPONS_TAG) ||
+      p.name === BIGPONS_NAME ||
+      p.name === 'BIFPONS' ||
       p.name === 'Brisbane Servers Base Profile'
   );
 }
 
 /**
- * Create or update the **BIFPONS** site voice profile from the resource corpus (starters + all published).
+ * Create or update the **BIGPONS** site voice profile from the public resource corpus.
  * Optional JSON body: `{ industry?, resourceIds? }` to narrow sources (resource combinations / industry slice).
  * POST /api/profiles/create-base
  */
@@ -106,50 +109,50 @@ export const POST: APIRoute = async ({ request }) => {
         : '';
 
     const profile = await profileBuilder.buildFromSamples(allContent, {
-      name: BIFPONS_NAME,
-      description: `BIFPONS site voice from ${combined.length} resources (${starterCount} starters, ${publishedCount} published). ${industryNote}${idsNote}`,
-      sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`
+      name: BIGPONS_NAME,
+      description: `BIGPONS site voice from ${combined.length} public resource sources (${starterCount} starters, ${publishedCount} published). ${industryNote}${idsNote}`,
+      sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`
     });
 
     const existingProfiles = profileManager.getAllProfiles();
-    const existingBifpons = findExistingBifpons(existingProfiles);
+    const existingBigpons = findExistingBigpons(existingProfiles);
 
     let profileMetadata;
     const corpusMeta = {
       corpusResourceIds: corpusIds
     };
 
-    if (existingBifpons) {
-      await profileManager.updateProfile(existingBifpons.id, profile, {
-        name: BIFPONS_NAME,
-        description: `BIFPONS — rebuilt from ${combined.length} on-repo resources (${starterCount} starters, ${publishedCount} published).`,
-        sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`,
-        tags: [BIFPONS_TAG, 'site-corpus', 'default-candidate'],
+    if (existingBigpons) {
+      await profileManager.updateProfile(existingBigpons.id, profile, {
+        name: BIGPONS_NAME,
+        description: `BIGPONS — rebuilt from ${combined.length} public website resources (${starterCount} starters, ${publishedCount} published).`,
+        sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`,
+        tags: [BIGPONS_TAG, LEGACY_BIFPONS_TAG, 'brisbane-servers', 'site-corpus', 'default-candidate'],
         ...corpusMeta
       });
-      await profileManager.setDefaultProfile(existingBifpons.id);
-      profileMetadata = profileManager.getAllProfiles().find((p) => p.id === existingBifpons.id) ?? existingBifpons;
+      await profileManager.setDefaultProfile(existingBigpons.id);
+      profileMetadata = profileManager.getAllProfiles().find((p) => p.id === existingBigpons.id) ?? existingBigpons;
     } else {
       profileMetadata = await profileManager.createProfile(profile, {
-        name: BIFPONS_NAME,
-        description: `BIFPONS — site voice from ${combined.length} resources (${starterCount} starters, ${publishedCount} published).`,
-        sourceDocument: `bifpons-corpus:v=2;${industryNote}${idsNote}count=${combined.length}`,
+        name: BIGPONS_NAME,
+        description: `BIGPONS — site voice from ${combined.length} public website resources (${starterCount} starters, ${publishedCount} published).`,
+        sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`,
         version: '1.0.0',
         isDefault: true,
         archived: false,
-        tags: [BIFPONS_TAG, 'site-corpus', 'default-candidate'],
+        tags: [BIGPONS_TAG, LEGACY_BIFPONS_TAG, 'brisbane-servers', 'site-corpus', 'default-candidate'],
         ...corpusMeta
       });
       await profileManager.setDefaultProfile(profileMetadata.id);
     }
 
-    const wasUpdate = Boolean(existingBifpons);
+    const wasUpdate = Boolean(existingBigpons);
 
     return new Response(
       JSON.stringify({
         profile: profileMetadata,
         success: true,
-        message: `BIFPONS profile ${wasUpdate ? 'updated' : 'created'} from ${combined.length} voice sources`,
+        message: `BIGPONS profile ${wasUpdate ? 'updated' : 'created'} from ${combined.length} voice sources`,
         starterBlocksCount: starterCount,
         publishedResourcesCount: publishedCount,
         combinedSourcesCount: combined.length,
@@ -163,7 +166,7 @@ export const POST: APIRoute = async ({ request }) => {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[API] Error creating BIFPONS profile:', error);
+    console.error('[API] Error creating BIGPONS profile:', error);
     return new Response(
       JSON.stringify({
         error: message,

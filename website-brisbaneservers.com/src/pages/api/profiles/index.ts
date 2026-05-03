@@ -109,7 +109,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
     
     const hasStoredDefault = Boolean(profilesData?.defaultProfileId);
-    // Add bundled fallback profile when not already represented (never steal default flag from BIFPONS / storage)
+    // Add bundled fallback profile when not already represented (never steal default flag from BIGPONS / storage)
     if (defaultProfile) {
       const defaultExists = profiles.some(p => p.id === 'default' || p.voiceName === defaultProfile.voiceName);
       if (!defaultExists) {

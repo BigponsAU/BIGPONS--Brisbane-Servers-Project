@@ -38,6 +38,9 @@ export interface Resource {
     wordCount?: number;
     semanticLevel?: 'high' | 'medium' | 'normal';
     voiceScore?: number;
+    /** Normative resource contract key used by the website API. */
+    voiceProfileId?: string;
+    /** Legacy dashboard key retained for existing clients. */
     profileId?: string;
   };
 }
@@ -84,6 +87,26 @@ async function loadResources(): Promise<Resource[]> {
 // Save resources
 async function saveResources(resources: Resource[]): Promise<void> {
   await fs.writeFile(RESOURCES_FILE, JSON.stringify(resources, null, 2));
+}
+
+function normalizeTopicSlug(topic: string): string {
+  return topic
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function isPublicResource(resource: Resource): boolean {
+  if (resource.status !== 'published') return false;
+  return (
+    resource.visibility === undefined ||
+    resource.visibility === 'public' ||
+    resource.visibility === 'starter'
+  );
+}
+
+function resolveResourceProfileId(resource: Resource): string | undefined {
+  return resource.metadata?.voiceProfileId || resource.metadata?.profileId;
 }
 
 async function linkResourceToProfileCorpus(
@@ -181,6 +204,7 @@ export function createResourceRoutes(
           wordCount: extrapolatedContent.split(/\s+/).length,
           semanticLevel: 'high',
           voiceScore: voiceValidation.score || 0,
+          voiceProfileId: runtimeProfile.id,
           profileId: runtimeProfile.id
         }
       };
@@ -224,8 +248,8 @@ export function createResourceRoutes(
       const { industry, topic, id } = req.query;
       let resources = await loadResources();
 
-      // Filter only published resources
-      resources = resources.filter(r => r.status === 'published');
+      // Filter only resources that match the public website contract.
+      resources = resources.filter(isPublicResource);
 
       // Filter by ID if provided (returns single resource)
       if (id) {
@@ -248,7 +272,11 @@ export function createResourceRoutes(
         resources = resources.filter(r => r.industry === industry);
       }
       if (topic) {
-        resources = resources.filter(r => r.topic === topic);
+        const topicSlug = normalizeTopicSlug(String(topic));
+        resources = resources.filter(r => {
+          const rTopicSlug = normalizeTopicSlug(r.topic);
+          return r.topic === topic || r.topic === topicSlug || rTopicSlug === topicSlug;
+        });
       }
 
       res.json({
@@ -403,7 +431,8 @@ export function createResourceRoutes(
         metadata: {
           ...starterBlock.metadata,
           wordCount: (customizations?.content || starterBlock.content).split(/\s+/).length,
-          profileId: runtimeProfile.id || starterBlock.metadata?.profileId
+          voiceProfileId: runtimeProfile.id || resolveResourceProfileId(starterBlock),
+          profileId: runtimeProfile.id || resolveResourceProfileId(starterBlock)
         }
       };
 
@@ -418,7 +447,7 @@ export function createResourceRoutes(
 
       resources.push(newResource);
       await saveResources(resources);
-      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || starterBlock.metadata?.profileId, newResource.id);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || resolveResourceProfileId(starterBlock), newResource.id);
 
       res.json({
         resource: newResource,
@@ -517,12 +546,13 @@ export function createResourceRoutes(
           ...resources[index].metadata,
           voiceScore: voiceValidation.score || 0,
           wordCount: updates.content.split(/\s+/).length,
-          profileId: runtimeProfile.id || resources[index].metadata?.profileId
+          voiceProfileId: runtimeProfile.id || resolveResourceProfileId(resources[index]),
+          profileId: runtimeProfile.id || resolveResourceProfileId(resources[index])
         };
       }
 
       await saveResources(resources);
-      await linkResourceToProfileCorpus(profileManager, resources[index].metadata?.profileId, resources[index].id);
+      await linkResourceToProfileCorpus(profileManager, resolveResourceProfileId(resources[index]), resources[index].id);
 
       res.json({
         resource: resources[index],
@@ -682,6 +712,7 @@ export function createResourceRoutes(
           wordCount: processedContent.split(/\s+/).length,
           semanticLevel: 'high',
           voiceScore: voiceValidation.score || 0,
+          voiceProfileId: runtimeProfile.id,
           profileId: runtimeProfile.id
         }
       };
@@ -794,6 +825,7 @@ export function createResourceRoutes(
           wordCount: processedContent.split(/\s+/).length,
           semanticLevel: 'high',
           voiceScore: voiceValidation.score || 0,
+          voiceProfileId: runtimeProfile.id,
           profileId: runtimeProfile.id
         }
       };
@@ -895,12 +927,13 @@ export function createResourceRoutes(
           ...resource.metadata,
           wordCount: finalContent.split(/\s+/).length,
           voiceScore: finalVoiceScore,
-          profileId: runtimeProfile.id || resource.metadata?.profileId
+          voiceProfileId: runtimeProfile.id || resolveResourceProfileId(resource),
+          profileId: runtimeProfile.id || resolveResourceProfileId(resource)
         }
       };
 
       await saveResources(resources);
-      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || resources[index].metadata?.profileId, resources[index].id);
+      await linkResourceToProfileCorpus(profileManager, runtimeProfile.id || resolveResourceProfileId(resources[index]), resources[index].id);
 
       res.json({
         resource: resources[index],

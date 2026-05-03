@@ -15,7 +15,9 @@ export interface CorpusResource {
   content?: string;
   isStarterBlock?: boolean;
   status?: 'draft' | 'published' | 'archived' | string;
+  visibility?: 'public' | 'private' | 'starter' | string;
   metadata?: {
+    voiceProfileId?: string;
     profileId?: string;
     semanticLevel?: 'high' | 'medium' | 'normal' | string;
   };
@@ -31,7 +33,14 @@ export interface ProfileCorpusSummary {
 }
 
 function isSeedResource(resource: CorpusResource): boolean {
-  return resource.isStarterBlock === true || resource.status === 'published';
+  if (resource.status === 'archived') return false;
+  if (resource.isStarterBlock === true) return true;
+  if (resource.status !== 'published') return false;
+  return (
+    resource.visibility === undefined ||
+    resource.visibility === 'public' ||
+    resource.visibility === 'starter'
+  );
 }
 
 function toSampleText(resource: CorpusResource): string {
@@ -149,12 +158,12 @@ export async function syncDefaultBigponsCorpus(
   const seedIds = uniqueIds(seedResources.map((resource) => resource.id));
   const samples = seedResources.map(toSampleText).filter((text) => text.length > 0);
   if (samples.length < 3) {
-    throw new Error('BIGPONS corpus needs at least 3 starter/published resources with text content');
+    throw new Error('BIGPONS corpus needs at least 3 public website resources with text content');
   }
 
   const builtProfile = await profileBuilder.buildFromSamples(samples, {
     name: 'BIGPONS (Brisbane Servers)',
-    description: 'Default Brisbane Servers voice profile compiled from current starter and published resources.',
+    description: 'Default Brisbane Servers voice profile compiled from the current public website resource library.',
   });
 
   const profiles = profileManager.getAllProfiles();
@@ -168,7 +177,7 @@ export async function syncDefaultBigponsCorpus(
     profileId = existing.id;
     await profileManager.updateProfile(profileId, builtProfile, {
       name: 'BIGPONS (Brisbane Servers)',
-      description: 'Default Brisbane Servers voice profile compiled from current starter and published resources.',
+      description: 'Default Brisbane Servers voice profile compiled from the current public website resource library.',
       tags: uniqueIds([...(existing.tags || []), 'bigpons-default', 'brisbane-servers', 'bifpons-site-corpus']),
       corpusResourceIds: seedIds,
       corpusResourceCount: seedIds.length,
@@ -179,7 +188,7 @@ export async function syncDefaultBigponsCorpus(
   } else {
     const created = await profileManager.createProfile(builtProfile, {
       name: 'BIGPONS (Brisbane Servers)',
-      description: 'Default Brisbane Servers voice profile compiled from current starter and published resources.',
+      description: 'Default Brisbane Servers voice profile compiled from the current public website resource library.',
       version: '1.0.0',
       tags: ['bigpons-default', 'brisbane-servers', 'bifpons-site-corpus'],
       isDefault: true,

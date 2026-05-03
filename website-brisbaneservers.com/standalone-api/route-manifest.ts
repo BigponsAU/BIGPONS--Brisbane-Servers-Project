@@ -31,6 +31,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
 
   { path: '/api/profiles', loadModule: () => import('../src/pages/api/profiles/index') },
   { path: '/api/profiles/default', loadModule: () => import('../src/pages/api/profiles/default') },
+  { path: '/api/profiles/default/sync-corpus', loadModule: () => import('../src/pages/api/profiles/default/sync-corpus') },
   { path: '/api/profiles/create-base', loadModule: () => import('../src/pages/api/profiles/create-base') },
   { path: '/api/profiles/deduplicate', loadModule: () => import('../src/pages/api/profiles/deduplicate') },
   { path: '/api/profiles/:id', loadModule: () => import('../src/pages/api/profiles/[id]') },

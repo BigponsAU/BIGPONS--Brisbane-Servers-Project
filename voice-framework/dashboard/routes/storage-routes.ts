@@ -192,7 +192,7 @@ export function createStorageRoutes(
   });
 
   /**
-   * Sync BIGPONS default profile from current starter/published corpus
+   * Sync BIGPONS default profile from the current public website resource corpus
    * POST /api/profiles/default/sync-corpus
    */
   router.post('/profiles/default/sync-corpus', async (_req: Request, res: Response) => {
