@@ -9,7 +9,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
-import { join, dirname, extname } from 'path';
+import { join, dirname, extname, normalize } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -195,13 +195,32 @@ function checkCSSFiles(): VerificationResult {
 }
 
 /**
+ * Resolve a root-absolute URL path (e.g. /repo/assets/foo.js) to a file under dist.
+ * GitHub project Pages emit a base prefix (/repo-name/); files on disk are under dist/assets/...
+ */
+function resolveAbsoluteAssetPath(urlPath: string): string {
+  let rel = urlPath.replace(/^\/+/, '').replace(/\\/g, '/');
+  while (rel) {
+    const candidate = normalize(join(distPath, ...rel.split('/')));
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+    const slash = rel.indexOf('/');
+    if (slash === -1) {
+      break;
+    }
+    rel = rel.slice(slash + 1);
+  }
+  return normalize(join(distPath, ...urlPath.replace(/^\/+/, '').split('/')));
+}
+
+/**
  * Check for broken asset references in HTML
  */
 function checkAssetReferences(): VerificationResult {
   try {
     const htmlFiles = findHTMLFiles(distPath);
-    const assetsPath = join(distPath, 'assets');
-    
+
     if (htmlFiles.length === 0) {
       return {
         name: 'Asset References',
@@ -211,34 +230,30 @@ function checkAssetReferences(): VerificationResult {
     }
 
     const brokenRefs: string[] = [];
-    
+
     for (const filePath of htmlFiles) {
       const content = readFileSync(filePath, 'utf-8');
-      
+
       // Find asset references (CSS, JS, images)
       const assetRegex = /(href|src)=["']([^"']*\.(css|js|png|jpg|jpeg|svg|webp|gif|ico))["']/gi;
       const matches = content.matchAll(assetRegex);
-      
+
       for (const match of matches) {
         const assetPath = match[2];
-        
+
         // Skip external URLs
         if (assetPath.startsWith('http://') || assetPath.startsWith('https://') || assetPath.startsWith('//')) {
           continue;
         }
-        
-        // Resolve relative paths
+
         let resolvedPath: string;
         if (assetPath.startsWith('/')) {
-          resolvedPath = join(distPath, assetPath.substring(1));
+          resolvedPath = resolveAbsoluteAssetPath(assetPath);
         } else {
           const htmlDir = dirname(filePath);
-          resolvedPath = join(htmlDir, assetPath);
+          resolvedPath = normalize(join(htmlDir, assetPath));
         }
-        
-        // Normalize path
-        resolvedPath = resolvedPath.replace(/\\/g, '/');
-        
+
         if (!existsSync(resolvedPath)) {
           const relativePath = filePath.replace(distPath, '');
           brokenRefs.push(`${relativePath} -> ${assetPath}`);
