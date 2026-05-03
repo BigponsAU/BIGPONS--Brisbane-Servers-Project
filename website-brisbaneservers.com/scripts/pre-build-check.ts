@@ -268,11 +268,11 @@ function checkCSSVariables(): ValidationResult {
 }
 
 /**
- * GitHub Pages CI builds need an absolute HTTPS API base so the static site can reach the hosted dashboard.
+ * When CI sets PUBLIC_API_BASE_URL, enforce HTTPS so hybrid Pages builds never bake in http:// APIs.
+ * If it is unset, skip (Repos can publish static Pages before the standalone API exists; set later).
  */
 function checkHostedApiForGithubPages(): ValidationResult {
   const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
-  const siteUrl = (process.env.PUBLIC_SITE_URL ?? '').toLowerCase();
   const apiUrl = (process.env.PUBLIC_API_BASE_URL ?? '').trim();
   const skip = process.env.SKIP_HOSTED_API_CHECK === '1' || process.env.SKIP_HOSTED_API_CHECK === 'true';
 
@@ -288,24 +288,25 @@ function checkHostedApiForGithubPages(): ValidationResult {
     return {
       name: 'Hosted API (GitHub Pages CI)',
       passed: true,
-      message: 'Skipped (local build — enforced on GitHub Actions when PUBLIC_SITE_URL is GitHub Pages)'
+      message: 'Skipped (local build — HTTPS API enforced in CI only when PUBLIC_API_BASE_URL is set)'
     };
   }
 
-  if (!siteUrl.includes('github.io')) {
+  if (!apiUrl) {
     return {
       name: 'Hosted API (GitHub Pages CI)',
       passed: true,
-      message: 'Skipped (PUBLIC_SITE_URL is not GitHub Pages)'
+      message:
+        'Skipped — PUBLIC_API_BASE_URL not set for this Actions run (set repository variable PUBLIC_API_BASE_URL once the HTTPS standalone API host is live; see DEPLOYMENT.md).'
     };
   }
 
-  if (!apiUrl || !/^https:\/\//i.test(apiUrl)) {
+  if (!/^https:\/\//i.test(apiUrl)) {
     return {
       name: 'Hosted API (GitHub Pages CI)',
       passed: false,
       message:
-        'Set repository variable PUBLIC_API_BASE_URL to your deployed hosted API HTTPS root (e.g. https://your-service.example.com/api). For the primary hybrid path this should be the standalone API host. See DEPLOYMENT.md at repo root. To bypass temporarily, set Actions variable SKIP_HOSTED_API_CHECK=1.'
+        'PUBLIC_API_BASE_URL must be an https:// URL in CI (never bake plain http into Pages builds).'
     };
   }
 
