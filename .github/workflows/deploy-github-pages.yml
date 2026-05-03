@@ -1,5 +1,7 @@
-# Static site only. Pair with a hosted voice dashboard API; see DEPLOYMENT.md and repository
-# variables PUBLIC_API_BASE_URL / INTERNAL_API_BASE_URL.
+# Static site only (Astro → dist). Pair hosted API vars PUBLIC_API_BASE_URL / INTERNAL_API_BASE_URL — see DEPLOYMENT.md.
+#
+# Troubleshooting: if Actions runs actions/jekyll-build-pages, Pages is wired to the wrong workflow.
+# Repository Pages source must be GitHub Actions; use this workflow only, not Jekyll starters.
 name: Deploy to GitHub Pages
 
 on:

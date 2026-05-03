@@ -69,9 +69,12 @@ Use this host for `PUBLIC_API_BASE_URL` and `INTERNAL_API_BASE_URL`.
 
 ## Phase 5 — Deploy the static site
 
-1. On GitHub: **Actions** → **Deploy to GitHub Pages** → **Run workflow**, or push to **`main`** (workflow runs on push to `main`).
-2. Wait for **build** then **deploy** jobs to finish.
-3. Open the Pages URL; exercise login and any portal calls that hit `/api`.
+1. On GitHub: **Settings** → **Pages** → **Build and deployment** → **Source** must be **GitHub Actions** (not **Deploy from a branch**).
+2. If GitHub prompts for a starter workflow, pick the repo’s Astro workflow (**Deploy to GitHub Pages**) from `.github/workflows/deploy-github-pages.yml`. Do **not** add the **Jekyll** static-site starter—it runs **`actions/jekyll-build-pages`** on the repo root and fails on `.astro` files (“Invalid YAML front matter”).
+3. If a Jekyll Pages workflow already exists: **Actions** → select the failing workflow → **⋯** → **Disable workflow**, or delete that workflow file on `main`; only **`Deploy to GitHub Pages`** should publish this site.
+4. On GitHub: **Actions** → **Deploy to GitHub Pages** → **Run workflow**, or push to **`main`** (workflow runs on push to `main`).
+5. Wait for **build** then **deploy** jobs to finish.
+6. Open the Pages URL; exercise login and any portal calls that hit `/api`.
 
 ---
 
