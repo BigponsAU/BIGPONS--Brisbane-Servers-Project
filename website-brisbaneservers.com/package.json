@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "start:api": "npx tsx standalone-api/server.ts",
-    "typecheck": "npx tsc --noEmit --skipLibCheck",
+    "typecheck": "astro sync && npx tsc --noEmit --skipLibCheck",
     "test": "vitest run",
     "prebuild": "npx tsx scripts/pre-build-check.ts",
     "build": "astro build",

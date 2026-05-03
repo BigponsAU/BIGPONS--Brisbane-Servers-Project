@@ -39,9 +39,9 @@ function checkTypeScript(): ValidationResult {
 
     // Check if TypeScript is installed
     try {
-      execSync('npx tsc --noEmit --skipLibCheck', { 
+      execSync('npm run typecheck', {
         cwd: projectRoot,
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
       return {
         name: 'TypeScript Compilation',
