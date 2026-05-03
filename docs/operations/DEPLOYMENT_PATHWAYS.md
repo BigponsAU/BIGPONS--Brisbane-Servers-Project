@@ -1,4 +1,4 @@
-# Deployment pathways
+ # Deployment pathways
 
 **Primary production path (authoritative): [GitHub Pages hybrid](GITHUB_PAGES_HYBRID.md)** — static Astro frontend on GitHub Pages plus a **separate** Node host for the standalone API (`website-brisbaneservers.com/standalone-api/server.ts`). Browser calls use `PUBLIC_API_BASE_URL`; CORS must allow the Pages origin.
 
@@ -9,6 +9,7 @@ Other paths below are **alternate** (local dev, optional hosts) or **not configu
 | Pathway | Static site | API | Storage / DB | Status |
 |---------|-------------|-----|--------------|--------|
 | **GitHub Pages hybrid** | GitHub Pages (`src-static` build) | [standalone-api](../../website-brisbaneservers.com/standalone-api/server.ts) + [HYBRID_API_CONTRACT.md](../development/HYBRID_API_CONTRACT.md) | Env-dependent (`DATABASE_URL`, auth DB, JSON under API host) | **Primary** — [GITHUB_PAGES_HYBRID.md](GITHUB_PAGES_HYBRID.md), [ENV_VARIABLES.md](../development/ENV_VARIABLES.md) |
+| Voice dashboard service (optional adjunct) | N/A (separate service) | [voice-framework dashboard](../../voice-framework/dashboard/server.ts) via Docker / Render | JSON under `/app/storage` unless external DB/storage is added | **Optional** — use for voice tooling/admin flows that are not part of the standalone hybrid API |
 | Unified dev | Same origin (e.g. `npm start` / `start-unified.ts`) | Same process | Local JSON / SQLite | **Dev / alternate** — [RUN_AND_TROUBLESHOOT.md](RUN_AND_TROUBLESHOOT.md) |
 | Node standalone (cPanel) | N/A (SSR bundle) | `@astrojs/node` | Filesystem-friendly | **Alternate host** — [CPANEL_DEPLOY.md](CPANEL_DEPLOY.md) |
 | Vercel | [vercel.json](../../website-brisbaneservers.com/vercel.json) (redirects only in-repo) | Not defined here | — | **Partial** — static + redirects; API must be hosted separately unless you add serverless routes |

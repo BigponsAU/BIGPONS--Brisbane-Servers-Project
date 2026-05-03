@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: website-brisbaneservers.com/package-lock.json
+
+      - name: Install dependencies
+        working-directory: website-brisbaneservers.com
+        run: npm ci
+
+      - name: Run tests
+        working-directory: website-brisbaneservers.com
+        run: npm test
+
+      - name: Run typecheck
+        working-directory: website-brisbaneservers.com
+        run: npm run typecheck
+
+      - name: Audit production dependencies (high severity)
+        working-directory: website-brisbaneservers.com
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build website
+        working-directory: website-brisbaneservers.com
+        env:
+          PUBLIC_API_BASE_URL: https://api.example.com/api
+          INTERNAL_API_BASE_URL: https://api.example.com/api
+          PUBLIC_SITE_URL: https://example.com
+          PUBLIC_SITE_BASE: /
+          SKIP_HOSTED_API_CHECK: 1
+        run: npm run build
+
+  voice-framework:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: voice-framework/package-lock.json
+
+      - name: Install dependencies
+        working-directory: voice-framework
+        run: npm ci
+
+      - name: Run tests
+        working-directory: voice-framework
+        run: npm test
+
+      - name: Build voice framework
+        working-directory: voice-framework
+        run: npm run build
+
+      - name: Audit production dependencies (high severity)
+        working-directory: voice-framework
+        run: npm audit --omit=dev --audit-level=high

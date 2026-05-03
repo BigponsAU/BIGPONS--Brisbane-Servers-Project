@@ -37,6 +37,18 @@ jobs:
         working-directory: website-brisbaneservers.com
         run: npm ci
 
+      - name: Run website tests
+        working-directory: website-brisbaneservers.com
+        run: npm test
+
+      - name: Run website typecheck
+        working-directory: website-brisbaneservers.com
+        run: npm run typecheck
+
+      - name: Audit production dependencies (high severity)
+        working-directory: website-brisbaneservers.com
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Build static frontend
         working-directory: website-brisbaneservers.com
         env:

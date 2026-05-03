@@ -6,6 +6,8 @@
     "dev": "astro dev",
     "start": "astro dev",
     "start:api": "npx tsx standalone-api/server.ts",
+    "typecheck": "npx tsc --noEmit --skipLibCheck",
+    "test": "vitest run",
     "prebuild": "npx tsx scripts/pre-build-check.ts",
     "build": "astro build",
     "build:github-pages": "npm run build",
@@ -29,6 +31,7 @@
     "@types/node": "^20.0.0",
     "glob": "^10.3.10",
     "tsx": "^4.7.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^1.6.1"
   }
 }

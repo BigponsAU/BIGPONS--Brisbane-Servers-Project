@@ -50,20 +50,13 @@ function checkTypeScript(): ValidationResult {
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      // Less strict: Allow build to proceed with TypeScript errors (will be fixed later)
-      // This prevents exponential error accumulation during development
       const errorLines = message.split('\n').filter((line: string) => line.includes('error TS'));
-      if (errorLines.length > 0) {
-        return {
-          name: 'TypeScript Compilation',
-          passed: true, // Allow build to proceed
-          message: `TypeScript errors found (non-blocking): ${errorLines.slice(0, 2).join('; ')}`
-        };
-      }
       return {
         name: 'TypeScript Compilation',
-        passed: true,
-        message: 'TypeScript compiled with warnings'
+        passed: false,
+        message: errorLines.length > 0
+          ? `TypeScript errors found: ${errorLines.slice(0, 3).join('; ')}`
+          : 'TypeScript compilation failed'
       };
     }
   } catch (error: unknown) {
@@ -312,7 +305,7 @@ function checkHostedApiForGithubPages(): ValidationResult {
       name: 'Hosted API (GitHub Pages CI)',
       passed: false,
       message:
-        'Set repository variable PUBLIC_API_BASE_URL to your deployed voice dashboard HTTPS API root (e.g. https://your-service.onrender.com/api). See DEPLOYMENT.md at repo root. To bypass temporarily, set Actions variable SKIP_HOSTED_API_CHECK=1.'
+        'Set repository variable PUBLIC_API_BASE_URL to your deployed hosted API HTTPS root (e.g. https://your-service.example.com/api). For the primary hybrid path this should be the standalone API host. See DEPLOYMENT.md at repo root. To bypass temporarily, set Actions variable SKIP_HOSTED_API_CHECK=1.'
     };
   }
 

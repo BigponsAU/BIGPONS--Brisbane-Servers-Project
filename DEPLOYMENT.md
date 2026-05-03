@@ -1,6 +1,6 @@
-# Hosting: GitHub Pages + Voice Dashboard API
+# Hosting: GitHub Pages + Hosted API
 
-GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. Run the voice-framework dashboard (Node/Express) on a separate host. Bake the dashboard’s public API root into the static site with **`PUBLIC_API_BASE_URL`** (HTTPS).
+GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. The primary production backend for the Pages site is the standalone API in `website-brisbaneservers.com/standalone-api/server.ts`. Bake the hosted API root into the static site with **`PUBLIC_API_BASE_URL`** (HTTPS).
 
 ---
 
@@ -11,7 +11,24 @@ GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. R
 
 ---
 
-## Phase 2 — Run the dashboard API (pick one path)
+## Phase 2 — Run the primary hybrid API
+
+Deploy `website-brisbaneservers.com/standalone-api/server.ts` to a Node host (Render, Fly, Railway, VPS, etc.) with durable storage:
+
+- Prefer `DATABASE_URL` (Postgres) for production auth/session durability.
+- If using filesystem storage, use paid persistent volumes and a backup/restore process.
+- Set `ALLOWED_ORIGINS` to the real browser origin(s), including `https://<user>.github.io` for Pages project sites.
+
+After deployment, confirm:
+
+- `https://<hybrid-api-host>/api/health`
+- `https://<hybrid-api-host>/api/resources/public`
+
+Use this host for `PUBLIC_API_BASE_URL` and `INTERNAL_API_BASE_URL`.
+
+---
+
+## Phase 3 — Optional voice dashboard service (pick one path)
 
 ### Path A — Render (blueprint in repo root: `render.yaml`)
 
@@ -35,14 +52,14 @@ GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. R
 
 ---
 
-## Phase 3 — Wire GitHub Actions (Pages build)
+## Phase 4 — Wire GitHub Actions (Pages build)
 
 1. On GitHub: **Settings** → **Secrets and variables** → **Actions** → **Variables** tab.
 2. Create or update:
 
 | Name | Value |
 |------|--------|
-| **`PUBLIC_API_BASE_URL`** | `https://<render-or-other-host>/api` (no trailing slash after `api` unless your routes require it; this repo expects the API root to end with `/api`). |
+| **`PUBLIC_API_BASE_URL`** | `https://<hybrid-api-host>/api` (no trailing slash after `api`; for Pages production this should point to the standalone API host). |
 | **`INTERNAL_API_BASE_URL`** | Set to the **same** value as `PUBLIC_API_BASE_URL` unless the Actions runner reaches a different internal URL (rare). |
 
 3. Leave **`PUBLIC_SITE_URL`** and **`PUBLIC_SITE_BASE`** unset to use workflow defaults for `https://<owner>.github.io/<repo>/`, or set them explicitly for a custom domain.
@@ -50,7 +67,7 @@ GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. R
 
 ---
 
-## Phase 4 — Deploy the static site
+## Phase 5 — Deploy the static site
 
 1. On GitHub: **Actions** → **Deploy to GitHub Pages** → **Run workflow**, or push to **`main`** (workflow runs on push to `main`).
 2. Wait for **build** then **deploy** jobs to finish.
@@ -58,24 +75,24 @@ GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. R
 
 ---
 
-## Phase 5 — GitHub CLI (optional, from a machine where you control auth)
+## Phase 6 — GitHub CLI (optional, from a machine where you control auth)
 
 1. Run **`gh auth login`** once.
 2. Set variables from a terminal (replace placeholders):
 
 ```bash
-gh variable set PUBLIC_API_BASE_URL --body "https://YOUR-HOST.onrender.com/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
-gh variable set INTERNAL_API_BASE_URL --body "https://YOUR-HOST.onrender.com/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
+gh variable set PUBLIC_API_BASE_URL --body "https://YOUR-HYBRID-API-HOST/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
+gh variable set INTERNAL_API_BASE_URL --body "https://YOUR-HYBRID-API-HOST/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
 ```
 
 3. Trigger Pages: **`gh workflow run "Deploy to GitHub Pages" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project`**
 
 ---
 
-## CORS (dashboard service)
+## CORS
 
-1. Keep **`ALLOWED_ORIGINS`** aligned with real browser origins.
-2. Or leave **`ALLOW_GITHUB_PAGES=1`** in Render (blueprint default) so any `https://*.github.io` origin is accepted (looser; tighten for production if needed).
+1. Keep **`ALLOWED_ORIGINS`** aligned with real browser origins on each hosted API.
+2. For voice dashboard deployments, `ALLOW_GITHUB_PAGES=1` allows any `https://*.github.io` origin (looser; prefer explicit allow-lists for production).
 
 ---
 
@@ -83,4 +100,4 @@ gh variable set INTERNAL_API_BASE_URL --body "https://YOUR-HOST.onrender.com/api
 
 1. Copy `voice-framework/.env.example` → `.env` and `website-brisbaneservers.com/.env.example` → `.env` as needed.
 2. Run **`npm run start:unified`** from the monorepo root (or start website + dashboard separately).
-3. Point **`PUBLIC_API_BASE_URL`** at `http://localhost:3001/api` for local builds, or rely on the Vite dev proxy in `astro.config.mjs` when using relative `/api`.
+3. Point **`PUBLIC_API_BASE_URL`** at `http://localhost:3002/api` for local hybrid builds, or rely on relative `/api` in same-origin runs.

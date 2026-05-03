@@ -7,48 +7,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenu = document.querySelector('.mobile-menu') as HTMLElement | null;
     
     if (hamburger && mobileMenu) {
+        const menuButton = hamburger;
+        const menuPanel = mobileMenu;
+
         function setMobileNavOpen(open: boolean) {
-            hamburger.classList.toggle('active', open);
-            mobileMenu.classList.toggle('active', open);
-            hamburger.setAttribute('aria-expanded', String(open));
-            mobileMenu.setAttribute('aria-hidden', String(!open));
+            menuButton.classList.toggle('active', open);
+            menuPanel.classList.toggle('active', open);
+            menuButton.setAttribute('aria-expanded', String(open));
+            menuPanel.setAttribute('aria-hidden', String(!open));
             document.body.classList.toggle('nav-mobile-open', open);
         }
 
-        hamburger.addEventListener('click', function (e: MouseEvent) {
+        menuButton.addEventListener('click', function (e: MouseEvent) {
             e.stopPropagation();
-            const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+            const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
             const next = !isExpanded;
             setMobileNavOpen(next);
             if (next) {
-                const firstLink = mobileMenu.querySelector('a') as HTMLElement;
+                const firstLink = menuPanel.querySelector('a') as HTMLElement;
                 firstLink?.focus();
             }
         });
 
-        hamburger.addEventListener('keydown', function (e: KeyboardEvent) {
+        menuButton.addEventListener('keydown', function (e: KeyboardEvent) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                hamburger.click();
+                menuButton.click();
             }
-            if (e.key === 'Escape' && hamburger.getAttribute('aria-expanded') === 'true') {
+            if (e.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
                 setMobileNavOpen(false);
-                hamburger.focus();
+                menuButton.focus();
             }
         });
 
         document.addEventListener('click', function (e: MouseEvent) {
-            if (hamburger.getAttribute('aria-expanded') !== 'true') return;
+            if (menuButton.getAttribute('aria-expanded') !== 'true') return;
             const target = e.target as HTMLElement;
-            if (!hamburger.contains(target) && !mobileMenu.contains(target)) {
+            if (!menuButton.contains(target) && !menuPanel.contains(target)) {
                 setMobileNavOpen(false);
             }
         });
 
         document.addEventListener('keydown', function (e: KeyboardEvent) {
-            if (e.key === 'Escape' && hamburger.getAttribute('aria-expanded') === 'true') {
+            if (e.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
                 setMobileNavOpen(false);
-                hamburger.focus();
+                menuButton.focus();
             }
         });
     }

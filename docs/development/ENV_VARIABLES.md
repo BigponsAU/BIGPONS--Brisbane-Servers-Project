@@ -37,9 +37,9 @@ PORT=3002
 
 **Type**: String (comma-separated)  
 **Default**: `http://localhost:3000`  
-**Location**: `voice-framework/dashboard/middleware/security.ts`
+**Location**: `website-brisbaneservers.com/standalone-api/server.ts` (primary hybrid API), `voice-framework/dashboard/middleware/security.ts` (optional voice dashboard service)
 
-Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing). The static frontend runs on port 3000 by default, so `http://localhost:3000` is automatically allowed in development mode even if not specified.
+Comma-separated list of allowed origins for CORS (Cross-Origin Resource Sharing). In production with GitHub Pages project sites, include `https://<user>.github.io` (the browser origin), not only the repository path.
 
 **Format**: Comma-separated list of URLs
 
@@ -145,6 +145,16 @@ INTERNAL_API_BASE_URL=https://api-preview.example.com/api
 **Location**: `website-brisbaneservers.com/src/pages/api/auth/login.ts`, `voice-framework/dashboard/middleware/auth.ts`
 
 Used only for optional **environment-configured** admin login (same email/password for both the Astro API and the voice-framework dashboard when you choose to use that path). **There are no seeded defaults in code.** For production, set strong values in cPanel / your host’s environment, or rely on registered users in the auth database (SQLite locally or Postgres when `DATABASE_URL` is set).
+
+---
+
+### `DATABASE_URL`
+
+**Type**: String (Postgres URL)  
+**Default**: unset  
+**Location**: `website-brisbaneservers.com/src/lib/db/auth-db.ts` and related auth/session DB modules
+
+When set, the primary hybrid API uses Postgres for users, sessions, reset tokens, and auth audit trails. For production this is recommended over local filesystem stores.
 
 ---
 
@@ -254,8 +264,9 @@ For production deployment, ensure:
 5. **Set `PUBLIC_API_BASE_URL`** to the deployed external API base
 6. **Set `INTERNAL_API_BASE_URL`** if your CI/build network should fetch from a different API URL
 7. **Set `PUBLIC_SITE_BASE`** to `/<repo>/` for GitHub Pages project sites or `/` for custom domains
-8. **Use a process manager** (PM2, systemd, etc.) to manage environment variables
-9. **Never commit `.env` files** to version control
+8. **Prefer durable storage**: Postgres (`DATABASE_URL`) or paid persistent volumes; avoid ephemeral local JSON/SQLite for critical production data
+9. **Use a process manager** (PM2, systemd, etc.) to manage environment variables
+10. **Never commit `.env` files** to version control
 
 ---
 

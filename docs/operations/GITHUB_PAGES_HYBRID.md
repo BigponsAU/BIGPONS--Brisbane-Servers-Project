@@ -7,6 +7,8 @@ This repository supports a hybrid deployment model:
 - GitHub Pages serves the static Astro frontend built from `website-brisbaneservers.com/src-static`
 - A separate standalone API host serves the dynamic routes mounted from `website-brisbaneservers.com/src/pages/api/*`
 
+The optional `voice-framework` dashboard service can be deployed separately for voice tooling/admin workflows, but the Pages hybrid site should point `PUBLIC_API_BASE_URL` at the standalone API host for contract compatibility.
+
 ## Required repository variables
 
 Configure these under **GitHub → your repo → Settings → Secrets and variables → Actions → Variables** (or set them in the **github-pages** environment if you use environment-scoped vars).
