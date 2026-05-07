@@ -37,7 +37,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "express-rate-limit": "^8.2.1",
+    "express-rate-limit": "^8.5.1",
     "express-validator": "^7.0.1",
     "mime-types": "^2.1.35",
     "multer": "^2.0.2"
@@ -49,12 +49,12 @@
     "@types/mime-types": "^2.1.4",
     "@types/multer": "^2.0.0",
     "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^1.6.1",
-    "@vitest/ui": "^1.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
     "javascript-obfuscator": "^4.1.1",
     "ts-node": "^10.9.0",
     "tsx": "^4.7.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^4.1.5"
   }
 }
