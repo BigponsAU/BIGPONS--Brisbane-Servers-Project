@@ -1,82 +1,98 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
+import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InquiryForm from '../../components/InquiryForm.astro';
 import SemanticText from '../../components/SemanticText.astro';
+import MarketingPageBands from '../../components/MarketingPageBands.astro';
 
 const currentPath = '/case-studies/retail-inventory-ecommerce';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Case studies', href: '/projects' },
+  { label: 'Retail: inventory & e-commerce' },
+];
 ---
 
-<BaseLayout 
+<SiteShell
   title="Retail: Inventory & E-commerce Integration - Case Study - Brisbane Servers"
-  description="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation."
+  description="Grant-assisted inventory and e-commerce integration for a Brisbane retail SME — time saved, accuracy improved, and a platform sized for growth."
+  currentPath={currentPath}
+  breadcrumbs={breadcrumbsTrail}
+  pageId="case-study-retail"
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Projects', href: '/projects' },
-      { label: 'Case Studies', href: '/projects' },
-      { label: 'Retail: Inventory & E-commerce Integration' }
-    ]} />
-    
-    <Hero 
-      title="Retail: Inventory & E-commerce Integration"
-      subtitle="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation."
-    />
+  <Hero
+    eyebrow="BIGPONS · Case study"
+    title="Retail: inventory & e-commerce integration"
+    subtitle="Manual tracking replaced with a cloud inventory core, barcode workflows, and real-time sync to the online store — phased so trade never stopped."
+  />
+  <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--hero-wash">
+  <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="case-study-content">
-          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+          <div
+            class="case-study-meta"
+            style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);"
+          >
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);"
+            >
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Retail & E-commerce</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">
+                  Retail & e-commerce
+                </p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location:</strong>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location</strong>
                 <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Brisbane, QLD</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Business Size:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Small Business</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Business size</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Small business</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Implementation:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Grant-Assisted</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Funding</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Grant-assisted</p>
               </div>
             </div>
           </div>
 
           <h2 class="section-title">
-            <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+            <SemanticText text="The challenge" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`A small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence. 
+            <SemanticText
+              text={`A small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence.
 
 As the business grew, this manual process became unsustainable. Stock levels were frequently incorrect, leading to overselling online or missing sales opportunities in-store. The business needed an automated solution that could:
 - Track inventory in real-time across physical and online channels
 - Automatically update stock levels when sales occurred
 - Provide accurate reporting for purchasing decisions
 - Integrate with their existing e-commerce platform
-- Be cost-effective for a small business budget`} semanticLevel="normal" isChild={true} />
+- Be cost-effective for a small business budget`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+            <SemanticText text="Our approach" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`We assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:
+            <SemanticText
+              text={`We assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:
 
 Phase 1: Core Inventory System
 - Implemented a cloud-based inventory management system
@@ -93,7 +109,10 @@ Phase 3: Reporting & Analytics
 - Sales trend analysis
 - Inventory turnover metrics
 
-The solution was designed to scale with the business while remaining cost-effective through grant assistance.`} semanticLevel="normal" isChild={true} />
+The solution was designed to scale with the business while remaining cost-effective through grant assistance.`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
@@ -101,17 +120,17 @@ The solution was designed to scale with the business while remaining cost-effect
           </h2>
           <CardGrid columns={2} style="margin-top: var(--space-xl);">
             <Card
-              title="Time Savings"
+              title="Time savings"
               description="Reduced inventory management time from 8 hours per week to 1 hour per week. Owner can focus on growing the business instead of data entry."
               icon="fas fa-clock"
             />
             <Card
-              title="Accuracy Improvement"
+              title="Accuracy improvement"
               description="Stock level accuracy increased from 75% to 98%. Eliminated overselling and missed sales opportunities."
               icon="fas fa-check-circle"
             />
             <Card
-              title="Cost Efficiency"
+              title="Cost efficiency"
               description="Grant assistance covered 60% of implementation costs. Monthly operational savings exceed system costs."
               icon="fas fa-dollar-sign"
             />
@@ -123,31 +142,39 @@ The solution was designed to scale with the business while remaining cost-effect
           </CardGrid>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+            <SemanticText text="Key technologies" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description">
-            <SemanticText text="Cloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance." semanticLevel="normal" isChild={true} />
+            <SemanticText
+              text="Cloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance."
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
-          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
-            <h3 style="margin-bottom: var(--space-md);">Lessons Learned</h3>
+          <div
+            style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);"
+          >
+            <h3 style="margin-bottom: var(--space-md);">Lessons learned</h3>
             <p style="margin: 0; line-height: 1.8;">
-              <SemanticText text={`This project demonstrated that small businesses can successfully implement enterprise-grade solutions when properly planned and grant-assisted. The key was understanding the business's immediate needs while building a foundation for future growth. Phased implementation allowed the business to adapt gradually without disrupting operations.`} semanticLevel="normal" isChild={true} />
+              <SemanticText
+                text={`This project demonstrated that small businesses can successfully implement enterprise-grade solutions when properly planned and grant-assisted. The key was understanding the business's immediate needs while building a foundation for future growth. Phased implementation allowed the business to adapt gradually without disrupting operations.`}
+                semanticLevel="normal"
+                isChild={true}
+              />
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <InquiryForm 
-      title="Interested in Similar Solutions?"
-      subtitle="We can help assess your business needs and identify grant opportunities for digital transformation."
+    <InquiryForm
+      title="Interested in similar outcomes?"
+      subtitle="We assess your context, map grant pathways where relevant, and propose a sequenced plan you can afford to operate."
       defaultIndustry="Retail & E-commerce"
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+  </MarketingPageBands>
+</SiteShell>
 
 <style>
   .case-study-content {

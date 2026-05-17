@@ -6,6 +6,8 @@ import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
+import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/services';
 const breadcrumbsTrail = [
@@ -16,7 +18,7 @@ const breadcrumbsTrail = [
 
 <SiteShell 
   title="Services - Brisbane Servers"
-  description="Consultation, analysis, implementation, and ongoing support for practical technology decisions in real operating contexts."
+  description={valueProposition.services.description}
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId="services"
@@ -25,25 +27,27 @@ const breadcrumbsTrail = [
   mainClass="main-phi-chassis"
 >
     <Hero 
-      title="Access & Support We Provide"
-      subtitle="We clarify your current position, map feasible options, implement the right changes, and support the result over time."
+      eyebrow={valueProposition.brandEyebrow}
+      title={valueProposition.services.heroTitle}
+      subtitle={valueProposition.services.heroSubtitle}
     />
     <Breadcrumbs items={breadcrumbsTrail} />
 
+    <MarketingPageBands>
     <!-- Services Overview -->
     <!-- Layout A: Horizontal flow with lateral tangents -->
     <!-- Comprehensive block usage: phi-lateral-horizontal, phi-tangent, bg-pattern-phi-radial -->
-    <section class="section phi-line-symmetrical section--hero-wash">
+    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="phi-tangent"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="Service Delivery In Practice" semanticLevel="high" isParent={true} />
+            <SemanticText text="How delivery works in practice" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="Not sure what you need yet is exactly where this process starts. We build from baseline reality to practical implementation with each step reinforcing the previous one." semanticLevel="normal" isChild={true} />
+            <SemanticText text="If you are not sure what you need yet, that is a valid starting point. We move from baseline reality to a sequenced plan — each step testable before the next tranche of spend." semanticLevel="normal" isChild={true} />
           </p>
         </div>
         
@@ -78,17 +82,17 @@ const breadcrumbsTrail = [
     <!-- Value Framework -->
     <!-- Layout B: Card grid with phi-based spacing variations -->
     <!-- Comprehensive block usage: phi-line-vertical, phi-lateral-angular-1, bg-pattern-angular -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--primary-light">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-1"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="Value Profiling" semanticLevel="high" isParent={true} />
+            <SemanticText text="Value profiling" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="We consider multiple dimensions to tailor solutions. Not one-size-fits-all—genuine customization." semanticLevel="normal" isChild={true} />
+            <SemanticText text="We weight business size, cost reasonableness, grants, industry rules, and time saved — so recommendations are customised, not templated." semanticLevel="normal" isChild={true} />
           </p>
         </div>
         
@@ -129,5 +133,6 @@ const breadcrumbsTrail = [
       industryField={true}
       preferenceField={true}
     />
+    </MarketingPageBands>
 </SiteShell>
 

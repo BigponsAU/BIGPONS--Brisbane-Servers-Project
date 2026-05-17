@@ -1,0 +1,84 @@
+---
+import { clientSites } from '../data/client-sites';
+
+interface Props {
+  /** Optional anchor id for in-page links */
+  id?: string;
+  /** Set false when the parent section already explains the growing list */
+  showFootnote?: boolean;
+}
+
+const { id, showFootnote = true } = Astro.props;
+---
+
+<div class="client-sites-showcase" id={id}>
+  <ul class="client-sites-showcase__grid" role="list">
+    {
+      clientSites.map((site) => {
+        let host = '';
+        try {
+          host = new URL(site.url).hostname.replace(/^www\./, '');
+        } catch {
+          host = site.url;
+        }
+        const faviconSrc = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`;
+        return (
+          <li class="client-sites-showcase__item" role="listitem">
+            <a
+              class="client-site-card"
+              href={site.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="client-site-card__preview">
+                {site.previewImage ? (
+                  <img
+                    class="client-site-card__shot"
+                    src={site.previewImage}
+                    alt=""
+                    width={640}
+                    height={400}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="client-site-card__placeholder" aria-hidden="true">
+                    <span class="client-site-card__placeholder-label">Site preview</span>
+                  </div>
+                )}
+                <div class="client-site-card__chrome" aria-hidden="true">
+                  <span class="client-site-card__dot" />
+                  <span class="client-site-card__dot" />
+                  <span class="client-site-card__dot" />
+                </div>
+              </div>
+              <div class="client-site-card__body">
+                <div class="client-site-card__row">
+                  <img
+                    class="client-site-card__favicon"
+                    src={faviconSrc}
+                    alt=""
+                    width={28}
+                    height={28}
+                    loading="lazy"
+                  />
+                  <div class="client-site-card__text">
+                    <span class="client-site-card__name">{site.name}</span>
+                    <span class="client-site-card__host">{host}</span>
+                    <span class="client-site-card__tagline">{site.tagline}</span>
+                  </div>
+                </div>
+                <span class="client-site-card__cta">Visit live site</span>
+              </div>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+  {showFootnote && (
+    <p class="client-sites-showcase__note">
+      We keep this list short on purpose. It grows when new launches go live and clients are glad
+      to have them shown here.
+    </p>
+  )}
+</div>

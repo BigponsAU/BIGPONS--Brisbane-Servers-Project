@@ -8,7 +8,9 @@ import SearchBar from '../components/SearchBar.astro';
 import IndustryFilters from '../components/IndustryFilters.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
 import { industries } from '../data/industries';
+import { valueProposition } from '../data/value-proposition';
 import { resourceVoiceInterconnection } from '../lib/portal-voice-framework';
 import { getPublishedResourcesForPage } from '../lib/public-published-resources';
 
@@ -24,7 +26,7 @@ const breadcrumbsTrail = [
 
 <SiteShell 
   title="Resources - Brisbane Servers"
-  description="Industry-specific knowledge hub with insights on technology applications, grants, automation opportunities, and reality-based guidance for Australian SMEs."
+  description={valueProposition.resources.description}
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId="resources"
@@ -33,28 +35,30 @@ const breadcrumbsTrail = [
   mainClass="main-phi-chassis"
 >
     <Hero 
-      title="Resources & Insights"
-      subtitle="Each resource is written for clear decisions: context, evidence, and practical next actions in one place."
+      eyebrow={valueProposition.brandEyebrow}
+      title="Resources & insights"
+      subtitle={valueProposition.resources.heroSubtitle}
     />
     <Breadcrumbs items={breadcrumbsTrail} />
     
-    <section class="section" style="padding-top: 0;">
+    <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface" style="padding-top: 0;">
       <div class="container">
         <SearchBar />
       </div>
     </section>
 
     <!-- What Are Resources Section -->
-    <section class="section phi-line-symmetrical section--hero-wash">
+    <section class="section section-tartan-accent section-home-band--primary-light phi-line-symmetrical">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="How Resources Build Meaning" semanticLevel="high" isParent={true} />
+            <SemanticText text="How these resources help you decide" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="Our resources are industry-specific guides reviewed for clear voice alignment, practical relevance, and evidence quality for Australian business contexts." semanticLevel="normal" isChild={true} />
+            <SemanticText text="Industry-specific guides reviewed for voice consistency, practical relevance, and evidence quality — aligned with how Brisbane Servers consults in the field." semanticLevel="normal" isChild={true} />
           </p>
           <p class="section-description" style="margin-top: var(--space-md); max-width: 62ch;">
             <SemanticText text={resourceVoiceInterconnection.headline} semanticLevel="normal" isChild={true} />
@@ -83,7 +87,7 @@ const breadcrumbsTrail = [
 
     {featuredResources.length > 0 && (
       <!-- Featured Resources Section -->
-      <section class="section" style="background: var(--surface);">
+      <section class="section section-tartan-accent section-home-band--surface">
         <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
         <div class="phi-line-vertical phi-line-vertical-inv"></div>
         <div class="container">
@@ -121,12 +125,12 @@ const breadcrumbsTrail = [
     )}
 
     <!-- How Resources Are Created Section -->
-    <section class="section">
+    <section class="section section-tartan-accent section-home-band--primary-light">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <h2 class="section-title">
-          <SemanticText text="How Resources Are Created" semanticLevel="high" isParent={true} />
+          <SemanticText text="How resources are produced" semanticLevel="high" isParent={true} />
         </h2>
         <div class="section-description" style="line-height: 1.8;">
           <p>
@@ -160,17 +164,17 @@ const breadcrumbsTrail = [
 
     <!-- Layout A: Masonry-style grid with phi proportions -->
     <!-- Comprehensive block usage: phi-line-vertical, phi-line-vertical-inv, phi-lateral-angular-2, bg-pattern-phi-grid -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
       <div class="phi-line-vertical phi-line-vertical-inv"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="section-intro-phi">
           <h2 class="section-title">
-            <SemanticText text="Industry-Specific Resources" semanticLevel="high" isParent={true} />
+            <SemanticText text="Browse by industry" semanticLevel="high" isParent={true} />
           </h2>
           <p class="section-description">
-            <SemanticText text="Insights tailored to your industry. What works in retail differs from healthcare, and hospitality needs different solutions than professional services. Practical guidance specific to Brisbane and Australian business contexts." semanticLevel="normal" isChild={true} />
+            <SemanticText text="Retail, healthcare, hospitality, professional services, and more — each hub collects what actually changes decisions in that sector across Brisbane and Australia." semanticLevel="normal" isChild={true} />
           </p>
         </div>
         
@@ -205,9 +209,10 @@ const breadcrumbsTrail = [
     </section>
 
     <InquiryForm 
-      title="Questions about your industry? I have an idea..."
-      subtitle="Share your context and goals, even if they are still forming. We help you connect options to practical next steps."
+      title="Questions about your industry or an idea you are exploring?"
+      subtitle="Share context and goals, even as rough notes—we map options to practical next steps and plain-spoken feasibility."
       locationField={true}
     />
+    </MarketingPageBands>
 </SiteShell>
 

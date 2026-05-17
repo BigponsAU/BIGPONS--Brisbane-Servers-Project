@@ -3,6 +3,7 @@ import '../styles/legal-pages.css';
 import SiteShell from '../layouts/SiteShell.astro';
 import PageHero from '../components/PageHero.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
 import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/privacy-policy';
@@ -15,7 +16,7 @@ const breadcrumbsTrail = [
 
 <SiteShell
   title="Privacy Policy - Brisbane Servers"
-  description="How Brisbane Servers handles personal information, cookies, and analytics on this website. A BIGPONS technology project."
+  description="Privacy practices for the Brisbane Servers website and account workspace — cookies, analytics, retention, and your choices. BIGPONS technology project."
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId={pageDescriptor.pageId}
@@ -26,12 +27,14 @@ const breadcrumbsTrail = [
   mainClass="main-phi-chassis"
 >
   <PageHero
+    eyebrow="Legal"
     title="Privacy Policy"
     lead="Last updated: March 2026. Brisbane Servers is operated as part of BIGPONS (ABN 93 297 393 962). This page summarises how we approach privacy on this site; it is not personal legal advice."
   />
   <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--continuation section-tartan-accent phi-line-symmetrical section--hero-wash">
+    <MarketingPageBands>
+    <section class="section section--continuation section-tartan-accent section-home-band--surface phi-line-symmetrical">
       <div class="container phi-measure-prose">
 
         <h2 class="h3 legal-h2">Information we may collect</h2>
@@ -70,4 +73,5 @@ const breadcrumbsTrail = [
         </p>
       </div>
     </section>
+    </MarketingPageBands>
 </SiteShell>

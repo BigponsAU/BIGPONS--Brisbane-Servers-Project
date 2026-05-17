@@ -281,11 +281,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 /* Global section fallback: lock one compact rhythm for all shell sections.
    This neutralizes broad global.css rules (nth-child + resolution media) that can
-   re-inflate spacing at zoom-out and create "infinite stretch" bands. */
-.site-main .section:not(.hero):not(.page-hero--surface),
-.site-main .inquiry-section {
+   re-inflate spacing at zoom-out and create "infinite stretch" bands.
+   Portal keeps compact bands; public marketing pages override below. */
+.site-main:not(.site-main--marketing) .section:not(.hero):not(.page-hero--surface),
+.site-main:not(.site-main--marketing) .inquiry-section {
   padding-top: clamp(0.6rem, 0.9rem, 1.15rem) !important;
   padding-bottom: clamp(0.6rem, 0.9rem, 1.15rem) !important;
+}
+
+/* Public marketing pages: clearer vertical rhythm between bands (readability). */
+.site-main.site-main--marketing .section:not(.hero):not(.page-hero--surface),
+.site-main.site-main--marketing .inquiry-section {
+  padding-top: clamp(1.75rem, 4.25vw, 3.5rem) !important;
+  padding-bottom: clamp(1.75rem, 4.25vw, 3.5rem) !important;
 }
 
 .contribute-hero {
@@ -298,9 +306,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   );
 }
 
-/* Tighter top rhythm when following PageHero (legal / light band) */
+/* Rhythm when following PageHero (legal / light band) */
 .section--continuation {
-  padding-block-start: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+  padding-block-start: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
 }
 
 .section .container,
@@ -373,7 +381,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-sections-shell > .section.section-tartan-accent {
   position: relative;
   z-index: 1;
-  padding-block: clamp(0.75rem, 1.1vw, 1.35rem);
+  padding-block: clamp(1.75rem, 4vw, 3.35rem);
   --home-title-underline-start: var(--accent-teal);
   --home-title-underline-mid: var(--accent-violet);
   --home-title-underline-end: var(--accent-pink);
@@ -491,6 +499,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   --banach-frame-alpha: 0.22;
 }
 
+/* Live client sites — sits after proof, before contact: tangible evidence before “talk to us”. */
+.main-home .home-sections-shell > .section.home-band--clients {
+  background: linear-gradient(168deg, rgba(240, 253, 250, 0.98) 0%, rgba(224, 242, 254, 0.78) 44%, rgba(237, 233, 254, 0.72) 100%);
+  --home-title-underline-start: var(--accent-teal);
+  --home-title-underline-mid: var(--primary-color);
+  --home-title-underline-end: var(--accent-violet);
+  --home-card-tint-a: rgba(204, 251, 241, 0.5);
+  --home-card-tint-b: rgba(224, 231, 255, 0.38);
+  --home-card-ring-rgb: var(--accent-teal-rgb);
+  --banach-step: 0.3;
+  --banach-frame-alpha: 0.14;
+}
+
 .main-home .home-sections-shell > .section.home-band--contact {
   background: linear-gradient(165deg, rgba(224, 231, 255, 0.96) 0%, rgba(186, 230, 253, 0.78) 42%, rgba(252, 231, 243, 0.74) 100%);
   --home-title-underline-start: var(--primary-color);
@@ -580,6 +601,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-interconnection-rig[data-margin-band='proof'] {
   --margin-accent-node-rgb: var(--accent-violet-rgb);
   --margin-accent-link-rgb: var(--primary-color-rgb);
+}
+
+.main-home .home-interconnection-rig[data-margin-band='clients'] {
+  --margin-accent-node-rgb: var(--accent-teal-rgb);
+  --margin-accent-link-rgb: var(--accent-violet-rgb);
 }
 
 .main-home .home-interconnection-rig[data-margin-band='contact'] {
@@ -808,6 +834,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-interconnection-rig[data-margin-band='strategy'] .home-page-margin-constellation,
 .main-home .home-interconnection-rig[data-margin-band='industry'] .home-page-margin-constellation,
 .main-home .home-interconnection-rig[data-margin-band='proof'] .home-page-margin-constellation,
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-page-margin-constellation,
 .main-home .home-interconnection-rig[data-margin-band='contact'] .home-page-margin-constellation,
 .main-home .home-interconnection-rig[data-margin-band='about'] .home-page-margin-constellation,
 .main-home .home-interconnection-rig[data-margin-band='challenge'] .home-page-margin-constellation,
@@ -821,6 +848,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-interconnection-rig[data-margin-band='strategy'] .home-page-margin-echo[data-echo-band='strategy'],
 .main-home .home-interconnection-rig[data-margin-band='industry'] .home-page-margin-echo[data-echo-band='industry'],
 .main-home .home-interconnection-rig[data-margin-band='proof'] .home-page-margin-echo[data-echo-band='proof'],
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-page-margin-echo[data-echo-band='solutions'],
 .main-home .home-interconnection-rig[data-margin-band='contact'] .home-page-margin-echo[data-echo-band='contact'],
 .main-home .home-interconnection-rig[data-margin-band='about'] .home-page-margin-echo[data-echo-band='about'],
 .main-home .home-interconnection-rig[data-margin-band='challenge'] .home-page-margin-echo[data-echo-band='challenge'],
@@ -950,6 +978,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   --constellation-link-rgb: var(--accent-violet-rgb);
 }
 
+.main-home .home-sections-shell .section.home-band--clients .section-satellite {
+  --constellation-node-rgb: var(--accent-teal-rgb);
+  --constellation-link-rgb: var(--accent-violet-rgb);
+}
+
 .main-home .home-sections-shell .section.home-band--partnership .section-satellite {
   --constellation-node-rgb: var(--accent-violet-rgb);
   --constellation-link-rgb: var(--accent-pink-rgb);
@@ -969,6 +1002,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo),
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo) {
   width: min(34rem, calc(24rem + var(--home-page-margin-w) * 0.46));
@@ -1001,6 +1035,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo)::after,
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo)::after,
 .main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo)::after,
 .main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo)::after {
   content: '';
@@ -1704,9 +1739,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 /* Full public-site remodel guardrail (all non-portal pages):
-   neutralize legacy decorative conflicts and enforce one deterministic section/card system. */
+   neutralize legacy decorative conflicts and enforce one deterministic section/card system.
+   Vertical padding is governed by `.site-main.site-main--marketing .section` (!important) above. */
 .site-main--marketing .section:not(.hero):not(.page-hero--surface) {
-  padding-block: clamp(0.7rem, 1vw, 1.3rem);
+  padding-block: clamp(1.75rem, 4.25vw, 3.5rem);
 }
 
 .site-main--marketing .section:not(.hero):not(.page-hero--surface):not(.section--hero-wash)::before,
@@ -1733,13 +1769,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .site-main--marketing .section .section-title {
-  margin: 0 0 clamp(0.9rem, 1.2vw, 1.5rem);
+  margin: 0 0 clamp(1.1rem, 1.6vw, 1.85rem);
   font-size: clamp(1.65rem, 1rem + 1vw, 2.5rem);
 }
 
 .site-main--marketing .section .section-description,
 .site-main--marketing .section .section-intro-phi {
-  margin: 0 0 clamp(1.2rem, 1.6vw, 1.9rem);
+  margin: 0 0 clamp(1.5rem, 2.1vw, 2.35rem);
   max-width: min(84ch, 100%);
   font-size: clamp(1rem, 0.92rem + 0.28vw, 1.22rem);
 }
@@ -1757,7 +1793,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .site-main--marketing .card-grid-grid {
   grid-template-columns: repeat(var(--grid-columns, 3), minmax(0, 1fr));
   width: 100%;
-  gap: clamp(0.9rem, 1.2vw, 1.35rem);
+  gap: clamp(1.1rem, 1.65vw, 1.65rem);
   justify-content: stretch;
 }
 
@@ -2496,6 +2532,280 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   .portal-shell {
     width: min(100% - 1rem, 100%);
   }
+}
+
+/* ─── Inner marketing pages: same band shell + tartan rhythm as home (hero outside wrapper) ─── */
+.marketing-page-bands {
+  position: relative;
+  isolation: isolate;
+}
+
+.marketing-page-bands::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      118deg,
+      rgba(var(--primary-ink-rgb), 0.07) 0%,
+      rgba(var(--primary-ink-rgb), 0.018) 36%,
+      rgba(var(--accent-violet-rgb), 0.08) 100%
+    ),
+    radial-gradient(ellipse 125% 60% at 10% 0%, rgba(var(--accent-violet-rgb), 0.14), transparent 58%),
+    radial-gradient(ellipse 95% 55% at 92% 18%, rgba(var(--accent-teal-rgb), 0.11), transparent 52%),
+    radial-gradient(ellipse 80% 50% at 48% 100%, rgba(var(--accent-pink-rgb), 0.09), transparent 58%);
+}
+
+.marketing-page-bands::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 61.8%;
+  width: clamp(1px, 0.11vw, 2px);
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--accent-teal-rgb), 0.04) 0%,
+    rgba(var(--primary-color-rgb), 0.16) 38%,
+    rgba(var(--accent-violet-rgb), 0.26) 62%,
+    rgba(var(--accent-pink-rgb), 0.08) 100%
+  );
+  box-shadow: 0 0 18px rgba(var(--accent-violet-rgb), 0.16);
+}
+
+.marketing-page-bands > .section.section-tartan-accent,
+.marketing-page-bands > .inquiry-section {
+  position: relative;
+  z-index: 1;
+}
+
+.marketing-page-bands > .section.section-tartan-accent {
+  padding-block: clamp(1.75rem, 4vw, 3.35rem);
+  --home-title-underline-start: var(--accent-teal);
+  --home-title-underline-mid: var(--accent-violet);
+  --home-title-underline-end: var(--accent-pink);
+  --home-title-rail-start: var(--accent-teal);
+  --home-title-rail-mid: var(--primary-color);
+  --home-title-rail-end: rgba(var(--accent-pink-rgb), 0.78);
+  --home-card-tint-a: rgba(237, 242, 255, 0.72);
+  --home-card-tint-b: rgba(252, 231, 243, 0.35);
+  --home-card-ring-rgb: var(--accent-violet-rgb);
+  --banach-step: 1;
+  --banach-frame-alpha: 0.11;
+}
+
+.marketing-page-bands > .section.section-tartan-accent > .container {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(var(--space-md), 2.25vw, var(--space-xl));
+}
+
+.marketing-page-bands > .inquiry-section .container {
+  padding-block: clamp(var(--space-md), 2.25vw, var(--space-xl));
+}
+
+.marketing-page-bands > .section.section-tartan-accent > .container::before,
+.marketing-page-bands > .section.section-tartan-accent > .container::after {
+  content: none !important;
+  display: none !important;
+}
+
+.marketing-page-bands > .section.section-tartan-accent::after {
+  content: '';
+  position: absolute;
+  inset:
+    clamp(0.35rem, 0.75vw, 0.8rem)
+    clamp(0.55rem, 0.95vw, 1.15rem);
+  border-radius: clamp(0.75rem, 1.15vw, 1.05rem);
+  border: 1px solid rgba(var(--home-card-ring-rgb), var(--banach-frame-alpha));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38),
+    0 0 0 1px rgba(var(--home-card-ring-rgb), calc(var(--banach-frame-alpha) * 0.58));
+  transform-origin: center;
+  transform: scale(calc(0.992 + (var(--banach-step) * 0.012)));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd) {
+  background: linear-gradient(
+    168deg,
+    rgba(255, 252, 248, 0.98) 0%,
+    rgba(250, 245, 255, 0.9) 44%,
+    rgba(236, 248, 255, 0.88) 100%
+  );
+}
+
+.marketing-page-bands > .section.section-tartan-accent:nth-of-type(even) {
+  background: linear-gradient(
+    175deg,
+    rgba(245, 250, 255, 0.97) 0%,
+    rgba(224, 250, 252, 0.52) 40%,
+    rgba(241, 235, 255, 0.78) 100%
+  );
+}
+
+.marketing-page-bands > .section.section-tartan-accent.section-home-band--surface {
+  background: linear-gradient(
+    180deg,
+    rgba(252, 250, 255, 0.98) 0%,
+    rgba(224, 242, 254, 0.52) 52%,
+    rgba(237, 233, 254, 0.82) 100%
+  );
+}
+
+.marketing-page-bands > .section.section-tartan-accent.section-home-band--primary-light {
+  background: linear-gradient(
+    165deg,
+    rgba(224, 231, 255, 0.95) 0%,
+    rgba(186, 230, 253, 0.78) 42%,
+    rgba(252, 231, 243, 0.72) 100%
+  );
+}
+
+/* Client site cards (home + projects) */
+.client-sites-showcase__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+  gap: clamp(var(--space-md), 2vw, var(--space-xl));
+}
+
+.client-sites-showcase__item {
+  margin: 0;
+}
+
+.client-site-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-ink-rgb), 0.08);
+  background: var(--surface-glass-strong);
+  box-shadow: var(--site-panel-shadow);
+  overflow: hidden;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.client-site-card:hover {
+  transform: translateY(-0.18rem);
+  box-shadow: var(--card-shadow-marketing, var(--site-panel-shadow));
+}
+
+.client-site-card__preview {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(
+    145deg,
+    rgba(var(--accent-teal-rgb), 0.12) 0%,
+    rgba(var(--accent-violet-rgb), 0.1) 55%,
+    rgba(var(--accent-pink-rgb), 0.08) 100%
+  );
+}
+
+.client-site-card__shot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.client-site-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.9rem);
+  font-weight: var(--font-weight-semibold);
+  color: rgba(var(--primary-ink-rgb), 0.45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.client-site-card__chrome {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.55rem;
+  display: flex;
+  gap: 0.28rem;
+}
+
+.client-site-card__dot {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.client-site-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: clamp(var(--space-md), 1.2vw, var(--space-lg));
+}
+
+.client-site-card__row {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.client-site-card__favicon {
+  flex-shrink: 0;
+  border-radius: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.client-site-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.client-site-card__name {
+  font-weight: var(--font-weight-semibold);
+  font-size: clamp(1rem, 0.95rem + 0.2vw, 1.12rem);
+}
+
+.client-site-card__host {
+  font-size: 0.85rem;
+  color: var(--site-subtle);
+  word-break: break-all;
+}
+
+.client-site-card__tagline {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+}
+
+.client-site-card__cta {
+  font-size: 0.82rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+}
+
+.client-sites-showcase__note {
+  margin: clamp(var(--space-lg), 2vw, var(--space-xl)) 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 62ch;
 }
 
 @media (prefers-reduced-motion: reduce) {

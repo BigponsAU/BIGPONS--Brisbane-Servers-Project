@@ -2,6 +2,7 @@
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import MarketingPageBands from '~/components/MarketingPageBands.astro';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
 
 const currentPath = '/contribute';
@@ -16,7 +17,7 @@ const accountPath = resolvePublicSitePath('/account/');
 
 <SiteShell
   title="Contribute - Brisbane Servers"
-  description="Join our community: share your experience, earn tokens, and help improve industry resources. Your contributions are checked against our voice profile and shown alongside a community note."
+  description="Improve industry resources with Brisbane Servers: verified contributions, token rewards, and transparent community notes aligned to our consulting voice."
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId="contribute"
@@ -26,15 +27,16 @@ const accountPath = resolvePublicSitePath('/account/');
   mainClass="main-phi-chassis"
 >
     <Hero
-      eyebrow="Community"
-      title="Contribute to Community Resources"
-      subtitle="Community input adds field-tested context. We verify submissions and publish clearer guidance the whole ecosystem can use."
+      eyebrow="BIGPONS · Community programme"
+      title="Contribute to industry resources"
+      subtitle="Add field-tested context to our hubs. Submissions are reviewed, scored against our voice profile, and published with clear attribution — so the ecosystem gets stronger decision support."
       scrollTargetId="#contribute-get-started"
       scrollLabel="Get started below"
     />
     <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--hero-wash">
+    <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="container">
         <div class="contribute-blocks">
           <div class="contribute-block">
@@ -57,7 +59,7 @@ const accountPath = resolvePublicSitePath('/account/');
       </div>
     </section>
 
-    <section id="contribute-get-started" class="section contribute-cta">
+    <section id="contribute-get-started" class="section section-tartan-accent section-home-band--primary-light contribute-cta">
       <div class="container">
         <h2 class="contribute-cta-title">Get started</h2>
         <p class="contribute-cta-lead">Create an account to contribute from any topic page. Browsing stays open; sign in when you want to save work, manage contributions, or track tokens.</p>
@@ -86,6 +88,7 @@ const accountPath = resolvePublicSitePath('/account/');
         </p>
       </div>
     </section>
+    </MarketingPageBands>
 </SiteShell>
 
 <script define:vars={{ apiBaseUrl: publicApiBaseUrl, accountPath }}>
@@ -157,7 +160,7 @@ const accountPath = resolvePublicSitePath('/account/');
   }
   .contribute-block h2 { margin-top: 0; margin-bottom: var(--space-sm); }
   .contribute-block ul { margin-bottom: 0; padding-left: var(--space-lg); }
-  .contribute-cta { background: var(--surface-subtle); }
+  .contribute-cta { background: transparent; }
   .contribute-cta-title { margin-bottom: var(--space-sm); }
   .contribute-cta-lead { color: var(--text-secondary); margin-bottom: var(--space-xl); }
   .auth-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl); }

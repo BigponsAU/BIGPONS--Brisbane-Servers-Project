@@ -1,68 +1,80 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
+import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InquiryForm from '../../components/InquiryForm.astro';
 import SemanticText from '../../components/SemanticText.astro';
+import MarketingPageBands from '../../components/MarketingPageBands.astro';
 
 const currentPath = '/case-studies/professional-services-database';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Case studies', href: '/projects' },
+  { label: 'Professional services: spreadsheet to database' },
+];
 ---
 
-<BaseLayout 
+<SiteShell
   title="Service Business: Spreadsheet to Database - Case Study - Brisbane Servers"
-  description="Professional services company outgrowing spreadsheets. Implemented proper database with semantic search and automated reporting. Time savings, improved accuracy, scalability."
+  description="Australian professional services SME: from spreadsheet chaos to a governed database, semantic search, and automated reporting — less rework, clearer truth."
+  currentPath={currentPath}
+  breadcrumbs={breadcrumbsTrail}
+  pageId="case-study-professional-services"
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Projects', href: '/projects' },
-      { label: 'Case Studies', href: '/projects' },
-      { label: 'Service Business: Spreadsheet to Database' }
-    ]} />
-    
-    <Hero 
-      title="Service Business: Spreadsheet to Database"
-      subtitle="Professional services company outgrowing spreadsheets. Implemented proper database with semantic search and automated reporting. Time savings, improved accuracy, scalability."
-    />
+  <Hero
+    eyebrow="BIGPONS · Case study"
+    title="Professional services: spreadsheet to database"
+    subtitle="A growing firm replaced fragmented spreadsheets with a single source of truth, semantic search across client work, and reporting that runs itself."
+  />
+  <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--hero-wash">
+  <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="case-study-content">
-          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+          <div
+            class="case-study-meta"
+            style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);"
+          >
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);"
+            >
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Professional Services</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">
+                  Professional services
+                </p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location:</strong>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location</strong>
                 <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Australia</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Business Size:</strong>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Business size</strong>
                 <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">SME</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Key Feature:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Semantic Search</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Highlight</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Semantic search</p>
               </div>
             </div>
           </div>
 
           <h2 class="section-title">
-            <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+            <SemanticText text="The challenge" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`A professional services company had grown from a small team to 20+ employees, but was still managing all client data, projects, and communications in spreadsheets. The limitations became increasingly apparent:
+            <SemanticText
+              text={`A professional services company had grown from a small team to 20+ employees, but was still managing all client data, projects, and communications in spreadsheets. The limitations became increasingly apparent:
 
 - Multiple team members editing the same spreadsheets caused version conflicts
 - No way to search across historical client communications effectively
@@ -71,14 +83,18 @@ const currentPath = '/case-studies/professional-services-database';
 - Difficulty tracking project timelines and deliverables
 - Risk of data loss with no proper backup strategy
 
-The company needed a proper database system that could handle their growing data volume while improving team collaboration and operational efficiency.`} semanticLevel="normal" isChild={true} />
+The company needed a proper database system that could handle their growing data volume while improving team collaboration and operational efficiency.`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+            <SemanticText text="Our approach" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`We analyzed their existing workflows and data structures to design a database system that matched their business processes:
+            <SemanticText
+              text={`We analyzed their existing workflows and data structures to design a database system that matched their business processes:
 
 Database Design:
 - Structured relational database for client, project, and communication data
@@ -100,7 +116,10 @@ Workflow Automation:
 - Task assignment and tracking
 - Document management integration
 
-The system was designed to scale with the business while maintaining data integrity and improving team productivity.`} semanticLevel="normal" isChild={true} />
+The system was designed to scale with the business while maintaining data integrity and improving team productivity.`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
@@ -108,17 +127,17 @@ The system was designed to scale with the business while maintaining data integr
           </h2>
           <CardGrid columns={2} style="margin-top: var(--space-xl);">
             <Card
-              title="Time Savings"
+              title="Time savings"
               description="Reporting time reduced from 8 hours per week to 30 minutes. Team members save 2-3 hours daily on data management."
               icon="fas fa-clock"
             />
             <Card
-              title="Improved Accuracy"
+              title="Improved accuracy"
               description="Eliminated version conflicts and data entry errors. Single source of truth for all client information."
               icon="fas fa-check-circle"
             />
             <Card
-              title="Better Search"
+              title="Better search"
               description="Semantic search finds relevant information across thousands of documents in seconds, improving client service quality."
               icon="fas fa-search"
             />
@@ -130,31 +149,39 @@ The system was designed to scale with the business while maintaining data integr
           </CardGrid>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+            <SemanticText text="Key technologies" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description">
-            <SemanticText text="PostgreSQL database, semantic search engine (NLP-based), automated reporting system, RESTful API, cloud infrastructure, automated backup systems, version control integration." semanticLevel="normal" isChild={true} />
+            <SemanticText
+              text="PostgreSQL database, semantic search engine (NLP-based), automated reporting system, RESTful API, cloud infrastructure, automated backup systems, version control integration."
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
-          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
-            <h3 style="margin-bottom: var(--space-md);">Lessons Learned</h3>
+          <div
+            style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);"
+          >
+            <h3 style="margin-bottom: var(--space-md);">Lessons learned</h3>
             <p style="margin: 0; line-height: 1.8;">
-              <SemanticText text={`Many businesses outgrow spreadsheets but delay moving to proper database systems. The transition requires careful planning to preserve existing data and workflows. Semantic search capabilities provided unexpected value, making historical information easily accessible. The key was designing a system that matched their business processes rather than forcing process changes to fit the technology.`} semanticLevel="normal" isChild={true} />
+              <SemanticText
+                text={`Many businesses outgrow spreadsheets but delay moving to proper database systems. The transition requires careful planning to preserve existing data and workflows. Semantic search capabilities provided unexpected value, making historical information easily accessible. The key was designing a system that matched their business processes rather than forcing process changes to fit the technology.`}
+                semanticLevel="normal"
+                isChild={true}
+              />
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <InquiryForm 
-      title="Ready to Move Beyond Spreadsheets?"
-      subtitle="We can help design database solutions that match your business processes and scale with your growth."
+    <InquiryForm
+      title="Ready to move beyond spreadsheets?"
+      subtitle="We map your workflows first, then propose a database and search layer your team will actually adopt."
       defaultIndustry="Professional Services"
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+  </MarketingPageBands>
+</SiteShell>
 
 <style>
   .case-study-content {

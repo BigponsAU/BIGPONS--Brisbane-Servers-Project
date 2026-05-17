@@ -14,6 +14,7 @@ import {
   type PageValueProfile,
   type PageZoomProfile,
 } from '../lib/page-descriptors';
+import { valueProposition } from '../data/value-proposition';
 
 interface Props {
   title: string;
@@ -33,7 +34,7 @@ interface Props {
 
 const {
   title,
-  description = "Access to truth in technology for Australian businesses. Brisbane Servers provides tailored insights, industry-specific guidance, and reality-based tech solutions for SMEs.",
+  description = valueProposition.metaDefault,
   ogImage,
   noindex = false,
   immediateRedirectUrl,

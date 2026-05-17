@@ -6,6 +6,9 @@ import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import IndustryFilters from '../components/IndustryFilters.astro';
 import SemanticText from '../components/SemanticText.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
+import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
+import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/projects';
 const breadcrumbsTrail = [
@@ -16,7 +19,7 @@ const breadcrumbsTrail = [
 
 <SiteShell 
   title="Projects - Brisbane Servers"
-  description="Real project showcases demonstrating our approach to technology solutions. Documented proof of implementations showing feasibility, value framework, and results."
+  description={valueProposition.projects.description}
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId="projects"
@@ -25,13 +28,31 @@ const breadcrumbsTrail = [
   mainClass="main-phi-chassis"
 >
     <Hero 
-      title="Real Projects, Real Results"
-      subtitle="Projects show how we connect business context to implementation decisions and measurable outcomes."
+      eyebrow={valueProposition.brandEyebrow}
+      title={valueProposition.projects.heroTitle}
+      subtitle={valueProposition.projects.heroSubtitle}
     />
     <Breadcrumbs items={breadcrumbsTrail} />
 
+    <MarketingPageBands>
+    <section id="client-sites" class="section section-tartan-accent section-home-band--surface">
+      <div class="container">
+        <h2 class="section-title">
+          <SemanticText text="Public web presences" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText
+            text="Sites and apps you can open in the browser today. The list is short on purpose; we expand it when new work is live and clients approve a public link."
+            semanticLevel="normal"
+            isChild={true}
+          />
+        </p>
+        <ClientSitesShowcase showFootnote={false} />
+      </div>
+    </section>
+
     <!-- Our Approach Section -->
-    <section class="section phi-line-symmetrical section--hero-wash">
+    <section class="section section-tartan-accent section-home-band--primary-light phi-line-symmetrical">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="container">
@@ -70,7 +91,7 @@ const breadcrumbsTrail = [
     </section>
 
     <!-- Value Framework Section -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-tangent"></div>
       <div class="container">
@@ -109,7 +130,7 @@ const breadcrumbsTrail = [
 
     <!-- Layout A: Showcase grid with varied card sizes -->
     <!-- Comprehensive block usage: phi-tangent, phi-lateral-angular-4, bg-pattern-phi-radial -->
-    <section class="section projects-section">
+    <section class="section section-tartan-accent section-home-band--primary-light projects-section">
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-tangent"></div>
       <div class="phi-lateral-angular-4"></div>
@@ -174,7 +195,7 @@ const breadcrumbsTrail = [
     </section>
 
     <!-- Project Types Section -->
-    <section class="section">
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
@@ -221,14 +242,14 @@ const breadcrumbsTrail = [
     </section>
 
     <!-- Getting Started Section -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--primary-light">
       <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
       <div class="container">
         <h2 class="section-title">
-          <SemanticText text="Getting Started" semanticLevel="high" isParent={true} />
+          <SemanticText text="Getting started" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Interested in working with us? Start by exploring our case studies to understand our approach, then reach out for a consultation. We'll assess your business context and discuss what's feasible for your situation." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Review case studies and public sites, then book a consultation — we will map feasibility, grants where relevant, and a sensible first slice of work." semanticLevel="normal" isChild={true} />
         </p>
         
         <div style="margin-top: var(--space-2xl); display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center;">
@@ -238,5 +259,6 @@ const breadcrumbsTrail = [
         </div>
       </div>
     </section>
+    </MarketingPageBands>
 </SiteShell>
 

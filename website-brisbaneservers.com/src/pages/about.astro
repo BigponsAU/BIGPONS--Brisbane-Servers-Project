@@ -6,6 +6,8 @@ import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
+import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/about';
 const breadcrumbsTrail = [
@@ -16,7 +18,7 @@ const breadcrumbsTrail = [
 
 <SiteShell 
   title="About - Brisbane Servers"
-  description="Our mission: Providing access to truth in technology, supporting domestic growth, building Brisbane's innovation authority. Facts-based, open, collaborative."
+  description={valueProposition.about.description}
   currentPath={currentPath}
   breadcrumbs={breadcrumbsTrail}
   pageId="about"
@@ -25,17 +27,19 @@ const breadcrumbsTrail = [
   mainClass="main-phi-chassis"
 >
     <Hero 
+      eyebrow={valueProposition.brandEyebrow}
       title="About Brisbane Servers"
-      subtitle="We design and deliver for clear decisions: grounded context, concrete evidence, and practical implementation direction."
+      subtitle={valueProposition.about.heroSubtitle}
     />
     <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--hero-wash">
+    <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="container">
         <h2 class="section-title">
-          <SemanticText text="Our Mission Foundation" semanticLevel="high" isParent={true} />
+          <SemanticText text="Our mission foundation" semanticLevel="high" isParent={true} />
         </h2>
         <CardGrid>
           <Card
@@ -57,15 +61,15 @@ const breadcrumbsTrail = [
       </div>
     </section>
 
-    <section class="section philosophy-section" aria-labelledby="philosophy-heading">
+    <section class="section section-tartan-accent philosophy-section" aria-labelledby="philosophy-heading">
       <div class="phi-line-vertical"></div>
       <div class="phi-tangent"></div>
       <div class="container">
         <h2 class="section-title" id="philosophy-heading">
-          <SemanticText text="Our Philosophy" semanticLevel="high" isParent={true} />
+          <SemanticText text="How we work with you" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Our philosophy is operational, not decorative: structure guides attention, color signals hierarchy, and each section helps users decide with confidence." semanticLevel="normal" />
+          <SemanticText text="Clarity over theatre: information architecture, evidence, and language that help you approve scope, budget, and risk — not slides that age in a week." semanticLevel="normal" />
         </p>
         <CardGrid>
           <Card
@@ -109,7 +113,7 @@ const breadcrumbsTrail = [
       </div>
     </section>
 
-    <section class="section">
+    <section class="section section-tartan-accent section-home-band--primary-light">
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-angular-4"></div>
       <div class="container">
@@ -134,15 +138,15 @@ const breadcrumbsTrail = [
       </div>
     </section>
 
-    <section class="section" style="background: var(--surface);">
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical phi-line-vertical-inv"></div>
       <div class="container">
         <h2 class="section-title">
-          <SemanticText text="Why We Matter" semanticLevel="high" isParent={true} />
+          <SemanticText text="Why that matters for Australian SMEs" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Australian SMEs face unique challenges navigating an overwhelming tech landscape. We provide the clarity, expertise, and access they need to succeed." semanticLevel="normal" isChild={true} />
+          <SemanticText text="The market is loud; your runway is not. We narrow the field to what fits your industry, compliance posture, and budget — then help you ship and support it." semanticLevel="normal" isChild={true} />
         </p>
         <CardGrid>
           <Card
@@ -169,5 +173,6 @@ const breadcrumbsTrail = [
       title="Questions about who we are or what we do?"
       industryField={false}
     />
+    </MarketingPageBands>
 </SiteShell>
 

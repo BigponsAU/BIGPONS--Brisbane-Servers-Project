@@ -8,8 +8,10 @@ import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 import HomeInterconnectionRig from '../components/HomeInterconnectionRig.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
+import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
 import { industries } from '../data/industries';
 import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
+import { valueProposition } from '../data/value-proposition';
 import { safeArrayAccess, createFallback } from '../utils/error-handling';
 
 const currentPath = '/';
@@ -21,7 +23,8 @@ const displayIndustries = industriesFallback(safeIndustries);
 ---
 
 <SiteShell
-  title="Brisbane Servers - Direction, Connection, Improvement"
+  title={valueProposition.home.title}
+  description={valueProposition.home.description}
   currentPath={currentPath}
   pageId="home"
   valueProfile="foundation"
@@ -30,15 +33,15 @@ const displayIndustries = industriesFallback(safeIndustries);
   mainClass="main-home"
 >
     <Hero 
-      eyebrow="BIGPONS · Access to truth in technology"
-      title="Direction, Connection, Improvement"
-      subtitle="This is practical direction to connection and improvement: understand your context, choose what fits, and improve with evidence-backed action."
-      ctaText="See Direction in Practice"
+      eyebrow={valueProposition.brandEyebrow}
+      title={valueProposition.home.heroTitle}
+      subtitle={valueProposition.home.heroSubtitle}
+      ctaText="Explore solutions"
       ctaHref="#services-overview"
       secondaryCtaText="Open Portal Voice Framework"
       secondaryCtaHref="/account"
       scrollTargetId="#services-overview"
-      scrollLabel="Start with practical direction"
+      scrollLabel="See how we work"
     />
 
     <!-- Unified home section shell + interconnection spine (visual layer; reusable rig pattern) -->
@@ -51,28 +54,28 @@ const displayIndustries = industriesFallback(safeIndustries);
         <SectionSatelliteConstellation variant="strategy" semanticKey={HOME_BAND_SEMANTIC_KEYS.strategy} />
         <div class="home-phase-indicator home-phase-indicator--strategy" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="What We Offer" semanticLevel="high" isParent={true} />
+          <SemanticText text="Our core services" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="We clarify your operating reality, map priorities, and set a practical path you can act on now, with costs, constraints, and outcomes visible from the beginning." semanticLevel="normal" isChild={true} />
+          <SemanticText text={valueProposition.home.coreServicesLead} semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={3}>
           <Card
-            title="Consultation & Analysis"
-            description="In-depth conversations to understand your business, challenges, and goals. We assess your reality—size, costs, grants available, industry specifics—and identify what you need."
-            icon="fas fa-comments"
+            title="Web development & digital presence"
+            description="High-performance sites, web applications, e-commerce, APIs, and SEO-minded performance work — built for clarity, speed, and conversion where that matters to you."
+            icon="fas fa-globe"
             size="medium"
           />
           <Card
-            title="Implementation & Development"
-            description="Building and deploying solutions tailored to your value framework. Phased approach, grant-assisted when available. From web development to enterprise applications."
-            icon="fas fa-rocket"
+            title="Automation & custom development"
+            description="Process automation, bespoke software, integrations, and AI-assisted workflows where they earn their keep — scoped in phases, grant-aware when programs apply."
+            icon="fas fa-robot"
             size="medium"
           />
           <Card
-            title="Ongoing Support"
-            description="Access to expertise when you need it. Updates, adjustments, and guidance as your business evolves. Enterprise-grade support for your technology infrastructure."
+            title="IT consulting & ongoing support"
+            description="Strategy, assessments, security-minded reviews, infrastructure direction, and dependable support so your team is not carrying vendor noise alone."
             icon="fas fa-headset"
             size="medium"
           />
@@ -86,10 +89,10 @@ const displayIndustries = industriesFallback(safeIndustries);
         <SectionSatelliteConstellation variant="industry" semanticKey={HOME_BAND_SEMANTIC_KEYS.industry} />
         <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Industry Context" semanticLevel="high" isParent={true} />
+          <SemanticText text="Industry context" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Regulations, operational constraints, and proven patterns differ by sector, so direction stays connected to your exact industry reality and operating conditions." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Regulations, incentives, and day-to-day constraints change by sector — retail, healthcare, hospitality, manufacturing, professional services — so recommendations stay tied to how you actually operate, not generic playbooks." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={4}>
@@ -130,39 +133,66 @@ const displayIndustries = industriesFallback(safeIndustries);
         <SectionSatelliteConstellation variant="proof" semanticKey={HOME_BAND_SEMANTIC_KEYS.proof} />
         <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Proof & Decision Confidence" semanticLevel="high" isParent={true} />
+          <SemanticText text="Why choose Brisbane Servers" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Recommendations are backed by implementation proof so each next move is measurable, practical, and tied to real improvement over time." semanticLevel="normal" isChild={true} />
+          <SemanticText text="A Brisbane-based consulting practice with a deliberately focused client portfolio — so each engagement gets senior attention, modern engineering practices, and documentation you can rely on when priorities shift." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={2}>
           <Card
-            title="Industry Understanding"
-            description="We know what works in retail, healthcare, hospitality, manufacturing, and professional services. Not general solutions—industry-specific guidance based on real implementations."
+            title="Innovation-first delivery"
+            description="Solutions are designed for your context — not recycled templates — using current tooling where it reduces risk and cost, and boring technology where that is the responsible choice."
             icon="fas fa-industry"
             size="large"
             emphasis={true}
           />
           <Card
-            title="Grant & Incentive Awareness"
-            description="We identify available grants, tax incentives, and subsidies specific to your industry and business purpose. Accessing what you qualify for to reduce implementation costs."
+            title="Grants & incentives"
+            description="We map digital transformation grants, tax incentives, and subsidies that match your industry and project shape, so funding opportunities are part of the plan from the start."
             icon="fas fa-dollar-sign"
             size="large"
           />
           <Card
-            title="Reality-Based Recommendations"
-            description="We assess your size, costs, and constraints to recommend what actually makes sense, not what's being sold to you. Value-focused solutions that align with your business context."
+            title="Reality-based recommendations"
+            description="Budget, team capacity, compliance, and timeline are first-class inputs. You get what fits — not what a vendor catalogue insists you should buy."
             icon="fas fa-search"
             size="large"
           />
           <Card
-            title="Time-Saving Focus"
-            description="We do the learning, sifting, and discernment. You focus on your business. We identify automation opportunities for tedious tasks, freeing your time for high-value work."
+            title="Your time protected"
+            description="We absorb research, vendor comparison, and technical discernment so leadership can stay on operations while still making informed commitments."
             icon="fas fa-clock"
             size="large"
           />
         </CardGrid>
+      </div>
+    </section>
+
+    <!-- Live sites: concrete proof immediately before contact (trust → conversation). -->
+    <section
+      id="client-sites"
+      class="section section-tartan-accent section-home-band--surface home-band--clients"
+      data-interconnection-node
+      data-interconnection-band="clients"
+    >
+      <div class="container">
+        <SectionSatelliteConstellation
+          variant="solutions"
+          semanticKey="client web presences live sites shipped preview portfolio growth"
+        />
+        <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
+        <h2 class="section-title">
+          <SemanticText text="Web presences we have shipped" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText
+            text="Live sites and applications we have shipped for clients. The list is deliberately small for now: we only showcase work clients are happy to display, and we add entries as new public launches clear that bar."
+            semanticLevel="normal"
+            isChild={true}
+          />
+        </p>
+        <ClientSitesShowcase />
       </div>
     </section>
 
@@ -171,10 +201,10 @@ const displayIndustries = industriesFallback(safeIndustries);
       <div class="container">
         <SectionSatelliteConstellation variant="contact" semanticKey={HOME_BAND_SEMANTIC_KEYS.contact} />
         <h2 class="section-title section-title--center">
-          <SemanticText text="Get In Touch" semanticLevel="high" isParent={true} />
+          <SemanticText text="Ready to transform your business?" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description section-description--center">
-          <SemanticText text="Ready to discuss your technology needs? We're here to help Australian businesses navigate technology decisions and implement solutions that deliver value." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Professional consultations by appointment. Tell us what you are trying to achieve — we will map options, effort, and risks so you can decide with confidence." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={3}>
@@ -242,10 +272,10 @@ const displayIndustries = industriesFallback(safeIndustries);
       <div class="container">
         <SectionSatelliteConstellation variant="challenge" semanticKey={HOME_BAND_SEMANTIC_KEYS.challenge} />
         <h2 class="section-title">
-          <SemanticText text="The Challenge Australian Businesses Face" semanticLevel="high" isParent={true} />
+          <SemanticText text="The challenge Australian businesses face" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Business leaders navigate complex technology decisions while managing daily operations. Limited time and resources require focused, evidence-based guidance that aligns with your specific business context, industry requirements, and strategic objectives." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Leaders are expected to modernise systems, harden security, and adopt AI — while running the day-to-day. Without a grounded partner, that noise turns into expensive mis-steps and stalled initiatives." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={3} progressive>
@@ -279,10 +309,10 @@ const displayIndustries = industriesFallback(safeIndustries);
       <div class="container">
         <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} />
         <h2 class="section-title">
-          <SemanticText text="Proven Solutions for Your Business" semanticLevel="high" isParent={true} />
+          <SemanticText text="Proven solution patterns" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="Documented implementations, industry-specific insights, and strategic guidance tailored to your business context. Evidence-based recommendations that deliver measurable value." semanticLevel="normal" isChild={true} />
+          <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context — so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={2} progressive>
@@ -323,10 +353,10 @@ const displayIndustries = industriesFallback(safeIndustries);
       <div class="container">
         <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
         <h2 class="section-title">
-          <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
+          <SemanticText text="Strategic technology partnership" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
-          <SemanticText text="We handle research, evaluation, and documentation so your team can make decisions quickly with clear trade-offs and next steps." semanticLevel="normal" isChild={true} />
+          <SemanticText text="We run the research, vendor comparison, and documentation burden so your team can approve direction quickly — with trade-offs, costs, and sequencing spelled out." semanticLevel="normal" isChild={true} />
         </p>
         
         <CardGrid layout="grid" columns={2}>

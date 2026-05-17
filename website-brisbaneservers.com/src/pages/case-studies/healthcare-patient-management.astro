@@ -1,68 +1,80 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
+import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InquiryForm from '../../components/InquiryForm.astro';
 import SemanticText from '../../components/SemanticText.astro';
+import MarketingPageBands from '../../components/MarketingPageBands.astro';
 
 const currentPath = '/case-studies/healthcare-patient-management';
+const breadcrumbsTrail = [
+  { label: 'Home', href: '/' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Case studies', href: '/projects' },
+  { label: 'Healthcare: patient management' },
+];
 ---
 
-<BaseLayout 
+<SiteShell
   title="Healthcare: Patient Management System - Case Study - Brisbane Servers"
-  description="Medical practice implementing compliant patient management with automated appointment handling and secure data storage. Australian Privacy Principles compliance."
+  description="APP-aligned patient management for a Brisbane practice — secure records, automated appointments, and phased rollout without compromising care."
+  currentPath={currentPath}
+  breadcrumbs={breadcrumbsTrail}
+  pageId="case-study-healthcare"
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Projects', href: '/projects' },
-      { label: 'Case Studies', href: '/projects' },
-      { label: 'Healthcare: Patient Management System' }
-    ]} />
-    
-    <Hero 
-      title="Healthcare: Patient Management System"
-      subtitle="Medical practice implementing compliant patient management with automated appointment handling and secure data storage. Australian Privacy Principles compliance, phased implementation."
-    />
+  <Hero
+    eyebrow="BIGPONS · Case study"
+    title="Healthcare: patient management system"
+    subtitle="Compliant digital records, appointment automation, and reporting — implemented in phases so clinical staff could validate each step against Australian Privacy Principles."
+  />
+  <Breadcrumbs items={breadcrumbsTrail} />
 
-    <section class="section section--hero-wash">
+  <MarketingPageBands>
+    <section class="section section-tartan-accent section-home-band--surface">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
         <div class="case-study-content">
-          <div class="case-study-meta" style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+          <div
+            class="case-study-meta"
+            style="margin-bottom: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);"
+          >
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);"
+            >
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Healthcare & Medical Practices</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Industry</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">
+                  Healthcare & medical practices
+                </p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location:</strong>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Location</strong>
                 <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Brisbane, QLD</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Compliance:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">APP Compliant</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Compliance</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">APP aligned</p>
               </div>
               <div>
-                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Implementation:</strong>
-                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Phased Rollout</p>
+                <strong style="color: var(--text-secondary); font-size: var(--text-sm);">Delivery</strong>
+                <p style="margin: var(--space-xs) 0 0 0; font-weight: var(--font-weight-semibold);">Phased rollout</p>
               </div>
             </div>
           </div>
 
           <h2 class="section-title">
-            <SemanticText text="The Challenge" semanticLevel="high" isParent={true} />
+            <SemanticText text="The challenge" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`A Brisbane-based medical practice was using a combination of paper records and basic software that no longer met their needs. The practice faced several critical challenges:
+            <SemanticText
+              text={`A Brisbane-based medical practice was using a combination of paper records and basic software that no longer met their needs. The practice faced several critical challenges:
 
 - Patient records were scattered across multiple systems and paper files
 - Appointment scheduling was manual and prone to double-booking
@@ -71,14 +83,18 @@ const currentPath = '/case-studies/healthcare-patient-management';
 - Difficulty generating reports for practice management
 - Limited integration between clinical and administrative systems
 
-The practice needed a comprehensive solution that prioritized patient privacy, streamlined operations, and maintained compliance with Australian healthcare regulations.`} semanticLevel="normal" isChild={true} />
+The practice needed a comprehensive solution that prioritized patient privacy, streamlined operations, and maintained compliance with Australian healthcare regulations.`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Our Approach" semanticLevel="high" isParent={true} />
+            <SemanticText text="Our approach" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-            <SemanticText text={`We conducted a thorough assessment of the practice's workflows, compliance requirements, and technical infrastructure. The solution was implemented in carefully planned phases to minimize disruption:
+            <SemanticText
+              text={`We conducted a thorough assessment of the practice's workflows, compliance requirements, and technical infrastructure. The solution was implemented in carefully planned phases to minimize disruption:
 
 Phase 1: Secure Patient Records
 - Migrated all patient records to secure, encrypted cloud storage
@@ -95,7 +111,10 @@ Phase 3: Practice Management Tools
 - Billing integration
 - Clinical note templates
 
-Throughout implementation, we ensured all systems met Australian Privacy Principles and healthcare industry standards.`} semanticLevel="normal" isChild={true} />
+Throughout implementation, we ensured all systems met Australian Privacy Principles and healthcare industry standards.`}
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
@@ -103,53 +122,61 @@ Throughout implementation, we ensured all systems met Australian Privacy Princip
           </h2>
           <CardGrid columns={2} style="margin-top: var(--space-xl);">
             <Card
-              title="Reduced No-Shows"
+              title="Reduced no-shows"
               description="Automated reminders reduced no-show rates from 25% to 8%, improving practice efficiency and patient care."
               icon="fas fa-calendar-check"
             />
             <Card
-              title="Compliance Assurance"
-              description="Full APP compliance with automated audit trails, secure data storage, and consent management systems."
+              title="Compliance assurance"
+              description="Full APP alignment with automated audit trails, secure data storage, and consent management systems."
               icon="fas fa-shield-alt"
             />
             <Card
-              title="Time Efficiency"
+              title="Time efficiency"
               description="Administrative time reduced by 40%, allowing staff to focus on patient care."
               icon="fas fa-clock"
             />
             <Card
-              title="Improved Access"
+              title="Improved access"
               description="Patients can book appointments online 24/7, improving accessibility and satisfaction."
               icon="fas fa-user-check"
             />
           </CardGrid>
 
           <h2 class="section-title" style="margin-top: var(--space-4xl);">
-            <SemanticText text="Key Technologies" semanticLevel="high" isParent={true} />
+            <SemanticText text="Key technologies" semanticLevel="high" isParent={true} />
           </h2>
           <div class="section-description">
-            <SemanticText text="HIPAA-equivalent compliant cloud infrastructure, encrypted database systems, automated SMS/email services, secure API integrations, Australian Privacy Principles compliance framework, role-based access control." semanticLevel="normal" isChild={true} />
+            <SemanticText
+              text="Encrypted cloud infrastructure, secure database systems, automated SMS/email services, secure API integrations, Australian Privacy Principles compliance framework, role-based access control."
+              semanticLevel="normal"
+              isChild={true}
+            />
           </div>
 
-          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
-            <h3 style="margin-bottom: var(--space-md);">Lessons Learned</h3>
+          <div
+            style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);"
+          >
+            <h3 style="margin-bottom: var(--space-md);">Lessons learned</h3>
             <p style="margin: 0; line-height: 1.8;">
-              <SemanticText text={`Healthcare technology implementations require careful attention to compliance and patient privacy. Phased implementation was crucial to ensure staff training and system validation at each stage. The key success factor was maintaining patient trust while modernizing operations.`} semanticLevel="normal" isChild={true} />
+              <SemanticText
+                text={`Healthcare technology implementations require careful attention to compliance and patient privacy. Phased implementation was crucial to ensure staff training and system validation at each stage. The key success factor was maintaining patient trust while modernising operations.`}
+                semanticLevel="normal"
+                isChild={true}
+              />
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <InquiryForm 
-      title="Need Healthcare Technology Solutions?"
-      subtitle="We specialize in compliant healthcare technology implementations that prioritize patient privacy and practice efficiency."
+    <InquiryForm
+      title="Need healthcare technology direction?"
+      subtitle="We design compliant implementations that respect patient privacy, staff workflows, and Australian regulatory context."
       defaultIndustry="Healthcare & Medical Practices"
     />
-  </main>
-
-  <Footer />
-</BaseLayout>
+  </MarketingPageBands>
+</SiteShell>
 
 <style>
   .case-study-content {
