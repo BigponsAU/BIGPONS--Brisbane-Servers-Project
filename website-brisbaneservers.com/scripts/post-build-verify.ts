@@ -128,6 +128,68 @@ function checkHTMLViewportTags(): VerificationResult {
 }
 
 /**
+ * Built CSS must end with literal brand gradient on primary buttons (not flat blue only).
+ */
+function checkBrandChromaCSS(): VerificationResult {
+  try {
+    const assetsPath = join(distPath, 'assets');
+    const clientAssetsPath = join(distPath, 'client', 'assets');
+    const cssRoot = existsSync(assetsPath) ? assetsPath : clientAssetsPath;
+
+    if (!existsSync(cssRoot)) {
+      return {
+        name: 'Brand chroma CSS',
+        passed: false,
+        message: 'assets directory not found — cannot verify brand gradients',
+      };
+    }
+
+    const cssFiles = readdirSync(cssRoot).filter((file) => extname(file) === '.css');
+    if (cssFiles.length === 0) {
+      return {
+        name: 'Brand chroma CSS',
+        passed: false,
+        message: 'No CSS bundle to verify',
+      };
+    }
+
+    const bundle = readFileSync(join(cssRoot, cssFiles[0]!), 'utf-8');
+    const hasLiteralGradient =
+      bundle.includes('#8b5cf6') &&
+      bundle.includes('#ec4899') &&
+      bundle.includes('brand-gradient-chroma');
+    const lastBtnPrimary = bundle.lastIndexOf('.btn-primary{');
+    const lastBtnChunk =
+      lastBtnPrimary >= 0 ? bundle.slice(lastBtnPrimary, lastBtnPrimary + 280) : '';
+    const gradientWinsLast =
+      lastBtnChunk.includes('gradient') ||
+      lastBtnChunk.includes('#8b5cf6') ||
+      lastBtnChunk.includes('brand-gradient-chroma');
+
+    if (!hasLiteralGradient || !gradientWinsLast) {
+      return {
+        name: 'Brand chroma CSS',
+        passed: false,
+        message:
+          'Primary button styles missing literal brand gradient (violet→pink). Re-check brand-chroma.css load order.',
+      };
+    }
+
+    return {
+      name: 'Brand chroma CSS',
+      passed: true,
+      message: 'Brand gradient chroma present in production CSS bundle',
+    };
+  } catch (error: unknown) {
+    return {
+      name: 'Brand chroma CSS',
+      passed: false,
+      message: `Error checking brand chroma: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
  * Check if CSS files are generated
  */
 function checkCSSFiles(): VerificationResult {
@@ -321,6 +383,7 @@ function runVerification(): void {
   results.push(checkIndexHTML());
   results.push(checkHTMLViewportTags());
   results.push(checkCSSFiles());
+  results.push(checkBrandChromaCSS());
   results.push(checkAssetReferences());
 
   // Print results

@@ -286,6 +286,9 @@
     var(--accent-violet) 46%,
     var(--accent-pink) 100%
   );
+  /* Literal stops — used where var()-in-var() backgrounds fail in some hosts */
+  --brand-gradient-chroma: linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%);
+  --brand-gradient-chroma-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%);
   --additive-gradient-soft: linear-gradient(
     150deg,
     rgba(var(--primary-color-rgb), 0.12) 0%,

@@ -16,6 +16,11 @@ interface Props {
 
 const { currentPath = '' } = Astro.props;
 
+/** Hide Home on the homepage — active state is redundant and breaks without gradient paint. */
+const navItems = navigation.filter(
+  (item) => !(item.href === '/' && currentPath === '/'),
+);
+
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;
   if (pathOnly === '/' && currentPath === '/') return true;
@@ -38,7 +43,7 @@ function isActive(href: string): boolean {
     </a>
     
     <ul class="nav-menu" role="menubar">
-      {navigation.map((item, index) => (
+      {navItems.map((item, index) => (
         item.children ? (
           <li class={`nav-dropdown ${isActive(item.href) ? 'active' : ''}`} role="none">
             <a 
@@ -108,7 +113,7 @@ function isActive(href: string): boolean {
       aria-label="Mobile navigation menu"
       aria-hidden="true"
     >
-      {navigation.map((item) => (
+      {navItems.map((item) => (
         item.children ? (
           <>
             <a 

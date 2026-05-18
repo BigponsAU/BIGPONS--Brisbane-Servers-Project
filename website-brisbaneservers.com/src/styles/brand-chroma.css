@@ -1,64 +1,119 @@
 /**
- * Brand chroma — violet→pink gradient surfaces.
- * Loaded last so it wins over late global.css accessibility fallbacks.
+ * Brand chroma — production layer for violet→pink surfaces.
+ * Loaded last. Uses literal gradient stops + high specificity so GitHub Pages
+ * and minified bundles cannot drop nested var() backgrounds.
  */
 
-.btn-primary,
-a.btn-primary,
-button.btn-primary {
-  background: var(--additive-gradient-primary);
-  background-color: transparent;
-  color: var(--text-on-dark);
-  border: none;
+:root {
+  --brand-gradient-chroma: linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%);
+  --brand-gradient-chroma-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%);
 }
 
-.btn-primary:hover,
-.btn-primary:focus-visible,
-a.btn-primary:hover,
-a.btn-primary:focus-visible {
-  background: var(--additive-gradient-primary);
-  background-color: transparent;
-  color: var(--text-on-dark);
-  border: none;
+/* ─── Primary actions ─── */
+a.btn.btn-primary,
+button.btn.btn-primary,
+.btn.btn-primary,
+.hero a.btn.btn-primary,
+.main-home .hero a.btn.btn-primary,
+.main-phi-chassis .hero a.btn.btn-primary,
+.site-main a.btn.btn-primary {
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  border: none !important;
+  -webkit-text-fill-color: #fff !important;
+  box-shadow:
+    0 10px 25px -5px rgba(139, 92, 246, 0.45),
+    0 4px 14px -4px rgba(10, 116, 218, 0.35) !important;
 }
 
-.nav-menu a:hover,
-.nav-menu a.active,
-.nav-menu a.nav-account-cta,
-.nav-dropdown:hover > .nav-dropdown-toggle,
-.nav-dropdown.active > .nav-dropdown-toggle,
-.nav-dropdown-menu a:hover,
-.mobile-menu a:hover,
-.mobile-menu a.active,
-.mobile-menu a.nav-account-cta,
-.mobile-menu a.nav-account-cta:hover,
-.mobile-menu a.nav-account-cta.active {
-  background: var(--additive-gradient-primary);
-  color: var(--text-on-dark);
+a.btn.btn-primary:hover,
+a.btn.btn-primary:focus-visible,
+button.btn.btn-primary:hover,
+.hero a.btn.btn-primary:hover,
+.main-home .hero a.btn.btn-primary:hover,
+.main-phi-chassis .hero a.btn.btn-primary:hover {
+  background: var(--brand-gradient-chroma-hero) !important;
+  background-image: var(--brand-gradient-chroma-hero) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  border: none !important;
 }
 
+/* ─── Header / nav chrome ─── */
+header .nav-menu a:hover,
+header .nav-menu a.active,
+header .nav-menu a.nav-account-cta,
+header .nav-dropdown:hover > .nav-dropdown-toggle,
+header .nav-dropdown.active > .nav-dropdown-toggle,
+header .nav-dropdown-menu a:hover,
+header .mobile-menu a:hover,
+header .mobile-menu a.active,
+header .mobile-menu a.nav-account-cta {
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.38);
+  text-decoration: none !important;
+}
+
+/* SemanticText inside nav must not force dark ink on gradient pills */
+header .nav-menu a:hover :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
+header .nav-menu a.active :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
+header .nav-menu a.nav-account-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
+header .nav-dropdown:hover > .nav-dropdown-toggle :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+header .nav-dropdown.active > .nav-dropdown-toggle :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+header .mobile-menu a:hover :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+header .mobile-menu a.active :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+header .mobile-menu a.nav-account-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high) {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+header .nav-dropdown-toggle::after {
+  color: inherit;
+}
+
+header .nav-dropdown:hover > .nav-dropdown-toggle::after,
+header .nav-dropdown.active > .nav-dropdown-toggle::after {
+  color: #fff !important;
+}
+
+/* ─── Filters, social, section accents ─── */
 .filter-btn.active {
-  background: var(--additive-gradient-primary);
-  border-color: transparent;
-  color: var(--text-on-dark);
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  border-color: transparent !important;
 }
 
 .social-link:hover {
-  background: var(--additive-gradient-primary);
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
 }
 
 .section-title::after {
-  background: var(--additive-gradient-primary);
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
   opacity: 0.92;
 }
 
 @media (prefers-contrast: high) {
-  .btn-primary,
-  .btn-primary:hover,
-  .btn-primary:focus-visible {
-    background: var(--primary-color);
-    background-color: var(--primary-color);
-    border: 2px solid var(--primary-dark);
-    color: #fff;
+  a.btn.btn-primary,
+  .btn.btn-primary,
+  header .nav-menu a.nav-account-cta {
+    background: var(--primary-color) !important;
+    background-image: none !important;
+    background-color: var(--primary-color) !important;
+    border: 2px solid var(--primary-dark) !important;
   }
 }
