@@ -2,7 +2,6 @@
 // Published resources can now be pulled from the standalone API during prerender.
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
@@ -26,18 +25,12 @@ if (!industry) {
 const publishedResources = await getPublishedResourcesForPage({ industry: industrySlug! });
 
 const currentPath = `/resources/${industrySlug}`;
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Resources', href: '/resources' },
-  { label: industry.name },
-];
 ---
 
 <SiteShell 
   title={`${industry.name} Resources - Brisbane Servers`}
   description={industry.description}
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="resource-industry"
   valueProfile="evidence"
   zoomProfile="focused"
@@ -47,7 +40,6 @@ const breadcrumbsTrail = [
       title={`${industry.name} Technology Solutions`}
       subtitle={industry.description}
     />
-    <Breadcrumbs items={breadcrumbsTrail} />
 
     <!-- Comprehensive block usage: phi-line-vertical, phi-tangent, bg-pattern-phi-radial -->
     <section class="section">

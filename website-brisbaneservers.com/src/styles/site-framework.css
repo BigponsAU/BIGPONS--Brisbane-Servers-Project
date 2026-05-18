@@ -2385,9 +2385,20 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   background: var(--surface);
 }
 
-.marketing-page-bands > .section.section-tartan-accent::after {
-  content: none;
-  display: none;
+.marketing-page-bands > .section.section-tartan-accent::before,
+.marketing-page-bands > .section.section-tartan-accent::after,
+.marketing-page-bands > .inquiry-section::before,
+.marketing-page-bands > .inquiry-section::after {
+  content: none !important;
+  display: none !important;
+}
+
+.marketing-page-bands > .section.section-tartan-accent > .container::before,
+.marketing-page-bands > .section.section-tartan-accent > .container::after,
+.marketing-page-bands > .inquiry-section > .container::before,
+.marketing-page-bands > .inquiry-section > .container::after {
+  content: none !important;
+  display: none !important;
 }
 
 .marketing-page-bands > .section.section-tartan-accent > .container {

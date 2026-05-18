@@ -1104,6 +1104,7 @@ nav {
 .nav-dropdown:hover .nav-dropdown-toggle::after,
 .nav-dropdown.active .nav-dropdown-toggle::after {
     transform: rotate(180deg);
+    color: var(--text-on-dark);
 }
 
 .nav-dropdown-menu {
@@ -1366,8 +1367,9 @@ nav {
 
 .mobile-menu a:hover,
 .mobile-menu a.active {
-    background: var(--surface);
-    color: var(--primary-color);
+    color: var(--text-on-dark);
+    background: var(--additive-gradient-primary);
+    box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.35);
 }
 
 .mobile-menu a.nav-account-cta {

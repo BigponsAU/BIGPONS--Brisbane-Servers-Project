@@ -3,7 +3,6 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
 import Hero from '~/components/Hero.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug } from '~/data/industries';
@@ -37,14 +36,6 @@ const currentPath = `/resources/item/${resourceId}`;
   <Header currentPath={currentPath} />
   
   <main>
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources', href: '/resources' },
-      ...(industry ? [{ label: industry.name, href: `/resources/${industry.slug}` }] : []),
-      ...(resource.topic ? [{ label: resource.topic, href: `/resources/${resource.industry}/${resource.topic}` }] : []),
-      { label: resource.title }
-    ]} />
-    
     <Hero 
       title={resource.title}
       subtitle={resource.description}

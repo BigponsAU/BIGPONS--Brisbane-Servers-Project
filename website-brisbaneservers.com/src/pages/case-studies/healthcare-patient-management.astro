@@ -3,25 +3,17 @@ import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InquiryForm from '../../components/InquiryForm.astro';
 import SemanticText from '../../components/SemanticText.astro';
 import MarketingPageBands from '../../components/MarketingPageBands.astro';
 
 const currentPath = '/case-studies/healthcare-patient-management';
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Projects', href: '/projects' },
-  { label: 'Case studies', href: '/projects' },
-  { label: 'Healthcare: patient management' },
-];
 ---
 
 <SiteShell
   title="Healthcare: Patient Management System - Case Study - Brisbane Servers"
   description="APP-aligned patient management for a Brisbane practice — secure records, automated appointments, and phased rollout without compromising care."
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="case-study-healthcare"
   valueProfile="evidence"
   zoomProfile="balanced"
@@ -32,7 +24,6 @@ const breadcrumbsTrail = [
     title="Healthcare: patient management system"
     subtitle="Compliant digital records, appointment automation, and reporting — implemented in phases so clinical staff could validate each step against Australian Privacy Principles."
   />
-  <Breadcrumbs items={breadcrumbsTrail} />
 
   <MarketingPageBands>
     <section class="section section-tartan-accent section-home-band--surface">

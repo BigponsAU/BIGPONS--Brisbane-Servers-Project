@@ -1,7 +1,6 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import SearchBar from '../components/SearchBar.astro';
@@ -18,17 +17,12 @@ const publishedResources = await getPublishedResourcesForPage();
 
 const currentPath = '/resources';
 const featuredResources = publishedResources.slice(0, 6); // Show up to 6 most recent
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Resources' },
-];
 ---
 
 <SiteShell 
   title="Resources - Brisbane Servers"
   description={valueProposition.resources.description}
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="resources"
   valueProfile="evidence"
   zoomProfile="focused"
@@ -39,7 +33,6 @@ const breadcrumbsTrail = [
       title="Resources & insights"
       subtitle={valueProposition.resources.heroSubtitle}
     />
-    <Breadcrumbs items={breadcrumbsTrail} />
     
     <MarketingPageBands>
     <section class="section section-tartan-accent section-home-band--surface" style="padding-top: 0;">

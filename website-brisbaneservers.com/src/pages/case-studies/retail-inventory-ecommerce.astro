@@ -3,25 +3,17 @@ import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import InquiryForm from '../../components/InquiryForm.astro';
 import SemanticText from '../../components/SemanticText.astro';
 import MarketingPageBands from '../../components/MarketingPageBands.astro';
 
 const currentPath = '/case-studies/retail-inventory-ecommerce';
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Projects', href: '/projects' },
-  { label: 'Case studies', href: '/projects' },
-  { label: 'Retail: inventory & e-commerce' },
-];
 ---
 
 <SiteShell
   title="Retail: Inventory & E-commerce Integration - Case Study - Brisbane Servers"
   description="Grant-assisted inventory and e-commerce integration for a Brisbane retail SME — time saved, accuracy improved, and a platform sized for growth."
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="case-study-retail"
   valueProfile="evidence"
   zoomProfile="balanced"
@@ -32,7 +24,6 @@ const breadcrumbsTrail = [
     title="Retail: inventory & e-commerce integration"
     subtitle="Manual tracking replaced with a cloud inventory core, barcode workflows, and real-time sync to the online store — phased so trade never stopped."
   />
-  <Breadcrumbs items={breadcrumbsTrail} />
 
   <MarketingPageBands>
     <section class="section section-tartan-accent section-home-band--surface">

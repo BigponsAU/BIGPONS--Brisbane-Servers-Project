@@ -1,16 +1,10 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import MarketingPageBands from '~/components/MarketingPageBands.astro';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
 
 const currentPath = '/contribute';
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Resources', href: '/resources' },
-  { label: 'Contribute' },
-];
 const publicApiBaseUrl = resolvePublicApiUrl('');
 const accountPath = resolvePublicSitePath('/account/');
 ---
@@ -19,7 +13,6 @@ const accountPath = resolvePublicSitePath('/account/');
   title="Contribute - Brisbane Servers"
   description="Improve industry resources with Brisbane Servers: verified contributions, token rewards, and transparent community notes aligned to our consulting voice."
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="contribute"
   valueProfile="utility"
   zoomProfile="focused"
@@ -33,7 +26,6 @@ const accountPath = resolvePublicSitePath('/account/');
       scrollTargetId="#contribute-get-started"
       scrollLabel="Get started below"
     />
-    <Breadcrumbs items={breadcrumbsTrail} />
 
     <MarketingPageBands>
     <section class="section section-tartan-accent section-home-band--surface">

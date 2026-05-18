@@ -4,11 +4,6 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import type { PageDensity, PageShellVariant, PageValueProfile, PageZoomProfile } from '../lib/page-descriptors';
 
-interface BreadcrumbItem {
-  label: string;
-  href?: string;
-}
-
 interface Props {
   title: string;
   description?: string;
@@ -16,7 +11,6 @@ interface Props {
   noindex?: boolean;
   immediateRedirectUrl?: string;
   currentPath?: string;
-  breadcrumbs?: BreadcrumbItem[];
   pageId?: string;
   shellVariant?: PageShellVariant;
   valueProfile?: PageValueProfile;
@@ -34,7 +28,6 @@ const {
   noindex = false,
   immediateRedirectUrl,
   currentPath = '',
-  breadcrumbs = [],
   pageId,
   shellVariant = 'public',
   valueProfile,
@@ -68,7 +61,7 @@ const mainClassName = [
   density={density}
 >
   <div class={shellClassName}>
-    <Header currentPath={currentPath} breadcrumbs={breadcrumbs} />
+    <Header currentPath={currentPath} />
     <main id={mainId} class={mainClassName} role="main">
       <slot />
     </main>

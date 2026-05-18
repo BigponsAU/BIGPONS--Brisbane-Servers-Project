@@ -9,14 +9,12 @@ import SemanticText from './SemanticText.astro';
  * 
  * @interface Props
  * @property {string} [currentPath] - Current page path for active navigation highlighting
- * @property {Array<{label: string, href?: string}>} [breadcrumbs] - Breadcrumb items to display in mobile menu
  */
 interface Props {
   currentPath?: string;
-  breadcrumbs?: Array<{ label: string; href?: string }>;
 }
 
-const { currentPath = '', breadcrumbs = [] } = Astro.props;
+const { currentPath = '' } = Astro.props;
 
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;

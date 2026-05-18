@@ -1,7 +1,6 @@
 ---
 import SiteShell from '../layouts/SiteShell.astro';
 import Hero from '../components/Hero.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
@@ -10,17 +9,12 @@ import MarketingPageBands from '../components/MarketingPageBands.astro';
 import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/services';
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Services' },
-];
 ---
 
 <SiteShell 
   title="Services - Brisbane Servers"
   description={valueProposition.services.description}
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="services"
   valueProfile="utility"
   zoomProfile="focused"
@@ -31,7 +25,6 @@ const breadcrumbsTrail = [
       title={valueProposition.services.heroTitle}
       subtitle={valueProposition.services.heroSubtitle}
     />
-    <Breadcrumbs items={breadcrumbsTrail} />
 
     <MarketingPageBands>
     <!-- Services Overview -->

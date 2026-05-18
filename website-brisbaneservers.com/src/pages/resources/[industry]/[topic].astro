@@ -1,7 +1,6 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
@@ -47,19 +46,12 @@ const hasGeneratedContent = publishedResources.length > 0;
 const primaryResource = publishedResources[0] || null;
 
 // Community contributions for this topic are loaded client-side via API.
-const breadcrumbsTrail = [
-  { label: 'Home', href: '/' },
-  { label: 'Resources', href: '/resources' },
-  { label: industry.name, href: `/resources/${industry.slug}` },
-  { label: topic.name },
-];
 ---
 
 <SiteShell 
   title={`${topic.name} - ${industry.name} Resources - Brisbane Servers`}
   description={topic.description}
   currentPath={currentPath}
-  breadcrumbs={breadcrumbsTrail}
   pageId="resource-topic"
   valueProfile="evidence"
   zoomProfile="focused"
@@ -69,7 +61,6 @@ const breadcrumbsTrail = [
       title={topic.name}
       subtitle={topic.description}
     />
-    <Breadcrumbs items={breadcrumbsTrail} />
 
     <!-- Comprehensive block usage: phi-line-vertical, phi-lateral-angular-2, bg-pattern-angular -->
     <section class="section">

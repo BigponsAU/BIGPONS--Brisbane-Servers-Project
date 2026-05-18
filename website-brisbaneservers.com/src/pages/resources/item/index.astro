@@ -1,6 +1,5 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
-import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import { getPublicApiBaseUrl } from '~/lib/api-config';
 import { getPageDescriptor } from '~/lib/page-descriptors';
@@ -22,12 +21,6 @@ const pageDescriptor = getPageDescriptor(currentPath);
   density={pageDescriptor.density}
   mainClass="main-phi-chassis"
 >
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Resources', href: '/resources' },
-      { label: 'Resource detail' }
-    ]} />
-
     <section class="section">
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
