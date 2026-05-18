@@ -170,13 +170,25 @@ function closeDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
 
 // ===== SET ACTIVE NAVIGATION LINK =====
 function setActiveNavLink(): void {
-    const currentPage = window.location.pathname;
+    const base = document.body?.dataset.siteBase ?? '/';
+    const pathname = window.location.pathname;
+    const currentPage =
+        base !== '/' && (pathname === base || pathname === base.replace(/\/$/, ''))
+            ? '/'
+            : base !== '/' && pathname.startsWith(base)
+              ? `/${pathname.slice(base.length).replace(/^\/+/, '')}` || '/'
+              : pathname;
     const navLinks = document.querySelectorAll('.nav-menu a, .mobile-menu a');
     
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
-        if (href === currentPage || 
-            (currentPage === '/' || currentPage === '/index.html') && href === '/index.html') {
+        const hrefPath = href?.split('#')[0] ?? '';
+        const logicalHref =
+            base !== '/' && hrefPath.startsWith(base)
+                ? `/${hrefPath.slice(base.length).replace(/^\/+/, '')}` || '/'
+                : hrefPath;
+        if (logicalHref === currentPage || 
+            (currentPage === '/' || currentPage === '/index.html') && (logicalHref === '/' || logicalHref === '/index.html')) {
             link.classList.add('active');
         }
     });

@@ -1,5 +1,6 @@
 ---
 import { navigation } from '../data/navigation';
+import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
 import SemanticText from './SemanticText.astro';
 
@@ -28,7 +29,7 @@ function isActive(href: string): boolean {
 <header data-state-aware="true" class="header-state-aware" role="banner">
   <div class="phi-lateral-angular-1 header-angular" aria-hidden="true"></div>
   <nav role="navigation" aria-label="Main navigation">
-    <a href="/" class="nav-brand" aria-label="Brisbane Servers - Home">
+    <a href={sitePath('/')} class="nav-brand" aria-label="Brisbane Servers - Home">
       <img src={logo.src} alt="Brisbane Servers Logo" width={logo.width} height={logo.height} />
       <span class="nav-brand-text">
         <SemanticText text="Brisbane Servers" semanticLevel="high" />
@@ -43,7 +44,7 @@ function isActive(href: string): boolean {
         item.children ? (
           <li class={`nav-dropdown ${isActive(item.href) ? 'active' : ''}`} role="none">
             <a 
-              href={item.href} 
+              href={sitePath(item.href)} 
               class={`nav-dropdown-toggle ${isActive(item.href) ? 'active' : ''}`}
               role="menuitem"
               aria-haspopup="true"
@@ -62,7 +63,7 @@ function isActive(href: string): boolean {
             >
               {item.children.map((child) => (
                 <a 
-                  href={child.href} 
+                  href={sitePath(child.href)} 
                   class={isActive(child.href) ? 'active' : ''}
                   role="menuitem"
                 >
@@ -74,7 +75,7 @@ function isActive(href: string): boolean {
         ) : (
           <li role="none">
             <a 
-              href={item.href} 
+              href={sitePath(item.href)} 
               class={[
                 isActive(item.href) ? 'active' : '',
                 item.href === '/account' ? 'nav-account-cta' : '',
@@ -114,7 +115,7 @@ function isActive(href: string): boolean {
           {breadcrumbs.map((crumb, index) => (
             <span class="breadcrumb-item">
               {crumb.href ? (
-                <a href={crumb.href}>{crumb.label}</a>
+                <a href={sitePath(crumb.href)}>{crumb.label}</a>
               ) : (
                 <span>{crumb.label}</span>
               )}
@@ -126,7 +127,7 @@ function isActive(href: string): boolean {
         item.children ? (
           <>
             <a 
-              href={item.href} 
+              href={sitePath(item.href)} 
               class={isActive(item.href) ? 'active' : ''}
               role="menuitem"
               aria-current={isActive(item.href) ? 'page' : undefined}
@@ -135,7 +136,7 @@ function isActive(href: string): boolean {
             </a>
             {item.children.map((child) => (
               <a 
-                href={child.href} 
+                href={sitePath(child.href)} 
                 class={`mobile-menu__child-link ${isActive(child.href) ? 'active' : ''}`}
                 role="menuitem"
                 aria-current={isActive(child.href) ? 'page' : undefined}
@@ -146,7 +147,7 @@ function isActive(href: string): boolean {
           </>
         ) : (
           <a 
-            href={item.href} 
+            href={sitePath(item.href)} 
             class={[
               isActive(item.href) ? 'active' : '',
               item.href === '/account' ? 'nav-account-cta' : '',

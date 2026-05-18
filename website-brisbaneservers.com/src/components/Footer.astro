@@ -1,4 +1,5 @@
 ---
+import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
 import SemanticText from './SemanticText.astro';
 ---
@@ -33,12 +34,12 @@ import SemanticText from './SemanticText.astro';
         <div class="footer-section">
           <h4 class="footer-title">Services</h4>
           <ul class="footer-links">
-            <li><a href="/services">Web Development</a></li>
-            <li><a href="/services">Application Scaling</a></li>
-            <li><a href="/services">Automation Solutions</a></li>
-            <li><a href="/services">IT Consulting</a></li>
-            <li><a href="/services">Enterprise Support</a></li>
-            <li><a href="/services">Security Services</a></li>
+            <li><a href={sitePath('/services')}>Web Development</a></li>
+            <li><a href={sitePath('/services')}>Application Scaling</a></li>
+            <li><a href={sitePath('/services')}>Automation Solutions</a></li>
+            <li><a href={sitePath('/services')}>IT Consulting</a></li>
+            <li><a href={sitePath('/services')}>Enterprise Support</a></li>
+            <li><a href={sitePath('/services')}>Security Services</a></li>
           </ul>
         </div>
 
@@ -46,13 +47,13 @@ import SemanticText from './SemanticText.astro';
           <div class="footer-subsection">
             <h4 class="footer-title">Company</h4>
             <ul class="footer-links">
-              <li><a href="/about">About Us</a></li>
-              <li><a href="/about#additive-semantics">Design philosophy</a></li>
-              <li><a href="/about">Why Choose Us</a></li>
-              <li><a href="/portal">Resource Portal <span class="footer-link-hint">(team tools)</span></a></li>
-              <li><a href="/services#consultation">Consultation</a></li>
-              <li><a href="/services">Business Solutions</a></li>
-              <li><a href="/services">Support</a></li>
+              <li><a href={sitePath('/about')}>About Us</a></li>
+              <li><a href={sitePath('/about#additive-semantics')}>Design philosophy</a></li>
+              <li><a href={sitePath('/about')}>Why Choose Us</a></li>
+              <li><a href={sitePath('/portal')}>Resource Portal <span class="footer-link-hint">(team tools)</span></a></li>
+              <li><a href={sitePath('/services#consultation')}>Consultation</a></li>
+              <li><a href={sitePath('/services')}>Business Solutions</a></li>
+              <li><a href={sitePath('/services')}>Support</a></li>
             </ul>
           </div>
           
@@ -98,8 +99,8 @@ import SemanticText from './SemanticText.astro';
             <p class="footer-subtitle">A BIGPONS Technology Project</p>
           </div>
           <div class="footer-legal">
-            <a href="/privacy-policy" class="footer-legal-link">Privacy Policy</a>
-            <a href="/terms-of-service" class="footer-legal-link">Terms of Service</a>
+            <a href={sitePath('/privacy-policy')} class="footer-legal-link">Privacy Policy</a>
+            <a href={sitePath('/terms-of-service')} class="footer-legal-link">Terms of Service</a>
           </div>
         </div>
       </div>

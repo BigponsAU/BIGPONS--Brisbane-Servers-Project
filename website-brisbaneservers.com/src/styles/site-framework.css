@@ -1745,10 +1745,25 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   padding-block: clamp(1.75rem, 4.25vw, 3.5rem);
 }
 
-.site-main--marketing .section:not(.hero):not(.page-hero--surface):not(.section--hero-wash)::before,
-.site-main--marketing .section:not(.hero):not(.page-hero--surface)::after,
-.site-main--marketing .section:not(.hero):not(.page-hero--surface) > .container::before,
-.site-main--marketing .section:not(.hero):not(.page-hero--surface) > .container::after {
+/* Do not strip pseudo-elements on home / inner-page band shells (gradients, Banach frames, φ rails). */
+.site-main--marketing
+  .section:not(.hero):not(.page-hero--surface):not(.section--hero-wash):where(
+    :not(.home-sections-shell > .section):not(.marketing-page-bands > .section):not(.phi-line-symmetrical)
+  )::before,
+.site-main--marketing
+  .section:not(.hero):not(.page-hero--surface):where(
+    :not(.home-sections-shell > .section):not(.marketing-page-bands > .section):not(.phi-line-symmetrical)
+  )::after,
+.site-main--marketing
+  .section:not(.hero):not(.page-hero--surface):where(
+    :not(.home-sections-shell > .section):not(.marketing-page-bands > .section)
+  )
+  > .container::before,
+.site-main--marketing
+  .section:not(.hero):not(.page-hero--surface):where(
+    :not(.home-sections-shell > .section):not(.marketing-page-bands > .section)
+  )
+  > .container::after {
   content: none;
   display: none;
 }
@@ -2666,6 +2681,58 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     rgba(186, 230, 253, 0.78) 42%,
     rgba(252, 231, 243, 0.72) 100%
   );
+}
+
+/* Inner pages: match home section-title accent underlines inside band shells */
+.marketing-page-bands > .section.section-tartan-accent .section-title {
+  margin: 0 0 clamp(0.9rem, 1.2vw, 1.5rem);
+  font-size: clamp(1.65rem, 1.05rem + 1vw, 2.65rem);
+  font-weight: 700;
+  color: var(--primary-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+  padding-bottom: 0.35em;
+}
+
+.marketing-page-bands > .section.section-tartan-accent .section-title .semantic-text {
+  display: inline;
+  width: auto;
+  max-width: none;
+}
+
+.marketing-page-bands > .section.section-tartan-accent .section-title :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-parent) {
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+.marketing-page-bands > .section.section-tartan-accent .section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: min(9.5rem, 48%);
+  height: 0.3125rem;
+  max-width: 14rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--home-title-underline-start) 0%,
+    var(--home-title-underline-mid) 54%,
+    var(--home-title-underline-end) 100%
+  );
+  opacity: 0.9;
+  box-shadow: 0 0 20px rgba(var(--accent-violet-rgb), 0.22);
+}
+
+.marketing-page-bands > .section.section-tartan-accent .section-title.section-title--center::after {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+.marketing-page-bands > .section.section-tartan-accent .section-title::before {
+  content: none;
+  display: none;
 }
 
 /* Client site cards (home + projects) */

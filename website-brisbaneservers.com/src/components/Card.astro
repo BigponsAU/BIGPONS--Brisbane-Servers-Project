@@ -1,4 +1,5 @@
 ---
+import { sitePath } from '../lib/site-path';
 import SemanticText from './SemanticText.astro';
 
 /**
@@ -54,11 +55,13 @@ const cardClass = [
 ].filter(Boolean).join(' ');
 
 const dataAttr = industry ? { 'data-industry': industry } : {};
+const resolvedHref =
+  href && !/^(?:https?:|mailto:|tel:)/i.test(href) ? sitePath(href) : href;
 ---
 
 <Tag 
   class={cardClass} 
-  href={href} 
+  href={resolvedHref} 
   {...dataAttr}
   role={href ? undefined : 'article'}
   aria-label={href ? `${title}. ${description}` : undefined}

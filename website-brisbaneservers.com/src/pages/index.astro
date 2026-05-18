@@ -12,6 +12,7 @@ import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
 import { industries } from '../data/industries';
 import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
 import { valueProposition } from '../data/value-proposition';
+import { sitePath } from '../lib/site-path';
 import { safeArrayAccess, createFallback } from '../utils/error-handling';
 
 const currentPath = '/';
@@ -120,7 +121,7 @@ const displayIndustries = industriesFallback(safeIndustries);
         </CardGrid>
         
         <div style="text-align: center; margin-top: var(--space-2xl);">
-          <a href="/resources" class="btn btn-secondary">
+          <a href={sitePath('/resources')} class="btn btn-secondary">
             View All Resources
           </a>
         </div>
@@ -260,7 +261,7 @@ const displayIndustries = industriesFallback(safeIndustries);
         </CardGrid>
         
         <div style="text-align: center; margin-top: var(--space-xl);">
-          <a href="/account" class="btn btn-secondary">
+          <a href={sitePath('/account')} class="btn btn-secondary">
             Open Portal Voice Framework
           </a>
         </div>
@@ -318,19 +319,19 @@ const displayIndustries = industriesFallback(safeIndustries);
         <CardGrid layout="grid" columns={2} progressive>
           <Card
             title="Industry Expertise"
-            description='Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="/resources" class="evidence-citation">View resources</a>'
+            description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
             icon="fas fa-industry"
             size="large"
           />
           <Card
             title="Financial Optimization"
-            description='Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="/projects" class="evidence-citation">View examples</a>'
+            description={`Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="${sitePath('/projects')}" class="evidence-citation">View examples</a>`}
             icon="fas fa-dollar-sign"
             size="large"
           />
           <Card
             title="Process Automation"
-            description='Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="/projects" class="evidence-citation">View case studies</a>'
+            description={`Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="${sitePath('/projects')}" class="evidence-citation">View case studies</a>`}
             icon="fas fa-cogs"
             size="large"
           />

@@ -180,6 +180,7 @@ const jsonLd = JSON.stringify({
     data-shell-variant={shellVariant ?? descriptor.shellVariant}
     data-value-profile={valueProfile ?? descriptor.valueProfile}
     data-page-density={density ?? descriptor.density}
+    data-site-base={import.meta.env.BASE_URL}
   >
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-link">Skip to main content</a>

@@ -9,6 +9,7 @@ import SemanticText from '../components/SemanticText.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
 import { valueProposition } from '../data/value-proposition';
+import { sitePath } from '../lib/site-path';
 
 const currentPath = '/projects';
 const breadcrumbsTrail = [
@@ -154,8 +155,8 @@ const breadcrumbsTrail = [
             industry="retail"
           >
             <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href="/case-studies/retail-inventory-ecommerce" class="btn btn-secondary">View Case Study</a>
-              <a href="/resources/retail" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+              <a href={sitePath('/case-studies/retail-inventory-ecommerce')} class="btn btn-secondary">View Case Study</a>
+              <a href={sitePath('/resources/retail')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
             </div>
           </Card>
           
@@ -164,7 +165,7 @@ const breadcrumbsTrail = [
             description="Art gallery implementing semantic product categorization with NLP-powered search. Visitors can explore collections by style, theme, technique. Unique edge for creative spaces."
             icon="fas fa-palette"
           >
-            <a href="/contribute" class="btn btn-secondary" style="margin-top: var(--space-lg);">Request This Case Study</a>
+            <a href={sitePath('/contribute')} class="btn btn-secondary" style="margin-top: var(--space-lg);">Request This Case Study</a>
           </Card>
           
           <Card
@@ -174,8 +175,8 @@ const breadcrumbsTrail = [
             industry="healthcare"
           >
             <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href="/case-studies/healthcare-patient-management" class="btn btn-secondary">View Case Study</a>
-              <a href="/resources/healthcare" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+              <a href={sitePath('/case-studies/healthcare-patient-management')} class="btn btn-secondary">View Case Study</a>
+              <a href={sitePath('/resources/healthcare')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
             </div>
           </Card>
           
@@ -186,8 +187,8 @@ const breadcrumbsTrail = [
             industry="professional-services"
           >
             <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href="/case-studies/professional-services-database" class="btn btn-secondary">View Case Study</a>
-              <a href="/resources/professional-services" class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
+              <a href={sitePath('/case-studies/professional-services-database')} class="btn btn-secondary">View Case Study</a>
+              <a href={sitePath('/resources/professional-services')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
             </div>
           </Card>
         </CardGrid>
@@ -253,9 +254,9 @@ const breadcrumbsTrail = [
         </p>
         
         <div style="margin-top: var(--space-2xl); display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center;">
-          <a href="/case-studies/retail-inventory-ecommerce" class="btn btn-primary">View Case Studies</a>
-          <a href="/resources" class="btn btn-secondary">Explore Resources</a>
-          <a href="/services" class="btn btn-secondary">Our Services</a>
+          <a href={sitePath('/case-studies/retail-inventory-ecommerce')} class="btn btn-primary">View Case Studies</a>
+          <a href={sitePath('/resources')} class="btn btn-secondary">Explore Resources</a>
+          <a href={sitePath('/services')} class="btn btn-secondary">Our Services</a>
         </div>
       </div>
     </section>

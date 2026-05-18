@@ -1,4 +1,5 @@
 ---
+import { sitePath } from '../lib/site-path';
 import SemanticText from './SemanticText.astro';
 import SierpinskiSatellite from './SierpinskiSatellite.astro';
 
@@ -40,6 +41,9 @@ const {
 } = Astro.props;
 
 const scrollHref = scrollTargetId.startsWith('#') ? scrollTargetId : `#${scrollTargetId}`;
+const resolvedCtaHref = ctaHref && !ctaHref.startsWith('#') ? sitePath(ctaHref) : ctaHref;
+const resolvedSecondaryCtaHref =
+  secondaryCtaHref && !secondaryCtaHref.startsWith('#') ? sitePath(secondaryCtaHref) : secondaryCtaHref;
 ---
 
 <section class="hero hero-original">
@@ -66,13 +70,13 @@ const scrollHref = scrollTargetId.startsWith('#') ? scrollTargetId : `#${scrollT
         )}
         {(ctaText && ctaHref) || (secondaryCtaText && secondaryCtaHref) ? (
           <div class="hero-cta">
-            {ctaText && ctaHref && (
-              <a href={ctaHref} class="btn btn-primary">
+            {ctaText && resolvedCtaHref && (
+              <a href={resolvedCtaHref} class="btn btn-primary">
                 {ctaText}
               </a>
             )}
-            {secondaryCtaText && secondaryCtaHref && (
-              <a href={secondaryCtaHref} class="btn btn-secondary">
+            {secondaryCtaText && resolvedSecondaryCtaHref && (
+              <a href={resolvedSecondaryCtaHref} class="btn btn-secondary">
                 {secondaryCtaText}
               </a>
             )}
