@@ -4,6 +4,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import { getPublicApiBaseUrl } from '~/lib/api-config';
 import { getPageDescriptor } from '~/lib/page-descriptors';
+import { sitePath } from '~/lib/site-path';
 
 const currentPath = '/resources/item';
 const publicApiBaseUrl = getPublicApiBaseUrl();
@@ -46,8 +47,8 @@ const pageDescriptor = getPageDescriptor(currentPath);
           <div id="resource-detail-content" class="resource-detail-content"></div>
 
           <div class="resource-detail-actions">
-            <a id="resource-detail-back-topic" class="btn btn-secondary" href="/resources">Back to topic</a>
-            <a class="btn btn-primary" href="/resources">Browse resources</a>
+            <a id="resource-detail-back-topic" class="btn btn-secondary" href={sitePath('/resources')}>Back to topic</a>
+            <a class="btn btn-primary" href={sitePath('/resources')}>Browse resources</a>
           </div>
         </article>
       </div>

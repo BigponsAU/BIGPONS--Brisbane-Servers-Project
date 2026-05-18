@@ -1,5 +1,6 @@
 ---
 import { clientSites } from '../data/client-sites';
+import { sitePath } from '../lib/site-path';
 
 interface Props {
   /** Optional anchor id for in-page links */
@@ -22,6 +23,10 @@ const { id, showFootnote = true } = Astro.props;
           host = site.url;
         }
         const faviconSrc = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`;
+        const previewSrc =
+          site.previewImage && site.previewImage.startsWith('/')
+            ? sitePath(site.previewImage)
+            : site.previewImage;
         return (
           <li class="client-sites-showcase__item" role="listitem">
             <a
@@ -34,7 +39,7 @@ const { id, showFootnote = true } = Astro.props;
                 {site.previewImage ? (
                   <img
                     class="client-site-card__shot"
-                    src={site.previewImage}
+                    src={previewSrc}
                     alt=""
                     width={640}
                     height={400}

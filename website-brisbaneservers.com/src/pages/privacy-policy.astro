@@ -4,6 +4,7 @@ import SiteShell from '../layouts/SiteShell.astro';
 import PageHero from '../components/PageHero.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
+import SiteLink from '../components/SiteLink.astro';
 import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/privacy-policy';
@@ -68,8 +69,8 @@ const breadcrumbsTrail = [
         </p>
 
         <p class="text-content legal-nav">
-          <a href="/terms-of-service">Terms of Service</a>
-          · <a href="/">Home</a>
+          <SiteLink href="/terms-of-service">Terms of Service</SiteLink>
+          · <SiteLink href="/">Home</SiteLink>
         </p>
       </div>
     </section>

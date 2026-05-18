@@ -8,6 +8,7 @@ import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, getTopicBySlug, industries } from '~/data/industries';
 import { resolvePublicApiUrl } from '~/lib/api-config';
+import { sitePath } from '~/lib/site-path';
 import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
 
 export async function getStaticPaths() {
@@ -178,9 +179,9 @@ const breadcrumbsTrail = [
         <div id="community-contribution-callout" class="community-contribution-callout">
           <p class="community-contribution-message">
             To contribute your perspective on this topic, register or log in. You can
-            <a href="/contribute">create an account or sign in</a> to unlock the contribution form here and earn tokens.
+            <a href={sitePath('/contribute')}>create an account or sign in</a> to unlock the contribution form here and earn tokens.
           </p>
-          <a href="/contribute" class="btn btn-primary btn-sm">Register or log in</a>
+          <a href={sitePath('/contribute')} class="btn btn-primary btn-sm">Register or log in</a>
         </div>
 
         <div id="community-contribution-form" class="community-contribution-form" data-visible="false">
