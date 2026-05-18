@@ -21,8 +21,8 @@
     "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
   },
   "dependencies": {
-    "@astrojs/node": "^9.0.0",
-    "astro": "^5.15.4",
+    "@astrojs/node": "^10.0.5",
+    "astro": "^6.3.3",
     "nodemailer": "^8.0.4",
     "pg": "^8.13.1",
     "sql.js": "^1.11.0"
@@ -33,6 +33,6 @@
     "glob": "^10.3.10",
     "tsx": "^4.7.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.6.1"
+    "vitest": "^4.1.6"
   }
 }
