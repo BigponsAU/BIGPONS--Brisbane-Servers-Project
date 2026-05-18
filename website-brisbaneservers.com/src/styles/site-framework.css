@@ -347,6 +347,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-sections-shell > .section.section-tartan-accent {
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--surface);
   padding-block: clamp(1.75rem, 4vw, 3.35rem);
   --home-title-underline-start: var(--accent-teal);
   --home-title-underline-mid: var(--accent-violet);
@@ -680,16 +683,17 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   --constellation-node-rgb: var(--accent-violet-rgb);
   --constellation-link-rgb: var(--primary-color-rgb);
   position: absolute;
-  top: clamp(0.25rem, 0.55vw, 0.65rem);
-  right: clamp(-2.25rem, -5.5vw, -0.35rem);
-  width: clamp(13.5rem, 34vw, 26rem);
-  max-height: min(42vh, 22rem);
+  top: clamp(0.5rem, 1vw, 1rem);
+  right: clamp(0, 2vw, 1.25rem);
+  width: clamp(11rem, 28vw, 22rem);
+  max-height: min(36vh, 18rem);
   aspect-ratio: 440 / 300;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.52;
+  opacity: 0.42;
   filter: drop-shadow(0 0 14px rgba(var(--constellation-node-rgb), 0.18));
-  overflow: visible;
+  overflow: hidden;
+  contain: paint;
   transition:
     width 0.55s ease,
     right 0.55s ease,
@@ -704,7 +708,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-sections-shell .section .section-satellite--contact,
 .main-home .home-sections-shell .section .section-satellite--solutions {
   right: auto;
-  left: clamp(-2.25rem, -5.5vw, -0.35rem);
+  left: clamp(0, 2vw, 1.25rem);
 }
 
 .main-home .home-sections-shell .section .section-satellite__svg {

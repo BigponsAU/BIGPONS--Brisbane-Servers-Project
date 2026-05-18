@@ -1113,10 +1113,11 @@ nav {
     left: 0;
     right: auto;
     /* Default to left alignment */
-    background: var(--surface-elevated);
+    background: #ffffff;
+    background-color: #ffffff;
     border: 1px solid var(--border-light);
     border-radius: calc(var(--border-radius) * 0.75);
-    box-shadow: var(--shadow-additive-soft);
+    box-shadow: 0 12px 40px rgba(8, 27, 54, 0.14);
     min-width: 13.75rem;
     width: max-content;
     /* Width based on content */
@@ -1128,7 +1129,8 @@ nav {
     transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
     z-index: 1001;
     /* Higher than header z-index to ensure visibility */
-    backdrop-filter: blur(10px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     padding: 0.5rem 0;
     overflow: hidden;
     /* Hide overflow to keep bubble shape */
@@ -1407,8 +1409,9 @@ nav {
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
-    overflow-x: clip;
-    overflow-y: visible;
+    overflow: clip;
+    isolation: isolate;
+    z-index: 2;
     min-height: var(--hero-min-height);
     display: flex;
     flex-direction: column;
@@ -1471,8 +1474,8 @@ nav {
     /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
-    overflow: visible;
-    /* Vertical rhythm comes from grid/min-height; block padding + in-flow reflow fought absolute inset:0 — use inline gutters only */
+    overflow: hidden;
+    /* Clip Sierpinski SVG — prevents constellation bleeding into sections below */
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
     /*

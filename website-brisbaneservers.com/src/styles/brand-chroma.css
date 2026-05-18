@@ -47,7 +47,6 @@ header .nav-menu a.active,
 header .nav-menu a.nav-account-cta,
 header .nav-dropdown:hover > .nav-dropdown-toggle,
 header .nav-dropdown.active > .nav-dropdown-toggle,
-header .nav-dropdown-menu a:hover,
 header .mobile-menu a:hover,
 header .mobile-menu a.active,
 header .mobile-menu a.nav-account-cta {
@@ -85,6 +84,48 @@ header .nav-dropdown-toggle::after {
 header .nav-dropdown:hover > .nav-dropdown-toggle::after,
 header .nav-dropdown.active > .nav-dropdown-toggle::after {
   color: #fff !important;
+}
+
+/* Dropdown panel: opaque over dark hero (backdrop-filter was picking up hero ink) */
+header .nav-dropdown-menu {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 12px 40px rgba(8, 27, 54, 0.14) !important;
+}
+
+header .nav-dropdown-menu a {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+header .nav-dropdown-menu a:hover,
+header .nav-dropdown-menu a:focus-visible {
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Hero hard bottom edge — no constellation bleed into content bands */
+.hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(1.25rem, 3vw, 2.5rem);
+  background: linear-gradient(to bottom, transparent, var(--surface, #f8f9fa));
+  z-index: 15;
+  pointer-events: none;
+}
+
+.main-home .home-sections-shell {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
 }
 
 /* ─── Filters, social, section accents ─── */
