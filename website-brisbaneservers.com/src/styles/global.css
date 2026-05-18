@@ -2656,12 +2656,8 @@ section.hero .hero-subtitle .semantic-child,
     /* Accent width independent of phi-ratio page banding */
     height: calc(3px * var(--size-section-title));
     /* Importance-based sizing: larger accent for high importance */
-    background: linear-gradient(90deg, 
-        var(--primary-color) 0%, 
-        var(--primary-dark) var(--phi-ratio-inv),
-        transparent 100%
-    );
-    /* Gradient with color intensity matching importance */
+    background: var(--additive-gradient-primary);
+    /* Brand violet→pink accent */
     border-radius: 2px;
     opacity: var(--color-intensity-high);
     /* High importance = stronger color presence */
@@ -3662,13 +3658,10 @@ p.text-long {
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, 
-        var(--primary-color) var(--gradient-stop-2), 
-        var(--primary-dark) var(--gradient-stop-3)
-    );
-    color: white;
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-primary);
+    background: var(--additive-gradient-primary);
+    color: var(--text-on-dark);
+    border-color: transparent;
+    box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.35);
 }
 
 .filter-btn.active::before {
@@ -4492,29 +4485,38 @@ textarea {
     }
 }
 
-/* Ensure sufficient color contrast */
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: 2px solid var(--primary-color);
+/* High-contrast fallbacks — flat fills only when the user requests more contrast */
+@media (prefers-contrast: high) {
+    .btn-primary {
+        background: var(--primary-color);
+        background-color: var(--primary-color);
+        color: #fff;
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+    }
 }
 
-.btn-primary:hover,
-.btn-primary:focus {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-}
-
-/* Improve link contrast */
-a {
+/* Body-copy links only — not nav, buttons, or card tiles */
+a:where(
+    :not(.btn):not(.card):not(.nav-menu a):not(.nav-dropdown-toggle):not(.nav-dropdown-menu a):not(.mobile-menu a):not(.filter-btn):not(.social-link)
+) {
     color: var(--primary-color);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
 }
 
-a:hover,
-a:focus {
+a:where(
+    :not(.btn):not(.card):not(.nav-menu a):not(.nav-dropdown-toggle):not(.nav-dropdown-menu a):not(.mobile-menu a):not(.filter-btn):not(.social-link)
+):hover,
+a:where(
+    :not(.btn):not(.card):not(.nav-menu a):not(.nav-dropdown-toggle):not(.nav-dropdown-menu a):not(.mobile-menu a):not(.filter-btn):not(.social-link)
+):focus {
     color: var(--primary-dark);
     text-decoration-thickness: 2px;
 }

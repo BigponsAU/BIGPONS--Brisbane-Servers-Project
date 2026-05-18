@@ -1,0 +1,64 @@
+/**
+ * Brand chroma — violet→pink gradient surfaces.
+ * Loaded last so it wins over late global.css accessibility fallbacks.
+ */
+
+.btn-primary,
+a.btn-primary,
+button.btn-primary {
+  background: var(--additive-gradient-primary);
+  background-color: transparent;
+  color: var(--text-on-dark);
+  border: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible,
+a.btn-primary:hover,
+a.btn-primary:focus-visible {
+  background: var(--additive-gradient-primary);
+  background-color: transparent;
+  color: var(--text-on-dark);
+  border: none;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active,
+.nav-menu a.nav-account-cta,
+.nav-dropdown:hover > .nav-dropdown-toggle,
+.nav-dropdown.active > .nav-dropdown-toggle,
+.nav-dropdown-menu a:hover,
+.mobile-menu a:hover,
+.mobile-menu a.active,
+.mobile-menu a.nav-account-cta,
+.mobile-menu a.nav-account-cta:hover,
+.mobile-menu a.nav-account-cta.active {
+  background: var(--additive-gradient-primary);
+  color: var(--text-on-dark);
+}
+
+.filter-btn.active {
+  background: var(--additive-gradient-primary);
+  border-color: transparent;
+  color: var(--text-on-dark);
+}
+
+.social-link:hover {
+  background: var(--additive-gradient-primary);
+}
+
+.section-title::after {
+  background: var(--additive-gradient-primary);
+  opacity: 0.92;
+}
+
+@media (prefers-contrast: high) {
+  .btn-primary,
+  .btn-primary:hover,
+  .btn-primary:focus-visible {
+    background: var(--primary-color);
+    background-color: var(--primary-color);
+    border: 2px solid var(--primary-dark);
+    color: #fff;
+  }
+}
