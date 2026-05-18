@@ -110,19 +110,6 @@ function isActive(href: string): boolean {
       aria-label="Mobile navigation menu"
       aria-hidden="true"
     >
-      {breadcrumbs.length > 0 && (
-        <div class="breadcrumb-section">
-          {breadcrumbs.map((crumb, index) => (
-            <span class="breadcrumb-item">
-              {crumb.href ? (
-                <a href={sitePath(crumb.href)}>{crumb.label}</a>
-              ) : (
-                <span>{crumb.label}</span>
-              )}
-            </span>
-          ))}
-        </div>
-      )}
       {navigation.map((item) => (
         item.children ? (
           <>

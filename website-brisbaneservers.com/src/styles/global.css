@@ -1018,6 +1018,10 @@ nav {
     font-size: var(--text-base);
     transition: var(--transition);
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--border-radius-pill);
     /* Prevent text rendering glitches */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -1025,31 +1029,15 @@ nav {
 }
 
 .nav-menu a::after {
-    content: '';
-    position: absolute;
-    bottom: -0.1875rem;
-    left: 0;
-    width: 0;
-    height: 0.1875rem;
-    background: linear-gradient(90deg, 
-        var(--primary-color) var(--gradient-stop-2), 
-        var(--accent-violet) var(--gradient-stop-3)
-    );
-    border-radius: 0.1875rem;
-    transition: width var(--transition);
-    box-shadow: 0 0.1875rem 0.5rem rgba(var(--primary-color-rgb), var(--opacity-medium));
-    overflow: visible;
-    /* Ensure underline doesn't get clipped */
-}
-
-.nav-menu a:hover::after,
-.nav-menu a.active::after {
-    width: 100%;
+    display: none;
 }
 
 .nav-menu a:hover,
 .nav-menu a.active {
-    color: var(--primary-color);
+    color: var(--text-on-dark);
+    background: var(--additive-gradient-primary);
+    box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.38);
+    transform: translateY(-1px);
 }
 
 /* Account / workspace — reads as a CTA, not body nav text */
@@ -1092,9 +1080,19 @@ nav {
 }
 
 .nav-dropdown-toggle {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--border-radius-pill);
+    transition: var(--transition);
+}
+
+.nav-dropdown:hover > .nav-dropdown-toggle,
+.nav-dropdown.active > .nav-dropdown-toggle {
+    color: var(--text-on-dark);
+    background: var(--additive-gradient-primary);
+    box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.35);
 }
 
 .nav-dropdown-toggle::after {
@@ -1194,13 +1192,13 @@ nav {
 }
 
 .nav-dropdown-menu a:hover {
-    background: var(--surface);
-    color: var(--primary-color);
+    background: var(--additive-gradient-primary);
+    color: var(--text-on-dark);
     padding-left: 1.25rem;
 }
 
 .nav-dropdown-menu a:hover::before {
-    transform: scaleY(1);
+    display: none;
 }
 
 .nav-dropdown-menu a::after {
@@ -3460,12 +3458,16 @@ p.text-long {
 /* F-pattern: first horizontal scan below header — hierarchy before main content (desktop/tablet).
    Hidden on small viewports where the mobile menu carries the same trail. */
 .breadcrumbs {
+    display: none !important;
     position: relative;
-    display: block;
-    visibility: visible;
-    opacity: 1;
-    height: auto;
+    visibility: hidden;
+    opacity: 0;
+    height: 0;
     width: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
     margin: 0;
     padding-block: clamp(var(--space-xs), var(--space-sm), var(--space-md));
     padding-inline: 0;
