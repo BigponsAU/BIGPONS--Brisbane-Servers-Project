@@ -109,15 +109,20 @@ header .nav-dropdown-menu a:focus-visible {
   -webkit-text-fill-color: #fff !important;
 }
 
-/* Hero hard bottom edge — no constellation bleed into content bands */
+/* Hero bottom seam — short, soft blend (keeps constellation visible) */
 .hero::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: clamp(1.25rem, 3vw, 2.5rem);
-  background: linear-gradient(to bottom, transparent, var(--surface, #f8f9fa));
+  height: clamp(0.35rem, 0.85vw, 0.75rem);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(248, 249, 252, 0.45) 72%,
+    var(--surface, #f8f9fa) 100%
+  );
   z-index: 15;
   pointer-events: none;
 }
@@ -146,6 +151,63 @@ header .nav-dropdown-menu a:focus-visible {
   background: var(--brand-gradient-chroma) !important;
   background-image: var(--brand-gradient-chroma) !important;
   opacity: 0.92;
+}
+
+/* Cookie + form CTAs (not covered by header/nav selectors) */
+.cookie-btn-accept,
+.cookie-consent .cookie-btn-accept,
+.inquiry-form .btn-primary,
+.inquiry-form button[type='submit'].btn-primary,
+input[type='submit'].btn-primary {
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  border: none !important;
+  -webkit-text-fill-color: #fff !important;
+  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.4) !important;
+}
+
+.cookie-btn-accept:hover,
+.inquiry-form .btn-primary:hover,
+.inquiry-form button[type='submit'].btn-primary:hover {
+  background: var(--brand-gradient-chroma-hero) !important;
+  background-image: var(--brand-gradient-chroma-hero) !important;
+  color: #fff !important;
+}
+
+/* Inquiry band vs panel — readable contrast site-wide */
+.inquiry-section {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e8eef6 48%, #f4f6fa 100%) !important;
+  background-image: linear-gradient(180deg, #f1f5f9 0%, #e8eef6 48%, #f4f6fa 100%) !important;
+}
+
+.inquiry-section .inquiry-form,
+.marketing-page-bands > .inquiry-section .inquiry-form {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  box-shadow:
+    0 1px 2px rgba(8, 27, 54, 0.04),
+    0 8px 28px rgba(8, 27, 54, 0.08),
+    0 0 0 1px rgba(10, 116, 218, 0.06) !important;
+}
+
+.inquiry-section .inquiry-form::before {
+  opacity: 0.35;
+}
+
+.inquiry-form > h2,
+.inquiry-form > p,
+.inquiry-form .inquiry-form-title,
+.inquiry-form .inquiry-form-subtitle {
+  color: var(--text-primary) !important;
+}
+
+.inquiry-form .inquiry-form-subtitle,
+.inquiry-form > p {
+  color: var(--text-secondary) !important;
 }
 
 @media (prefers-contrast: high) {

@@ -2006,16 +2006,10 @@ section.hero .hero-subtitle .semantic-child,
 
 .inquiry-section {
     padding: var(--space-4xl) 0;
-    background: var(--gradient-primary);
-    /* Primary gradient - unified system */
-    background-color: var(--primary-light);
-    /* Fallback - primary light */
     position: relative;
-    /* Add background pattern for dead space reduction */
-    background-image: 
-        var(--gradient-primary),
-        radial-gradient(circle at var(--phi-spiral-2) var(--phi-spiral-3), rgba(10, 116, 218, var(--opacity-subtle)) 0%, transparent 50%);
-    background-size: 100% 100%, calc(var(--phi-grid-cell-h) * var(--phi-cubed)) calc(var(--phi-grid-cell-v) * var(--phi-cubed));
+    /* Neutral band — form card provides contrast (see brand-chroma.css) */
+    background: linear-gradient(180deg, #f1f5f9 0%, #e8eef6 48%, #f4f6fa 100%);
+    background-color: #eef2f7;
 }
 
 /* Golden Ratio Positioning for Inquiry Form */
@@ -2024,18 +2018,15 @@ section.hero .hero-subtitle .semantic-child,
     /* 600px / 16 = 37.5rem - scales with zoom */
     width: 100%;
     margin: 0 auto;
-    background: linear-gradient(135deg, 
-        var(--surface-elevated) 0%, 
-        var(--primary-light) 100%
-    );
-    /* Primary light gradient - unified system */
-    background-color: var(--surface-elevated);
-    /* Fallback */
+    background: #ffffff;
+    background-color: #ffffff;
     padding: var(--space-2xl);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    border: 2px solid var(--accent-primary-bg);
-    /* Primary border accent - unified system */
+    box-shadow:
+        0 1px 2px rgba(8, 27, 54, 0.04),
+        0 8px 28px rgba(8, 27, 54, 0.08),
+        0 0 0 1px rgba(10, 116, 218, 0.06);
+    border: 1px solid rgba(139, 92, 246, 0.18);
     position: relative;
     overflow: hidden;
 }

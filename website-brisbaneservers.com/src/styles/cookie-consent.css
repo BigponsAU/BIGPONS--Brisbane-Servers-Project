@@ -146,13 +146,17 @@ body > .cookie-consent {
 }
 
 .cookie-btn-accept {
-  background: var(--primary-color);
-  color: white;
+  background: var(--brand-gradient-chroma, linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%));
+  background-color: #8b5cf6;
+  color: #fff;
+  border: none;
+  font-weight: var(--font-weight-semibold);
 }
 
 .cookie-btn-accept:hover {
-  background: var(--primary-dark);
-  box-shadow: var(--shadow-md);
+  background: var(--brand-gradient-chroma-hero, linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%));
+  background-color: #8b5cf6;
+  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.4);
 }
 
 .cookie-btn-decline {
