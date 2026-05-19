@@ -2311,7 +2311,13 @@ section.hero .hero-subtitle .semantic-child,
     gap: var(--space-xl);
 }
 
-.card-grid.progressive .card:nth-child(n+4) {
+/* Home/marketing 2×2 grids: show all four tiles (no hidden 4th card) */
+.card-grid-grid.card-grid.progressive .card:nth-child(n+4),
+.main-home .card-grid.progressive .card:nth-child(n+4) {
+    display: flex;
+}
+
+.card-grid.progressive:not(.card-grid-grid) .card:nth-child(n+4) {
     display: none;
 }
 

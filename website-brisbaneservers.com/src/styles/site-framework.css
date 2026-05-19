@@ -2578,6 +2578,64 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   max-width: 62ch;
 }
 
+/* ─── Home: subtle in-section graphs only (no thick gutter “veins”) ─── */
+.main-home .home-page-margin-constellation,
+.main-home .home-page-margin-echo-stack {
+  display: none !important;
+}
+
+.main-home .home-interconnection-page-margin--left::after,
+.main-home .home-interconnection-page-margin--right::after {
+  display: none !important;
+}
+
+.main-home .home-interconnection-page-margin--left,
+.main-home .home-interconnection-page-margin--right {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.main-home .home-sections-shell .section .section-satellite {
+  width: clamp(8.5rem, 18vw, 14rem);
+  max-height: min(28vh, 13rem);
+  opacity: 0.2;
+  contain: paint;
+}
+
+.main-home .home-sections-shell .section .section-satellite__edge {
+  stroke-width: 0.65;
+  stroke-linecap: round;
+}
+
+.main-home .home-sections-shell .section .section-satellite__node {
+  stroke-width: 0.75;
+}
+
+.main-home .home-interconnection-rig[data-margin-band] .section-satellite:not(.section-satellite--gutter-echo) {
+  width: clamp(8.5rem, 18vw, 14rem) !important;
+  max-height: min(28vh, 13rem) !important;
+  right: clamp(0, 1.5vw, 1rem) !important;
+  left: auto !important;
+  opacity: 0.22 !important;
+  transform: none !important;
+}
+
+.main-home .home-interconnection-rig[data-margin-band] .home-band--industry .section-satellite:not(.section-satellite--gutter-echo),
+.main-home .home-interconnection-rig[data-margin-band] .home-band--solutions .section-satellite:not(.section-satellite--gutter-echo),
+.main-home .home-interconnection-rig[data-margin-band] .home-band--contact .section-satellite:not(.section-satellite--gutter-echo) {
+  left: clamp(0, 1.5vw, 1rem) !important;
+  right: auto !important;
+}
+
+.main-home .home-interconnection-rig[data-margin-band] .section-satellite:not(.section-satellite--gutter-echo)::after {
+  display: none !important;
+}
+
+.main-home .home-sections-shell .section .card-grid {
+  position: relative;
+  z-index: 2;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-shell *,
   .site-shell *::before,

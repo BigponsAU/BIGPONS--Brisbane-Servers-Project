@@ -20,7 +20,7 @@ const currentPath = '/';
 // Safe access to industries with fallback
 const safeIndustries = industries && Array.isArray(industries) ? industries : [];
 const industriesFallback = createFallback([]);
-const displayIndustries = industriesFallback(safeIndustries);
+const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
 ---
 
 <SiteShell
@@ -316,7 +316,7 @@ const displayIndustries = industriesFallback(safeIndustries);
           <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context — so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
         </p>
         
-        <CardGrid layout="grid" columns={2} progressive>
+        <CardGrid layout="grid" columns={2}>
           <Card
             title="Industry Expertise"
             description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
@@ -342,15 +342,11 @@ const displayIndustries = industriesFallback(safeIndustries);
             size="large"
           />
         </CardGrid>
-        
-        <div class="load-more-btn">
-          <button data-expand-cards>Show More Solutions</button>
-        </div>
       </div>
     </section>
 
     <!-- Strategic Partnership Section -->
-    <section class="section section-tartan-accent section-home-band--surface home-band--partnership section--hero-wash" data-interconnection-node data-interconnection-band="partnership">
+    <section class="section section-tartan-accent section-home-band--surface home-band--partnership" data-interconnection-node data-interconnection-band="partnership">
       <div class="container">
         <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
         <h2 class="section-title">
@@ -364,11 +360,13 @@ const displayIndustries = industriesFallback(safeIndustries);
           <Card
             title="Efficient Delivery"
             description="We run the analysis and preparation work; you focus on decisions. Outputs stay clear, actionable, and implementation-ready."
+            icon="fas fa-bolt"
             size="medium"
           />
           <Card
             title="Australian Market Expertise"
             description="Brisbane-based, serving Australian businesses. Deep understanding of local market conditions, regulatory requirements, grant programs, and proven implementation strategies."
+            icon="fas fa-map-marker-alt"
             size="medium"
           />
         </CardGrid>

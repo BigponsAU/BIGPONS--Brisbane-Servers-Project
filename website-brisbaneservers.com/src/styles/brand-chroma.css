@@ -210,6 +210,94 @@ input[type='submit'].btn-primary {
   color: var(--text-secondary) !important;
 }
 
+/* ─── Dark hero-wash bands: legible copy + white cards ─── */
+.section--hero-wash > .container > .section-description,
+.section--hero-wash > .container > .section-description :is(.semantic-text, .semantic-child, .semantic-normal, .semantic-medium) {
+  color: rgba(255, 255, 255, 0.9) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.section--hero-wash > .container > .section-title :is(.semantic-text, .semantic-high, .semantic-parent) {
+  color: var(--text-on-dark) !important;
+  -webkit-text-fill-color: var(--text-on-dark) !important;
+}
+
+.section--hero-wash .card {
+  background: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+.section--hero-wash .card .card-title,
+.section--hero-wash .card .card-title :is(.semantic-text, .semantic-high, .semantic-parent) {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+.section--hero-wash .card .card-description {
+  color: var(--text-secondary) !important;
+}
+
+.section--hero-wash .card .evidence-citation {
+  color: var(--primary-color) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ─── Inquiry form fields — clear affordance for input ─── */
+.inquiry-form .form-group label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary-ink);
+}
+
+.inquiry-form .form-group input,
+.inquiry-form .form-group select,
+.inquiry-form .form-group textarea {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+  background: #f8fafc;
+  border: 1.5px solid rgba(10, 116, 218, 0.22);
+  border-radius: 0.65rem;
+  box-shadow: inset 0 1px 2px rgba(8, 27, 54, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.inquiry-form .form-group input::placeholder,
+.inquiry-form .form-group textarea::placeholder {
+  color: var(--text-light);
+  opacity: 1;
+}
+
+.inquiry-form .form-group input:hover,
+.inquiry-form .form-group select:hover,
+.inquiry-form .form-group textarea:hover {
+  border-color: rgba(139, 92, 246, 0.35);
+  background: #ffffff;
+}
+
+.inquiry-form .form-group input:focus,
+.inquiry-form .form-group select:focus,
+.inquiry-form .form-group textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(139, 92, 246, 0.18),
+    inset 0 1px 2px rgba(8, 27, 54, 0.03);
+}
+
+.inquiry-form .form-group:focus-within label {
+  color: var(--primary-color);
+}
+
 @media (prefers-contrast: high) {
   a.btn.btn-primary,
   .btn.btn-primary,
