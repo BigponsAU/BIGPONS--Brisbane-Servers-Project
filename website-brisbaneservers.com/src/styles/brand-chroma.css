@@ -192,6 +192,20 @@ header .nav-mega__link.active {
   -webkit-text-fill-color: #fff !important;
 }
 
+/*
+ * Hero visual frame — override site-framework aspect-ratio cap that crops the SVG.
+ * Graph uses meet + inset; column stretches with copy row height.
+ */
+.hero-visual,
+.main-home .hero-visual,
+.main-phi-chassis .hero-visual {
+  aspect-ratio: unset !important;
+  max-height: none !important;
+  align-self: stretch !important;
+  height: 100% !important;
+  overflow: visible !important;
+}
+
 /* Hero bottom seam — short, soft blend (keeps constellation visible) */
 .hero::after {
   content: '';

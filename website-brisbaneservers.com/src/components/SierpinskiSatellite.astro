@@ -54,7 +54,13 @@
     
     // Generate nodes in recursive Sierpinski pattern
     const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
-    
+    // Keep geometry inside viewBox so meet scaling does not crop pillars at the frame edge
+    const layoutScale = 0.84;
+    nodes.forEach((node) => {
+      node.x = centerX + (node.x - centerX) * layoutScale;
+      node.y = centerY + (node.y - centerY) * layoutScale;
+    });
+
     // Draw connections using azimuth angles
     let connectionSeq = 0;
     nodes.forEach((node, i) => {
@@ -325,6 +331,7 @@
     min-width: 0;
     min-height: 0;
     height: 100%;
+    max-width: 100%;
     max-height: 100%;
     overflow: visible;
   }

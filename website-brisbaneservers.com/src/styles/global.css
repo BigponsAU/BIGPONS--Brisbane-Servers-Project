@@ -1347,7 +1347,8 @@ nav {
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
-    overflow: clip;
+    overflow-x: clip;
+    overflow-y: visible;
     isolation: isolate;
     z-index: 2;
     min-height: var(--hero-min-height);
@@ -1387,9 +1388,9 @@ nav {
 .hero-inner {
     display: grid;
     grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
-    /* Wide desktop: height follows content so the visual sits with the copy, not in a tall empty lane */
-    align-items: start;
+    align-items: stretch;
     flex: 0 1 auto;
+    min-height: var(--hero-inner-min-height, var(--hero-min-height));
     width: 100%;
     min-height: 0;
     position: relative;
@@ -1409,8 +1410,8 @@ nav {
     /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
-    overflow: hidden;
-    /* Clip Sierpinski SVG — prevents constellation bleeding into sections below */
+    overflow: visible;
+    align-self: stretch;
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
     /*
@@ -1420,10 +1421,10 @@ nav {
     mask-image: none;
 }
 
-/* Keep satellite geometry pinned to the full hero visual area. */
+/* Inset keeps node halos inside the frame; meet scales SVG to fit without cropping. */
 .hero-visual .sierpinski-satellite {
     position: absolute;
-    inset: 0;
+    inset: clamp(0.35rem, 1.25vw, 1rem) clamp(0.15rem, 0.5vw, 0.5rem);
 }
 
 @media (max-width: 768px) {
