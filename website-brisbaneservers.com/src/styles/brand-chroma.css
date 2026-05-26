@@ -223,6 +223,8 @@ header .nav-mega__link.active {
   min-height: var(--hero-min-height);
   container-type: inline-size;
   container-name: hero-layout;
+  /* Tighter φ columns — large gap + padded visual read as a “box” beside copy */
+  gap: clamp(var(--space-md), var(--space-lg), var(--space-xl)) !important;
 }
 
 .hero-text-wrapper {
@@ -242,12 +244,11 @@ header .nav-mega__link.active {
 .hero-visual,
 .main-home .hero-visual,
 .main-phi-chassis .hero-visual {
-  /* Clip scaled SVG so it cannot lap the copy column at any zoom */
-  overflow: hidden !important;
+  overflow: visible !important;
   align-self: stretch !important;
-  justify-self: end !important;
+  justify-self: stretch !important;
   width: 100% !important;
-  max-width: min(100%, 38rem) !important;
+  max-width: none !important;
   height: 100% !important;
   min-height: 0 !important;
   max-height: none !important;
@@ -255,19 +256,35 @@ header .nav-mega__link.active {
   display: flex !important;
   flex-direction: column !important;
   z-index: 1 !important;
-  padding-inline-start: clamp(0.75rem, 2.5vw, 1.75rem) !important;
-  padding-inline-end: 0 !important;
+  padding-inline: 0 !important;
   box-sizing: border-box !important;
+  /*
+   * Soft left fade — graph bleeds across the column without a hard rectangular clip.
+   * Copy column z-index keeps text readable.
+   */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.45) 6%,
+    #000 16%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 0, 0, 0.45) 6%,
+    #000 16%,
+    #000 100%
+  );
 }
 
 .hero-visual .sierpinski-satellite {
-  overflow: hidden;
+  overflow: visible;
   inset: 0;
   flex: 1 1 auto;
   min-height: 0;
-  opacity: var(--hero-satellite-opacity, 0.8);
-  transform: scale(var(--hero-satellite-scale, 0.94));
-  transform-origin: var(--hero-satellite-origin-x, 72%) var(--hero-satellite-origin-y, 100%);
+  opacity: var(--hero-satellite-opacity, 0.82);
+  transform: none;
 }
 
 .hero-visual .satellite-svg {
@@ -277,28 +294,10 @@ header .nav-mega__link.active {
   flex: 1 1 auto;
 }
 
-/* Browser zoom / narrow hero band: pull scale down so the graph never overlaps copy */
-@container hero-layout (max-width: 62rem) {
-  .hero-visual .sierpinski-satellite {
-    transform: scale(var(--hero-satellite-scale-md, 0.73));
-  }
-}
-
-@container hero-layout (max-width: 52rem) {
-  .hero-visual .sierpinski-satellite {
-    transform: scale(var(--hero-satellite-scale-compact, 0.68));
-  }
-}
-
 @container hero-layout (max-width: 44rem) {
   .hero-visual {
-    max-width: 100% !important;
-    padding-inline-start: 0 !important;
-  }
-
-  .hero-visual .sierpinski-satellite {
-    transform: scale(var(--hero-satellite-scale-tight, 0.76));
-    transform-origin: 50% 100%;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 
