@@ -749,8 +749,6 @@
   --hero-inner-min-height: clamp(13rem, 19rem, 26rem);
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
-  /* Hero constellation — SVG slice fills column; no CSS scale (scale caused seams + voids) */
-  --hero-satellite-opacity: 0.86;
   /*
    * Inset “spectrum”: % of containing block (CSS: % on padding-top/bottom uses the same width
    * basis as padding-left/right). So vertical gutters expand/contract with the content band like

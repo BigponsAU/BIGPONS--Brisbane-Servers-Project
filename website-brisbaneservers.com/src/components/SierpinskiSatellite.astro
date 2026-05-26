@@ -12,7 +12,7 @@
 ---
 
 <div class="sierpinski-satellite" aria-hidden="true">
-  <svg class="satellite-svg" viewBox="200 0 600 600" preserveAspectRatio="xMaxYMax slice" xmlns="http://www.w3.org/2000/svg">
+  <svg class="satellite-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     <!-- Connection Lines Layer (drawn first, behind nodes) -->
     <g class="connections-layer"></g>
     
@@ -47,19 +47,14 @@
       'fa-lock', 'fa-code-branch', 'fa-users', 'fa-chart-bar', 'fa-plug'
     ];
     
-    // Bias cluster toward the right of the viewBox so slice fill reaches copy without a hard left box
-    const centerX = 500;
+    // Base node positions using phi ratios (Sierpinski pattern)
+    // Center point at phi ratio (61.8%)
+    const centerX = 400;
     const centerY = 300;
     
     // Generate nodes in recursive Sierpinski pattern
     const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
-    const horizontalSpread = 1.22;
-    const verticalSpread = 1.38;
-    nodes.forEach((node) => {
-      node.x = centerX + (node.x - centerX) * horizontalSpread;
-      node.y = centerY + (node.y - centerY) * verticalSpread;
-    });
-
+    
     // Draw connections using azimuth angles
     let connectionSeq = 0;
     nodes.forEach((node, i) => {
@@ -157,7 +152,7 @@
     base.setAttribute('x2', String(x2));
     base.setAttribute('y2', String(y2));
     base.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.24)`);
-    base.setAttribute('stroke-width', '1');
+    base.setAttribute('stroke-width', '1.5');
     base.classList.add('satellite-connection-base');
     layer.appendChild(base);
 
@@ -167,7 +162,7 @@
     pulse.setAttribute('x2', String(x2));
     pulse.setAttribute('y2', String(y2));
     pulse.setAttribute('stroke', `rgba(${purpleGlowRgb}, 0.62)`);
-    pulse.setAttribute('stroke-width', '1.5');
+    pulse.setAttribute('stroke-width', '2.25');
     pulse.setAttribute('stroke-linecap', 'round');
     pulse.setAttribute('pathLength', '100');
     pulse.setAttribute('stroke-dasharray', '26 74');
@@ -313,7 +308,7 @@
     /* No max-height — capping height with top:0 made the box shorter than the anchor, leaving empty space at the bottom */
     pointer-events: none;
     z-index: 2;
-    opacity: 1;
+    opacity: 0.9;
     mix-blend-mode: normal;
     /* visible: paired with .hero-visual mask removal on narrow viewports; avoid clipping node glows */
     overflow: visible;
@@ -328,9 +323,9 @@
     flex: 1 1 auto;
     width: 100%;
     min-width: 0;
-    min-height: 100%;
+    min-height: 0;
     height: 100%;
-    max-height: none;
+    max-height: 100%;
     overflow: visible;
   }
   

@@ -1347,8 +1347,7 @@ nav {
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
-    overflow-x: clip;
-    overflow-y: visible;
+    overflow: clip;
     isolation: isolate;
     z-index: 2;
     min-height: var(--hero-min-height);
@@ -1367,20 +1366,30 @@ nav {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--hero-overlay-gradient);
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0.4) 35%,
+        rgba(0, 0, 0, 0.3) 45%,
+        rgba(0, 0, 0, 0.2) 48%,
+        rgba(var(--original-purple-glow-rgb), 0.1) calc(100% * var(--phi-inv)),
+        rgba(var(--original-purple-glow-rgb), 0.2) 55%,
+        rgba(var(--original-purple-glow-rgb), 0.3) 60%,
+        rgba(var(--original-purple-glow-rgb), 0.4) 70%,
+        rgba(var(--original-purple-glow-rgb), 0.45) 100%
+    );
     pointer-events: none;
     z-index: 1;
-    mix-blend-mode: normal;
-    opacity: 1;
+    mix-blend-mode: multiply;
 }
 
 /* Hero layout: grid places text + visual in φ columns (no hollow flex gap) */
 .hero-inner {
     display: grid;
-    grid-template-columns: minmax(0, 0.44fr) minmax(0, 0.56fr);
-    align-items: stretch;
-    min-height: var(--hero-inner-min-height, var(--hero-min-height));
-    flex: 1 1 auto;
+    grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
+    /* Wide desktop: height follows content so the visual sits with the copy, not in a tall empty lane */
+    align-items: start;
+    flex: 0 1 auto;
     width: 100%;
     min-height: 0;
     position: relative;
@@ -1392,16 +1401,16 @@ nav {
     position: relative;
     z-index: 2;
     min-width: 0;
-    min-height: 100%;
-    align-self: stretch;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-content: stretch;
+    justify-content: flex-start;
     /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
-    overflow: visible;
+    overflow: hidden;
+    /* Clip Sierpinski SVG — prevents constellation bleeding into sections below */
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
     /*
@@ -1529,17 +1538,10 @@ nav {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(
-        ellipse 85% 70% at 72% 42%,
-        rgba(var(--accent-violet-rgb), 0.28) 0%,
-        rgba(80, 40, 120, 0.14) 35%,
-        rgba(var(--primary-color-rgb), 0.06) 55%,
-        transparent 72%
-    );
+    background: var(--hero-overlay-gradient);
     z-index: 1;
     pointer-events: none;
     mix-blend-mode: soft-light;
-    opacity: 0.82;
 }
 
 /* Hero type: rem + φ caps; when container queries run, cqi tracks the text band (sentry column) */
