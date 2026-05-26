@@ -261,9 +261,16 @@
      ============================================ */
   
   /* Dark Gradient Background Colors */
-  --original-bg-start: #1a0b2e; /* Deep indigo/purple */
-  --original-bg-end: #16213e; /* Darker blue */
-  --original-bg-gradient: linear-gradient(135deg, var(--original-bg-start) 0%, var(--original-bg-end) 100%);
+  --original-bg-start: #100a1c; /* Deep indigo/purple */
+  --original-bg-end: #0c1220; /* Darker blue */
+  --original-bg-gradient: linear-gradient(
+    128deg,
+    #08040f 0%,
+    var(--original-bg-start) 24%,
+    #14122c 50%,
+    #181a3a 72%,
+    var(--original-bg-end) 100%
+  );
   
   /* Purple Accent Colors */
   --original-purple: #8b5cf6; /* Vibrant purple for text and glow */
@@ -286,6 +293,14 @@
     var(--accent-violet) 46%,
     var(--accent-pink) 100%
   );
+  /* Top nav hover — same chroma as CTA, slightly softer blend */
+  --nav-chrome-hover-gradient: linear-gradient(
+    128deg,
+    var(--primary-color) 0%,
+    #7c6cf0 42%,
+    var(--accent-violet) 58%,
+    var(--accent-pink) 100%
+  );
   /* Literal stops — used where var()-in-var() backgrounds fail in some hosts */
   --brand-gradient-chroma: linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%);
   --brand-gradient-chroma-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%);
@@ -296,18 +311,22 @@
     rgba(var(--accent-pink-rgb), 0.06) 100%
   );
   --additive-gradient-dark: linear-gradient(
-    140deg,
-    var(--original-bg-start) 0%,
-    #121b36 44%,
-    #2b1b49 100%
+    132deg,
+    #08040f 0%,
+    #100a1c 22%,
+    #14122c 44%,
+    #181836 64%,
+    #1c1844 82%,
+    #100c1a 100%
   );
+  /* Dark wash + subtle chroma on the visual side (does not lift the whole band) */
   --hero-overlay-gradient: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.2) 0%,
-    rgba(0, 0, 0, 0.14) 38%,
-    rgba(var(--accent-violet-rgb), 0.16) 56%,
-    rgba(var(--accent-violet-rgb), 0.28) 72%,
-    rgba(var(--accent-pink-rgb), 0.22) 100%
+    108deg,
+    rgba(6, 8, 20, 0.78) 0%,
+    rgba(8, 10, 24, 0.72) 38%,
+    rgba(10, 12, 28, 0.66) 58%,
+    rgba(var(--accent-violet-rgb), 0.14) 78%,
+    rgba(8, 10, 22, 0.74) 100%
   );
   
   /* Text Colors for Dark Background */
@@ -730,6 +749,14 @@
   --hero-inner-min-height: clamp(13rem, 19rem, 26rem);
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
+  /* Hero constellation — bottom-anchored scale so the graph fills the visual column (no lower void) */
+  --hero-satellite-scale: 0.94;
+  --hero-satellite-scale-md: 0.88;
+  --hero-satellite-scale-compact: 0.82;
+  --hero-satellite-scale-tight: 0.76;
+  --hero-satellite-opacity: 0.82;
+  --hero-satellite-origin-x: 72%;
+  --hero-satellite-origin-y: 100%;
   /*
    * Inset “spectrum”: % of containing block (CSS: % on padding-top/bottom uses the same width
    * basis as padding-left/right). So vertical gutters expand/contract with the content band like

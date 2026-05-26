@@ -39,16 +39,55 @@ button.btn.btn-primary:hover,
   background-color: #8b5cf6 !important;
   color: #fff !important;
   border: none !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Keep label text above the shine sweep on gradient buttons */
+.btn.btn-primary,
+a.btn.btn-primary,
+button.btn.btn-primary {
+  isolation: isolate;
+}
+
+.btn.btn-primary::before {
+  z-index: 0 !important;
+}
+
+.btn.btn-primary > *,
+.btn.btn-primary :is(span, i, .semantic-text, .btn-icon) {
+  position: relative;
+  z-index: 1;
+  color: inherit !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+.btn.btn-primary:hover > *,
+.btn.btn-primary:focus-visible > *,
+.btn.btn-primary:hover :is(span, i, .semantic-text, .btn-icon),
+.btn.btn-primary:focus-visible :is(span, i, .semantic-text, .btn-icon),
+.filter-btn.active,
+.filter-btn.active :is(span, .semantic-text) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 /* ─── Header / nav chrome ─── */
-header .nav-menu a:hover,
-header .nav-menu a.active,
-header .nav-menu a.nav-account-cta,
-header .nav-dropdown:hover > .nav-dropdown-toggle,
-header .nav-dropdown.active > .nav-dropdown-toggle,
-header .mobile-menu a:hover,
-header .mobile-menu a.active,
+@media (min-width: 1024px) {
+  header .nav-menu a.nav-account-cta,
+  header .nav-menu a.nav-account-cta:hover,
+  header .nav-menu a.nav-account-cta.active {
+    background: var(--brand-gradient-chroma) !important;
+    background-image: var(--brand-gradient-chroma) !important;
+    background-color: #8b5cf6 !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.38);
+    text-decoration: none !important;
+  }
+}
+
+header .mobile-menu__account,
+header .mobile-menu__account:hover,
 header .mobile-menu a.nav-account-cta {
   background: var(--brand-gradient-chroma) !important;
   background-image: var(--brand-gradient-chroma) !important;
@@ -60,16 +99,34 @@ header .mobile-menu a.nav-account-cta {
 }
 
 /* SemanticText inside nav must not force dark ink on gradient pills */
-header .nav-menu a:hover :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
-header .nav-menu a.active :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
-header .nav-menu a.nav-account-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
-header .nav-dropdown:hover > .nav-dropdown-toggle :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
-header .nav-dropdown.active > .nav-dropdown-toggle :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
-header .mobile-menu a:hover :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
-header .mobile-menu a.active :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+@media (min-width: 1024px) {
+  header .nav-menu a.nav-account-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal, .semantic-parent, .semantic-child),
+  header .nav-menu a.nav-account-cta:is(:hover, .active) :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+}
+
+header .mobile-menu__account :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
 header .mobile-menu a.nav-account-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
+}
+
+/* Burger menu links: tinted hover only (not full gradient slabs) */
+header .mobile-menu__block-link:hover,
+header .mobile-menu__block-link:focus-visible,
+header .mobile-menu__block-link.is-active,
+header .mobile-menu__strip-link:hover,
+header .mobile-menu__strip-link:focus-visible,
+header .mobile-menu__strip-link.is-active,
+header .mobile-menu__feature-title:hover,
+header .mobile-menu__feature-title:focus-visible {
+  background-image: none !important;
+  background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+  color: var(--primary-dark) !important;
+  -webkit-text-fill-color: var(--primary-dark) !important;
+  box-shadow: none !important;
 }
 
 header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high) {
@@ -77,13 +134,30 @@ header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta) :is(.semantic-
   -webkit-text-fill-color: currentColor !important;
 }
 
+/* Gradient nav pills (hover + current page): white labels — not dark ink */
+header .nav-menu a:not(.nav-account-cta):is(:hover, .active),
+header .nav-dropdown-toggle:is(:hover, .active),
+header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+header .nav-menu a:not(.nav-account-cta):is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
+header .nav-dropdown-toggle:is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
+header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
 header .nav-dropdown-toggle::after {
   color: inherit;
 }
 
 header .nav-dropdown:hover > .nav-dropdown-toggle::after,
-header .nav-dropdown.active > .nav-dropdown-toggle::after {
+header .nav-dropdown.active > .nav-dropdown-toggle::after,
+header .nav-dropdown-toggle:is(:hover, .active)::after {
   color: #fff !important;
+  border-color: #fff !important;
 }
 
 /* Dropdown panel: opaque over dark hero (backdrop-filter was picking up hero ink) */
@@ -100,8 +174,8 @@ header .nav-dropdown-menu a {
   -webkit-text-fill-color: currentColor !important;
 }
 
-header .nav-dropdown-menu a:hover,
-header .nav-dropdown-menu a:focus-visible {
+header .nav-dropdown-menu--simple a:hover,
+header .nav-dropdown-menu--simple a:focus-visible {
   background: var(--brand-gradient-chroma) !important;
   background-image: var(--brand-gradient-chroma) !important;
   background-color: #8b5cf6 !important;
@@ -109,22 +183,123 @@ header .nav-dropdown-menu a:focus-visible {
   -webkit-text-fill-color: #fff !important;
 }
 
-/* Hero bottom seam — short, soft blend (keeps constellation visible) */
+header .nav-mega__link:hover,
+header .nav-mega__link:focus-visible,
+header .nav-mega__link.active {
+  background: var(--nav-chrome-hover-gradient) !important;
+  background-image: var(--nav-chrome-hover-gradient) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Hero bottom feather: constellation extends into soft blend (not hard clip) */
 .hero::after {
   content: '';
+  display: block;
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: clamp(0.35rem, 0.85vw, 0.75rem);
+  height: clamp(2.5rem, 7vw, 5.5rem);
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(248, 249, 252, 0.45) 72%,
+    rgba(8, 27, 54, 0.12) 35%,
+    rgba(248, 249, 252, 0.55) 72%,
     var(--surface, #f8f9fa) 100%
   );
-  z-index: 15;
+  z-index: 14;
   pointer-events: none;
+}
+
+.hero {
+  overflow-x: clip;
+  overflow-y: visible !important;
+  padding-bottom: clamp(1.5rem, 3vw, 2.75rem);
+}
+
+.hero-inner {
+  align-items: stretch;
+  min-height: var(--hero-min-height);
+  container-type: inline-size;
+  container-name: hero-layout;
+}
+
+.hero-text-wrapper {
+  align-self: start;
+  position: relative;
+  z-index: 20;
+  isolation: isolate;
+  min-width: 0;
+}
+
+.hero-text-content,
+.hero-cta {
+  position: relative;
+  z-index: 21;
+}
+
+.hero-visual,
+.main-home .hero-visual,
+.main-phi-chassis .hero-visual {
+  /* Clip scaled SVG so it cannot lap the copy column at any zoom */
+  overflow: hidden !important;
+  align-self: stretch !important;
+  justify-self: end !important;
+  width: 100% !important;
+  max-width: min(100%, 38rem) !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 1 !important;
+  padding-inline-start: clamp(0.75rem, 2.5vw, 1.75rem) !important;
+  padding-inline-end: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.hero-visual .sierpinski-satellite {
+  overflow: hidden;
+  inset: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  opacity: var(--hero-satellite-opacity, 0.8);
+  transform: scale(var(--hero-satellite-scale, 0.94));
+  transform-origin: var(--hero-satellite-origin-x, 72%) var(--hero-satellite-origin-y, 100%);
+}
+
+.hero-visual .satellite-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  flex: 1 1 auto;
+}
+
+/* Browser zoom / narrow hero band: pull scale down so the graph never overlaps copy */
+@container hero-layout (max-width: 62rem) {
+  .hero-visual .sierpinski-satellite {
+    transform: scale(var(--hero-satellite-scale-md, 0.73));
+  }
+}
+
+@container hero-layout (max-width: 52rem) {
+  .hero-visual .sierpinski-satellite {
+    transform: scale(var(--hero-satellite-scale-compact, 0.68));
+  }
+}
+
+@container hero-layout (max-width: 44rem) {
+  .hero-visual {
+    max-width: 100% !important;
+    padding-inline-start: 0 !important;
+  }
+
+  .hero-visual .sierpinski-satellite {
+    transform: scale(var(--hero-satellite-scale-tight, 0.76));
+    transform-origin: 50% 100%;
+  }
 }
 
 .main-home .home-sections-shell {
@@ -165,15 +340,21 @@ input[type='submit'].btn-primary {
   color: #fff !important;
   border: none !important;
   -webkit-text-fill-color: #fff !important;
-  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.4) !important;
+}
+
+.cookie-consent .cookie-btn-accept {
+  box-shadow: none !important;
 }
 
 .cookie-btn-accept:hover,
+.cookie-consent .cookie-btn-accept:hover,
+.cookie-consent .cookie-btn-accept:focus-visible,
 .inquiry-form .btn-primary:hover,
 .inquiry-form button[type='submit'].btn-primary:hover {
   background: var(--brand-gradient-chroma-hero) !important;
   background-image: var(--brand-gradient-chroma-hero) !important;
   color: #fff !important;
+  transform: none !important;
 }
 
 /* Inquiry band vs panel — readable contrast site-wide */
@@ -194,9 +375,6 @@ input[type='submit'].btn-primary {
     0 0 0 1px rgba(10, 116, 218, 0.06) !important;
 }
 
-.inquiry-section .inquiry-form::before {
-  opacity: 0.35;
-}
 
 .inquiry-form > h2,
 .inquiry-form > p,
@@ -247,11 +425,31 @@ input[type='submit'].btn-primary {
 .inquiry-form .form-group label {
   display: block;
   margin-bottom: 0.45rem;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--primary-ink);
+}
+
+.section-title,
+.hero-title,
+.inquiry-form-title {
+  text-transform: none;
+}
+
+.inquiry-section .phi-lateral-angular-3,
+.inquiry-section > .phi-lateral-angular-3 {
+  display: none !important;
+}
+
+.inquiry-section .inquiry-form::before,
+.inquiry-form::before,
+#inquiry-section .inquiry-form::before,
+.main-home #inquiry-section .inquiry-form::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
 }
 
 .inquiry-form .form-group input,
