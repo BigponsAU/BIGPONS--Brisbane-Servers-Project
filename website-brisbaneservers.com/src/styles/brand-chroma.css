@@ -211,6 +211,42 @@ header .nav-mega__link.active {
   justify-self: stretch !important;
   height: 100% !important;
   overflow: hidden !important;
+  /*
+   * Blend the constellation into the hero band:
+   * - fade the left edge into the copy column
+   * - feather the bottom into the next section boundary
+   * Still clipped by overflow for a clean hero/section seam.
+   */
+  -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.42) 6%,
+      #000 16%,
+      #000 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 70%,
+      rgba(0, 0, 0, 0.55) 86%,
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.42) 6%,
+      #000 16%,
+      #000 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 70%,
+      rgba(0, 0, 0, 0.55) 86%,
+      transparent 100%
+    );
+  mask-composite: intersect;
 }
 
 .hero-visual .sierpinski-satellite {
