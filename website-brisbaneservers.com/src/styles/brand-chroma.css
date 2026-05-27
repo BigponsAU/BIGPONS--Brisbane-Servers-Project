@@ -222,12 +222,14 @@ header .nav-mega__link.active {
       transparent 0%,
       rgba(0, 0, 0, 0.42) 6%,
       #000 16%,
-      #000 100%
+      #000 86%,
+      rgba(0, 0, 0, 0.5) 95%,
+      transparent 100%
     ),
     linear-gradient(
       180deg,
       #000 0%,
-      #000 70%,
+      #000 68%,
       rgba(0, 0, 0, 0.55) 86%,
       transparent 100%
     );
@@ -237,12 +239,14 @@ header .nav-mega__link.active {
       transparent 0%,
       rgba(0, 0, 0, 0.42) 6%,
       #000 16%,
-      #000 100%
+      #000 86%,
+      rgba(0, 0, 0, 0.5) 95%,
+      transparent 100%
     ),
     linear-gradient(
       180deg,
       #000 0%,
-      #000 70%,
+      #000 68%,
       rgba(0, 0, 0, 0.55) 86%,
       transparent 100%
     );
@@ -251,8 +255,9 @@ header .nav-mega__link.active {
 
 .hero-visual .sierpinski-satellite {
   inset: clamp(0.6rem, 1.4vw, 1.15rem) !important;
-  transform: scale(0.94);
+  transform: scale(0.9);
   transform-origin: 60% 50%;
+  opacity: 0.82;
 }
 
 @media (max-width: 70rem) {
