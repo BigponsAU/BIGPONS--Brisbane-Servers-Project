@@ -1347,10 +1347,9 @@ nav {
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
-    overflow-x: clip;
-    overflow-y: visible;
+    overflow: clip;
     isolation: isolate;
-    z-index: 2;
+    z-index: 1;
     min-height: var(--hero-min-height);
     display: flex;
     flex-direction: column;
@@ -1388,9 +1387,9 @@ nav {
 .hero-inner {
     display: grid;
     grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
-    align-items: stretch;
+    /* Wide desktop: height follows content so the visual sits with the copy, not in a tall empty lane */
+    align-items: start;
     flex: 0 1 auto;
-    min-height: var(--hero-inner-min-height, var(--hero-min-height));
     width: 100%;
     min-height: 0;
     position: relative;
@@ -1410,8 +1409,13 @@ nav {
     /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
-    overflow: visible;
-    align-self: stretch;
+    overflow: hidden;
+    align-self: start;
+    justify-self: end;
+    aspect-ratio: 4 / 3;
+    max-height: min(28rem, 48dvh);
+    max-width: min(100%, 34rem);
+    height: auto;
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
     /*
@@ -1421,10 +1425,10 @@ nav {
     mask-image: none;
 }
 
-/* Inset keeps node halos inside the frame; meet scales SVG to fit without cropping. */
+/* Satellite fills the bounded visual frame (brand-chroma adds scale). */
 .hero-visual .sierpinski-satellite {
     position: absolute;
-    inset: clamp(0.35rem, 1.25vw, 1rem) clamp(0.15rem, 0.5vw, 0.5rem);
+    inset: 0.5rem;
 }
 
 @media (max-width: 768px) {

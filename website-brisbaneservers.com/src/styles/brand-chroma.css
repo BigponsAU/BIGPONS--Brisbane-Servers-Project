@@ -193,17 +193,39 @@ header .nav-mega__link.active {
 }
 
 /*
- * Hero visual frame — override site-framework aspect-ratio cap that crops the SVG.
- * Graph uses meet + inset; column stretches with copy row height.
+ * Hero visual — bounded inside the hero band; following sections paint on top.
  */
+.hero {
+  overflow: clip !important;
+  z-index: 1;
+}
+
 .hero-visual,
 .main-home .hero-visual,
 .main-phi-chassis .hero-visual {
-  aspect-ratio: unset !important;
-  max-height: none !important;
-  align-self: stretch !important;
-  height: 100% !important;
-  overflow: visible !important;
+  aspect-ratio: 4 / 3 !important;
+  max-height: min(28rem, 48dvh) !important;
+  max-width: min(100%, 34rem) !important;
+  align-self: start !important;
+  justify-self: end !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.hero-visual .sierpinski-satellite {
+  inset: 0.5rem !important;
+  transform: scale(0.86);
+  transform-origin: 50% 50%;
+}
+
+@media (max-width: 70rem) {
+  .hero-visual,
+  .main-home .hero-visual,
+  .main-phi-chassis .hero-visual {
+    justify-self: center !important;
+    max-width: min(100%, 40rem) !important;
+    max-height: min(26rem, 42dvh) !important;
+  }
 }
 
 /* Hero bottom seam — short, soft blend (keeps constellation visible) */
@@ -224,10 +246,12 @@ header .nav-mega__link.active {
   pointer-events: none;
 }
 
-.main-home .home-sections-shell {
+.main-home .home-sections-shell,
+.site-main .marketing-page-bands {
   position: relative;
-  z-index: 1;
-  background: var(--surface);
+  z-index: 2;
+  isolation: isolate;
+  background: var(--surface, #f8f9fa);
 }
 
 /* ─── Filters, social, section accents ─── */

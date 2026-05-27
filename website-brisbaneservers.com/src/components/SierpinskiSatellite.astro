@@ -55,7 +55,7 @@
     // Generate nodes in recursive Sierpinski pattern
     const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
     // Keep geometry inside viewBox so meet scaling does not crop pillars at the frame edge
-    const layoutScale = 0.84;
+    const layoutScale = 0.76;
     nodes.forEach((node) => {
       node.x = centerX + (node.x - centerX) * layoutScale;
       node.y = centerY + (node.y - centerY) * layoutScale;
