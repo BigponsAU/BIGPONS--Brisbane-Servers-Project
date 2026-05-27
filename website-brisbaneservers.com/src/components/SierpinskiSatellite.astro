@@ -55,7 +55,7 @@
     // Generate nodes in recursive Sierpinski pattern
     const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4); // 4 levels of recursion
     // Keep geometry inside viewBox so meet scaling does not crop pillars at the frame edge
-    const layoutScale = 0.72;
+    const layoutScale = 0.66;
     nodes.forEach((node) => {
       node.x = centerX + (node.x - centerX) * layoutScale;
       node.y = centerY + (node.y - centerY) * layoutScale;
@@ -132,12 +132,12 @@
       // Connect if within phi-based relationship distance
       const connectionRadius = 150 * Math.pow(phi, -Math.abs(node.level - targetNode.level));
       
-      if (distance < connectionRadius && Math.random() > 0.42) { // lower density for less visual noise
+      if (distance < connectionRadius && Math.random() > 0.52) {
         connections.push(targetNode);
       }
     });
     
-    return connections.slice(0, 4); // Limit to 4 connections per node (phi-based)
+    return connections.slice(0, 3);
   }
   
   /**

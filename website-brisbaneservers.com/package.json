@@ -10,8 +10,14 @@
     "test": "vitest run",
     "prebuild": "npx tsx scripts/pre-build-check.ts",
     "build": "astro build",
-    "build:github-pages": "npx tsx scripts/build-github-pages.ts",
-    "preview:github-pages": "npx tsx scripts/build-github-pages.ts && astro preview --base /BIGPONS--Brisbane-Servers-Project/",
+    "build:hosted": "npx tsx scripts/build-hosted.ts",
+    "preview:hosted": "npx tsx scripts/build-hosted.ts && astro preview",
+    "seed:admin": "npx tsx scripts/seed-admin-user.ts",
+    "verify:production": "npx tsx scripts/verify-production-api.ts",
+    "verify:go-live": "npx tsx scripts/verify-go-live-local.ts",
+    "setup:cloudflare-email": "node scripts/setup-cloudflare-email-routing.mjs",
+    "configure:cloudflare-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-cloudflare-mcp.ps1",
+    "configure:render-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-render-mcp.ps1",
     "build:cpanel": "npm run prebuild && astro build --config astro.config.cpanel.mjs && npm run postbuild",
     "postbuild": "npx tsx scripts/post-build-verify.ts",
     "preview": "astro preview",
@@ -21,18 +27,20 @@
     "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
   },
   "dependencies": {
-    "@astrojs/node": "^9.0.0",
-    "astro": "^5.15.4",
+    "@astrojs/node": "^9.5.5",
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.0",
+    "astro": "^5.18.2",
     "nodemailer": "^8.0.4",
     "pg": "^8.13.1",
     "sql.js": "^1.11.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.10",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.10",
     "glob": "^10.3.10",
     "tsx": "^4.7.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.6.1"
+    "vitest": "^3.2.4"
   }
 }
