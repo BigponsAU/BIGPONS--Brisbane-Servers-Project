@@ -27,7 +27,27 @@ export const POST: APIRoute = async ({ request }) => {
 
     const user = await findUserByEmail(email);
     if (user && !isUserEmailVerified(user)) {
-      const delivery = await sendVerificationEmail(request, { id: user.id, email: user.email });
+      let delivery;
+      try {
+        delivery = await sendVerificationEmail(request, { id: user.id, email: user.email });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Email delivery failed';
+        await logAuthEvent({
+          userId: user.id,
+          email: user.email,
+          eventType: 'auth.resend-verification.failed',
+          eventMeta: { message }
+        });
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: 'VERIFICATION_EMAIL_FAILED',
+            error:
+              'Could not send verification email right now. Please try again shortly or contact support if this persists.'
+          }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
       await logAuthEvent({
         userId: user.id,
         email: user.email,
@@ -49,10 +69,16 @@ export const POST: APIRoute = async ({ request }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch {
-    return new Response(JSON.stringify(GENERIC_SUCCESS), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await logAuthEvent({ eventType: 'auth.resend-verification.error', eventMeta: { message } });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        code: 'INTERNAL_ERROR',
+        error: 'Verification request failed. Please try again.'
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 };

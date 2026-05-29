@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { hashPassword } from '../../../utils/auth';
-import { createUser, deleteUserById, findUserByEmail } from '../../../lib/db/users';
+import { createUser, findUserByEmail } from '../../../lib/db/users';
 import { sendVerificationEmail } from '../../../lib/auth-flows';
 import { authRateLimitResponse } from '../../../lib/auth-rate-limit';
 import { isValidEmail } from '../../../utils/error-handling';
@@ -74,9 +74,24 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       delivery = await sendVerificationEmail(request, { id: stored.id, email: stored.email });
     } catch (error) {
-      await deleteUserById(stored.id);
-      await logAuthEvent({ userId: stored.id, email: stored.email, eventType: 'auth.register.email-delivery-failed' });
-      throw error;
+      const message = error instanceof Error ? error.message : 'Email delivery failed';
+      await logAuthEvent({
+        userId: stored.id,
+        email: stored.email,
+        eventType: 'auth.register.email-delivery-failed',
+        eventMeta: { message }
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: 'VERIFICATION_EMAIL_FAILED',
+          accountCreated: true,
+          message:
+            'Account created, but we could not send the verification email right now. Use "Resend verification email" in the sign-in panel after email delivery is configured.',
+          error: message
+        }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      );
     }
     await logAuthEvent({
       userId: stored.id,

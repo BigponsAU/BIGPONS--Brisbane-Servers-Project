@@ -377,6 +377,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (data.code === 'EMAIL_NOT_VERIFIED') {
           const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
           if (resendEmail) resendEmail.value = email;
+          showAuthBanner(
+            'Account exists but is not verified yet. Use "Resend verification email" below, then verify and sign in again.',
+            true
+          );
         }
         if (data.code === 'USE_OAUTH') {
           const googleBtn = document.getElementById('google-oauth-btn') as HTMLAnchorElement | null;
@@ -413,6 +417,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (response.ok && data.success) {
         form.reset();
         showAuthBanner(maybeAppendPreviewLink(data.message || 'Account created. Check your email to verify your account.', data.previewUrl));
+      } else if (data.code === 'VERIFICATION_EMAIL_FAILED' && data.accountCreated) {
+        form.reset();
+        showAuthBanner(
+          'Account created, but verification email could not be sent yet. Use "Resend verification email" below after email delivery is fixed.',
+          true
+        );
+        const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
+        if (resendEmail) resendEmail.value = email;
       } else {
         if (errorDiv) {
           errorDiv.textContent = data.error || 'Account creation failed';
