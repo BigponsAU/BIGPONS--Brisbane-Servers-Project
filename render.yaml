@@ -21,7 +21,7 @@ services:
     rootDir: website-brisbaneservers.com
     buildCommand: npm ci
     startCommand: npm run start:api
-    healthCheckPath: /api/health
+    healthCheckPath: /api/test
     plan: free
     envVars:
       - key: NODE_ENV

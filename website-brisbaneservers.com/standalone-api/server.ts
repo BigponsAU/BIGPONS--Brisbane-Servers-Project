@@ -86,30 +86,52 @@ async function loadRoutes(): Promise<RouteDefinition[]> {
   const routes = await Promise.all(
     files.map(async (filePath) => {
       const relativeFile = toPosixPath(path.relative(apiPagesDir, filePath));
-      const module = (await import(pathToFileURL(filePath).href)) as RouteModule;
-      const methods = Object.fromEntries(
-        httpMethods
-          .filter((method) => typeof module[method] === 'function')
-          .map((method) => [method, module[method] as ApiHandler])
-      ) as Partial<Record<HttpMethod, ApiHandler>>;
+      try {
+        const module = (await import(pathToFileURL(filePath).href)) as RouteModule;
+        const methods = Object.fromEntries(
+          httpMethods
+            .filter((method) => typeof module[method] === 'function')
+            .map((method) => [method, module[method] as ApiHandler])
+        ) as Partial<Record<HttpMethod, ApiHandler>>;
 
-      const compiled = compileRoute(relativeFile);
-      return {
-        ...compiled,
-        methods,
-        sourceFile: relativeFile,
-      };
+        const compiled = compileRoute(relativeFile);
+        return {
+          ...compiled,
+          methods,
+          sourceFile: relativeFile,
+        };
+      } catch (error) {
+        console.warn(`[Standalone API] Skipped route module ${relativeFile}:`, error);
+        return null;
+      }
     })
   );
 
   return routes
-    .filter((route) => Object.keys(route.methods).length > 0)
+    .filter((route): route is RouteDefinition => route !== null && Object.keys(route.methods).length > 0)
     .sort((a, b) => {
       if (a.dynamicSegmentCount !== b.dynamicSegmentCount) {
         return a.dynamicSegmentCount - b.dynamicSegmentCount;
       }
       return b.routePath.length - a.routePath.length;
     });
+}
+
+function sendLiveness(
+  res: ServerResponse,
+  requestOrigin: string | null,
+  routesReady: boolean
+): void {
+  sendJson(
+    res,
+    200,
+    {
+      status: routesReady ? 'ok' : 'starting',
+      timestamp: new Date().toISOString(),
+      routesReady,
+    },
+    requestOrigin
+  );
 }
 
 function getAllowedOrigins(): string[] {
@@ -247,17 +269,33 @@ void import('../scripts/bootstrap-voice-storage.ts').catch((error) => {
   console.warn('[Standalone API] bootstrap:storage failed:', error);
 });
 
-const routes = await loadRoutes();
+let routes: RouteDefinition[] = [];
+let routesReady = false;
 
 const server = createServer(async (req, res) => {
   const requestOrigin = typeof req.headers.origin === 'string' ? req.headers.origin : null;
   const requestUrl = createRequestUrl(req);
   const url = new URL(requestUrl);
+  const method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
 
   if (req.method === 'OPTIONS' && url.pathname.startsWith(apiPrefix)) {
     res.statusCode = 204;
     applyCorsHeaders(res, requestOrigin);
     res.end();
+    return;
+  }
+
+  if (
+    method === 'GET' &&
+    (url.pathname === '/api/health' || url.pathname === '/api/test') &&
+    !routesReady
+  ) {
+    sendLiveness(res, requestOrigin, false);
+    return;
+  }
+
+  if (!routesReady) {
+    sendJson(res, 503, { success: false, error: 'API routes loading', code: 'STARTING' }, requestOrigin);
     return;
   }
 
@@ -267,7 +305,6 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  const method = (req.method ?? 'GET').toUpperCase() as HttpMethod;
   const handler = matched.route.methods[method];
 
   if (!handler) {
@@ -309,14 +346,21 @@ const listenHost =
   process.env.API_LISTEN_HOST?.trim() ||
   (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 
-server.listen(port, listenHost, async () => {
+server.listen(port, listenHost, () => {
   console.log(`[Standalone API] Listening on http://${listenHost}:${port}`);
-  console.log(`[Standalone API] Mounted ${routes.length} Astro API route modules from ${apiPagesDir}`);
+  console.log(`[Standalone API] Loading route modules from ${apiPagesDir}…`);
 
-  try {
-    const { startLibraryGrowthScheduler } = await import('../src/lib/library-growth/scheduler');
-    startLibraryGrowthScheduler();
-  } catch (error) {
-    console.warn('[Standalone API] Library growth scheduler not started:', error);
-  }
+  void loadRoutes()
+    .then((loaded) => {
+      routes = loaded;
+      routesReady = true;
+      console.log(`[Standalone API] Mounted ${routes.length} Astro API route modules`);
+      return import('../src/lib/library-growth/scheduler');
+    })
+    .then((mod) => {
+      mod.startLibraryGrowthScheduler();
+    })
+    .catch((error) => {
+      console.error('[Standalone API] Route load or scheduler failed:', error);
+    });
 });
