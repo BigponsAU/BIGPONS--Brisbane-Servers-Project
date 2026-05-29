@@ -22,7 +22,12 @@ services:
     buildCommand: npm ci
     startCommand: npm run start:api
     healthCheckPath: /api/health
-    plan: free
+    # Persistent corpus + vectors — requires Starter (free tier disk not supported).
+    plan: starter
+    disk:
+      name: voice-storage
+      mountPath: /opt/render/project/src/voice-framework/storage
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production

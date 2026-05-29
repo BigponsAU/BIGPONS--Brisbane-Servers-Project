@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "bootstrap:storage": "npx tsx scripts/bootstrap-voice-storage.ts",
+    "prestart:api": "npm run bootstrap:storage",
     "start:api": "npx tsx standalone-api/server.ts",
     "typecheck": "astro sync && npx tsc --noEmit --skipLibCheck",
     "test": "vitest run",
@@ -18,6 +20,7 @@
     "setup:cloudflare-email": "node scripts/setup-cloudflare-email-routing.mjs",
     "configure:cloudflare-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-cloudflare-mcp.ps1",
     "configure:render-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-render-mcp.ps1",
+    "configure:render-auth": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-render-auth.ps1",
     "build:cpanel": "npm run prebuild && astro build --config astro.config.cpanel.mjs && npm run postbuild",
     "postbuild": "npx tsx scripts/post-build-verify.ts",
     "preview": "astro preview",
