@@ -1,7 +1,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { readdir } from 'fs/promises';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
+import { tsImport } from 'tsx/esm/api';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS';
 type ApiContext = { request: Request; params: Record<string, string> };
@@ -87,7 +88,7 @@ async function loadRoutes(): Promise<RouteDefinition[]> {
     files.map(async (filePath) => {
       const relativeFile = toPosixPath(path.relative(apiPagesDir, filePath));
       try {
-        const module = (await import(pathToFileURL(filePath).href)) as RouteModule;
+        const module = (await tsImport(filePath, import.meta.url)) as RouteModule;
         const methods = Object.fromEntries(
           httpMethods
             .filter((method) => typeof module[method] === 'function')
