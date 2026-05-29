@@ -283,6 +283,16 @@ export async function updateUserPasswordInDb(userId: string, passwordHash: strin
   persistDb(db);
 }
 
+export async function updateUserRoleInDb(userId: string, role: AuthRole): Promise<void> {
+  const db = await getDb();
+  db.run('UPDATE users SET role = ?, updated_at = ? WHERE id = ?', [
+    role,
+    new Date().toISOString(),
+    userId
+  ]);
+  persistDb(db);
+}
+
 export async function deleteUserInDb(userId: string): Promise<void> {
   const db = await getDb();
   db.run('DELETE FROM users WHERE id = ?', [userId]);

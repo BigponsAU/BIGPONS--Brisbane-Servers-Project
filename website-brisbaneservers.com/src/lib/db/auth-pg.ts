@@ -34,17 +34,31 @@ function readJsonArray<T>(filePath: string): T[] {
   }
 }
 
+function getPoolSsl(connectionString: string): false | { rejectUnauthorized: boolean } {
+  const lower = connectionString.toLowerCase();
+  if (lower.includes('sslmode=disable') || lower.includes('ssl=false')) {
+    return false;
+  }
+  // Render private network hostname (no public suffix) — no TLS to the DB process.
+  if (/@dpg-[a-z0-9]+(?::\d+)?\//i.test(connectionString) && !lower.includes('.render.com')) {
+    return false;
+  }
+  return { rejectUnauthorized: false };
+}
+
 function getPool(): Pool {
   if (!pool) {
     const connectionString = getRuntimeEnv('DATABASE_URL');
     if (!connectionString) {
       throw new Error('DATABASE_URL is required for Postgres auth backend');
     }
+    const ssl = getPoolSsl(connectionString);
     pool = new Pool({
       connectionString,
       max: 10,
       idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 10_000
+      connectionTimeoutMillis: 10_000,
+      ...(ssl === false ? {} : { ssl })
     });
   }
   return pool;
@@ -293,6 +307,16 @@ export async function updateUserPasswordInDb(userId: string, passwordHash: strin
   await ensureSchema(pool);
   await pool.query(`UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3`, [
     passwordHash,
+    new Date().toISOString(),
+    userId
+  ]);
+}
+
+export async function updateUserRoleInDb(userId: string, role: AuthRole): Promise<void> {
+  const pool = await getPool();
+  await ensureSchema(pool);
+  await pool.query(`UPDATE users SET role = $1, updated_at = $2 WHERE id = $3`, [
+    role,
     new Date().toISOString(),
     userId
   ]);

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { siteMailboxes } from './site-mailboxes';
 import { getRuntimeEnv, isDevelopmentMode } from '../utils/runtime-env';
 
 interface AuthEmailPayload {
@@ -9,7 +10,7 @@ interface AuthEmailPayload {
 }
 
 export interface AuthEmailResult {
-  deliveryMode: 'smtp' | 'log';
+  deliveryMode: 'resend' | 'smtp' | 'log';
   previewUrl?: string;
 }
 
@@ -35,15 +36,65 @@ function getSmtpConfig() {
   };
 }
 
+function getResendApiKey(): string | null {
+  const key = getRuntimeEnv('RESEND_API_KEY')?.trim();
+  return key || null;
+}
+
 export function isAuthEmailConfigured(): boolean {
-  return Boolean(getSmtpConfig());
+  return Boolean(getSmtpConfig() || getResendApiKey());
+}
+
+function getFromAddress(): string {
+  const defaultFrom = `Brisbane Servers <${siteMailboxes.support}>`;
+  return String(getRuntimeEnv('AUTH_EMAIL_FROM', defaultFrom) ?? defaultFrom);
+}
+
+function getReplyToAddress(): string {
+  return String(getRuntimeEnv('AUTH_EMAIL_REPLY_TO', siteMailboxes.connect) ?? siteMailboxes.connect);
+}
+
+async function sendViaResend(payload: AuthEmailPayload): Promise<void> {
+  const apiKey = getResendApiKey();
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not set');
+  }
+
+  const from = getFromAddress();
+  const replyTo = getReplyToAddress();
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from,
+      to: [payload.to],
+      reply_to: replyTo,
+      subject: payload.subject,
+      text: payload.text,
+      html: payload.html
+    })
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`Resend API error (${response.status}): ${body || response.statusText}`);
+  }
 }
 
 export async function sendAuthEmail(payload: AuthEmailPayload): Promise<AuthEmailResult> {
-  const config = getSmtpConfig();
-  const from = getRuntimeEnv('AUTH_EMAIL_FROM', 'Brisbane Servers <support@brisbaneservers.com>');
-  const replyTo = getRuntimeEnv('AUTH_EMAIL_REPLY_TO', from);
+  const replyTo = getReplyToAddress();
+  const from = getFromAddress();
 
+  if (getResendApiKey()) {
+    await sendViaResend(payload);
+    return { deliveryMode: 'resend' };
+  }
+
+  const config = getSmtpConfig();
   if (!config) {
     if (!isDevelopmentMode()) {
       throw new Error('AUTH_EMAIL_NOT_CONFIGURED');

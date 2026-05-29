@@ -2,7 +2,7 @@
  * Auth persistence router: Postgres when DATABASE_URL is set, else SQLite (sql.js).
  */
 
-import type { AuthUser } from '../../utils/auth';
+import type { AuthRole, AuthUser } from '../../utils/auth';
 import { getRuntimeEnv } from '../../utils/runtime-env';
 import type { StoredAuthToken } from './auth-types';
 import type { StoredUser } from './users';
@@ -41,6 +41,11 @@ export async function updateUserVerificationInDb(userId: string, emailVerifiedAt
 export async function updateUserPasswordInDb(userId: string, passwordHash: string) {
   if (usePostgres()) return (await import('./auth-pg')).updateUserPasswordInDb(userId, passwordHash);
   return (await import('./auth-sqlite')).updateUserPasswordInDb(userId, passwordHash);
+}
+
+export async function updateUserRoleInDb(userId: string, role: AuthRole) {
+  if (usePostgres()) return (await import('./auth-pg')).updateUserRoleInDb(userId, role);
+  return (await import('./auth-sqlite')).updateUserRoleInDb(userId, role);
 }
 
 export async function deleteUserInDb(userId: string) {

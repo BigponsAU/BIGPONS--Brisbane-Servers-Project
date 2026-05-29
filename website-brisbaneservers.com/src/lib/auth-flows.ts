@@ -14,10 +14,6 @@ function buildAccountUrl(request: Request, pathAndQuery: string): string {
   }
 
   const currentUrl = new URL(request.url);
-  if (currentUrl.hostname === 'localhost' && currentUrl.port === '3002') {
-    currentUrl.port = '3000';
-  }
-
   const targetUrl = new URL(pathAndQuery, currentUrl.origin);
   currentUrl.pathname = targetUrl.pathname;
   currentUrl.search = targetUrl.search;
@@ -71,5 +67,52 @@ export async function sendPasswordResetEmail(request: Request, user: { id: strin
       'Reset password',
       resetUrl
     )
+  });
+}
+
+export async function sendAdminCredentialsEmail(
+  request: Request | undefined,
+  params: { email: string; password: string; role: string }
+): Promise<AuthEmailResult> {
+  const accountUrl = request
+    ? buildAccountUrl(request, '/account')
+    : (() => {
+        const configuredSiteUrl = getRuntimeEnv('PUBLIC_SITE_URL');
+        const configuredSiteBase = normalizePathPrefix(getRuntimeEnv('PUBLIC_SITE_BASE', '/') ?? '/');
+        if (!configuredSiteUrl) {
+          throw new Error('PUBLIC_SITE_URL is required to build account links without a request');
+        }
+        return new URL(`${configuredSiteBase === '/' ? '' : configuredSiteBase}/account`, configuredSiteUrl).toString();
+      })();
+
+  const bodyText = [
+    'Your Brisbane Servers super-admin account is ready.',
+    '',
+    `Sign-in URL: ${accountUrl}`,
+    `Email: ${params.email}`,
+    `Temporary password: ${params.password}`,
+    '',
+    'After signing in, register a passkey under Account settings and change this password.',
+    'Do not share this email.'
+  ].join('\n');
+
+  return sendAuthEmail({
+    to: params.email,
+    subject: 'Your Brisbane Servers admin account',
+    text: bodyText,
+    html: `
+      <div style="font-family: Inter, Arial, sans-serif; line-height: 1.6; color: #10213b; max-width: 640px; margin: 0 auto;">
+        <h1 style="font-size: 24px; margin-bottom: 16px;">Admin account ready</h1>
+        <p>Your <strong>${params.role}</strong> account for the Brisbane Servers account workspace is configured.</p>
+        <p style="margin: 16px 0;">
+          <a href="${accountUrl}" style="display: inline-block; background: #0A74DA; color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-weight: 600;">
+            Open account workspace
+          </a>
+        </p>
+        <p><strong>Email:</strong> ${params.email}</p>
+        <p><strong>Temporary password:</strong> <code style="background:#f4f6f8;padding:2px 6px;border-radius:4px;">${params.password}</code></p>
+        <p style="font-size: 14px; color: #556274;">Register a passkey after sign-in and change this password. Do not forward this message.</p>
+      </div>
+    `
   });
 }
