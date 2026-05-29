@@ -88,7 +88,12 @@ async function main(): Promise<void> {
   console.log(`[bootstrap-storage] filesystem mode storage=${storageDir} copied=${copied}`);
 }
 
+const isCli = process.argv[1]?.includes('bootstrap-voice-storage');
+
 main().catch((error) => {
   console.error('[bootstrap-storage] failed:', error);
-  process.exit(1);
+  // When imported from standalone-api/server.ts, never exit the process.
+  if (isCli) {
+    process.exit(1);
+  }
 });

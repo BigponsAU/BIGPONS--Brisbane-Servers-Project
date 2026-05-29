@@ -362,5 +362,6 @@ server.listen(port, listenHost, () => {
     })
     .catch((error) => {
       console.error('[Standalone API] Route load or scheduler failed:', error);
+      routesReady = routes.length > 0;
     });
 });
