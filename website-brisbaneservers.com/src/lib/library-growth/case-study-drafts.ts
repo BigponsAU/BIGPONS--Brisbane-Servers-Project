@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs';
 import * as path from 'path';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { CaseStudy } from '../../data/case-studies';
 import type { GrowthProposal } from './types';
@@ -48,36 +48,27 @@ export function buildCaseStudyDraftFromGrowth(
     results: [
       {
         title: 'Voice-aligned delivery',
-        description: 'Draft case study material generated with the site default voice (not a new per-case-study profile).',
+        description:
+          'Draft case study material generated with the site default voice (not a new per-case-study profile).',
         icon: 'fas fa-chart-line',
       },
     ],
     technologies: 'Voice framework resource pipeline, semantic index, Cloudflare Pages static publish.',
-    lessons: 'Review and refine this draft in src/data/case-studies.ts before treating it as a flagship case study.',
+    lessons:
+      'Review and refine this draft in src/data/case-studies.ts before treating it as a flagship case study.',
     inquiryTitle: 'Discuss a similar initiative',
     inquirySubtitle: 'Share your industry context and objectives. We respond with practical next steps.',
     inquiryIndustry: industry,
   };
 }
 
-async function ensureDraftsFile(): Promise<void> {
-  const file = draftsFilePath();
-  try {
-    await fs.access(file);
-  } catch {
-    await fs.mkdir(path.dirname(file), { recursive: true });
-    await fs.writeFile(file, JSON.stringify([], null, 2));
-  }
-}
-
 export async function loadCaseStudyDrafts(): Promise<CaseStudy[]> {
-  await ensureDraftsFile();
-  try {
-    const raw = JSON.parse(await fs.readFile(draftsFilePath(), 'utf-8'));
-    return Array.isArray(raw) ? (raw as CaseStudy[]) : [];
-  } catch {
-    return [];
-  }
+  const raw = await readCorpusJson<CaseStudy[]>(
+    CORPUS_DOC_KEYS.CASE_STUDY_DRAFTS,
+    draftsFilePath(),
+    []
+  );
+  return Array.isArray(raw) ? raw : [];
 }
 
 export async function appendCaseStudyDraft(draft: CaseStudy): Promise<void> {
@@ -86,5 +77,5 @@ export async function appendCaseStudyDraft(draft: CaseStudy): Promise<void> {
     return;
   }
   existing.push(draft);
-  await fs.writeFile(draftsFilePath(), JSON.stringify(existing, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.CASE_STUDY_DRAFTS, draftsFilePath(), existing);
 }

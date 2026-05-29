@@ -48,6 +48,8 @@ async function loadProfiles(): Promise<ProfilesData | null> {
 
 async function saveProfiles(data: ProfilesData): Promise<void> {
   await fs.writeFile(PROFILES_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../../../lib/corpus-store');
+  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, PROFILES_FILE);
 }
 
 /**

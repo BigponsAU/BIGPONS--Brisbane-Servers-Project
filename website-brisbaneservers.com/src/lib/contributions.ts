@@ -1,17 +1,8 @@
-import { promises as fs } from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { voiceFrameworkStorageDir } from './monorepo-root';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const projectRoot = path.resolve(__dirname, '../../../../');
-export const CONTRIBUTIONS_FILE = path.join(
-  projectRoot,
-  'voice-framework',
-  'storage',
-  'contributions.json'
-);
+export const CONTRIBUTIONS_FILE = path.join(voiceFrameworkStorageDir(), 'contributions.json');
 
 export type ContributionType = 'new_upload' | 'edit_suggestion';
 export type ContributionStatus = 'pending' | 'accepted' | 'rejected';
@@ -37,28 +28,17 @@ export interface Contribution {
   updatedAt: string;
 }
 
-async function ensureContributionsFile(): Promise<void> {
-  try {
-    await fs.access(CONTRIBUTIONS_FILE);
-  } catch {
-    await fs.mkdir(path.dirname(CONTRIBUTIONS_FILE), { recursive: true });
-    await fs.writeFile(CONTRIBUTIONS_FILE, JSON.stringify([], null, 2));
-  }
-}
-
 export async function loadContributions(): Promise<Contribution[]> {
-  await ensureContributionsFile();
-  const data = await fs.readFile(CONTRIBUTIONS_FILE, 'utf-8');
-  try {
-    const items = JSON.parse(data);
-    return Array.isArray(items) ? items : [];
-  } catch {
-    return [];
-  }
+  const items = await readCorpusJson<Contribution[]>(
+    CORPUS_DOC_KEYS.CONTRIBUTIONS,
+    CONTRIBUTIONS_FILE,
+    []
+  );
+  return Array.isArray(items) ? items : [];
 }
 
 export async function saveContributions(contributions: Contribution[]): Promise<void> {
-  await fs.writeFile(CONTRIBUTIONS_FILE, JSON.stringify(contributions, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.CONTRIBUTIONS, CONTRIBUTIONS_FILE, contributions);
 }
 
 export async function createContribution(

@@ -6,12 +6,14 @@ How the **corpus**, **semantic index**, and **library growth** work on the hybri
 
 ---
 
-## Two persistence layers
+## Two persistence layers (one DATABASE_URL)
 
 | Layer | Technology | What it stores | Survives API redeploy? |
 |-------|------------|----------------|-------------------------|
-| **Auth** | Render Postgres (`DATABASE_URL`) | Users, sessions, passkeys, audit | **Yes** |
-| **Corpus + vectors** | JSON files under `voice-framework/storage/` | Resources, embeddings index, profiles, growth queue | **Only with persistent disk** |
+| **Auth** | Postgres `DATABASE_URL` (**Neon recommended**) | Users, sessions, passkeys | **Yes** |
+| **Corpus + vectors** | Same DB → `corpus_documents` JSONB | Resources, embeddings, growth, profiles | **Yes** |
+
+**Do not use Render free Postgres for long-term** — it expires after 30 days. Use **[Neon](NEON_DATABASE.md)** (free tier, no expiry) and set `DATABASE_URL` on the API to the Neon connection string.
 
 `MONOREPO_ROOT` on Render is `/opt/render/project/src` (repo root). All corpus paths resolve to:
 
@@ -88,22 +90,15 @@ flowchart TB
 
 ---
 
-## Render: ephemeral vs persistent
+## Render API + Neon (recommended $0 durable)
 
-| Plan | Corpus on redeploy |
-|------|-------------------|
-| **Free** | **Lost** unless re-seeded from git bootstrap (runtime changes gone) |
-| **Starter + disk** | **Survives** — mount `voice-storage` → `voice-framework/storage` |
+| Setup | Corpus on redeploy |
+|-------|-------------------|
+| **Free API + Neon `DATABASE_URL`** | **Survives** in Postgres |
+| **Free API + Render free Postgres** | Auth expires in **30 days** — avoid |
+| **Free API + no DATABASE_URL** | **Lost** — filesystem only, git seed on bootstrap |
 
-### Enable persistent disk (recommended)
-
-1. Render Dashboard → **brisbane-servers-api** → upgrade to **Starter** (disks require paid web service).
-2. **Disks** → Add disk → mount path: `/opt/render/project/src/voice-framework/storage` (1 GB).
-3. Redeploy. Run `npm run bootstrap:storage` once if empty (or let `prestart:api` do it).
-4. In `/account`, sync default profile, run a test growth cycle, approve one proposal.
-5. Redeploy again — corpus and vectors should still be present.
-
-`render.yaml` documents the disk block; apply via Blueprint or mirror in the dashboard.
+See **[NEON_DATABASE.md](NEON_DATABASE.md)** for setup steps.
 
 ---
 
@@ -111,7 +106,7 @@ flowchart TB
 
 | # | Task | Owner |
 |---|------|--------|
-| 1 | **Starter + disk** on `brisbane-servers-api` | Render dashboard |
+| 1 | **Neon `DATABASE_URL`** on API (replace Render 30-day DB) | [NEON_DATABASE.md](NEON_DATABASE.md) |
 | 2 | Deploy latest `main` (library growth APIs + bootstrap) | Git push / auto-deploy |
 | 3 | `OPENAI_API_KEY` on API (optional, better vectors) | Render env |
 | 4 | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | Cloudflare Pages → Deploy hooks |

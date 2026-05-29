@@ -1,5 +1,6 @@
 import type { ResourceRepository } from './resource-repository';
 import { JsonResourceRepository } from './json-resource-repository';
+import { usePostgres } from '../db/pg-pool';
 
 let repo: ResourceRepository | null = null;
 let initPromise: Promise<ResourceRepository> | null = null;
@@ -25,6 +26,10 @@ export async function getResourceRepository(): Promise<ResourceRepository> {
   }
   if (!initPromise) {
     initPromise = (async () => {
+      if (usePostgres()) {
+        const { PgResourceRepository } = await import('./pg-resource-repository');
+        return new PgResourceRepository();
+      }
       const mode = getStorageMode();
       if (mode === 'sqlite') {
         const { SqliteResourceRepository } = await import('./sqlite-resource-repository');

@@ -3,15 +3,13 @@
  */
 
 import type { AuthRole, AuthUser } from '../../utils/auth';
-import { getRuntimeEnv } from '../../utils/runtime-env';
+import { usePostgres } from './pg-pool';
 import type { StoredAuthToken } from './auth-types';
 import type { StoredUser } from './users';
 
 export type { AuthAuditEventRecord } from './auth-sqlite';
 
-function usePostgres(): boolean {
-  return Boolean(getRuntimeEnv('DATABASE_URL'));
-}
+export { usePostgres };
 
 export async function listUsersFromDb() {
   if (usePostgres()) return (await import('./auth-pg')).listUsersFromDb();

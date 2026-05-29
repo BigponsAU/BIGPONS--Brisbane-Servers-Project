@@ -1,10 +1,9 @@
 /**
- * Unified semantic chunk + vector index (JSON file on disk for Node SSR).
- * Production: replace with D1 + Vectorize or external vector DB.
+ * Unified semantic chunk + vector index.
+ * Postgres (Neon) when DATABASE_URL is set; else JSON file on disk.
  */
 
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
 import { SEMANTIC_INDEX_FILE } from '../storage-paths';
 import type { Resource } from '../resource-types';
 import { createEmbeddingClient } from './embedding-client';
@@ -30,33 +29,22 @@ const INDEX_VERSION = 1;
 
 let writeChain: Promise<void> = Promise.resolve();
 
-async function ensureFile(): Promise<void> {
-  try {
-    await fs.access(SEMANTIC_INDEX_FILE);
-  } catch {
-    await fs.mkdir(path.dirname(SEMANTIC_INDEX_FILE), { recursive: true });
-    const empty: SemanticIndexFile = { version: INDEX_VERSION, chunks: [] };
-    await fs.writeFile(SEMANTIC_INDEX_FILE, JSON.stringify(empty, null, 2));
-  }
-}
+const emptyIndex = (): SemanticIndexFile => ({ version: INDEX_VERSION, chunks: [] });
 
 export async function loadIndex(): Promise<SemanticIndexFile> {
-  await ensureFile();
-  const raw = await fs.readFile(SEMANTIC_INDEX_FILE, 'utf-8');
-  try {
-    const data = JSON.parse(raw) as SemanticIndexFile;
-    if (!data.chunks || !Array.isArray(data.chunks)) {
-      return { version: INDEX_VERSION, chunks: [] };
-    }
-    return data;
-  } catch {
-    return { version: INDEX_VERSION, chunks: [] };
+  const data = await readCorpusJson<SemanticIndexFile>(
+    CORPUS_DOC_KEYS.SEMANTIC_INDEX,
+    SEMANTIC_INDEX_FILE,
+    emptyIndex()
+  );
+  if (!data.chunks || !Array.isArray(data.chunks)) {
+    return emptyIndex();
   }
+  return data;
 }
 
 async function saveIndex(data: SemanticIndexFile): Promise<void> {
-  await fs.mkdir(path.dirname(SEMANTIC_INDEX_FILE), { recursive: true });
-  await fs.writeFile(SEMANTIC_INDEX_FILE, JSON.stringify(data, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.SEMANTIC_INDEX, SEMANTIC_INDEX_FILE, data);
 }
 
 function cosine(a: number[], b: number[]): number {

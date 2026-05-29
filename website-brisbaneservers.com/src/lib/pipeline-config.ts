@@ -1,12 +1,8 @@
-import { promises as fs } from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { voiceFrameworkStorageDir } from './monorepo-root';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const projectRoot = path.resolve(__dirname, '../../../../');
-const CONFIG_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'pipeline-config.json');
+const CONFIG_FILE = path.join(voiceFrameworkStorageDir(), 'pipeline-config.json');
 
 export interface PipelineConfig {
   autoPublishThreshold: number;
@@ -15,40 +11,27 @@ export interface PipelineConfig {
 
 const defaultConfig: PipelineConfig = {
   autoPublishThreshold: 0.8,
-  tokenMultiplier: 10
+  tokenMultiplier: 10,
 };
 
-async function ensureConfigFile(): Promise<void> {
-  try {
-    await fs.access(CONFIG_FILE);
-  } catch {
-    await fs.mkdir(path.dirname(CONFIG_FILE), { recursive: true });
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
-  }
-}
-
 export async function loadPipelineConfig(): Promise<PipelineConfig> {
-  await ensureConfigFile();
-  try {
-    const data = await fs.readFile(CONFIG_FILE, 'utf-8');
-    const parsed = JSON.parse(data);
-    return {
-      autoPublishThreshold:
-        typeof parsed.autoPublishThreshold === 'number'
-          ? parsed.autoPublishThreshold
-          : defaultConfig.autoPublishThreshold,
-      tokenMultiplier:
-        typeof parsed.tokenMultiplier === 'number'
-          ? parsed.tokenMultiplier
-          : defaultConfig.tokenMultiplier
-    };
-  } catch {
-    return defaultConfig;
-  }
+  const parsed = await readCorpusJson<Partial<PipelineConfig>>(
+    CORPUS_DOC_KEYS.PIPELINE_CONFIG,
+    CONFIG_FILE,
+    defaultConfig
+  );
+  return {
+    autoPublishThreshold:
+      typeof parsed.autoPublishThreshold === 'number'
+        ? parsed.autoPublishThreshold
+        : defaultConfig.autoPublishThreshold,
+    tokenMultiplier:
+      typeof parsed.tokenMultiplier === 'number'
+        ? parsed.tokenMultiplier
+        : defaultConfig.tokenMultiplier,
+  };
 }
 
 export async function savePipelineConfig(config: PipelineConfig): Promise<void> {
-  await ensureConfigFile();
-  await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.PIPELINE_CONFIG, CONFIG_FILE, config);
 }
-

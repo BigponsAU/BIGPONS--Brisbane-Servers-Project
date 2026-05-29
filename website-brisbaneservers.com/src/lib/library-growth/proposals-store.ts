@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs';
 import * as path from 'path';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { GrowthProposal, GrowthProposalStatus } from './types';
 
@@ -7,28 +7,17 @@ function proposalsFilePath(): string {
   return path.join(voiceFrameworkStorageDir(), 'growth-proposals.json');
 }
 
-async function ensureFile(): Promise<void> {
-  const file = proposalsFilePath();
-  try {
-    await fs.access(file);
-  } catch {
-    await fs.mkdir(path.dirname(file), { recursive: true });
-    await fs.writeFile(file, JSON.stringify([], null, 2));
-  }
-}
-
 export async function loadGrowthProposals(): Promise<GrowthProposal[]> {
-  await ensureFile();
-  try {
-    const items = JSON.parse(await fs.readFile(proposalsFilePath(), 'utf-8'));
-    return Array.isArray(items) ? items : [];
-  } catch {
-    return [];
-  }
+  const items = await readCorpusJson<GrowthProposal[]>(
+    CORPUS_DOC_KEYS.GROWTH_PROPOSALS,
+    proposalsFilePath(),
+    []
+  );
+  return Array.isArray(items) ? items : [];
 }
 
 export async function saveGrowthProposals(proposals: GrowthProposal[]): Promise<void> {
-  await fs.writeFile(proposalsFilePath(), JSON.stringify(proposals, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.GROWTH_PROPOSALS, proposalsFilePath(), proposals);
 }
 
 export async function upsertGrowthProposal(proposal: GrowthProposal): Promise<void> {

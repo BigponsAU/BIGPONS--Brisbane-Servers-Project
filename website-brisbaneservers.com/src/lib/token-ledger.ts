@@ -1,18 +1,8 @@
-import { promises as fs } from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { voiceFrameworkStorageDir } from './monorepo-root';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Store ledger alongside resources in voice-framework/storage for now
-const projectRoot = path.resolve(__dirname, '../../../../');
-export const TOKEN_LEDGER_FILE = path.join(
-  projectRoot,
-  'voice-framework',
-  'storage',
-  'token-ledger.json'
-);
+export const TOKEN_LEDGER_FILE = path.join(voiceFrameworkStorageDir(), 'token-ledger.json');
 
 export type TokenReason =
   | 'initial_contribution'
@@ -30,28 +20,17 @@ export interface TokenLedgerEntry {
   createdAt: string;
 }
 
-async function ensureLedgerFile(): Promise<void> {
-  try {
-    await fs.access(TOKEN_LEDGER_FILE);
-  } catch {
-    await fs.mkdir(path.dirname(TOKEN_LEDGER_FILE), { recursive: true });
-    await fs.writeFile(TOKEN_LEDGER_FILE, JSON.stringify([], null, 2));
-  }
-}
-
 export async function loadLedger(): Promise<TokenLedgerEntry[]> {
-  await ensureLedgerFile();
-  const data = await fs.readFile(TOKEN_LEDGER_FILE, 'utf-8');
-  try {
-    const entries = JSON.parse(data);
-    return Array.isArray(entries) ? entries : [];
-  } catch {
-    return [];
-  }
+  const entries = await readCorpusJson<TokenLedgerEntry[]>(
+    CORPUS_DOC_KEYS.TOKEN_LEDGER,
+    TOKEN_LEDGER_FILE,
+    []
+  );
+  return Array.isArray(entries) ? entries : [];
 }
 
 export async function saveLedger(entries: TokenLedgerEntry[]): Promise<void> {
-  await fs.writeFile(TOKEN_LEDGER_FILE, JSON.stringify(entries, null, 2));
+  await saveCorpusJson(CORPUS_DOC_KEYS.TOKEN_LEDGER, TOKEN_LEDGER_FILE, entries);
 }
 
 export async function addLedgerEntry(

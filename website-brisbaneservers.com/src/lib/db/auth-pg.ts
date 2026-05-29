@@ -5,10 +5,11 @@
 
 import { existsSync, readFileSync } from 'fs';
 import * as path from 'path';
-import { Pool } from 'pg';
+import type { Pool } from 'pg';
 import { fileURLToPath } from 'url';
 import type { AuthRole, AuthUser } from '../../utils/auth';
 import { getRuntimeEnv } from '../../utils/runtime-env';
+import { getSharedPool } from './pg-pool';
 import type { StoredAuthToken } from './auth-types';
 import type { StoredSession } from './sessions';
 import type { StoredUser } from './users';
@@ -20,7 +21,6 @@ const USERS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'us
 const SESSIONS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'sessions.json');
 const AUTH_TOKENS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'auth-tokens.json');
 
-let pool: Pool | null = null;
 let schemaReady: Promise<void> | null = null;
 
 function readJsonArray<T>(filePath: string): T[] {
@@ -34,34 +34,8 @@ function readJsonArray<T>(filePath: string): T[] {
   }
 }
 
-function getPoolSsl(connectionString: string): false | { rejectUnauthorized: boolean } {
-  const lower = connectionString.toLowerCase();
-  if (lower.includes('sslmode=disable') || lower.includes('ssl=false')) {
-    return false;
-  }
-  // Render private network hostname (no public suffix) — no TLS to the DB process.
-  if (/@dpg-[a-z0-9]+(?::\d+)?\//i.test(connectionString) && !lower.includes('.render.com')) {
-    return false;
-  }
-  return { rejectUnauthorized: false };
-}
-
 function getPool(): Pool {
-  if (!pool) {
-    const connectionString = getRuntimeEnv('DATABASE_URL');
-    if (!connectionString) {
-      throw new Error('DATABASE_URL is required for Postgres auth backend');
-    }
-    const ssl = getPoolSsl(connectionString);
-    pool = new Pool({
-      connectionString,
-      max: 10,
-      idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 10_000,
-      ...(ssl === false ? {} : { ssl })
-    });
-  }
-  return pool;
+  return getSharedPool();
 }
 
 async function ensureSchema(pool: Pool): Promise<void> {
