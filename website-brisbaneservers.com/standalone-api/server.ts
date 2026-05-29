@@ -27,7 +27,7 @@ interface RouteDefinition {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const apiPagesDir = path.resolve(__dirname, '../src/pages/api');
+const apiPagesDir = path.resolve(__dirname, '../api');
 const port = Number(process.env.PORT ?? 3002);
 const apiPrefix = '/api';
 const httpMethods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
@@ -129,6 +129,23 @@ function getAllowedOrigins(): string[] {
   return [...new Set([...configured, ...defaults])];
 }
 
+function isCloudflarePagesOrigin(origin: string): boolean {
+  const enabled =
+    process.env.ALLOW_CLOUDFLARE_PAGES === '1' || process.env.ALLOW_CLOUDFLARE_PAGES === 'true';
+  if (!enabled) {
+    return false;
+  }
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== 'https:') {
+      return false;
+    }
+    return url.hostname.endsWith('.pages.dev');
+  } catch {
+    return false;
+  }
+}
+
 function resolveCorsOrigin(requestOrigin: string | null): string | null {
   const allowedOrigins = getAllowedOrigins();
 
@@ -140,7 +157,11 @@ function resolveCorsOrigin(requestOrigin: string | null): string | null {
     return '*';
   }
 
-  return allowedOrigins.includes(requestOrigin) ? requestOrigin : null;
+  if (allowedOrigins.includes(requestOrigin) || isCloudflarePagesOrigin(requestOrigin)) {
+    return requestOrigin;
+  }
+
+  return null;
 }
 
 function applyCorsHeaders(response: ServerResponse, requestOrigin: string | null): void {
@@ -221,6 +242,11 @@ function sendJson(nodeResponse: ServerResponse, statusCode: number, payload: unk
   nodeResponse.end(JSON.stringify(payload));
 }
 
+// Non-blocking corpus bootstrap (Neon seed + file mirror). Avoid prestart hook — Render health checks need a fast listen.
+void import('../scripts/bootstrap-voice-storage.ts').catch((error) => {
+  console.warn('[Standalone API] bootstrap:storage failed:', error);
+});
+
 const routes = await loadRoutes();
 
 const server = createServer(async (req, res) => {
@@ -279,7 +305,18 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`[Standalone API] Listening on http://localhost:${port}`);
+const listenHost =
+  process.env.API_LISTEN_HOST?.trim() ||
+  (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
+
+server.listen(port, listenHost, async () => {
+  console.log(`[Standalone API] Listening on http://${listenHost}:${port}`);
   console.log(`[Standalone API] Mounted ${routes.length} Astro API route modules from ${apiPagesDir}`);
+
+  try {
+    const { startLibraryGrowthScheduler } = await import('../src/lib/library-growth/scheduler');
+    startLibraryGrowthScheduler();
+  } catch (error) {
+    console.warn('[Standalone API] Library growth scheduler not started:', error);
+  }
 });

@@ -7,7 +7,6 @@
     "start": "astro dev",
     "bootstrap:storage": "npx tsx scripts/bootstrap-voice-storage.ts",
     "migrate:corpus": "npx tsx scripts/migrate-corpus-to-postgres.ts",
-    "prestart:api": "npm run bootstrap:storage",
     "start:api": "npx tsx standalone-api/server.ts",
     "typecheck": "astro sync && npx tsc --noEmit --skipLibCheck",
     "test": "vitest run",
