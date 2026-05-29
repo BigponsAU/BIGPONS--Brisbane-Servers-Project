@@ -1,60 +1,58 @@
 {
+  "version": "1.0.0",
   "profiles": [
     {
-      "metadata": {
-        "name": "BIGPONS (Brisbane Servers)",
-        "description": "Default Brisbane Servers voice profile compiled from current starter and published resources.",
-        "version": "1.0.0",
-        "tags": [
-          "bigpons-default",
-          "brisbane-servers",
-          "bifpons-site-corpus"
-        ],
-        "isDefault": true,
-        "corpusResourceIds": [
-          "professional-services-client-management-systems-1769301663783",
-          "professional-services-document-automation-1769301663783",
-          "professional-services-billing-time-tracking-1769301663783",
-          "professional-services-practice-management-1769301663783",
-          "retail-inventory-pos-1769301663783",
-          "retail-e-commerce-1769301663783",
-          "retail-customer-systems-1769301663783",
-          "healthcare-patient-management-1769301663783",
-          "healthcare-compliance-1769301663783",
-          "healthcare-appointments-1769301663783",
-          "hospitality-booking-1769301663783",
-          "hospitality-pos-integration-1769301663783",
-          "hospitality-automation-1769301663783",
-          "construction-overview-1769301663783",
-          "finance-overview-1769301663783",
-          "manufacturing-overview-1769301663783"
-        ],
-        "corpusResourceCount": 16,
-        "corpusIndexedCount": 16,
-        "corpusLastBuiltAt": "2026-04-26T05:24:28.767Z",
-        "id": "profile_1777170477821_6894gji22",
-        "createdAt": "2026-04-26T02:27:57.821Z",
-        "updatedAt": "2026-04-26T05:24:28.767Z"
-      },
       "profile": {
-        "voiceName": "BIGPONS (Brisbane Servers)",
         "version": "1.0.0",
+        "voiceName": "BIGPONS (Brisbane Servers)",
         "sourceDocument": "generated",
         "characteristics": {
           "tone": {
             "formality": "professional",
+            "precision": "very_high",
             "technicality": "moderate",
             "accessibility": "moderate",
-            "precision": "very_high",
             "comprehensiveness": "high"
           },
+          "voiceMarkers": {
+            "closingPhrases": [
+              "your industry 4",
+              "small-scale implementation 5",
+              "manufacturing & production",
+              "real business problems",
+              "the technology itself"
+            ],
+            "openingPhrases": [
+              "Client Management Systems",
+              "## Overview Client",
+              "This resource provides",
+              "## Key Benefits"
+            ],
+            "emphasisPhrases": [
+              "critical",
+              "key"
+            ],
+            "connectingPhrases": []
+          },
+          "domainKnowledge": {
+            "designConcepts": [],
+            "technicalConcepts": [
+              "system",
+              "component",
+              "data",
+              "process"
+            ],
+            "mathematicalConcepts": [
+              "ratio"
+            ]
+          },
+          "semanticDensity": {
+            "abstraction": "low",
+            "specificity": "very_high",
+            "informationPerSentence": "high",
+            "technicalTermsPerParagraph": "moderate"
+          },
           "linguisticPatterns": {
-            "sentenceStructure": {
-              "averageLength": "medium_to_long",
-              "complexity": "high",
-              "preference": "declarative_statements",
-              "coordination": "minimal_coordination"
-            },
             "vocabulary": {
               "technicalTerms": [
                 "management",
@@ -100,8 +98,15 @@
                 "forms"
               ]
             },
+            "sentenceStructure": {
+              "complexity": "high",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination",
+              "averageLength": "medium_to_long"
+            },
             "numericalPrecision": {
-              "specificValues": true,
+              "units": [],
+              "formatting": "integer",
               "commonValues": [
                 1,
                 2,
@@ -110,76 +115,71 @@
                 5,
                 6
               ],
-              "formatting": "integer",
-              "units": []
+              "specificValues": true
             }
           },
           "structuralPatterns": {
+            "contentFlow": {
+              "conclusions": false,
+              "detailsAfter": true,
+              "overviewFirst": true,
+              "examplesProvided": true
+            },
             "organization": {
-              "hierarchical": true,
+              "lists": "very_frequent",
               "sections": true,
               "subsections": false,
-              "lists": "very_frequent",
-              "bulletPoints": "very_frequent"
-            },
-            "contentFlow": {
-              "overviewFirst": true,
-              "detailsAfter": true,
-              "examplesProvided": true,
-              "conclusions": false
+              "bulletPoints": "very_frequent",
+              "hierarchical": true
             }
-          },
-          "domainKnowledge": {
-            "mathematicalConcepts": [
-              "ratio"
-            ],
-            "designConcepts": [],
-            "technicalConcepts": [
-              "system",
-              "component",
-              "data",
-              "process"
-            ]
-          },
-          "voiceMarkers": {
-            "openingPhrases": [
-              "Client Management Systems",
-              "## Overview Client",
-              "This resource provides",
-              "## Key Benefits"
-            ],
-            "connectingPhrases": [],
-            "emphasisPhrases": [
-              "critical",
-              "key"
-            ],
-            "closingPhrases": [
-              "your industry 4",
-              "small-scale implementation 5",
-              "manufacturing & production",
-              "real business problems",
-              "the technology itself"
-            ]
-          },
-          "semanticDensity": {
-            "informationPerSentence": "high",
-            "technicalTermsPerParagraph": "moderate",
-            "specificity": "very_high",
-            "abstraction": "low"
           }
         },
         "extrapolationGuidelines": {
-          "maintainPrecision": true,
-          "useDomainTerms": false,
-          "preserveStructure": true,
           "extendConcepts": true,
-          "maintainRelationships": true,
-          "addSpecificValues": true
+          "useDomainTerms": false,
+          "addSpecificValues": true,
+          "maintainPrecision": true,
+          "preserveStructure": true,
+          "maintainRelationships": true
         }
+      },
+      "metadata": {
+        "id": "profile_1777170477821_6894gji22",
+        "name": "BIGPONS (Brisbane Servers)",
+        "tags": [
+          "bigpons-default",
+          "brisbane-servers",
+          "bifpons-site-corpus"
+        ],
+        "version": "1.0.0",
+        "createdAt": "2026-04-26T02:27:57.821Z",
+        "isDefault": true,
+        "updatedAt": "2026-04-26T05:24:28.767Z",
+        "description": "Default Brisbane Servers voice profile compiled from current starter and published resources.",
+        "corpusLastBuiltAt": "2026-04-26T05:24:28.767Z",
+        "corpusResourceIds": [
+          "professional-services-client-management-systems-1769301663783",
+          "professional-services-document-automation-1769301663783",
+          "professional-services-billing-time-tracking-1769301663783",
+          "professional-services-practice-management-1769301663783",
+          "retail-inventory-pos-1769301663783",
+          "retail-e-commerce-1769301663783",
+          "retail-customer-systems-1769301663783",
+          "healthcare-patient-management-1769301663783",
+          "healthcare-compliance-1769301663783",
+          "healthcare-appointments-1769301663783",
+          "hospitality-booking-1769301663783",
+          "hospitality-pos-integration-1769301663783",
+          "hospitality-automation-1769301663783",
+          "construction-overview-1769301663783",
+          "finance-overview-1769301663783",
+          "manufacturing-overview-1769301663783"
+        ],
+        "corpusIndexedCount": 16,
+        "corpusResourceCount": 16
       }
     }
   ],
-  "version": "1.0.0",
   "lastUpdated": "2026-04-26T05:24:28.767Z",
   "defaultProfileId": "profile_1777170477821_6894gji22"
 }

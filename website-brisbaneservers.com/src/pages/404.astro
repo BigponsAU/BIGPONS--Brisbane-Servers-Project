@@ -1,0 +1,38 @@
+---
+import SiteShell from '~/layouts/SiteShell.astro';
+import Hero from '~/components/Hero.astro';
+import { sitePath } from '~/lib/site-path';
+import { getPageDescriptor } from '~/lib/page-descriptors';
+
+Astro.response.status = 404;
+
+const currentPath = Astro.url.pathname;
+const pageDescriptor = getPageDescriptor('/404');
+---
+
+<SiteShell
+  title="Page not found"
+  description="The page you requested is not available on Brisbane Servers."
+  noindex={true}
+  currentPath={currentPath}
+  pageId={pageDescriptor.pageId}
+  shellVariant={pageDescriptor.shellVariant}
+  valueProfile={pageDescriptor.valueProfile}
+  zoomProfile={pageDescriptor.zoomProfile}
+  density={pageDescriptor.density}
+  mainClass="main-phi-chassis"
+>
+  <Hero
+    title="Page not found"
+    subtitle="That URL is not on this site. Browse resources, services, or return to the home page."
+  />
+
+  <section class="section">
+    <div class="container" style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
+      <a class="btn btn-primary" href={sitePath('/')}>Home</a>
+      <a class="btn btn-secondary" href={sitePath('/resources')}>Resources</a>
+      <a class="btn btn-secondary" href={sitePath('/services')}>Services</a>
+      <a class="btn btn-secondary" href={sitePath('/about')}>About</a>
+    </div>
+  </section>
+</SiteShell>

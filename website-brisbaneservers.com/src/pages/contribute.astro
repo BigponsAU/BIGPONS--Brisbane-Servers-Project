@@ -1,17 +1,24 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
+import Card from '~/components/Card.astro';
+import CardGrid from '~/components/CardGrid.astro';
+import SectionIntro from '~/components/SectionIntro.astro';
+import SectionConstellationLayer from '~/components/SectionConstellationLayer.astro';
 import MarketingPageBands from '~/components/MarketingPageBands.astro';
+import SiteLink from '~/components/SiteLink.astro';
+import { valueProposition } from '~/data/value-proposition';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
 
 const currentPath = '/contribute';
 const publicApiBaseUrl = resolvePublicApiUrl('');
 const accountPath = resolvePublicSitePath('/account/');
+const { sections } = valueProposition.contribute;
 ---
 
 <SiteShell
-  title="Contribute - Brisbane Servers"
-  description="Improve industry resources with Brisbane Servers: verified contributions, token rewards, and transparent community notes aligned to our consulting voice."
+  title="Contribute"
+  description={valueProposition.contribute.description}
   currentPath={currentPath}
   pageId="contribute"
   valueProfile="utility"
@@ -19,49 +26,131 @@ const accountPath = resolvePublicSitePath('/account/');
   density="compact"
   mainClass="main-phi-chassis"
 >
-    <Hero
-      eyebrow="BIGPONS · Community programme"
-      title="Contribute to industry resources"
-      subtitle="Add field-tested context to our hubs. Submissions are reviewed, scored against our voice profile, and published with clear attribution — so the ecosystem gets stronger decision support."
-      scrollTargetId="#contribute-get-started"
-      scrollLabel="Get started below"
-    />
+  <Hero
+    eyebrow="BIGPONS · Community programme"
+    title="Contribute to industry resources"
+    subtitle="Add field-tested context to our hubs. Submissions are reviewed, scored against our voice profile, and published with clear attribution — so the ecosystem gets stronger decision support."
+    scrollTargetId="#contribute-get-started"
+    scrollLabel="Get started below"
+  />
 
-    <MarketingPageBands>
-    <section class="section section-tartan-accent section-home-band--surface">
+  <MarketingPageBands class="marketing-page-bands--constellation-spine">
+    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+      <SectionConstellationLayer variant="partnership" semanticKey="contribute-programme" tier="whisper" placement="top-right" />
+      <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
+      <div class="phi-lateral-horizontal"></div>
       <div class="container">
-        <div class="contribute-blocks">
+        <SectionIntro
+          eyebrow={sections.programme.eyebrow}
+          title={sections.programme.title}
+          byline={sections.programme.byline}
+        />
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          <Card
+            title="Why contribute"
+            description="Your real-world experience helps other businesses. We combine your input with our voice framework so results stay accurate, clear, and useful."
+            icon="fas fa-users"
+          />
+          <Card
+            title="Side-by-side publishing"
+            description="Your submission and the curated community note appear together on topic pages — readers see your view and the reviewed summary."
+            icon="fas fa-columns"
+          />
+          <Card
+            title="Moderation before live"
+            description="Moderators can approve or adjust before anything goes live — quality and voice consistency stay intact."
+            icon="fas fa-shield-alt"
+          />
+        </CardGrid>
+      </div>
+    </section>
+
+    <section class="section section-tartan-accent section-home-band--primary-light">
+      <SectionConstellationLayer variant="partnership" semanticKey="contribute-pipeline" tier="whisper" placement="top-left" />
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.pipeline.eyebrow}
+          title={sections.pipeline.title}
+          byline={sections.pipeline.byline}
+        />
+        <div class="contribute-blocks" style="margin-top: var(--space-2xl);">
           <div class="contribute-block">
-            <h2>Why contribute?</h2>
-            <p>Your real-world experience helps other businesses. We combine your input with our voice framework so results stay accurate, clear, and useful. You stay credited while the community gets stronger decision support.</p>
+            <h3>Your submission (A)</h3>
+            <p>What you write — field context, constraints, and recommendations from your experience.</p>
           </div>
           <div class="contribute-block">
-            <h2>How the pipeline works</h2>
-            <p><strong>Your submission (A)</strong> is what you write. Our system compares it to a <strong>base voice profile</strong> and, where needed, produces a <strong>community note (B/C)</strong>—a corrected or expanded version. Both are shown side by side on topic pages so readers see your view and the curated summary. Moderators can approve or adjust before anything goes live.</p>
+            <h3>Voice profile check</h3>
+            <p>
+              Our system compares your text to the{' '}
+              <SiteLink href="/account#portal-voice-framework">portal voice framework</SiteLink> — context,
+              evidence, and action in each section.
+            </p>
           </div>
           <div class="contribute-block">
-            <h2>Benefits</h2>
-            <ul>
-              <li><strong>Tokens</strong> — Valuable contributions earn tokens (stored in a single ledger). We plan to use these for things like server runtime or discounts.</li>
-              <li><strong>Visibility</strong> — Your contribution and the community note appear on the topic page with clear attribution.</li>
-              <li><strong>Account workspace</strong> — Sign in to see your contributions, token balance, saved work, and history.</li>
-            </ul>
+            <h3>Community note (B/C)</h3>
+            <p>Where needed, a corrected or expanded version is produced and shown beside your submission on the topic page.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="contribute-get-started" class="section section-tartan-accent section-home-band--primary-light contribute-cta">
+    <section class="section section-tartan-accent section-home-band--surface">
+      <SectionConstellationLayer variant="partnership" semanticKey="contribute-benefits" tier="whisper" placement="bottom-right" />
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="container">
-        <h2 class="contribute-cta-title">Get started</h2>
-        <p class="contribute-cta-lead">Create an account to contribute from any topic page. Browsing stays open; sign in when you want to save work, manage contributions, or track tokens.</p>
-        <div class="auth-cards">
+        <SectionIntro
+          eyebrow={sections.benefits.eyebrow}
+          title={sections.benefits.title}
+          byline={sections.benefits.byline}
+        />
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          <Card
+            title="Tokens"
+            description="Valuable contributions earn tokens in a single ledger — planned for server runtime, discounts, and future programme perks."
+            icon="fas fa-coins"
+          />
+          <Card
+            title="Visibility"
+            description="Your contribution and the community note appear on the topic page with clear attribution."
+            icon="fas fa-eye"
+          />
+          <Card
+            title="Account workspace"
+            description="Sign in to see submissions, token balance, saved work, and history — browsing stays public."
+            icon="fas fa-user-circle"
+          />
+        </CardGrid>
+      </div>
+    </section>
+
+    <section
+      id="contribute-get-started"
+      class="section section-tartan-accent section-home-band--primary-light contribute-cta"
+    >
+      <SectionConstellationLayer variant="partnership" semanticKey="contribute-cta" tier="whisper" placement="bottom-right" />
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.getStarted.eyebrow}
+          title={sections.getStarted.title}
+          byline={sections.getStarted.byline}
+        />
+        <div class="auth-cards" style="margin-top: var(--space-2xl);">
           <div class="auth-card">
             <h3>Register</h3>
             <form id="register-form" class="auth-form">
               <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
-              <label><span>Password (min 8 characters)</span><input type="password" name="password" required minlength="8" autocomplete="new-password" /></label>
-              <button type="submit" class="btn btn-primary">Create account</button>
+              <label
+                ><span>Password (min 8 characters)</span><input
+                  type="password"
+                  name="password"
+                  required
+                  minlength="8"
+                  autocomplete="new-password"
+                /></label
+              >
+              <button type="submit" class="btn btn-primary btn-block">Create account</button>
               <p id="register-status" class="auth-status" aria-live="polite"></p>
             </form>
           </div>
@@ -70,7 +159,7 @@ const accountPath = resolvePublicSitePath('/account/');
             <form id="login-form" class="auth-form">
               <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
               <label><span>Password</span><input type="password" name="password" required autocomplete="current-password" /></label>
-              <button type="submit" class="btn btn-secondary">Log in</button>
+              <button type="submit" class="btn btn-secondary btn-block">Log in</button>
               <p id="login-status" class="auth-status" aria-live="polite"></p>
             </form>
           </div>
@@ -80,7 +169,7 @@ const accountPath = resolvePublicSitePath('/account/');
         </p>
       </div>
     </section>
-    </MarketingPageBands>
+  </MarketingPageBands>
 </SiteShell>
 
 <script define:vars={{ apiBaseUrl: publicApiBaseUrl, accountPath }}>
@@ -98,21 +187,22 @@ const accountPath = resolvePublicSitePath('/account/');
   registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(registerForm);
+    const email = fd.get('email') as string;
+    const password = fd.get('password') as string;
     setStatus(registerStatus, 'Creating account…');
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/register`, {
+      const res = await fetch(`${apiBaseUrl}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
+        body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setStatus(registerStatus, data.previewUrl
-          ? `Account created. Check your email to verify your account. Preview link: ${data.previewUrl}`
-          : 'Account created. Check your email to verify your account before signing in.');
-      } else {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
         setStatus(registerStatus, data.error || 'Registration failed', true);
+        return;
       }
+      setStatus(registerStatus, 'Account created. Redirecting to workspace…');
+      window.location.href = accountPath;
     } catch {
       setStatus(registerStatus, 'Network error. Try again.', true);
     }
@@ -121,51 +211,25 @@ const accountPath = resolvePublicSitePath('/account/');
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(loginForm);
-    setStatus(loginStatus, 'Logging in…');
+    const email = fd.get('email') as string;
+    const password = fd.get('password') as string;
+    setStatus(loginStatus, 'Signing in…');
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/login`, {
+      const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') })
+        body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setStatus(loginStatus, 'Logged in. Redirecting to your workspace…');
-        if (data.token) localStorage.setItem('authToken', data.token);
-        window.location.href = accountPath;
-      } else {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
         setStatus(loginStatus, data.error || 'Login failed', true);
+        return;
       }
+      if (data.token) localStorage.setItem('authToken', data.token);
+      setStatus(loginStatus, 'Signed in. Redirecting…');
+      window.location.href = accountPath;
     } catch {
       setStatus(loginStatus, 'Network error. Try again.', true);
     }
   });
 </script>
-
-<style>
-  .contribute-blocks { display: grid; gap: var(--space-xl); margin-top: var(--space-xl); }
-  .contribute-block {
-    padding: var(--space-lg);
-    background: var(--surface-elevated);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-  }
-  .contribute-block h2 { margin-top: 0; margin-bottom: var(--space-sm); }
-  .contribute-block ul { margin-bottom: 0; padding-left: var(--space-lg); }
-  .contribute-cta { background: transparent; }
-  .contribute-cta-title { margin-bottom: var(--space-sm); }
-  .contribute-cta-lead { color: var(--text-secondary); margin-bottom: var(--space-xl); }
-  .auth-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl); }
-  .auth-card {
-    padding: var(--space-xl);
-    background: var(--surface-elevated);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-  }
-  .auth-card h3 { margin-top: 0; margin-bottom: var(--space-md); }
-  .auth-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .auth-form label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--text-sm); }
-  .auth-form input { padding: var(--space-sm); border-radius: var(--border-radius-sm); border: 1px solid var(--border-light); }
-  .auth-status { font-size: var(--text-sm); margin-top: var(--space-sm); margin-bottom: 0; }
-  .contribute-portal-link { margin-top: var(--space-xl); font-size: var(--text-sm); }
-</style>

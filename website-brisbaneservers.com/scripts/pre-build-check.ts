@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { runContentSeoValidation } from './validate-content-seo.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -268,25 +269,40 @@ function checkCSSVariables(): ValidationResult {
 }
 
 /**
- * When CI sets PUBLIC_API_BASE_URL, enforce HTTPS so hybrid Pages builds never bake in http:// APIs.
- * If it is unset, skip (Repos can publish static Pages before the standalone API exists; set later).
+ * Validate static content SEO fields (case studies, industries, topics).
  */
-function checkHostedApiForGithubPages(): ValidationResult {
-  const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+function checkContentSeo(): ValidationResult {
+  const result = runContentSeoValidation();
+  return {
+    name: 'Content SEO',
+    passed: result.passed,
+    message: result.message,
+  };
+}
+
+/**
+ * When CI sets PUBLIC_API_BASE_URL, enforce HTTPS so static host builds never bake in http:// APIs.
+ * If it is unset, skip (Repos can publish static site before the standalone API exists; set later).
+ */
+function checkHostedApiForStaticDeploy(): ValidationResult {
+  const isCi =
+    process.env.GITHUB_ACTIONS === 'true' ||
+    process.env.CF_PAGES === '1' ||
+    process.env.CI === 'true';
   const apiUrl = (process.env.PUBLIC_API_BASE_URL ?? '').trim();
   const skip = process.env.SKIP_HOSTED_API_CHECK === '1' || process.env.SKIP_HOSTED_API_CHECK === 'true';
 
   if (skip) {
     return {
-      name: 'Hosted API (GitHub Pages CI)',
+      name: 'Hosted API (static deploy CI)',
       passed: true,
       message: 'Skipped (SKIP_HOSTED_API_CHECK is set)'
     };
   }
 
-  if (!isGithubActions) {
+  if (!isCi) {
     return {
-      name: 'Hosted API (GitHub Pages CI)',
+      name: 'Hosted API (static deploy CI)',
       passed: true,
       message: 'Skipped (local build — HTTPS API enforced in CI only when PUBLIC_API_BASE_URL is set)'
     };
@@ -294,26 +310,26 @@ function checkHostedApiForGithubPages(): ValidationResult {
 
   if (!apiUrl) {
     return {
-      name: 'Hosted API (GitHub Pages CI)',
+      name: 'Hosted API (static deploy CI)',
       passed: true,
       message:
-        'Skipped — PUBLIC_API_BASE_URL not set for this Actions run (set repository variable PUBLIC_API_BASE_URL once the HTTPS standalone API host is live; see DEPLOYMENT.md).'
+        'Skipped — PUBLIC_API_BASE_URL not set for this CI run (set it once the HTTPS standalone API host is live; see docs/operations/CLOUDFLARE_PAGES.md).'
     };
   }
 
   if (!/^https:\/\//i.test(apiUrl)) {
     return {
-      name: 'Hosted API (GitHub Pages CI)',
+      name: 'Hosted API (static deploy CI)',
       passed: false,
       message:
-        'PUBLIC_API_BASE_URL must be an https:// URL in CI (never bake plain http into Pages builds).'
+        'PUBLIC_API_BASE_URL must be an https:// URL in CI (never bake plain http into static deploy builds).'
     };
   }
 
   return {
-    name: 'Hosted API (GitHub Pages CI)',
+    name: 'Hosted API (static deploy CI)',
     passed: true,
-    message: 'PUBLIC_API_BASE_URL is an HTTPS URL suitable for GitHub Pages'
+    message: 'PUBLIC_API_BASE_URL is an HTTPS URL suitable for static hosting'
   };
 }
 
@@ -328,7 +344,8 @@ function runChecks(): void {
   results.push(checkDependencies());
   results.push(checkViewportMeta());
   results.push(checkCSSVariables());
-  results.push(checkHostedApiForGithubPages());
+  results.push(checkContentSeo());
+  results.push(checkHostedApiForStaticDeploy());
 
   // Print results
   let allPassed = true;

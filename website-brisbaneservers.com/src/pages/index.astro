@@ -6,6 +6,7 @@ import CardGrid from '../components/CardGrid.astro';
 import SearchBar from '../components/SearchBar.astro';
 import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
+import SectionIntro from '../components/SectionIntro.astro';
 import HomeInterconnectionRig from '../components/HomeInterconnectionRig.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
 import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
@@ -39,7 +40,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       subtitle={valueProposition.home.heroSubtitle}
       ctaText="Explore solutions"
       ctaHref="#services-overview"
-      secondaryCtaText="Open Portal Voice Framework"
+      secondaryCtaText={valueProposition.portalCtaLabel}
       secondaryCtaHref="/account"
       scrollTargetId="#services-overview"
       scrollLabel="See how we work"
@@ -55,7 +56,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         <SectionSatelliteConstellation variant="strategy" semanticKey={HOME_BAND_SEMANTIC_KEYS.strategy} />
         <div class="home-phase-indicator home-phase-indicator--strategy" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Our core services" semanticLevel="high" isParent={true} />
+          <SemanticText text="Our Core Services" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text={valueProposition.home.coreServicesLead} semanticLevel="normal" isChild={true} />
@@ -90,7 +91,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         <SectionSatelliteConstellation variant="industry" semanticKey={HOME_BAND_SEMANTIC_KEYS.industry} />
         <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Industry context" semanticLevel="high" isParent={true} />
+          <SemanticText text="Industry Context" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="Regulations, incentives, and day-to-day constraints change by sector — retail, healthcare, hospitality, manufacturing, professional services — so recommendations stay tied to how you actually operate, not generic playbooks." semanticLevel="normal" isChild={true} />
@@ -183,16 +184,11 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           semanticKey="client web presences live sites shipped preview portfolio growth"
         />
         <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
-        <h2 class="section-title">
-          <SemanticText text="Web presences we have shipped" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText
-            text="Live sites and applications we have shipped for clients. The list is deliberately small for now: we only showcase work clients are happy to display, and we add entries as new public launches clear that bar."
-            semanticLevel="normal"
-            isChild={true}
-          />
-        </p>
+        <SectionIntro
+          eyebrow="Proof you can open today"
+          title="Web presences we have shipped"
+          byline="Live sites and applications we have shipped for clients. The list is deliberately small for now: we only showcase work clients are happy to display, and we add entries as new public launches clear that bar."
+        />
         <ClientSitesShowcase />
       </div>
     </section>
@@ -262,7 +258,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         
         <div style="text-align: center; margin-top: var(--space-xl);">
           <a href={sitePath('/account')} class="btn btn-secondary">
-            Open Portal Voice Framework
+            {valueProposition.portalCtaLabel}
           </a>
         </div>
       </div>
@@ -310,7 +306,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="container">
         <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} />
         <h2 class="section-title">
-          <SemanticText text="Proven solution patterns" semanticLevel="high" isParent={true} />
+          <SemanticText text="Proven Solution Patterns" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context — so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
@@ -350,7 +346,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="container">
         <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
         <h2 class="section-title">
-          <SemanticText text="Strategic technology partnership" semanticLevel="high" isParent={true} />
+          <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="We run the research, vendor comparison, and documentation burden so your team can approve direction quickly — with trade-offs, costs, and sequencing spelled out." semanticLevel="normal" isChild={true} />

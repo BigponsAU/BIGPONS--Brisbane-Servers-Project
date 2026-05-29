@@ -138,8 +138,13 @@ header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta) :is(.semantic-
 header .nav-menu a:not(.nav-account-cta):is(:hover, .active),
 header .nav-dropdown-toggle:is(:hover, .active),
 header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle {
+  background: var(--brand-gradient-chroma) !important;
+  background-image: var(--brand-gradient-chroma) !important;
+  background-color: #8b5cf6 !important;
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
+  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.38);
+  text-decoration: none !important;
 }
 
 header .nav-menu a:not(.nav-account-cta):is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),

@@ -45,10 +45,10 @@ function rowToAuthUser(row: { user_id: string; email: string; role: string; emai
 }
 
 async function initializeDb(): Promise<DatabaseInstance> {
+  const { locateSqlJsFile } = await import('./sql-js-locate');
   const initSqlJs = (await import('sql.js')).default;
-  const wasmDir = path.join(__dirname, '../../../node_modules/sql.js/dist');
   const SQL = await initSqlJs({
-    locateFile: (file: string) => path.join(wasmDir, file)
+    locateFile: locateSqlJsFile
   });
 
   mkdirSync(path.dirname(AUTH_SQLITE_DB_FILE), { recursive: true });

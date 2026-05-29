@@ -1,0 +1,110 @@
+---
+import { industries } from '../../data/industries';
+---
+
+<div id="profiles-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Voice profiles management" style="display: none;">
+                <div class="admin-content">
+            <section class="admin-section" aria-labelledby="profiles-heading">
+              <div class="section-header">
+                <div>
+                  <h2 id="profiles-heading">Voice Profiles</h2>
+                  <p class="section-subtitle">Create and name profiles here for specific case studies, industries, or guide areas — library growth does <strong>not</strong> auto-create profiles; it only generates materials using your default (often <strong>BIGPONS</strong> after sync). Rings, matrix, and vertex views reflect each profile’s characteristics.</p>
+                </div>
+                <div class="section-actions">
+                  <div class="quick-filters" style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+                    <button id="filter-profiles-all" class="btn btn-sm active" onclick="filterProfiles('all')">All</button>
+                    <button id="filter-profiles-active" class="btn btn-sm" onclick="filterProfiles('active')">Active</button>
+                    <button id="filter-profiles-archived" class="btn btn-sm" onclick="filterProfiles('archived')">Archived</button>
+                  </div>
+                  <button id="refresh-profiles" class="btn btn-secondary btn-sm" aria-label="Refresh profiles list">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Refresh
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Profile Management Actions -->
+              <div class="profile-actions-bar" role="toolbar" aria-label="Profile actions">
+                <div class="profile-actions-group">
+                  <button id="view-default-profile" class="btn btn-primary btn-sm" aria-label="View default profile" title="The default profile is used automatically for content generation">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>Default Profile</span>
+                    <span class="profile-action-hint" style="margin-left: 4px; font-size: 0.75rem; opacity: 0.9;">(in use)</span>
+                  </button>
+                  <button id="analyze-duplicates-btn" class="btn btn-secondary btn-sm" aria-label="Analyze duplicate profiles" onclick="analyzeProfileDuplicates()">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    Analyze
+                  </button>
+                  <button id="deduplicate-profiles-btn" class="btn btn-warning btn-sm" aria-label="Remove duplicate profiles" onclick="deduplicateProfiles()">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 6L6 18"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                    Sculpt
+                  </button>
+                </div>
+                <button id="export-profiles" class="btn btn-secondary btn-sm" aria-label="Export profiles" onclick="exportProfiles()">
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Export
+                </button>
+              </div>
+              
+              <!-- Profile Guidance -->
+              <div class="profile-guidance-card">
+                <div class="guidance-header">
+                  <svg class="guidance-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                  </svg>
+                  <h3>Voice Profile Management</h3>
+                </div>
+                <div class="guidance-content">
+                  <p><strong>BIGPONS site voice:</strong> Build or refresh the default profile from <strong>resource combinations</strong> in this repo — the public website resource library plus starters (optional: one industry only). Ring and vertex views read the same stored characteristics.</p>
+                  <p><strong>Active Profiles:</strong> Currently available for content generation. Set one as default to use automatically.</p>
+                  <p><strong>Archived Profiles:</strong> Hidden from active use but preserved for reference. Unarchive to reactivate.</p>
+                  <p><strong>Analyze Duplicates:</strong> Find profiles with similar characteristics that may need consolidation.</p>
+                  <p><strong>Sculpt Library:</strong> Intelligently merge duplicate profiles while preserving unique characteristics.</p>
+                </div>
+              </div>
+              
+              <!-- BIGPONS site voice (resource-driven profile) -->
+              <div class="profile-create-base-card" style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: var(--portal-surface-elevated); border: 2px solid var(--portal-border); border-radius: var(--border-radius);">
+                <h3 style="margin: 0 0 var(--space-sm); font-size: var(--text-base); color: var(--portal-text-primary);">BIGPONS — site voice profile</h3>
+                <p style="margin: 0 0 var(--space-md); font-size: var(--text-sm); color: var(--portal-text-secondary);">Synthesises voice from the <strong>public website resource library</strong> in storage. Narrow by industry to align tone with one vertical; leave &quot;All&quot; for the full corpus. This profile is set as the storage default when the build succeeds.</p>
+                <div class="form-group" style="margin-bottom: var(--space-md); max-width: 28rem;">
+                  <label for="bigpons-industry-filter">Industry slice (optional)</label>
+                  <select id="bigpons-industry-filter" aria-label="Limit BIGPONS corpus to one industry">
+                    <option value="">All industries (public website library)</option>
+                    {industries.map((industry) => (
+                      <option value={industry.slug}>{industry.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <button id="create-base-profile-btn" class="btn btn-primary" onclick="createBaseProfile()" aria-label="Build or refresh BIGPONS profile from resources">
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M2 12h20"></path>
+                  </svg>
+                  Build / refresh BIGPONS from resources
+                </button>
+              </div>
+              
+              <h3 style="margin-bottom: var(--space-md); font-size: var(--text-base); color: var(--portal-text-primary);">Profiles library</h3>
+              <div id="profiles-list" class="profiles-list" role="region" aria-live="polite" aria-label="Voice profiles list">
+                <p class="loading-message" role="status">Loading profiles...</p>
+              </div>
+            </section>
+                </div>
+</div>

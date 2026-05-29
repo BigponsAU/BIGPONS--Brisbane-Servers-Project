@@ -116,6 +116,26 @@ export async function resolveResourceVoiceProfile(
 }
 
 /**
+ * Library growth and other automation: use only an admin-set default profile or bundled BIGPONS.
+ * Does not create or persist area-specific profiles (case study / guide / industry).
+ */
+export async function resolveResourceVoiceProfileForLibraryGrowth(
+  params: ResolveResourceVoiceProfileParams
+): Promise<ResolvedResourceVoiceProfile> {
+  const { profileManager } = params;
+  const defaultProfile = profileManager.getDefaultProfile();
+  if (defaultProfile) {
+    const defaultId = profileManager.getStats().defaultProfileId;
+    return {
+      profile: defaultProfile,
+      voiceProfileId: defaultId,
+      resolution: 'default',
+    };
+  }
+  return { profile: BUNDLED_VOICE_PROFILE, resolution: 'bundled' };
+}
+
+/**
  * Hub / card description in the active voice (not a fixed character truncation of body).
  */
 export function generateResourceCatalogDescription(params: {

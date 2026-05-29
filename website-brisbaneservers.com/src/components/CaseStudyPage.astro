@@ -1,0 +1,189 @@
+---
+import SiteShell from '../layouts/SiteShell.astro';
+import Hero from './Hero.astro';
+import Card from './Card.astro';
+import CardGrid from './CardGrid.astro';
+import InquiryForm from './InquiryForm.astro';
+import SemanticText from './SemanticText.astro';
+import SectionIntro from './SectionIntro.astro';
+import MarketingPageBands from './MarketingPageBands.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import { sitePath } from '../lib/site-path';
+import { caseStudyDetailSeo } from '../lib/content-seo';
+import type { CaseStudy } from '../data/case-studies';
+
+interface Props {
+  study: CaseStudy;
+}
+
+const { study } = Astro.props;
+const currentPath = `/case-studies/${study.slug}`;
+const siteOrigin = (Astro.site ?? new URL('https://brisbaneservers.com')).origin;
+const { structuredData, breadcrumbs: breadcrumbItems } = caseStudyDetailSeo(
+  study,
+  siteOrigin,
+  import.meta.env.BASE_URL,
+);
+---
+
+<SiteShell
+  title={study.pageTitle}
+  description={study.metaDescription}
+  ogType="article"
+  structuredData={structuredData}
+  currentPath={currentPath}
+  pageId={study.pageId}
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
+>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <Hero
+    eyebrow="BIGPONS · Case study"
+    title={study.heroTitle}
+    subtitle={study.heroSubtitle}
+  />
+
+  <MarketingPageBands class="marketing-page-bands--case-study">
+    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-lateral-horizontal"></div>
+      <div class="container">
+        <div class="case-study-content">
+          <div class="case-study-meta">
+            <div class="case-study-meta__grid">
+              {
+                study.metaFields.map((field) => (
+                  <div>
+                    <strong class="case-study-meta__label">{field.label}</strong>
+                    <p class="case-study-meta__value">{field.value}</p>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <SectionIntro title="The challenge" />
+          <div class="case-study-prose">
+            <SemanticText text={study.challenge} semanticLevel="normal" isChild={true} />
+          </div>
+
+          <SectionIntro title="Our approach" class="case-study-section-gap" />
+          <div class="case-study-prose">
+            <SemanticText text={study.approach} semanticLevel="normal" isChild={true} />
+          </div>
+
+          <SectionIntro title="Results" class="case-study-section-gap" />
+          <CardGrid columns={2} class="case-study-results">
+            {
+              study.results.map((result) => (
+                <Card title={result.title} description={result.description} icon={result.icon} />
+              ))
+            }
+          </CardGrid>
+
+          <SectionIntro title="Key technologies" class="case-study-section-gap" />
+          <div class="case-study-prose case-study-prose--compact">
+            <SemanticText text={study.technologies} semanticLevel="normal" isChild={true} />
+          </div>
+
+          <div class="case-study-lessons">
+            <h3>Lessons learned</h3>
+            <p>
+              <SemanticText text={study.lessons} semanticLevel="normal" isChild={true} />
+            </p>
+          </div>
+
+          {
+            study.relatedResourcesHref && (
+              <p class="case-study-related">
+                <a href={sitePath(study.relatedResourcesHref)} class="btn btn-secondary btn-sm">
+                  Related resources
+                </a>
+                <a href={sitePath('/case-studies')} class="btn btn-secondary btn-sm">
+                  All case studies
+                </a>
+              </p>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <InquiryForm
+      title={study.inquiryTitle}
+      subtitle={study.inquirySubtitle}
+      defaultIndustry={study.inquiryIndustry}
+    />
+  </MarketingPageBands>
+</SiteShell>
+
+<style>
+  .case-study-meta {
+    margin-bottom: var(--space-2xl);
+    padding: var(--space-lg);
+    background: var(--surface-elevated);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .case-study-meta__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .case-study-meta__label {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .case-study-meta__value {
+    margin: var(--space-xs) 0 0;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .case-study-prose {
+    white-space: pre-wrap;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .case-study-prose--compact {
+    white-space: normal;
+    margin-bottom: var(--space-xl);
+  }
+
+  :global(.case-study-section-gap) {
+    margin-top: var(--space-3xl);
+  }
+
+  .case-study-results {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .case-study-lessons {
+    margin-top: var(--space-2xl);
+    padding: var(--space-lg);
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+  }
+
+  .case-study-lessons h3 {
+    margin: 0 0 var(--space-md);
+  }
+
+  .case-study-lessons p {
+    margin: 0;
+    line-height: 1.8;
+  }
+
+  .case-study-related {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+</style>

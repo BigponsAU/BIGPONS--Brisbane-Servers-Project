@@ -1,0 +1,228 @@
+---
+import SectionIntro from '../SectionIntro.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import { accountWorkspace } from '../../data/account-workspace';
+import { portalVoiceRules } from '../../lib/portal-voice-framework';
+---
+              <div id="dashboard-panel" class="portal-panel active" role="main" aria-label="Workspace overview">
+                <div class="admin-content">
+                  <section class="section section-tartan-accent section-home-band--surface account-workspace-panel-section" aria-labelledby="workspace-greeting">
+                    <SectionConstellationLayer variant="solutions" semanticKey="account-overview" tier="whisper" placement="top-right" />
+                    <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+                    <div class="container account-workspace-panel-inner">
+                    <div class="section-header section-header--workspace">
+                      <SectionIntro
+                        eyebrow={accountWorkspace.productNameShort}
+                        title="Welcome back"
+                        byline={accountWorkspace.overviewDescription}
+                        titleId="workspace-greeting"
+                      />
+                      <button id="refresh-dashboard" class="btn btn-secondary btn-sm" onclick="loadDashboardData()" aria-label="Refresh overview">
+                        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="23 4 23 10 17 10"></polyline>
+                          <polyline points="1 20 1 14 7 14"></polyline>
+                          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        Refresh
+                      </button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="dashboard-stats-grid">
+                      <div class="stat-card" id="dashboard-stat-total">
+                        <div class="stat-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                          </svg>
+                        </div>
+                        <div class="stat-content">
+                          <h3>Total Resources</h3>
+                          <p class="stat-value" id="dashboard-total-resources">-</p>
+                          <p class="stat-description">All content items</p>
+                        </div>
+                      </div>
+                      <div class="stat-card" id="dashboard-stat-published">
+                        <div class="stat-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                        <div class="stat-content">
+                          <h3>Published</h3>
+                          <p class="stat-value" id="dashboard-published">-</p>
+                          <p class="stat-description">Live content</p>
+                        </div>
+                      </div>
+                      <div class="stat-card" id="dashboard-stat-drafts">
+                        <div class="stat-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </div>
+                        <div class="stat-content">
+                          <h3>Drafts</h3>
+                          <p class="stat-value" id="dashboard-drafts">-</p>
+                          <p class="stat-description">In progress</p>
+                        </div>
+                      </div>
+                      <div class="stat-card" id="dashboard-stat-voice">
+                        <div class="stat-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </div>
+                        <div class="stat-content">
+                          <h3>Avg Voice Score</h3>
+                          <p class="stat-value" id="dashboard-avg-score">-</p>
+                          <p class="stat-description">Quality metric</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="client-insights" aria-live="polite">
+                      <div class="client-token-card">
+                        <h3>Your contribution tokens</h3>
+                        <p class="client-token-balance">
+                          <span id="client-token-balance">0</span>
+                          <span class="client-token-label">tokens</span>
+                        </p>
+                        <p class="client-token-help">
+                          Tokens reflect accepted contributions and may be used for rewards in future.
+                        </p>
+                      </div>
+                      <div class="client-contributions-card">
+                        <h3>Your recent contributions</h3>
+                        <ul id="client-contributions-list" class="client-contributions-list">
+                          <li class="empty-state">
+                            No contributions yet. Share context from a topic page to get started.
+                          </li>
+                        </ul>
+                      </div>
+                      <div class="client-contributions-card">
+                        <h3>Passkeys (recommended)</h3>
+                        <p class="client-token-help">Register a passkey for phishing-resistant sign-in. Env bootstrap passwords are for initial setup only — prefer passkeys for admin access.</p>
+                        <div id="passkey-credentials-list" class="passkey-credentials-list"></div>
+                        <button type="button" id="passkey-register-btn" class="btn btn-secondary btn-sm">Add passkey</button>
+                        <p id="passkey-register-status" class="status-message" role="status" aria-live="polite"></p>
+                      </div>
+                      <div class="client-contributions-card">
+                        <h3>Security</h3>
+                        <p class="client-token-help">Revoke all active sessions if you signed in on another machine or want to force a fresh sign-in everywhere.</p>
+                        <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
+                        <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                      </div>
+                    </div>
+
+                    <!-- Portal Purpose Guide -->
+                    <div class="portal-purpose-guide">
+                      <div class="purpose-card">
+                        <div class="purpose-icon">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                          </svg>
+                        </div>
+                        <div class="purpose-content">
+                          <h3>What this workspace is for</h3>
+                          <p>Your account workspace gives you a personal place inside Brisbane Servers. Here you can:</p>
+                          <ul>
+                            <li><strong>Use starter blocks:</strong> Begin with proven templates and adapt them to your business context</li>
+                            <li><strong>Create and upload resources:</strong> Build new content or bring in existing material for review</li>
+                            <li><strong>Track contributions:</strong> See recent submissions, token balance, and workspace activity in one place</li>
+                            <li><strong>Manage voice profiles:</strong> Keep generated content aligned with the tone you want to use</li>
+                            <li><strong>Review analytics:</strong> Check performance and voice alignment over time</li>
+                          </ul>
+                          <h4>Voice framework (delivery strategy)</h4>
+                          <ul>
+                            {portalVoiceRules.map((rule) => (
+                              <li><strong>{rule.title}:</strong> {rule.description}</li>
+                            ))}
+                          </ul>
+                          <p class="purpose-tip"><strong>Tip:</strong> Public browsing stays open on the main site. Sign in here when you want to contribute, save work, or manage your own workspace. Use the sidebar to switch sections, and press <kbd>Ctrl+K</kbd> (or <kbd>Cmd+K</kbd> on Mac) to search.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Starter Blocks Section -->
+                    <div class="dashboard-starter-blocks">
+                      <div class="starter-blocks-header">
+                        <div>
+                          <h3>Starter Blocks</h3>
+                          <p class="starter-blocks-description">Pre-built resource templates you can customize for your business. Click any block to create your own version.</p>
+                        </div>
+                        <button id="refresh-starter-blocks" class="btn btn-secondary btn-sm" onclick="loadStarterBlocks()" aria-label="Refresh starter blocks">
+                          <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                          </svg>
+                          Refresh
+                        </button>
+                      </div>
+                      <div id="starter-blocks-grid" class="starter-blocks-grid">
+                        <div class="starter-blocks-loading">Loading starter blocks...</div>
+                      </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-quick-actions">
+                      <h3>Quick Actions</h3>
+                      <div class="quick-actions-grid">
+                        <button class="quick-action-card" onclick="navigateToPanel('resources'); setTimeout(() => document.getElementById('generate-resource-heading')?.scrollIntoView({ behavior: 'smooth' }), 100);">
+                          <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                          <span class="quick-action-label">Generate Resource</span>
+                        </button>
+                        <button class="quick-action-card" onclick="navigateToPanel('resources'); setTimeout(() => document.getElementById('upload-resource-heading')?.scrollIntoView({ behavior: 'smooth' }), 100);">
+                          <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          <span class="quick-action-label">Upload Resource</span>
+                        </button>
+                        <button class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('profiles');">
+                          <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                          </svg>
+                          <span class="quick-action-label">Manage Profiles</span>
+                        </button>
+                        <button class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('analytics');">
+                          <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                          </svg>
+                          <span class="quick-action-label">View Analytics</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-recent-activity">
+                      <h3>Recent Activity</h3>
+                      <div id="recent-activity-list" class="activity-list">
+                        <div class="activity-loading">Loading recent activity...</div>
+                      </div>
+                    </div>
+
+                    <!-- Resource Preview -->
+                    <div class="dashboard-resource-preview">
+                      <div class="preview-header">
+                        <h3>My Resources</h3>
+                        <a href="#" onclick="navigateToPanel('resources'); return false;" class="preview-link">View All →</a>
+                      </div>
+                      <div id="recent-resources-preview" class="resources-preview-grid">
+                        <div class="preview-loading">Loading resources...</div>
+                      </div>
+                    </div>
+                    </div>
+                  </section>
+                </div>
+              </div>

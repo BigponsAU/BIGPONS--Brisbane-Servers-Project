@@ -1,0 +1,234 @@
+/**
+ * Shared horizontal shell — one content band for header, hero, marketing, case studies, account.
+ * Full-bleed atmosphere in gutters; copy and cards stay in --site-frame-wide.
+ */
+
+/* ─── Main canvas: same wash in gutters as section bands (no stark white void) ─── */
+.site-main--marketing.site-main--public,
+.site-main--marketing {
+  background: linear-gradient(
+    180deg,
+    #eef2f7 0%,
+    rgba(10, 116, 218, 0.06) 24%,
+    rgba(139, 92, 246, 0.035) 52%,
+    #f4f7fb 100%
+  );
+}
+
+/* Hero content column aligns with nav + body (hero background stays full-bleed) */
+.site-main--marketing .hero-inner,
+.site-main--public .hero-inner {
+  width: 100%;
+  max-width: var(--site-frame-wide);
+  margin-inline: auto;
+  padding-inline: var(--site-frame-gutter);
+  box-sizing: border-box;
+}
+
+/* ─── Marketing / case-study bands ─── */
+.site-main--marketing .marketing-page-bands {
+  position: relative;
+  background: transparent;
+}
+
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent,
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd),
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(even),
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent.section-home-band--surface,
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent.section-home-band--primary-light,
+.site-main--marketing .marketing-page-bands > .inquiry-section {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+}
+
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent::before,
+.site-main--marketing .marketing-page-bands > .inquiry-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd)::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(var(--primary-color-rgb), 0.04) 50%,
+    rgba(255, 255, 255, 0.82) 100%
+  );
+}
+
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(even)::before {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--primary-color-rgb), 0.05) 0%,
+    rgba(var(--accent-violet-rgb), 0.04) 48%,
+    rgba(255, 255, 255, 0.88) 100%
+  );
+}
+
+.site-main--marketing .marketing-page-bands > .inquiry-section::before {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--primary-color-rgb), 0.05) 0%,
+    #e8eef6 50%,
+    #f4f6fa 100%
+  );
+}
+
+.site-main--marketing .marketing-page-bands > .section > .container,
+.site-main--marketing .marketing-page-bands > .inquiry-section > .container {
+  width: 100%;
+  max-width: var(--site-frame-wide);
+  margin-inline: auto;
+  padding-inline: var(--site-frame-gutter);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+/* Card grids use the full content band (not a narrow island) */
+.site-main--marketing .marketing-page-bands .card-grid,
+.site-main--marketing .marketing-page-bands .card-grid-grid {
+  width: 100%;
+  max-width: none;
+}
+
+/* Inquiry: one readable column — fields fill the card (no empty right half) */
+.site-main--marketing .marketing-page-bands .inquiry-section .inquiry-form,
+.site-main--marketing .inquiry-section .inquiry-form {
+  width: 100%;
+  max-width: var(--site-inquiry-width);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.site-main--marketing .inquiry-section .inquiry-form form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.site-main--marketing .inquiry-section .inquiry-form .form-group {
+  width: 100%;
+  max-width: none;
+}
+
+.site-main--marketing .inquiry-section .inquiry-form .form-group input,
+.site-main--marketing .inquiry-section .inquiry-form .form-group select,
+.site-main--marketing .inquiry-section .inquiry-form .form-group textarea {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+@media (min-width: 720px) {
+  .site-main--marketing .inquiry-section .inquiry-form form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-lg);
+    row-gap: 0;
+  }
+
+  .site-main--marketing .inquiry-section .inquiry-form .form-group:has(textarea),
+  .site-main--marketing .inquiry-section .inquiry-form .form-group:has(#message),
+  .site-main--marketing .inquiry-section .inquiry-form form > .btn,
+  .site-main--marketing .inquiry-section .inquiry-form form > .form-disclaimer,
+  .site-main--marketing .inquiry-section .inquiry-form form > .sr-only {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ─── Case study: full band width; prose measure only on long text ─── */
+.marketing-page-bands--case-study .case-study-content {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+.marketing-page-bands--case-study .case-study-prose {
+  max-width: min(72ch, 100%);
+}
+
+.marketing-page-bands--case-study .case-study-meta,
+.marketing-page-bands--case-study .case-study-results,
+.marketing-page-bands--case-study .case-study-lessons,
+.marketing-page-bands--case-study .case-study-related {
+  max-width: none;
+  width: 100%;
+}
+
+.marketing-page-bands--case-study .case-study-meta__grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+/* ─── Account / portal login: same band + full-bleed atmosphere ─── */
+.site-shell--portal .portal-shell {
+  width: 100%;
+  max-width: none;
+  padding-inline: 0;
+  margin-inline: auto;
+  box-sizing: border-box;
+  background: linear-gradient(
+    135deg,
+    var(--portal-bg-accent, #eef4fc) 0%,
+    var(--portal-surface, #f8f9fa) 100%
+  );
+}
+
+.site-shell--portal #login-screen.login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-inline: 0;
+  padding-block: var(--space-xl);
+  box-sizing: border-box;
+  min-height: min(88vh, calc(100dvh - var(--site-main-offset-top, 5rem)));
+}
+
+.site-shell--portal #login-screen .login-container {
+  width: 100%;
+  max-width: var(--site-frame-wide);
+  margin-inline: auto;
+  padding-inline: var(--site-frame-gutter);
+  box-sizing: border-box;
+}
+
+.site-shell--portal #login-screen .login-grid {
+  width: 100%;
+}
+
+.site-shell--portal #login-screen .account-framework-hero {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-top: 0;
+  margin-bottom: var(--space-2xl);
+  border-radius: 0;
+  box-sizing: border-box;
+  padding-inline: max(
+    var(--site-frame-gutter),
+    calc((100vw - min(var(--site-frame-wide), 100vw)) / 2 + var(--site-frame-gutter))
+  );
+}
+
+.site-shell--portal #login-screen .account-framework-hero__copy {
+  max-width: min(40rem, 52%);
+}
+
+@media (max-width: 900px) {
+  .site-shell--portal #login-screen .account-framework-hero__copy {
+    max-width: 100%;
+  }
+}

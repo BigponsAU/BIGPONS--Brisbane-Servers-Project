@@ -1,0 +1,37 @@
+---
+import { accountWorkspace } from '../../data/account-workspace';
+---
+
+<header class="portal-header">
+  <div class="header-left">
+    <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="header-title-mobile">
+      <h1 class="workspace-toolbar-title">{accountWorkspace.productName}</h1>
+    </div>
+    <div class="header-search">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
+      <input type="text" id="global-search" placeholder="Search resources, profiles... (Ctrl+K)" aria-label="Global search" />
+    </div>
+  </div>
+  <div class="header-right">
+    <button id="header-info-trigger" class="btn btn-secondary btn-sm" onclick="toggleInfoCard()" aria-label="Toggle information card">
+      <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      Info
+    </button>
+    <span id="user-info" class="user-info"></span>
+    <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+  </div>
+</header>

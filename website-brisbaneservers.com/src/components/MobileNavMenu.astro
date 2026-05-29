@@ -1,0 +1,124 @@
+---
+import { navItemIsActive, type NavItem } from '../data/navigation';
+import { sitePath } from '../lib/site-path';
+
+interface Props {
+  navItems: NavItem[];
+  currentPath: string;
+}
+
+const { navItems, currentPath } = Astro.props;
+
+function isActive(href: string): boolean {
+  const pathOnly = href.split('#')[0] || href;
+  if (pathOnly === '/' && currentPath === '/') return true;
+  if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
+  return false;
+}
+
+const topLevelItems = navItems.filter(
+  (item) => !item.groups?.length && !item.children?.length && item.href !== '/account',
+);
+const accountItem = navItems.find((item) => item.href === '/account');
+const featureItems = navItems.filter((item) => item.groups?.length || item.children?.length);
+---
+
+<div
+  class="mobile-menu"
+  id="mobile-menu"
+  role="dialog"
+  aria-label="Mobile navigation menu"
+  aria-hidden="true"
+  aria-modal="true"
+>
+  <div class="mobile-menu__inner">
+    <p class="mobile-menu__kicker">Menu</p>
+
+  {
+    featureItems.map((item) => {
+      const active = navItemIsActive(item, currentPath);
+      return (
+        <section class:list={['mobile-menu__feature', active && 'mobile-menu__feature--active']}>
+          <a
+            href={sitePath(item.href)}
+            class:list={['mobile-menu__feature-title', active && 'is-active']}
+            role="menuitem"
+          >
+            <span>{item.label}</span>
+            <span class="mobile-menu__feature-chevron" aria-hidden="true" />
+          </a>
+          <div class="mobile-menu__feature-body">
+            {item.groups
+              ? item.groups.map((group) => (
+                  <div class="mobile-menu__block">
+                    <h3 class="mobile-menu__block-label">{group.title}</h3>
+                    <ul class="mobile-menu__block-list">
+                      {group.items.map((child) => (
+                        <li>
+                          <a
+                            href={sitePath(child.href)}
+                            class:list={['mobile-menu__block-link', isActive(child.href) && 'is-active']}
+                            role="menuitem"
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              : (
+                  <div class="mobile-menu__block">
+                    <ul class="mobile-menu__block-list">
+                      {item.children?.map((child) => (
+                        <li>
+                          <a
+                            href={sitePath(child.href)}
+                            class:list={['mobile-menu__block-link', isActive(child.href) && 'is-active']}
+                            role="menuitem"
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+          </div>
+        </section>
+      );
+    })
+  }
+
+  {
+    topLevelItems.length > 0 && (
+      <div class="mobile-menu__strip">
+        {topLevelItems.map((item) => (
+          <a
+            href={sitePath(item.href)}
+            class:list={['mobile-menu__strip-link', isActive(item.href) && 'is-active']}
+            role="menuitem"
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    accountItem && (
+      <div class="mobile-menu__footer">
+        <a
+          href={sitePath(accountItem.href)}
+          class:list={['mobile-menu__account', isActive(accountItem.href) && 'is-active']}
+          data-account-link="true"
+          role="menuitem"
+        >
+          {accountItem.label}
+        </a>
+      </div>
+    )
+  }
+  </div>
+</div>

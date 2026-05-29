@@ -1,0 +1,155 @@
+---
+import SiteShell from '../../layouts/SiteShell.astro';
+import Hero from '../../components/Hero.astro';
+import Card from '../../components/Card.astro';
+import CardGrid from '../../components/CardGrid.astro';
+import SectionIntro from '../../components/SectionIntro.astro';
+import MarketingPageBands from '../../components/MarketingPageBands.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { caseStudies } from '../../data/case-studies';
+import { industryHubStatus } from '../../data/site-completeness';
+import { caseStudiesHubSeo } from '../../lib/content-seo';
+import { sitePath } from '../../lib/site-path';
+import { valueProposition } from '../../data/value-proposition';
+
+const currentPath = '/case-studies';
+const overviewOnlyHubs = industryHubStatus.filter((item) => item.status === 'overview-only');
+const siteOrigin = (Astro.site ?? new URL('https://brisbaneservers.com')).origin;
+const hubDescription =
+  'Documented projects with context, approach, and measurable outcomes — evidence you can read before you scope work with us.';
+const { structuredData, breadcrumbs: breadcrumbItems } = caseStudiesHubSeo(
+  caseStudies,
+  siteOrigin,
+  import.meta.env.BASE_URL,
+  hubDescription,
+);
+---
+
+<SiteShell
+  title="Case studies"
+  description={hubDescription}
+  ogType="article"
+  structuredData={structuredData}
+  currentPath={currentPath}
+  pageId="case-studies"
+  valueProfile="evidence"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
+>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <Hero
+    eyebrow={valueProposition.brandEyebrow}
+    title="Case studies with measurable outcomes"
+    subtitle="Each write-up covers business context, what we implemented, and results you can evaluate — the same evidence-led pattern used across our resources and project pages."
+  />
+
+  <MarketingPageBands class="marketing-page-bands--case-studies">
+    <section class="section section-tartan-accent">
+      <div class="container">
+        <SectionIntro
+          eyebrow="Published write-ups"
+          title="Case studies you can read now"
+          byline="Open a study for challenge, approach, results, and lessons — then follow related industry resources if you want implementation detail."
+        />
+
+        <CardGrid columns={2}>
+          {
+            caseStudies.map((study) => (
+              <Card
+                title={study.cardTitle}
+                description={study.cardDescription}
+                icon={study.icon}
+                href={`/case-studies/${study.slug}`}
+                actionLabel="Read case study"
+                industry={study.industryFilter}
+              />
+            ))
+          }
+        </CardGrid>
+      </div>
+    </section>
+
+    {
+      overviewOnlyHubs.length > 0 && (
+        <section class="section section-tartan-accent">
+          <div class="container">
+            <SectionIntro
+              eyebrow="Resource hubs still growing"
+              title="Industry overviews without full topic libraries yet"
+              byline="These hubs already carry overview guides and decision framing. Topic-level guides are added as we publish them — not hidden behind request buttons."
+            />
+            <ul class="completeness-list">
+              {
+                overviewOnlyHubs.map((item) => (
+                  <li class="completeness-list__item">
+                    <a href={sitePath(item.href!)} class="completeness-list__link">
+                      {item.label}
+                    </a>
+                    <span class="completeness-list__note">{item.note}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section section-tartan-accent">
+      <div class="container">
+        <SectionIntro
+          eyebrow="Your situation"
+          title="Nothing here match your context?"
+          byline="Tell us what you operate and what you are trying to change — we map feasible options and sequencing, including grants where relevant."
+        />
+        <div class="case-studies-hub-cta">
+          <a href={sitePath('/projects')} class="btn btn-secondary">Projects overview</a>
+          <a href={sitePath('/resources')} class="btn btn-secondary">Resource hubs</a>
+          <a href={sitePath('/#inquiry-section')} class="btn btn-primary">Discuss your initiative</a>
+        </div>
+      </div>
+    </section>
+  </MarketingPageBands>
+</SiteShell>
+
+<style>
+  .completeness-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .completeness-list__item {
+    padding: var(--space-md) var(--space-lg);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.12);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .completeness-list__link {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .completeness-list__link:hover {
+    text-decoration: underline;
+  }
+
+  .completeness-list__note {
+    display: block;
+    margin-top: var(--space-xs);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .case-studies-hub-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+  }
+</style>

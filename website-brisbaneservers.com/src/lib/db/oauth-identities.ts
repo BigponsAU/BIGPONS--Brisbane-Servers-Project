@@ -1,0 +1,48 @@
+/**
+ * OAuth provider links (Google, etc.) — one row per provider account per user.
+ */
+import { getRuntimeEnv } from '~/utils/runtime-env';
+
+export type OAuthProvider = 'google';
+
+export interface StoredOAuthIdentity {
+  provider: OAuthProvider;
+  subject: string;
+  userId: string;
+  email: string;
+  createdAt: string;
+}
+
+function usePostgres(): boolean {
+  return Boolean(getRuntimeEnv('DATABASE_URL'));
+}
+
+export async function findOAuthIdentity(
+  provider: OAuthProvider,
+  subject: string
+): Promise<StoredOAuthIdentity | null> {
+  if (usePostgres()) {
+    const { findOAuthIdentityPg } = await import('./oauth-identities-pg');
+    return findOAuthIdentityPg(provider, subject);
+  }
+  const { findOAuthIdentitySqlite } = await import('./oauth-identities-sqlite');
+  return findOAuthIdentitySqlite(provider, subject);
+}
+
+export async function saveOAuthIdentity(identity: StoredOAuthIdentity): Promise<void> {
+  if (usePostgres()) {
+    const { saveOAuthIdentityPg } = await import('./oauth-identities-pg');
+    return saveOAuthIdentityPg(identity);
+  }
+  const { saveOAuthIdentitySqlite } = await import('./oauth-identities-sqlite');
+  return saveOAuthIdentitySqlite(identity);
+}
+
+export async function listOAuthIdentitiesForUser(userId: string): Promise<StoredOAuthIdentity[]> {
+  if (usePostgres()) {
+    const { listOAuthIdentitiesForUserPg } = await import('./oauth-identities-pg');
+    return listOAuthIdentitiesForUserPg(userId);
+  }
+  const { listOAuthIdentitiesForUserSqlite } = await import('./oauth-identities-sqlite');
+  return listOAuthIdentitiesForUserSqlite(userId);
+}

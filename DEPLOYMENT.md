@@ -1,106 +1,30 @@
-# Hosting: GitHub Pages + Hosted API
+# Hosting: Cloudflare Pages + Hosted API
 
-GitHub Pages serves only static files from `website-brisbaneservers.com/dist`. The primary production backend for the Pages site is the standalone API in `website-brisbaneservers.com/standalone-api/server.ts`. Bake the hosted API root into the static site with **`PUBLIC_API_BASE_URL`** (HTTPS).
+> **Canonical guide:** [docs/MASTER.md](docs/MASTER.md) — sections 5–7 cover deployment, env vars, and troubleshooting in full.
 
----
+Cloudflare Pages serves the static Astro frontend from `website-brisbaneservers.com/dist`. The production backend is the standalone API (`standalone-api/server.ts`, handlers in `api/`).
 
-## Phase 1 — Push this repository to GitHub
+## Quick checklist
 
-1. Commit and push `main` to `origin` (this repo).
-2. Authenticate for push (HTTPS token or SSH). From a machine without `gh` login, use Git Credential Manager or a PAT.
+1. Connect repo to **Cloudflare Pages** (not Workers) — root `website-brisbaneservers.com`, build `npm run build`, output `dist`
+2. Set Pages env: `PUBLIC_API_BASE_URL`, `PUBLIC_SITE_URL`, `PUBLIC_SITE_BASE=/`
+3. Deploy standalone API to Node host; set `ALLOWED_ORIGINS`, secrets, `DATABASE_URL`
+4. Set **`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`** on API host for SEO when publishing resources
+5. Verify `/account`, `/sitemap.xml`, `/robots.txt`
 
----
+**Live hosting (MCP-linked):** [docs/operations/HOSTING_MCP_WORKSPACE.md](docs/operations/HOSTING_MCP_WORKSPACE.md) · [status](docs/operations/PRODUCTION_GO_LIVE_STATUS.md)
 
-## Phase 2 — Run the primary hybrid API
+See [MASTER.md §5](docs/MASTER.md#5-deployment--cloudflare-pages-primary) and [GO_LIVE_RUNBOOK.md](docs/operations/GO_LIVE_RUNBOOK.md).
 
-Deploy `website-brisbaneservers.com/standalone-api/server.ts` to a Node host (Render, Fly, Railway, VPS, etc.) with durable storage:
-
-- Prefer `DATABASE_URL` (Postgres) for production auth/session durability.
-- If using filesystem storage, use paid persistent volumes and a backup/restore process.
-- Set `ALLOWED_ORIGINS` to the real browser origin(s), including `https://<user>.github.io` for Pages project sites.
-
-After deployment, confirm:
-
-- `https://<hybrid-api-host>/api/health`
-- `https://<hybrid-api-host>/api/resources/public`
-
-Use this host for `PUBLIC_API_BASE_URL` and `INTERNAL_API_BASE_URL`.
-
----
-
-## Phase 3 — Optional voice dashboard service (pick one path)
-
-### Path A — Render (blueprint in repo root: `render.yaml`)
-
-1. Open [render.com](https://render.com) and sign in.
-2. Click **New** → **Blueprint**.
-3. Connect the GitHub account that owns this repo; select **`BIGPONS--Brisbane-Servers-Project`** (or the repo name you use).
-4. Apply the blueprint. Wait until the **Web Service** is live.
-5. Open that service → **Environment**. Set:
-   - **`ALLOWED_ORIGINS`** — exact `Origin` values, comma-separated. For GitHub Pages at `https://<user>.github.io/<repo>/`, the browser still sends **`Origin: https://<user>.github.io`** (no `/repo`). Add every domain that loads the site (including a custom domain if you use one).
-   - **`ADMIN_EMAIL`** and **`ADMIN_PASSWORD`** — set both if admin login against this API must work.
-6. Copy the service **public URL** (example: `https://voice-framework-dashboard-xxxx.onrender.com`).
-7. Confirm **`https://<that-host>/api/health`** returns JSON in a browser.
-
-**Persistence:** Free Render disks are ephemeral. Data under `/app/storage` resets on restart unless you attach a paid disk at **`/app/storage`** or move storage off the instance.
-
-### Path B — GHCR image + your own host
-
-1. On GitHub: **Actions** → **Publish Voice Dashboard (Docker / GHCR)** → **Run workflow** (or push a change under `voice-framework/` to `main`).
-2. Pull **`ghcr.io/bigponsau/voice-framework-dashboard:latest`** (owner segment is lowercase; adjust if your GitHub owner differs).
-3. Run the container with the same environment variables as in `render.yaml` / `DEPLOYMENT.md` (see the `docker run` block in the previous revision or `voice-framework/.env.example`).
-
----
-
-## Phase 4 — Wire GitHub Actions (Pages build)
-
-1. On GitHub: **Settings** → **Secrets and variables** → **Actions** → **Variables** tab.
-2. Create or update:
-
-| Name | Value |
-|------|--------|
-| **`PUBLIC_API_BASE_URL`** | `https://<hybrid-api-host>/api` (no trailing slash after `api`; for Pages production this should point to the standalone API host). |
-| **`INTERNAL_API_BASE_URL`** | Set to the **same** value as `PUBLIC_API_BASE_URL` unless the Actions runner reaches a different internal URL (rare). |
-
-3. Leave **`PUBLIC_SITE_URL`** and **`PUBLIC_SITE_BASE`** unset to use workflow defaults for `https://<owner>.github.io/<repo>/`, or set them explicitly for a custom domain.
-4. **Do not** set **`SKIP_HOSTED_API_CHECK`** unless you are deliberately publishing a site build that will not call the API yet. Remove it after `PUBLIC_API_BASE_URL` is set.
-
----
-
-## Phase 5 — Deploy the static site
-
-1. On GitHub: **Settings** → **Pages** → **Build and deployment** → **Source** must be **GitHub Actions** (not **Deploy from a branch**).
-2. If GitHub prompts for a starter workflow, pick the repo’s Astro workflow (**Deploy to GitHub Pages**) from `.github/workflows/deploy-github-pages.yml`. Do **not** add the **Jekyll** static-site starter—it runs **`actions/jekyll-build-pages`** on the repo root and fails on `.astro` files (“Invalid YAML front matter”).
-3. If a Jekyll Pages workflow already exists: **Actions** → select the failing workflow → **⋯** → **Disable workflow**, or delete that workflow file on `main`; only **`Deploy to GitHub Pages`** should publish this site.
-4. On GitHub: **Actions** → **Deploy to GitHub Pages** → **Run workflow**, or push to **`main`** (workflow runs on push to `main`).
-5. Wait for **build** then **deploy** jobs to finish.
-6. Open the Pages URL; exercise login and any portal calls that hit `/api`.
-
----
-
-## Phase 6 — GitHub CLI (optional, from a machine where you control auth)
-
-1. Run **`gh auth login`** once.
-2. Set variables from a terminal (replace placeholders):
+## Local development
 
 ```bash
-gh variable set PUBLIC_API_BASE_URL --body "https://YOUR-HYBRID-API-HOST/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
-gh variable set INTERNAL_API_BASE_URL --body "https://YOUR-HYBRID-API-HOST/api" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project
+npm run start:hybrid
 ```
 
-3. Trigger Pages: **`gh workflow run "Deploy to GitHub Pages" --repo BigponsAU/BIGPONS--Brisbane-Servers-Project`**
+Frontend: `http://localhost:3000` · API: `http://localhost:3002/api`
 
----
+## Related
 
-## CORS
-
-1. Keep **`ALLOWED_ORIGINS`** aligned with real browser origins on each hosted API.
-2. For voice dashboard deployments, `ALLOW_GITHUB_PAGES=1` allows any `https://*.github.io` origin (looser; prefer explicit allow-lists for production).
-
----
-
-## Local development (Cursor)
-
-1. Copy `voice-framework/.env.example` → `.env` and `website-brisbaneservers.com/.env.example` → `.env` as needed.
-2. Run **`npm run start:unified`** from the monorepo root (or start website + dashboard separately).
-3. Point **`PUBLIC_API_BASE_URL`** at `http://localhost:3002/api` for local hybrid builds, or rely on relative `/api` in same-origin runs.
+- [MASTER.md](docs/MASTER.md) — full operations & SEO reference
+- [docs/operations/CLOUDFLARE_PAGES.md](docs/operations/CLOUDFLARE_PAGES.md) — Cloudflare-specific supplement

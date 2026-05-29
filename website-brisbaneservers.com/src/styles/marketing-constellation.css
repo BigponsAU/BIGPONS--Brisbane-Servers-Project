@@ -1,0 +1,175 @@
+/**
+ * Graduated section constellations — margin/gutter only; content column stays clear.
+ */
+
+.marketing-page-bands--constellation-spine {
+  position: relative;
+}
+
+.marketing-page-bands--constellation-spine > .section.section-tartan-accent {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Distance from section edge to content column (for gutter placement) */
+  --constellation-margin: max(0.35rem, calc((100% - min(var(--site-frame-wide), 100%)) / 2));
+}
+
+.section-constellation-layer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  --constellation-node-rgb: var(--accent-violet-rgb);
+  --constellation-link-rgb: var(--primary-color-rgb);
+}
+
+.section-constellation-layer .section-satellite {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  opacity: 1;
+}
+
+/* ─── Whisper: small accents locked to outer gutters ─── */
+.section-constellation-layer--whisper {
+  width: clamp(6.5rem, 14vw, 10.5rem);
+  aspect-ratio: 320 / 210;
+  opacity: 0.48;
+}
+
+.section-constellation-layer--whisper.section-constellation-layer--top-right {
+  top: clamp(0.75rem, 3vw, 1.75rem);
+  right: var(--constellation-margin);
+  left: auto;
+}
+
+.section-constellation-layer--whisper.section-constellation-layer--top-left {
+  top: clamp(0.75rem, 3vw, 1.75rem);
+  left: var(--constellation-margin);
+  right: auto;
+}
+
+.section-constellation-layer--whisper.section-constellation-layer--bottom-right {
+  bottom: clamp(0.75rem, 3vw, 1.5rem);
+  right: var(--constellation-margin);
+  left: auto;
+}
+
+.section-constellation-layer--whisper.section-constellation-layer--bottom-left {
+  bottom: clamp(0.75rem, 3vw, 1.5rem);
+  left: var(--constellation-margin);
+  right: auto;
+}
+
+/* ─── Accent / rim: wings in gutters only (transparent content column) ─── */
+.section-constellation-layer--accent,
+.section-constellation-layer--rim {
+  inset: 0;
+  width: auto;
+  height: auto;
+  opacity: 0.34;
+}
+
+.section-constellation-layer--accent.section-constellation-layer--field,
+.section-constellation-layer--rim.section-constellation-layer--field {
+  mask-image: radial-gradient(
+    ellipse 105% 92% at 50% 48%,
+    transparent 0%,
+    transparent 34%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 54%,
+    black 68%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 105% 92% at 50% 48%,
+    transparent 0%,
+    transparent 34%,
+    rgba(0, 0, 0, 0.18) 42%,
+    rgba(0, 0, 0, 0.55) 54%,
+    black 68%
+  );
+}
+
+.section-constellation-layer--rim {
+  opacity: 0.4;
+}
+
+/* Node / edge contrast (marketing bands on light surface) */
+.marketing-page-bands--constellation-spine .section-constellation-layer .section-satellite__edge {
+  stroke: rgba(var(--constellation-link-rgb), 0.42);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.marketing-page-bands--constellation-spine .section-constellation-layer .section-satellite__node {
+  fill: rgba(var(--constellation-node-rgb), 0.3);
+  stroke: rgba(var(--primary-color-rgb), 0.75);
+  stroke-width: 1;
+}
+
+.marketing-page-bands--constellation-spine .section-constellation-layer .section-satellite__node--hub {
+  fill: rgba(var(--accent-pink-rgb), 0.42);
+  stroke: rgba(var(--primary-color-rgb), 0.9);
+  stroke-width: 1.1;
+  transform: scale(1.18);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.marketing-page-bands--constellation-spine .section-constellation-layer--whisper .section-satellite__edge {
+  stroke-width: 0.85;
+  opacity: 0.8;
+}
+
+.section-constellation-layer--whisper .section-satellite__node {
+  fill: rgba(var(--constellation-node-rgb), 0.26);
+}
+
+/* Readable content always above décor */
+.marketing-page-bands--constellation-spine > .section .container,
+.marketing-page-bands--constellation-spine > .section :is(
+    .card,
+    .card-grid,
+    .projects-value-list,
+    .projects-highlight-band,
+    .contribute-block,
+    .about-portal-voice__rules,
+    .about-portal-voice__rule
+  ) {
+  position: relative;
+  z-index: 2;
+}
+
+/* Portal voice band: subtle wash; accent stays in gutters */
+.about-portal-voice-section.section-constellation-host--accent {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--primary-color-rgb), 0.02) 0%,
+    rgba(var(--primary-color-rgb), 0.05) 35%,
+    rgba(var(--accent-violet-rgb), 0.04) 65%,
+    rgba(var(--primary-color-rgb), 0.02) 100%
+  );
+}
+
+.about-portal-voice-section .section-constellation-layer--accent {
+  opacity: 0.38;
+}
+
+@media (max-width: 900px) {
+  .section-constellation-layer--whisper {
+    width: clamp(5.5rem, 22vw, 8rem);
+    opacity: 0.38;
+  }
+
+  .section-constellation-layer--accent,
+  .section-constellation-layer--rim {
+    opacity: 0.28;
+  }
+}
+
+@media (max-width: 640px) {
+  .marketing-page-bands--constellation-spine .section-constellation-layer {
+    display: none;
+  }
+}

@@ -4,15 +4,17 @@ import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
-import SemanticText from '../components/SemanticText.astro';
+import SectionIntro from '../components/SectionIntro.astro';
+import SectionConstellationLayer from '../components/SectionConstellationLayer.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/services';
+const { sections } = valueProposition.services;
 ---
 
-<SiteShell 
-  title="Services - Brisbane Servers"
+<SiteShell
+  title="Services"
   description={valueProposition.services.description}
   currentPath={currentPath}
   pageId="services"
@@ -20,51 +22,46 @@ const currentPath = '/services';
   zoomProfile="focused"
   mainClass="main-phi-chassis"
 >
-    <Hero 
-      eyebrow={valueProposition.brandEyebrow}
-      title={valueProposition.services.heroTitle}
-      subtitle={valueProposition.services.heroSubtitle}
-    />
+  <Hero
+    eyebrow={valueProposition.brandEyebrow}
+    title={valueProposition.services.heroTitle}
+    subtitle={valueProposition.services.heroSubtitle}
+    ctaText="Request a consultation"
+    ctaHref="/services#consultation"
+    scrollTargetId="#consultation"
+    scrollLabel="Continue to contact"
+  />
 
-    <MarketingPageBands>
-    <!-- Services Overview -->
-    <!-- Layout A: Horizontal flow with lateral tangents -->
-    <!-- Comprehensive block usage: phi-lateral-horizontal, phi-tangent, bg-pattern-phi-radial -->
+  <MarketingPageBands class="marketing-page-bands--constellation-spine">
     <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+      <SectionConstellationLayer variant="solutions" semanticKey="services-delivery" tier="whisper" placement="top-right" />
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="phi-tangent"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="How delivery works in practice" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="If you are not sure what you need yet, that is a valid starting point. We move from baseline reality to a sequenced plan — each step testable before the next tranche of spend." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
-        
-        <CardGrid>
+        <SectionIntro
+          eyebrow={sections.delivery.eyebrow}
+          title={sections.delivery.title}
+          byline={sections.delivery.byline}
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
             title="Consultation"
-            description="Physical or online conversations to understand your business, challenges, and goals. No pressure, no sales pitch—just honest dialogue."
+            description="Structured physical or online sessions to map operating context, constraints, and objectives — scope and trade-offs documented before delivery."
             icon="fas fa-comments"
           />
-          
           <Card
             title="Analysis"
             description="We do the tech learning, information sifting, and reality checking. You focus on your business; we identify feasible solutions."
             icon="fas fa-search"
           />
-          
           <Card
             title="Implementation"
             description="Building and deploying solutions tailored to your value framework. Phased approach, grant-assisted when available."
             icon="fas fa-rocket"
           />
-          
           <Card
-            title="Ongoing Support"
+            title="Ongoing support"
             description="Access to expertise when you need it. Updates, adjustments, and guidance as your business evolves."
             icon="fas fa-headset"
           />
@@ -72,60 +69,48 @@ const currentPath = '/services';
       </div>
     </section>
 
-    <!-- Value Framework -->
-    <!-- Layout B: Card grid with phi-based spacing variations -->
-    <!-- Comprehensive block usage: phi-line-vertical, phi-lateral-angular-1, bg-pattern-angular -->
     <section class="section section-tartan-accent section-home-band--primary-light">
+      <SectionConstellationLayer variant="solutions" semanticKey="services-value" tier="whisper" placement="bottom-left" />
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-lateral-angular-1"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="Value profiling" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="We weight business size, cost reasonableness, grants, industry rules, and time saved — so recommendations are customised, not templated." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
-        
-        <CardGrid>
+        <SectionIntro
+          eyebrow={sections.valueProfile.eyebrow}
+          title={sections.valueProfile.title}
+          byline={sections.valueProfile.byline}
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
-            title="Business Size & Standing"
-            description="Current capabilities, basics missing, unique advantages available. Solutions scaled to where you are today."
+            title="Business size and standing"
+            description="Current capabilities, basics missing, unique advantages. Solutions scaled to where you are today."
           />
-          
           <Card
-            title="Cost Reasonability"
-            description="What's feasible for your financial position. Smart investments, not overspending. ROI-focused recommendations."
+            title="Cost reasonableness"
+            description="What is feasible for your financial position. Smart investments, not overspending. ROI-focused recommendations."
           />
-          
           <Card
-            title="Grants & Incentives"
-            description="Identifying what's available for your industry and business purpose. We help you access grants and tax incentives."
+            title="Grants and incentives"
+            description="What is available for your industry and purpose. We help you access grants and tax incentives."
           />
-          
           <Card
-            title="Industry Specifics"
-            description="Understanding field-relevant requirements, compliance needs, and what actually works in your industry."
+            title="Industry specifics"
+            description="Field-relevant requirements, compliance needs, and what actually works in your industry."
           />
-          
           <Card
-            title="Time Savings"
-            description="Identifying automation opportunities for tedious, menial tasks. Freeing your time for high-value work."
+            title="Time savings"
+            description="Automation for tedious, menial tasks — freeing your time for high-value work."
           />
         </CardGrid>
       </div>
     </section>
 
-    <!-- Inquiry Section -->
     <InquiryForm
       id="consultation"
-      title="Ready to start the conversation?"
-      subtitle="Physical or online consultations available by appointment."
+      title="Request a consultation"
+      subtitle="Book a physical or online consultation by appointment. We align recommendations to your industry, scope, and agreed budget."
       industryField={true}
       preferenceField={true}
     />
-    </MarketingPageBands>
+  </MarketingPageBands>
 </SiteShell>
-

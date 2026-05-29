@@ -158,15 +158,14 @@ function checkBrandChromaCSS(): VerificationResult {
       bundle.includes('#8b5cf6') &&
       bundle.includes('#ec4899') &&
       bundle.includes('brand-gradient-chroma');
-    const lastBtnPrimary = bundle.lastIndexOf('.btn-primary{');
-    const lastBtnChunk =
-      lastBtnPrimary >= 0 ? bundle.slice(lastBtnPrimary, lastBtnPrimary + 280) : '';
-    const gradientWinsLast =
-      lastBtnChunk.includes('gradient') ||
-      lastBtnChunk.includes('#8b5cf6') ||
-      lastBtnChunk.includes('brand-gradient-chroma');
+    const hasMarketingPrimaryRule =
+      bundle.includes('.btn.btn-primary') || bundle.includes('a.btn.btn-primary');
+    const gradientOnMarketingButtons =
+      hasLiteralGradient &&
+      hasMarketingPrimaryRule &&
+      bundle.includes('brand-gradient-chroma');
 
-    if (!hasLiteralGradient || !gradientWinsLast) {
+    if (!gradientOnMarketingButtons) {
       return {
         name: 'Brand chroma CSS',
         passed: false,

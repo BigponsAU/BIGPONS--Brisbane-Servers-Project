@@ -1,0 +1,156 @@
+---
+import Hero from '../Hero.astro';
+import MarketingPageBands from '../MarketingPageBands.astro';
+import SectionIntro from '../SectionIntro.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import { accountWorkspace } from '../../data/account-workspace';
+import { portalVoiceFrameworkSummary } from '../../lib/portal-voice-framework';
+---
+      <div id="login-screen" class="login-screen">
+        <Hero
+          eyebrow={accountWorkspace.signInEyebrow}
+          title={accountWorkspace.productName}
+          subtitle={accountWorkspace.signInSubtitle}
+          scrollTargetId="#sign-in"
+          scrollLabel="Continue to sign in"
+        />
+        <MarketingPageBands class="marketing-page-bands--constellation-spine account-workspace-signin-bands">
+          <section
+            id="portal-voice-framework"
+            class="section section-tartan-accent section-home-band--surface phi-line-symmetrical"
+            aria-labelledby="account-framework-heading"
+          >
+            <SectionConstellationLayer variant="partnership" semanticKey="account-voice-framework" tier="whisper" placement="top-right" />
+            <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+            <div class="phi-lateral-horizontal"></div>
+            <div class="container">
+              <SectionIntro
+                eyebrow="Voice framework"
+                title="How we write in this workspace"
+                byline={portalVoiceFrameworkSummary}
+                titleId="account-framework-heading"
+              />
+            </div>
+          </section>
+          <section id="sign-in" class="section section-tartan-accent section-home-band--primary-light account-workspace-signin-section">
+            <SectionConstellationLayer variant="solutions" semanticKey="account-sign-in" tier="whisper" placement="bottom-left" />
+            <div class="bg-pattern-angular bg-pattern-light"></div>
+            <div class="container login-container">
+          <div class="login-grid">
+            <div class="login-card">
+              <h2 class="login-card__title">Sign in</h2>
+              <p class="login-subtitle">Manage contributions, saved work, resources, and voice settings.</p>
+              <p class="login-note">Browsing resources stays public. Use your account when you want to contribute, save progress, or review your workspace activity.</p>
+              <div id="auth-status-banner" class="auth-status-banner" style="display: none;" role="status" aria-live="polite"></div>
+              <form id="login-form" class="login-form" aria-label="Account sign-in form">
+                <div class="form-group">
+                  <label for="email">Email <span class="sr-only">(required)</span></label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    autocomplete="email"
+                    aria-required="true"
+                    aria-describedby="email-error"
+                  />
+                  <span id="email-error" class="sr-only">Enter your account email address</span>
+                </div>
+                <div class="form-group">
+                  <label for="password">Password <span class="sr-only">(required)</span></label>
+                  <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    autocomplete="current-password"
+                    aria-required="true"
+                    aria-describedby="password-error"
+                  />
+                  <span id="password-error" class="sr-only">Enter your account password</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" aria-describedby="login-submit-hint">
+                  Sign in
+                </button>
+                <button type="button" id="passkey-login-btn" class="btn btn-secondary btn-block" style="margin-top: var(--space-sm);">
+                  Sign in with passkey
+                </button>
+                <p class="login-oauth-divider" id="oauth-divider" style="display: none; margin: var(--space-md) 0 var(--space-sm); text-align: center; color: var(--portal-text-tertiary); font-size: var(--text-sm);">or</p>
+                <a id="google-oauth-btn" class="btn btn-secondary btn-block oauth-google-btn" href="#" style="display: none; text-align: center; text-decoration: none;">
+                  Continue with Google
+                </a>
+                <p class="login-note" style="margin-top: var(--space-sm);">Passkeys use your device biometrics or security key — safer than a shared admin password. Register one after your first password or Google sign-in.</p>
+                <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
+                <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+              </form>
+              <form id="reset-password-form" class="login-form auth-help-form" aria-label="Reset password form" style="display: none;">
+                <h3>Set a new password</h3>
+                <div class="form-group">
+                  <label for="reset-password">New password</label>
+                  <input type="password" id="reset-password" name="password" required minlength="8" autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Update password</button>
+                <div id="reset-password-error" class="status-message" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+            <div class="login-card login-card--secondary">
+              <h2>Create an account</h2>
+              <p class="login-subtitle">Set up your workspace to contribute, track tokens, and keep your resources in one place.</p>
+              <ul class="login-benefits">
+                <li>Keep a history of submissions and accepted contributions.</li>
+                <li>See your token balance and recent workspace activity.</li>
+                <li>Return later to continue work without starting from scratch.</li>
+              </ul>
+              <form id="register-form" class="login-form" aria-label="Create account form">
+                <div class="form-group">
+                  <label for="register-email">Email <span class="sr-only">(required)</span></label>
+                  <input
+                    type="email"
+                    id="register-email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    aria-required="true"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="register-password">Password <span class="sr-only">(required)</span></label>
+                  <input
+                    type="password"
+                    id="register-password"
+                    name="password"
+                    required
+                    minlength="8"
+                    autocomplete="new-password"
+                    aria-required="true"
+                  />
+                </div>
+                <button type="submit" class="btn btn-secondary btn-block">Create account</button>
+                <div id="register-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+              </form>
+              <div class="auth-help-stack">
+                <form id="resend-verification-form" class="login-form auth-help-form" aria-label="Resend verification email form">
+                  <h3>Resend verification email</h3>
+                  <div class="form-group">
+                    <label for="resend-email">Email</label>
+                    <input type="email" id="resend-email" name="email" required autocomplete="email" />
+                  </div>
+                  <button type="submit" class="btn btn-secondary btn-block">Send verification email</button>
+                  <div id="resend-verification-error" class="status-message" role="status" aria-live="polite"></div>
+                </form>
+                <form id="forgot-password-form" class="login-form auth-help-form" aria-label="Forgot password form">
+                  <h3>Forgot your password?</h3>
+                  <div class="form-group">
+                    <label for="forgot-email">Email</label>
+                    <input type="email" id="forgot-email" name="email" required autocomplete="email" />
+                  </div>
+                  <button type="submit" class="btn btn-secondary btn-block">Send reset link</button>
+                  <div id="forgot-password-error" class="status-message" role="status" aria-live="polite"></div>
+                </form>
+              </div>
+            </div>
+          </div>
+            </div>
+          </section>
+        </MarketingPageBands>
+      </div>

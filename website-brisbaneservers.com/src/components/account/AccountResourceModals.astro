@@ -1,0 +1,71 @@
+---
+import { industries } from '../../data/industries';
+---
+    <!-- View Resource Modal -->
+    <div id="view-resource-modal" class="modal" role="dialog" aria-labelledby="view-resource-title" aria-hidden="true">
+      <div class="modal-overlay" onclick="closeViewModal()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="view-resource-title">View Resource</h2>
+          <button class="modal-close" onclick="closeViewModal()" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body" id="view-resource-body">
+          <!-- Content will be populated by JavaScript -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+          <button class="btn btn-primary" id="edit-from-view-btn">Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Resource Modal -->
+    <div id="edit-resource-modal" class="modal" role="dialog" aria-labelledby="edit-resource-title" aria-hidden="true">
+      <div class="modal-overlay" onclick="closeEditModal()"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2 id="edit-resource-title">Edit Resource</h2>
+          <button class="modal-close" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
+        </div>
+        <form id="edit-resource-form" class="modal-body">
+          <input type="hidden" id="edit-resource-id" />
+          <div class="form-group">
+            <label for="edit-resource-title-input">Title</label>
+            <input type="text" id="edit-resource-title-input" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-resource-industry">Industry</label>
+            <select id="edit-resource-industry" required>
+              <option value="">Select Industry...</option>
+              {industries.map(industry => (
+                <option value={industry.slug}>{industry.name}</option>
+              ))}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-resource-topic">Topic</label>
+            <input type="text" id="edit-resource-topic" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-resource-description">Description</label>
+            <textarea id="edit-resource-description" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit-resource-content">Content</label>
+            <textarea id="edit-resource-content" rows="15" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit-resource-status">Status</label>
+            <select id="edit-resource-status" required>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+        </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" form="edit-resource-form" class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>

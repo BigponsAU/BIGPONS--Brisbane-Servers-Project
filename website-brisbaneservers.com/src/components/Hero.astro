@@ -13,6 +13,7 @@ import SierpinskiSatellite from './SierpinskiSatellite.astro';
  * @property {string} [ctaHref] - Call-to-action button link URL
  */
 interface Props {
+  class?: string;
   title: string;
   subtitle?: string;
   eyebrow?: string;
@@ -28,6 +29,7 @@ interface Props {
 }
 
 const { 
+  class: className = '',
   title = 'Welcome', 
   subtitle, 
   eyebrow,
@@ -46,7 +48,7 @@ const resolvedSecondaryCtaHref =
   secondaryCtaHref && !secondaryCtaHref.startsWith('#') ? sitePath(secondaryCtaHref) : secondaryCtaHref;
 ---
 
-<section class="hero hero-original">
+<section class:list={['hero', 'hero-original', className]}>
   <div class="hero-background-gradient"></div>
   <!-- Light tartan mesh — stays behind copy + visual -->
   <div class="hero-tartan-overlay" aria-hidden="true"></div>

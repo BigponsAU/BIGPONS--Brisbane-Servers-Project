@@ -18,7 +18,8 @@
   flex-direction: column;
   max-height: min(48vh, 100vh);
   max-height: min(48dvh, 100dvh);
-  overflow: hidden;
+  /* Do not clip hover states on buttons (overflow-x:hidden forces overflow-y:auto and clips vertically) */
+  overflow: visible;
   background: var(--bg-elevated);
   border-top: var(--phi-line-width) solid var(--border-light);
   box-shadow: var(--shadow-lg);
@@ -56,13 +57,19 @@ body > .cookie-consent {
   margin: 0 auto;
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: clamp(0.5rem, 2vmin, var(--space-md));
   align-items: stretch;
+}
+
+/* Only scroll the message when the bar is height-capped at extreme zoom */
+@media (max-height: 32rem) {
+  .cookie-consent-content {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 @media (min-width: 768px) {
@@ -116,6 +123,9 @@ body > .cookie-consent {
   flex-shrink: 0;
   flex-wrap: wrap;
   justify-content: center;
+  /* Prevent global .btn-primary:hover translateY from clipping against the bar edge */
+  padding-block: 0.2rem;
+  overflow: visible;
 }
 
 @media (min-width: 768px) {
@@ -132,7 +142,11 @@ body > .cookie-consent {
   border: var(--phi-line-width) solid transparent;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  transform: none;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    filter var(--transition);
   /* Avoid rem-only min-width blowing up layout at high zoom */
   min-width: min(11rem, 100%);
   max-width: 100%;
@@ -146,17 +160,32 @@ body > .cookie-consent {
 }
 
 .cookie-btn-accept {
-  background: var(--brand-gradient-chroma, linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%));
-  background-color: #8b5cf6;
-  color: #fff;
+  background: var(--brand-gradient-chroma, linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%)) !important;
+  background-image: var(--brand-gradient-chroma, linear-gradient(135deg, #0a74da 0%, #8b5cf6 46%, #ec4899 100%)) !important;
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   border: none;
   font-weight: var(--font-weight-semibold);
 }
 
-.cookie-btn-accept:hover {
-  background: var(--brand-gradient-chroma-hero, linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%));
-  background-color: #8b5cf6;
-  box-shadow: 0 4px 14px -4px rgba(139, 92, 246, 0.4);
+.cookie-btn-accept:hover,
+.cookie-btn-accept:focus-visible {
+  background: var(--brand-gradient-chroma-hero, linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%)) !important;
+  background-image: var(--brand-gradient-chroma-hero, linear-gradient(135deg, #3b82f6 0%, #8b5cf6 42%, #ec4899 100%)) !important;
+  background-color: #8b5cf6 !important;
+  filter: brightness(1.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  transform: none !important;
+}
+
+.cookie-consent .cookie-btn,
+.cookie-consent .cookie-btn:hover,
+.cookie-consent .cookie-btn:focus,
+.cookie-consent .cookie-btn:focus-visible,
+.cookie-consent .cookie-btn:active {
+  transform: none !important;
+  top: auto !important;
 }
 
 .cookie-btn-decline {

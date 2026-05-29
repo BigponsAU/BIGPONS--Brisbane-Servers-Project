@@ -1,23 +1,26 @@
 ---
+import { valueProposition } from '../data/value-proposition';
+
+const { searchLabel, searchPlaceholder } = valueProposition.resources;
 ---
 
-<div class="search-bar" role="search" aria-label="Site search">
+<div class="search-bar" role="search" aria-label={searchLabel}>
   <div class="search-input-wrapper">
     <i class="fas fa-search search-icon" aria-hidden="true"></i>
-    <label for="search-input" class="sr-only">Search for industry-specific solutions, grants, automation opportunities</label>
-    <input 
-      type="text" 
+    <label for="search-input" class="sr-only">{searchLabel}</label>
+    <input
+      type="text"
       id="search-input"
-      class="search-input" 
-      placeholder="Search for industry-specific solutions, grants, automation opportunities..." 
-      aria-label="Search"
+      class="search-input"
+      placeholder={searchPlaceholder}
+      aria-label={searchLabel}
       aria-autocomplete="list"
       aria-controls="search-results"
       aria-expanded="false"
     />
   </div>
-  <div 
-    class="search-results" 
+  <div
+    class="search-results"
     id="search-results"
     role="listbox"
     aria-label="Search results"
@@ -25,4 +28,3 @@
     <!-- Search results will appear here -->
   </div>
 </div>
-

@@ -5,8 +5,12 @@ import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import IndustryFilters from '../components/IndustryFilters.astro';
 import SemanticText from '../components/SemanticText.astro';
+import SectionIntro from '../components/SectionIntro.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
+import CaseStudyCard from '../components/CaseStudyCard.astro';
+import { caseStudies } from '../data/case-studies';
+import { industryHubStatus } from '../data/site-completeness';
 import { valueProposition } from '../data/value-proposition';
 import { sitePath } from '../lib/site-path';
 
@@ -14,7 +18,7 @@ const currentPath = '/projects';
 ---
 
 <SiteShell 
-  title="Projects - Brisbane Servers"
+  title="Projects"
   description={valueProposition.projects.description}
   currentPath={currentPath}
   pageId="projects"
@@ -28,20 +32,22 @@ const currentPath = '/projects';
       subtitle={valueProposition.projects.heroSubtitle}
     />
 
-    <MarketingPageBands>
-    <section id="client-sites" class="section section-tartan-accent section-home-band--surface">
+    <MarketingPageBands class="marketing-page-bands--projects">
+    <section id="client-sites" class="section section-tartan-accent section-home-band--surface projects-page-lead">
+      <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Public web presences" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText
-            text="Sites and apps you can open in the browser today. The list is short on purpose; we expand it when new work is live and clients approve a public link."
-            semanticLevel="normal"
-            isChild={true}
-          />
-        </p>
-        <ClientSitesShowcase showFootnote={false} />
+        <div class="projects-page-lead__grid">
+          <div class="projects-page-lead__copy">
+            <SectionIntro
+              eyebrow="Proof you can open today"
+              title="Public web presences"
+              byline="Sites and apps you can open in the browser today. The list is short on purpose; we expand it when new work is live and clients approve a public link."
+            />
+          </div>
+          <div class="projects-page-lead__showcase">
+            <ClientSitesShowcase showFootnote={false} layout="featured" />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -50,15 +56,12 @@ const currentPath = '/projects';
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="Our Project Approach" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="Every project follows our value framework: understanding your business context, identifying what's feasible given your constraints, and delivering solutions that actually work. We don't sell one-size-fits-all—we assess your reality and recommend what makes sense." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
-        
+        <SectionIntro
+          eyebrow="How we deliver"
+          title="Our project approach"
+          byline="Every project follows our value framework: understanding your business context, identifying what's feasible given your constraints, and delivering solutions that actually work. We don't sell one-size-fits-all—we assess your reality and recommend what makes sense."
+        />
+
         <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
             title="Assessment Phase"
@@ -89,36 +92,40 @@ const currentPath = '/projects';
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-tangent"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Value Framework" semanticLevel="high" isParent={true} />
-        </h2>
-        <div class="section-description" style="line-height: 1.8;">
+        <SectionIntro
+          eyebrow="Decision lens"
+          title="Value framework"
+          byline="Our value framework guides every project decision:"
+        />
+        <div class="projects-value-list">
           <p>
-            <SemanticText text="Our value framework guides every project decision:" semanticLevel="normal" isChild={true} />
+            <strong>Business Context:</strong>{' '}
+            <SemanticText text="Understanding your industry, size, location, and specific challenges. What works for a large enterprise doesn't work for a small Brisbane business." semanticLevel="normal" isChild={true} />
           </p>
-          <p style="margin-top: var(--space-md);">
-            <strong>Business Context:</strong> <SemanticText text="Understanding your industry, size, location, and specific challenges. What works for a large enterprise doesn't work for a small Brisbane business." semanticLevel="normal" isChild={true} />
+          <p>
+            <strong>Reality Assessment:</strong>{' '}
+            <SemanticText text="Honest evaluation of what's feasible given your budget, resources, and constraints. We identify grant opportunities, cost-effective alternatives, and phased approaches." semanticLevel="normal" isChild={true} />
           </p>
-          <p style="margin-top: var(--space-md);">
-            <strong>Reality Assessment:</strong> <SemanticText text="Honest evaluation of what's feasible given your budget, resources, and constraints. We identify grant opportunities, cost-effective alternatives, and phased approaches." semanticLevel="normal" isChild={true} />
+          <p>
+            <strong>Evidence-Based Recommendations:</strong>{' '}
+            <SemanticText text="Every recommendation is backed by documented proof—case studies, implementation details, and real results from similar businesses." semanticLevel="normal" isChild={true} />
           </p>
-          <p style="margin-top: var(--space-md);">
-            <strong>Evidence-Based Recommendations:</strong> <SemanticText text="Every recommendation is backed by documented proof—case studies, implementation details, and real results from similar businesses." semanticLevel="normal" isChild={true} />
+          <p>
+            <strong>Practical Implementation:</strong>{' '}
+            <SemanticText text="Solutions designed to be implemented, not just conceptualized. We consider staff training, integration requirements, and ongoing maintenance." semanticLevel="normal" isChild={true} />
           </p>
-          <p style="margin-top: var(--space-md);">
-            <strong>Practical Implementation:</strong> <SemanticText text="Solutions designed to be implemented, not just conceptualized. We consider staff training, integration requirements, and ongoing maintenance." semanticLevel="normal" isChild={true} />
-          </p>
-          <p style="margin-top: var(--space-md);">
-            <strong>Measurable Outcomes:</strong> <SemanticText text="Every project includes clear success metrics and documentation of actual results. This transparency helps you make informed decisions." semanticLevel="normal" isChild={true} />
+          <p>
+            <strong>Measurable Outcomes:</strong>{' '}
+            <SemanticText text="Every project includes clear success metrics and documentation of actual results. This transparency helps you make informed decisions." semanticLevel="normal" isChild={true} />
           </p>
         </div>
-        
-        <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--primary-light); border-radius: var(--border-radius);">
-          <h3 style="margin-bottom: var(--space-md);">Why Case Studies Matter</h3>
-          <p style="margin: 0; line-height: 1.8;">
+
+        <aside class="projects-highlight-band" aria-labelledby="projects-case-studies-heading">
+          <h3 id="projects-case-studies-heading">Why case studies matter</h3>
+          <p>
             <SemanticText text="Each case study documents a real project with actual results. You can see how we assessed the business context, what solutions we recommended, and what outcomes were achieved. This transparency helps you understand our approach and evaluate whether it's right for your business." semanticLevel="normal" isChild={true} />
           </p>
-        </div>
+        </aside>
       </div>
     </section>
 
@@ -129,62 +136,34 @@ const currentPath = '/projects';
       <div class="phi-tangent"></div>
       <div class="phi-lateral-angular-4"></div>
       <div class="container">
-        <div class="section-intro-phi">
-          <h2 class="section-title">
-            <SemanticText text="Projects by Industry" semanticLevel="high" isParent={true} />
-          </h2>
-          <p class="section-description">
-            <SemanticText text="Each project demonstrates our value framework in action: understanding your business context, identifying what's feasible, and delivering tailored solutions for Brisbane and Australian businesses." semanticLevel="normal" isChild={true} />
-          </p>
-        </div>
+        <SectionIntro
+          eyebrow="Case studies and patterns"
+          title="Projects by industry"
+          byline="Each project demonstrates our value framework in action: understanding your business context, identifying what's feasible, and delivering tailored solutions for Brisbane and Australian businesses."
+        />
         
         <IndustryFilters />
         
         <CardGrid>
-          <Card
-            title="Retail: Inventory & E-commerce Integration"
-            description="Small retail business transitioning from manual tracking to automated inventory system with e-commerce integration. Cost-effective solution, grant-assisted implementation. Brisbane-based business."
-            icon="fas fa-store"
-            industry="retail"
-          >
-            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href={sitePath('/case-studies/retail-inventory-ecommerce')} class="btn btn-secondary">View Case Study</a>
-              <a href={sitePath('/resources/retail')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
-            </div>
-          </Card>
-          
-          <Card
-            title="Gallery: Semantic Search & NLP Categorization"
-            description="Art gallery implementing semantic product categorization with NLP-powered search. Visitors can explore collections by style, theme, technique. Unique edge for creative spaces."
-            icon="fas fa-palette"
-          >
-            <a href={sitePath('/contribute')} class="btn btn-secondary" style="margin-top: var(--space-lg);">Request This Case Study</a>
-          </Card>
-          
-          <Card
-            title="Healthcare: Patient Management System"
-            description="Medical practice implementing compliant patient management with automated appointment handling and secure data storage. Australian Privacy Principles compliance, phased implementation. Brisbane-based practice."
-            icon="fas fa-heartbeat"
-            industry="healthcare"
-          >
-            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href={sitePath('/case-studies/healthcare-patient-management')} class="btn btn-secondary">View Case Study</a>
-              <a href={sitePath('/resources/healthcare')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
-            </div>
-          </Card>
-          
-          <Card
-            title="Service Business: Spreadsheet to Database"
-            description="Professional services company outgrowing spreadsheets. Implemented proper database with semantic search and automated reporting. Time savings, improved accuracy, scalability. Australian SME."
-            icon="fas fa-database"
-            industry="professional-services"
-          >
-            <div style="display: flex; gap: var(--space-md); margin-top: var(--space-lg); flex-wrap: wrap;">
-              <a href={sitePath('/case-studies/professional-services-database')} class="btn btn-secondary">View Case Study</a>
-              <a href={sitePath('/resources/professional-services')} class="btn btn-secondary" style="background: var(--surface);">Related Resources</a>
-            </div>
-          </Card>
+          {caseStudies.map((study) => (
+            <CaseStudyCard study={study} />
+          ))}
         </CardGrid>
+
+        {
+          industryHubStatus.some((h) => h.status === 'overview-only') && (
+            <p class="projects-completeness-note">
+              Industry hubs for{' '}
+              {industryHubStatus
+                .filter((h) => h.status === 'overview-only')
+                .map((h) => h.label)
+                .join(', ')}{' '}
+              include overview guides today; topic libraries are expanding — see{' '}
+              <a href={sitePath('/case-studies')}>case studies</a> and{' '}
+              <a href={sitePath('/resources')}>resources</a> for what is live now.
+            </p>
+          )
+        }
       </div>
     </section>
 
@@ -193,13 +172,12 @@ const currentPath = '/projects';
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-lateral-angular-2"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Types of Projects We Handle" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text="We deliver projects from targeted automation to full system implementation. These are common engagement types:" semanticLevel="normal" isChild={true} />
-        </p>
-        
+        <SectionIntro
+          eyebrow="Engagement shapes"
+          title="Types of projects we handle"
+          byline="We deliver projects from targeted automation to full system implementation. These are common engagement types:"
+        />
+
         <CardGrid columns={2} style="margin-top: var(--space-xl);">
           <Card
             title="Database & Data Management"
@@ -239,15 +217,14 @@ const currentPath = '/projects';
     <section class="section section-tartan-accent section-home-band--primary-light">
       <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Getting started" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text="Review case studies and public sites, then book a consultation — we will map feasibility, grants where relevant, and a sensible first slice of work." semanticLevel="normal" isChild={true} />
-        </p>
-        
-        <div style="margin-top: var(--space-2xl); display: flex; gap: var(--space-lg); flex-wrap: wrap; justify-content: center;">
-          <a href={sitePath('/case-studies/retail-inventory-ecommerce')} class="btn btn-primary">View Case Studies</a>
+        <SectionIntro
+          eyebrow="Next step"
+          title="Getting started"
+          byline="Review case studies and public sites, then book a consultation — we will map feasibility, grants where relevant, and a sensible first slice of work."
+        />
+
+        <div class="projects-cta-row">
+          <a href={sitePath('/case-studies')} class="btn btn-primary">View case studies</a>
           <a href={sitePath('/resources')} class="btn btn-secondary">Explore Resources</a>
           <a href={sitePath('/services')} class="btn btn-secondary">Our Services</a>
         </div>
@@ -255,4 +232,23 @@ const currentPath = '/projects';
     </section>
     </MarketingPageBands>
 </SiteShell>
+
+<style>
+  .projects-completeness-note {
+    margin-top: var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.2);
+    background: rgba(255, 255, 255, 0.85);
+    max-width: 72ch;
+  }
+
+  .projects-completeness-note a {
+    color: var(--primary-color);
+    font-weight: var(--font-weight-semibold);
+  }
+</style>
 

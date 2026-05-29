@@ -27,7 +27,7 @@ interface RouteDefinition {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const apiPagesDir = path.resolve(__dirname, '../src/pages/api');
+const apiPagesDir = path.resolve(__dirname, '../src/pages/_api');
 const port = Number(process.env.PORT ?? 3002);
 const apiPrefix = '/api';
 const httpMethods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];

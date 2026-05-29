@@ -1,0 +1,56 @@
+---
+import SectionIntro from '../SectionIntro.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+---
+
+<div id="library-growth-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Library growth" style="display: none;">
+  <div class="admin-content">
+    <section class="section section-tartan-accent section-home-band--primary-light account-workspace-panel-section">
+      <SectionConstellationLayer variant="partnership" semanticKey="account-library-growth" tier="whisper" placement="top-right" />
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="container account-workspace-panel-inner">
+        <SectionIntro
+          eyebrow="Growing library"
+          title="Library growth"
+          byline="Automates materials only — topic guides, resources, and case study copy. Voice profiles for specific industries or case studies are created manually under Voice profiles (default site voice is used here). Save settings, activate the schedule when ready, and approve each proposal before content is generated."
+          titleId="library-growth-heading"
+        />
+
+        <div class="library-growth-controls">
+          <label class="library-growth-toggle">
+            <input type="checkbox" id="growth-enabled" />
+            Allow scheduled cycles (configure interval, then activate below)
+          </label>
+          <p id="growth-schedule-state" class="library-growth-schedule-state" role="status" aria-live="polite"></p>
+          <div class="library-growth-fields">
+            <label>
+              Cycle every (hours)
+              <input type="number" id="growth-interval-hours" min="0" step="1" value="168" />
+            </label>
+            <label>
+              Max proposals per cycle
+              <input type="number" id="growth-max-proposals" min="1" max="20" value="5" />
+            </label>
+            <label class="library-growth-toggle">
+              <input type="checkbox" id="growth-case-studies" checked />
+              Include case-study proposals
+            </label>
+          </div>
+          <div class="library-growth-actions">
+            <button type="button" id="growth-save-config" class="btn btn-secondary btn-sm">Save settings</button>
+            <button type="button" id="growth-arm-schedule" class="btn btn-primary btn-sm">Activate schedule</button>
+            <button type="button" id="growth-pause-schedule" class="btn btn-secondary btn-sm">Pause schedule</button>
+            <button type="button" id="growth-run-cycle" class="btn btn-secondary btn-sm">Run cycle now (manual)</button>
+            <button type="button" id="growth-refresh-queue" class="btn btn-secondary btn-sm">Refresh queue</button>
+          </div>
+          <p id="growth-status" class="status-message" role="status" aria-live="polite"></p>
+          <p id="growth-cycle-meta" class="library-growth-meta"></p>
+        </div>
+
+        <div id="growth-proposals-queue" class="growth-proposals-queue" aria-live="polite">
+          <p class="status-message">Loading growth proposals…</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

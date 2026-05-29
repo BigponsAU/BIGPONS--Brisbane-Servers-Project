@@ -1,7 +1,7 @@
 import { joinUrl, normalizePathPrefix, readRuntimeEnv, stripTrailingSlash } from '../utils/runtime-env';
 
+/** Relative prefix — works on Cloudflare Pages (same origin) and local Astro dev (Vite proxy). */
 export const API_PATH_PREFIX = '/api';
-export const DEFAULT_LOCAL_API_BASE_URL = 'http://localhost:3002/api';
 
 function normalizeApiBase(baseUrl: string): string {
   return /^https?:\/\//i.test(baseUrl)
@@ -17,7 +17,7 @@ export function getInternalApiBaseUrl(): string {
   return normalizeApiBase(
     readRuntimeEnv('INTERNAL_API_BASE_URL')
       ?? readRuntimeEnv('PUBLIC_API_BASE_URL')
-      ?? DEFAULT_LOCAL_API_BASE_URL
+      ?? API_PATH_PREFIX
   );
 }
 

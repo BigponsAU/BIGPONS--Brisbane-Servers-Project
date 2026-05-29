@@ -24,9 +24,9 @@ export class SqliteResourceRepository implements ResourceRepository {
 
   static async create(): Promise<SqliteResourceRepository> {
     const initSqlJs = (await import('sql.js')).default;
-    const wasmDir = path.join(__dirname, '../../../node_modules/sql.js/dist');
+    const { locateSqlJsFile } = await import('../db/sql-js-locate');
     const SQL = await initSqlJs({
-      locateFile: (file: string) => path.join(wasmDir, file)
+      locateFile: locateSqlJsFile
     });
     mkdirSync(path.dirname(SQLITE_DB_FILE), { recursive: true });
     let db: InstanceType<typeof SQL.Database>;

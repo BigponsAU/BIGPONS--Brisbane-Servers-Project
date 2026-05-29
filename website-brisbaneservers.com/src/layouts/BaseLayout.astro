@@ -5,6 +5,7 @@ import '../styles/geometric-detailing.css';
 import '../styles/floral-pattern.css';
 import '../styles/tartan-pattern.css';
 import '../styles/site-framework.css';
+import '../styles/site-frame-shell.css';
 import '../styles/brand-chroma.css';
 import CookieConsent from '../components/CookieConsent.astro';
 import favicon from '../favicon.png';
@@ -16,6 +17,14 @@ import {
   type PageZoomProfile,
 } from '../lib/page-descriptors';
 import { valueProposition } from '../data/value-proposition';
+import {
+  buildCanonicalUrl,
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+  formatPageTitle,
+  mergeJsonLdGraph,
+  SEO_LOCALE,
+} from '../lib/seo';
 
 interface Props {
   title: string;
@@ -24,6 +33,10 @@ interface Props {
   immediateRedirectUrl?: string;
   /** Absolute image URL for Open Graph / Twitter (defaults to `/og-default.png` on site origin). */
   ogImage?: string;
+  /** Open Graph type — defaults to `website`; use `article` for guides and resources. */
+  ogType?: 'website' | 'article';
+  /** Extra schema.org nodes appended to the default JSON-LD graph. */
+  structuredData?: Record<string, unknown>[];
   /** When true, adds robots noindex and omits OG/Twitter images and JSON-LD for sensitive routes (e.g. portal). */
   noindex?: boolean;
   pageId?: string;
@@ -37,6 +50,8 @@ const {
   title,
   description = valueProposition.metaDefault,
   ogImage,
+  ogType = 'website',
+  structuredData = [],
   noindex = false,
   immediateRedirectUrl,
   pageId,
@@ -47,38 +62,27 @@ const {
 } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('https://brisbaneservers.com');
-const canonicalURL = new URL(Astro.url.pathname, siteUrl);
+const siteOrigin = siteUrl.origin;
+const pageTitle = formatPageTitle(title);
+const canonicalHref = buildCanonicalUrl(Astro.url.pathname, siteOrigin, import.meta.env.BASE_URL);
 const descriptor = getPageDescriptor(Astro.url.pathname);
 /** Default social preview: South Bank / riverfront in `public/og-default.png`. Alternate: `og-nature.png`. */
 const OG_DEFAULT_PATH = '/og-default.png';
 const OG_IMAGE_WIDTH = 1200;
 const OG_IMAGE_HEIGHT = 630;
-const defaultShareImage = new URL(OG_DEFAULT_PATH, siteUrl).href;
+const defaultShareImage = buildCanonicalUrl(OG_DEFAULT_PATH, siteOrigin, import.meta.env.BASE_URL);
 const shareImage = ogImage ?? defaultShareImage;
 const useDefaultOgDimensions = !ogImage;
 
-const jsonLd = JSON.stringify({
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      name: 'Brisbane Servers',
-      url: siteUrl.origin,
-      description,
-    },
-    {
-      '@type': 'Organization',
-      name: 'Brisbane Servers',
-      url: siteUrl.origin,
-      email: 'support@brisbaneservers.com',
-      parentOrganization: { '@type': 'Organization', name: 'BIGPONS' },
-    },
-  ],
-});
+const jsonLd = mergeJsonLdGraph(
+  buildWebSiteJsonLd(siteOrigin, description),
+  buildOrganizationJsonLd(siteOrigin),
+  ...structuredData,
+);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en-AU">
   <head>
     <meta charset="UTF-8" />
     {immediateRedirectUrl && (
@@ -95,13 +99,14 @@ const jsonLd = JSON.stringify({
     <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/png" href={favicon.src} />
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex" />}
-    <link rel="canonical" href={canonicalURL.href} />
-    <meta property="og:type" content="website" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonicalHref} />
+    <meta property="og:locale" content={SEO_LOCALE} />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="Brisbane Servers" />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalURL.href} />
+    <meta property="og:url" content={canonicalHref} />
     {!noindex && <meta property="og:image" content={shareImage} />}
     {!noindex && useDefaultOgDimensions && (
       <>
@@ -116,10 +121,10 @@ const jsonLd = JSON.stringify({
       />
     )}
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
+    <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     {!noindex && <meta name="twitter:image" content={shareImage} />}
-    <title>{title}</title>
+    <title>{pageTitle}</title>
     {!noindex && <script type="application/ld+json" set:html={jsonLd} />}
     {/* Immediate cleanup script - runs before any cached scripts */}
     <script is:inline>

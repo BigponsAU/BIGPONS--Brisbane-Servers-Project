@@ -1,32 +1,26 @@
-# Brisbane Servers website (Astro)
+# Brisbane Servers website
 
-Hybrid setup:
+Static Astro frontend with a **hybrid API** hosted separately (Cloudflare Pages + standalone Node API).
 
-- Static frontend source: `src-static`
-- Shared components/layouts/styles: `src`
-- Standalone API host: `standalone-api/server.ts`
-- Original Astro API route modules retained under `src/pages/api/` and mounted by the standalone server
+## Layout
 
-**Primary production path:** [Deployment pathways](../docs/operations/DEPLOYMENT_PATHWAYS.md) (GitHub Pages static site + standalone API). In this monorepo you can still run the unified flow from the repo root with `npm start`; the hybrid split is in [Run & troubleshoot](../docs/operations/RUN_AND_TROUBLESHOOT.md) and [GitHub Pages hybrid](../docs/operations/GITHUB_PAGES_HYBRID.md).
+- **Frontend:** `src/` — pages, components, styles (built to `dist/`)
+- **API handlers:** `api/` — loaded at runtime by `standalone-api/server.ts`
+- **API server:** `standalone-api/server.ts` (default port 3002)
 
-## Package commands
+## Scripts
 
 ```bash
-npm run dev      # Static frontend dev server
-npm run start:api  # Standalone API server on port 3002 by default
-npm run build    # Static frontend build for GitHub Pages
-npm run build:github-pages  # Alias for CI/static deploys
-npm run build:cpanel   # cPanel / Node build — see docs
-npm run preview  # Preview production build
+npm run dev              # Astro dev server (port 3000)
+npm run start:api        # Standalone hybrid API (port 3002)
+npm run build            # Production static build → dist/
+npm run build:hosted     # Local build with production-like env
+npm run preview:hosted   # Preview after build:hosted
+npm test                 # Vitest (includes API contract tests)
 ```
 
-## Documentation
+From monorepo root: `npm run start:hybrid` runs website + standalone API together.
 
-- [Portal / voice + workflow](../docs/portal/PORTAL.md) (workspace rules, resource corpus narrative, **what is automated vs manual**)
-- [Deployment pathways](../docs/operations/DEPLOYMENT_PATHWAYS.md) (authoritative matrix; GitHub Pages hybrid primary)
-- [Feature reconciliation](../docs/development/FEATURE_RECONCILIATION.md) (native browser zoom + media-query layout; canonical file list)
-- [Build & run checklist](BUILD_CHECKLIST.md)
-- [Design blocks system](DESIGN_BLOCKS_SYSTEM.md)
-- [Monorepo documentation hub](../docs/README.md)
-- [Hybrid API contract](../docs/development/HYBRID_API_CONTRACT.md)
-- [GitHub Pages hybrid deploy](../docs/operations/GITHUB_PAGES_HYBRID.md)
+## Deployment & SEO
+
+**Master guide:** [docs/MASTER.md](../docs/MASTER.md) — deployment, SEO, content publishing, build validation.

@@ -1,96 +1,106 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import Header from '~/components/Header.astro';
-import Footer from '~/components/Footer.astro';
+import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import SemanticText from '~/components/SemanticText.astro';
-import { getIndustryBySlug } from '~/data/industries';
-import { getPublishedResourceById } from '~/lib/public-published-resources';
+import { getIndustryBySlug, getTopicBySlug } from '~/data/industries';
+import { isIndexableResource } from '~/lib/content-registry';
+import { getPageDescriptor } from '~/lib/page-descriptors';
+import { publishedResourcePageTitle, publishedResourceSeo } from '~/lib/content-seo';
+import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/public-published-resources';
+import { sitePath } from '~/lib/site-path';
 
-// Static hosting keeps query-param detail rendering in `resources/item/index.astro`.
-// This route remains only for explicitly pre-generated paths; none are emitted by default.
 export async function getStaticPaths() {
-  return [];
+  const resources = (await getPublishedResourcesForPage()).filter(isIndexableResource);
+  return resources.map((resource) => ({
+    params: { resourceId: resource.id },
+  }));
 }
 
 const { resourceId } = Astro.params;
-
 const resource = await getPublishedResourceById(resourceId!);
-let industry: ReturnType<typeof getIndustryBySlug> = null;
-if (resource) {
-  industry = getIndustryBySlug(resource.industry);
-}
+const industry = resource ? getIndustryBySlug(resource.industry) : null;
+const topic = resource ? getTopicBySlug(resource.industry, resource.topic) : null;
 
 if (!resource) {
   return Astro.redirect('/resources');
 }
 
+const siteOrigin = (Astro.site ?? new URL('https://brisbaneservers.com')).origin;
 const currentPath = `/resources/item/${resourceId}`;
+const pageDescriptor = getPageDescriptor(currentPath);
+const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
+  resource,
+  siteOrigin,
+  import.meta.env.BASE_URL,
+  industry?.name,
+);
 ---
 
-<BaseLayout 
-  title={`${resource.title} - Resources - Brisbane Servers`}
+<SiteShell
+  title={publishedResourcePageTitle(resource)}
   description={resource.description}
+  ogType="article"
+  structuredData={structuredData}
+  currentPath={currentPath}
+  pageId={pageDescriptor.pageId}
+  shellVariant={pageDescriptor.shellVariant}
+  valueProfile={pageDescriptor.valueProfile}
+  zoomProfile={pageDescriptor.zoomProfile}
+  density={pageDescriptor.density}
+  mainClass="main-phi-chassis"
 >
-  <Header currentPath={currentPath} />
-  
-  <main>
-    <Hero 
-      title={resource.title}
-      subtitle={resource.description}
-    />
+  <Breadcrumbs items={breadcrumbItems} />
 
-    <section class="section">
-      <div class="bg-pattern-angular bg-pattern-light"></div>
-      <div class="phi-line-vertical"></div>
-      <div class="phi-lateral-angular-2"></div>
-      <div class="container">
-        <div class="resource-meta" style="margin-bottom: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap; align-items: center; padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius);">
-          <span style="font-size: var(--text-sm); color: var(--text-secondary);">
-            <strong>Industry:</strong> {resource.industry}
-          </span>
-          <span style="font-size: var(--text-sm); color: var(--text-secondary);">
-            <strong>Topic:</strong> {resource.topic}
-          </span>
-          {resource.metadata?.voiceScore && (
-            <span style="font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);">
-              <strong>Voice Match:</strong> {Math.round(resource.metadata.voiceScore * 100)}%
-            </span>
-          )}
-          {resource.generatedAt && (
-            <span style="font-size: var(--text-sm); color: var(--text-secondary);">
-              <strong>Published:</strong> {new Date(resource.generatedAt).toLocaleDateString()}
-            </span>
-          )}
-        </div>
+  <Hero title={resource.title} subtitle={resource.description} />
 
-        <div class="resource-content" style="white-space: pre-wrap; line-height: 1.8; font-size: var(--text-base);">
-          <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
-        </div>
-
+  <section class="section">
+    <div class="bg-pattern-angular bg-pattern-light"></div>
+    <div class="phi-line-vertical"></div>
+    <div class="container">
+      <div class="resource-meta" style="margin-bottom: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap; align-items: center; padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius);">
+        <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+          <strong>Industry:</strong> {resource.industry}
+        </span>
+        <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+          <strong>Topic:</strong> {topic?.name ?? resource.topic}
+        </span>
         {resource.metadata?.voiceScore && (
-          <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-            <p style="margin: 0; font-size: var(--text-base); color: var(--text-secondary);">
-              <strong>Voice Consistency:</strong> This resource has been validated and matches {Math.round(resource.metadata.voiceScore * 100)}% with the Brisbane Servers voice profile, ensuring consistent tone and messaging.
-            </p>
-          </div>
+          <span style="font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);">
+            <strong>Voice match:</strong> {Math.round(resource.metadata.voiceScore * 100)}%
+          </span>
         )}
-
-        <div style="margin-top: var(--space-2xl);">
-          <a href={`/resources/${resource.industry}/${resource.topic}`} class="btn btn-secondary">
-            ← Back to {resource.topic} Resources
-          </a>
-        </div>
+        {resource.generatedAt && (
+          <span style="font-size: var(--text-sm); color: var(--text-secondary);">
+            <strong>Published:</strong> {new Date(resource.generatedAt).toLocaleDateString('en-AU')}
+          </span>
+        )}
       </div>
-    </section>
 
-    <InquiryForm 
-      title={`Questions about ${resource.title}?`}
-      subtitle={`We're experts in ${resource.industry} technology—informal questions welcome.`}
-      defaultIndustry={resource.industry}
-    />
-  </main>
+      <article class="resource-content" style="white-space: pre-wrap; line-height: 1.8; font-size: var(--text-base);">
+        <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
+      </article>
 
-  <Footer />
-</BaseLayout>
+      {resource.metadata?.voiceScore && (
+        <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
+          <p style="margin: 0; font-size: var(--text-base); color: var(--text-secondary);">
+            <strong>Voice consistency:</strong> This resource matches {Math.round(resource.metadata.voiceScore * 100)}% with the Brisbane Servers voice profile.
+          </p>
+        </div>
+      )}
+
+      <div style="margin-top: var(--space-2xl);">
+        <a href={sitePath(`/resources/${resource.industry}/${resource.topic}`)} class="btn btn-secondary">
+          ← Back to {topic?.name ?? resource.topic} resources
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <InquiryForm
+    title={`Discuss this ${resource.industry} resource`}
+    subtitle="Share your operating context and objectives. We respond with practical recommendations aligned to your industry and scope."
+    defaultIndustry={resource.industry}
+  />
+</SiteShell>

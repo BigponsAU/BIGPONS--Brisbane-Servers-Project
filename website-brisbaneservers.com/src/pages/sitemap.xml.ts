@@ -1,20 +1,12 @@
 import type { APIRoute } from 'astro';
-import { industries } from '../data/industries';
+import { buildStaticSitemapEntries } from '../lib/content-registry';
+import { getPublishedResourcesForPage } from '../lib/public-published-resources';
+import { buildCanonicalUrl, toSitemapLastmod } from '../lib/seo';
 
-/** Marketing and public content only (portal is noindex; dynamic resource items omitted). */
-const STATIC_PATHS = [
-  '/',
-  '/about',
-  '/services',
-  '/resources',
-  '/projects',
-  '/contribute',
-  '/privacy-policy',
-  '/terms-of-service',
-  '/case-studies/healthcare-patient-management',
-  '/case-studies/professional-services-database',
-  '/case-studies/retail-inventory-ecommerce',
-];
+type SitemapEntry = {
+  path: string;
+  lastmod?: string;
+};
 
 function xmlEscape(s: string): string {
   return s
@@ -24,21 +16,21 @@ function xmlEscape(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
-export const GET: APIRoute = () => {
+function formatUrlEntry(base: string, entry: SitemapEntry): string {
+  const loc = xmlEscape(buildCanonicalUrl(entry.path, base, '/'));
+  const lastmod = entry.lastmod ? `\n    <lastmod>${xmlEscape(entry.lastmod)}</lastmod>` : '';
+  return `  <url>\n    <loc>${loc}</loc>${lastmod}\n  </url>`;
+}
+
+export const GET: APIRoute = async () => {
   const base = (import.meta.env.SITE ?? 'https://brisbaneservers.com').replace(/\/$/, '');
-  const paths = new Set<string>(STATIC_PATHS);
+  const buildLastmod = toSitemapLastmod(new Date())!;
+  const publishedResources = await getPublishedResourcesForPage();
+  const entries = buildStaticSitemapEntries(buildLastmod, publishedResources);
 
-  for (const ind of industries) {
-    paths.add(`/resources/${ind.slug}`);
-    for (const t of ind.topics) {
-      paths.add(`/resources/${ind.slug}/${t.slug}`);
-    }
-  }
-
-  const sorted = [...paths].sort((a, b) => a.localeCompare(b));
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${sorted.map((p) => `  <url><loc>${xmlEscape(base + p)}</loc></url>`).join('\n')}
+${entries.map((entry) => formatUrlEntry(base, entry)).join('\n')}
 </urlset>`;
 
   return new Response(body, {

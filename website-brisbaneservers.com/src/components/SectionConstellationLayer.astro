@@ -1,0 +1,33 @@
+---
+import SectionSatelliteConstellation from './SectionSatelliteConstellation.astro';
+import type { SectionSatelliteVariant } from '../lib/section-satellite-graph';
+
+export type ConstellationTier = 'whisper' | 'default' | 'accent' | 'rim';
+export type ConstellationPlacement = 'field' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+interface Props {
+  variant?: SectionSatelliteVariant;
+  /** Stable key — use page + section id so graphs relate across a page. */
+  semanticKey: string;
+  tier?: ConstellationTier;
+  placement?: ConstellationPlacement;
+}
+
+const { variant = 'about', semanticKey, tier = 'default', placement = 'field' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'section-constellation-layer',
+    `section-constellation-layer--${tier}`,
+    `section-constellation-layer--${placement}`,
+  ]}
+  aria-hidden="true"
+>
+  <SectionSatelliteConstellation
+    variant={variant}
+    semanticKey={semanticKey}
+    scale={tier}
+    mode={tier === 'whisper' ? 'gutter-echo' : 'section'}
+  />
+</div>

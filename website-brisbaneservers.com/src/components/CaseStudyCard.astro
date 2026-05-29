@@ -1,0 +1,44 @@
+---
+import Card from './Card.astro';
+import { sitePath } from '../lib/site-path';
+import type { CaseStudy } from '../data/case-studies';
+
+interface Props {
+  study: CaseStudy;
+}
+
+const { study } = Astro.props;
+const caseHref = sitePath(`/case-studies/${study.slug}`);
+const resourcesHref = study.relatedResourcesHref ? sitePath(study.relatedResourcesHref) : undefined;
+---
+
+<Card
+  title={study.cardTitle}
+  description={study.cardDescription}
+  icon={study.icon}
+  industry={study.industryFilter}
+>
+  <div class="case-study-card-actions">
+    <a href={caseHref} class="btn btn-secondary">Read case study</a>
+    {
+      resourcesHref && (
+        <a href={resourcesHref} class="btn btn-secondary case-study-card-actions__secondary">
+          Related resources
+        </a>
+      )
+    }
+  </div>
+</Card>
+
+<style>
+  .case-study-card-actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    flex-wrap: wrap;
+  }
+
+  .case-study-card-actions__secondary {
+    background: var(--surface);
+  }
+</style>

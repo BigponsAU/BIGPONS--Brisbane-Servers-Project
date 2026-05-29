@@ -10,13 +10,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuButton = hamburger;
         const menuPanel = mobileMenu;
 
+        function closeAllDesktopDropdowns(): void {
+            document.querySelectorAll('.nav-dropdown-toggle').forEach((toggle) => {
+                const el = toggle as HTMLElement;
+                const parent = el.closest('.nav-dropdown');
+                el.setAttribute('aria-expanded', 'false');
+                parent?.classList.remove('active');
+            });
+        }
+
         function setMobileNavOpen(open: boolean) {
             menuButton.classList.toggle('active', open);
             menuPanel.classList.toggle('active', open);
             menuButton.setAttribute('aria-expanded', String(open));
             menuPanel.setAttribute('aria-hidden', String(!open));
             document.body.classList.toggle('nav-mobile-open', open);
+            if (open) {
+                closeAllDesktopDropdowns();
+            }
         }
+
+        const desktopNavMq = window.matchMedia('(min-width: 1024px)');
+        const onViewportNavMode = (): void => {
+            if (desktopNavMq.matches && menuButton.getAttribute('aria-expanded') === 'true') {
+                setMobileNavOpen(false);
+            }
+        };
+        desktopNavMq.addEventListener('change', onViewportNavMode);
+        window.addEventListener('resize', onViewportNavMode);
 
         menuButton.addEventListener('click', function (e: MouseEvent) {
             e.stopPropagation();
@@ -58,6 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize dropdown menus with keyboard support
     initializeDropdownMenus();
+
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.nav-dropdown.active .nav-dropdown-menu').forEach((menu) => {
+            clampDropdownToViewport(menu as HTMLElement);
+        });
+    });
     
     // Set active nav link based on current page
     setActiveNavLink();
@@ -156,16 +183,53 @@ function initializeDropdownMenus(): void {
     });
 }
 
+const NAV_DROPDOWN_VIEWPORT_PAD = 16;
+
+function resetDropdownViewportPosition(dropdown: HTMLElement): void {
+    dropdown.style.removeProperty('margin-left');
+    dropdown.style.removeProperty('left');
+    dropdown.style.removeProperty('right');
+}
+
+function clampDropdownToViewport(dropdown: HTMLElement): void {
+    if (window.innerWidth < 1024) {
+        resetDropdownViewportPosition(dropdown);
+        return;
+    }
+
+    resetDropdownViewportPosition(dropdown);
+
+    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    const maxRight = window.innerWidth - NAV_DROPDOWN_VIEWPORT_PAD - scrollbarWidth;
+    const minLeft = NAV_DROPDOWN_VIEWPORT_PAD;
+
+    let rect = dropdown.getBoundingClientRect();
+
+    if (rect.right > maxRight) {
+        dropdown.style.marginLeft = `${maxRight - rect.right}px`;
+        rect = dropdown.getBoundingClientRect();
+    }
+
+    if (rect.left < minLeft) {
+        const currentMargin = parseFloat(dropdown.style.marginLeft || '0') || 0;
+        dropdown.style.marginLeft = `${currentMargin + (minLeft - rect.left)}px`;
+    }
+}
+
 function openDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
     toggle.setAttribute('aria-expanded', 'true');
     parent?.classList.add('active');
+    requestAnimationFrame(() => {
+        clampDropdownToViewport(dropdown);
+    });
 }
 
 function closeDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
     toggle.setAttribute('aria-expanded', 'false');
     parent?.classList.remove('active');
+    resetDropdownViewportPosition(dropdown);
 }
 
 // ===== SET ACTIVE NAVIGATION LINK =====
@@ -178,7 +242,9 @@ function setActiveNavLink(): void {
             : base !== '/' && pathname.startsWith(base)
               ? `/${pathname.slice(base.length).replace(/^\/+/, '')}` || '/'
               : pathname;
-    const navLinks = document.querySelectorAll('.nav-menu a, .mobile-menu a');
+    const navLinks = document.querySelectorAll(
+        '.nav-menu a, .nav-mega__link, .mobile-menu__block-link, .mobile-menu__strip-link, .mobile-menu__feature-title, .mobile-menu__account',
+    );
     
     navLinks.forEach(link => {
         const href = link.getAttribute('href');

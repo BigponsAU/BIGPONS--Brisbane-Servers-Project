@@ -1,0 +1,28 @@
+              <div id="site-review-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Site review" style="display: none;">
+                <div class="admin-content">
+                  <section class="admin-section" aria-labelledby="site-review-heading">
+                    <div class="section-header">
+                      <div>
+                        <h2 id="site-review-heading">Public site review</h2>
+                        <p class="section-subtitle">Open key public sections — including Corrections welcome — to verify copy, legal alignment, and voice.</p>
+                      </div>
+                      <button id="refresh-site-review-btn" type="button" class="btn btn-secondary btn-sm">Refresh list</button>
+                    </div>
+                    <div id="site-review-list" class="site-review-list"></div>
+                  </section>
+                  <section class="admin-section" aria-labelledby="hosting-status-heading" data-min-role="super-admin">
+                    <div class="section-header">
+                      <div>
+                        <h2 id="hosting-status-heading">Hosting &amp; environment</h2>
+                        <p class="section-subtitle">Check which production variables are configured on the API host (names only — never secret values).</p>
+                      </div>
+                      <div class="section-header__actions">
+                        <button id="refresh-hosting-status-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
+                        <button id="email-hosting-checklist-btn" type="button" class="btn btn-primary btn-sm">Email checklist</button>
+                      </div>
+                    </div>
+                    <div id="hosting-status-list" class="hosting-status-list"></div>
+                    <p id="hosting-status-message" class="status-message" role="status" aria-live="polite"></p>
+                  </section>
+                </div>
+              </div>

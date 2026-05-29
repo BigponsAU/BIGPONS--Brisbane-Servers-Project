@@ -1,0 +1,40 @@
+---
+import SemanticText from './SemanticText.astro';
+import { formatEyebrowCopy } from '../lib/copy-style';
+
+interface Props {
+  /** Situational label (topic guide, industry hub, etc.) */
+  eyebrow?: string;
+  title: string;
+  /** Lead copy — appears directly under the title on every marketing section */
+  byline?: string;
+  titleId?: string;
+  center?: boolean;
+  class?: string;
+}
+
+const { eyebrow, title, byline, titleId, center = false, class: className = '' } = Astro.props;
+const eyebrowText = eyebrow ? formatEyebrowCopy(eyebrow) : undefined;
+---
+
+<div
+  class:list={[
+    'section-intro',
+    'section-intro--recurrent',
+    center && 'section-intro--center',
+    className,
+  ]}
+>
+  {eyebrowText && <p class="section-intro__eyebrow">{eyebrowText}</p>}
+  <h2 class:list={['section-title', center && 'section-title--center']} id={titleId}>
+    <SemanticText text={title} semanticLevel="high" isParent={true} />
+  </h2>
+  {
+    byline && (
+      <p class:list={['section-description', 'section-intro__byline', center && 'section-description--center']}>
+        <SemanticText text={byline} semanticLevel="normal" isChild={true} />
+      </p>
+    )
+  }
+  <slot />
+</div>

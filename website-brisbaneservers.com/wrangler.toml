@@ -1,0 +1,17 @@
+# Cloudflare Pages — static Astro frontend (hybrid API hosted separately).
+# https://developers.cloudflare.com/pages/configuration/build-configuration/
+#
+# Connect this repo in Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git.
+# Use **Pages**, not Workers. Do not use `npx wrangler deploy` as the deploy command for this site.
+#
+# Dashboard settings (website-brisbaneservers.com):
+#   Framework preset: Astro (or None)
+#   Build command:    npm run build
+#   Build output:     dist
+#   Root directory:   website-brisbaneservers.com
+#
+# Set build environment variables in Pages → Settings → Environment variables (see docs/operations/CLOUDFLARE_PAGES.md).
+
+name = "brisbane-servers"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-09-23"

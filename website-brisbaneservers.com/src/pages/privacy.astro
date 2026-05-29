@@ -1,3 +1,22 @@
 ---
-return Astro.redirect('/privacy-policy', 308);
+import SiteShell from '../layouts/SiteShell.astro';
+
+const currentPath = '/privacy';
 ---
+
+<SiteShell
+  title="Privacy"
+  description="Privacy policy for Brisbane Servers."
+  currentPath={currentPath}
+  noindex={true}
+>
+  <main class="main-phi-chassis" style="padding: 2rem 1rem; max-width: 40rem; margin: 0 auto;">
+    <p>
+      This page has moved.
+      <a href="/privacy-policy">View the privacy policy</a>.
+    </p>
+  </main>
+  <script is:inline>
+    window.location.replace('/privacy-policy');
+  </script>
+</SiteShell>

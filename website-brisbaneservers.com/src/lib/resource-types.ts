@@ -34,6 +34,8 @@ export interface Resource {
     /** Stored profile id when creation used a saved default or explicit selection. */
     voiceProfileId?: string;
     voiceProfileResolution?: VoiceProfileResolutionKind;
+    /** Set when created via library growth (case study proposals). */
+    growthKind?: 'case_study';
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;

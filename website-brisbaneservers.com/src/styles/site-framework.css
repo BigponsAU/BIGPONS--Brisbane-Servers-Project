@@ -10,13 +10,14 @@
    * column expands when there is room; rem floor/ceiling keep it from going too narrow
    * or too stretched on ultrawide. Always bounded by viewport minus gutters.
    */
-  --site-frame-gutter: clamp(1rem, 2.5vw, 2.25rem);
-  --site-frame-band-min: 78rem;
-  --site-frame-band-max: 120rem;
+  --site-frame-gutter: clamp(0.65rem, 1.15vw, 1.35rem);
+  /* One horizontal band — tracks viewport/zoom; minimal side dead space on ultrawide */
+  --site-frame-band-max: 142rem;
   --site-frame-wide: min(
     calc(100vw - 2 * var(--site-frame-gutter)),
-    min(var(--site-frame-band-max), max(var(--site-frame-band-min), 92vw))
+    min(var(--site-frame-band-max), 98vw)
   );
+  --site-inquiry-width: min(44rem, 100%);
   --site-frame-max: var(--site-frame-wide);
   --site-reading-measure: var(--measure-prose);
   --site-card-panel-min: clamp(12rem, 14vw, 15rem);
@@ -92,6 +93,42 @@ body {
   padding-bottom: var(--space-3xl);
 }
 
+/* Account / portal framework: room for full nav labels (no clipped empty pills) */
+.site-shell--portal .nav-tagline {
+  display: none;
+}
+
+.site-shell--portal header nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.45rem, 0.65rem, 0.9rem);
+}
+
+.site-shell--portal .nav-brand {
+  flex: 1 1 auto;
+  min-width: min(100%, 11rem);
+}
+
+.site-shell--portal .nav-menu {
+  flex: 1 1 100%;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.site-shell--portal .nav-menu > li {
+  flex-shrink: 0;
+}
+
+.site-shell--portal .nav-menu a,
+.site-shell--portal .nav-dropdown-toggle {
+  white-space: nowrap;
+}
+
 header {
   width: 100%;
   border-bottom: 1px solid var(--border-contrast);
@@ -103,7 +140,7 @@ header nav {
   width: 100%;
   max-width: var(--site-frame-wide);
   box-sizing: border-box;
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
+  padding-inline: var(--site-frame-gutter);
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
@@ -147,7 +184,7 @@ header nav {
   width: 100%;
   max-width: var(--site-frame-wide);
   box-sizing: border-box;
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
+  padding-inline: var(--site-frame-gutter);
   margin-inline: auto;
 }
 
@@ -335,6 +372,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 /* Home remodel: deterministic layout + hero-adjacent colour (violet / teal / warmth), no seam artifacts. */
 .main-home .home-sections-shell {
   position: relative;
+  z-index: 2;
   isolation: isolate;
 }
 
@@ -543,8 +581,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   width: 100%;
   min-height: 0;
   min-width: 0;
-  opacity: 0.78;
-  filter: drop-shadow(0 0 16px rgba(var(--pm-node-rgb), 0.3));
+  opacity: 0.72;
+  filter: drop-shadow(0 0 12px rgba(var(--pm-node-rgb), 0.22));
   transition:
     opacity 0.45s ease,
     filter 0.55s ease;
@@ -557,20 +595,20 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-page-margin-constellation__edge {
-  stroke: rgba(var(--pm-link-rgb), 0.42);
-  stroke-width: 1.25;
+  stroke: rgba(var(--pm-link-rgb), 0.38);
+  stroke-width: 0.75;
 }
 
 .main-home .home-page-margin-constellation__node {
-  fill: rgba(var(--pm-node-rgb), 0.22);
-  stroke: rgba(var(--pm-node-rgb), 0.62);
-  stroke-width: 1.1;
+  fill: rgba(var(--pm-node-rgb), 0.2);
+  stroke: rgba(var(--pm-node-rgb), 0.55);
+  stroke-width: 0.85;
 }
 
 .main-home .home-page-margin-constellation__node--hub {
-  fill: rgba(var(--pm-node-rgb), 0.34);
-  stroke: rgba(var(--pm-link-rgb), 0.58);
-  stroke-width: 1.15;
+  fill: rgba(var(--pm-node-rgb), 0.3);
+  stroke: rgba(var(--pm-link-rgb), 0.52);
+  stroke-width: 0.9;
 }
 
 /* Gutter “echo” of each band’s in-section graph — same seed; one visible per `data-margin-band` */
@@ -597,15 +635,23 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   right: auto;
   left: auto;
   max-height: none;
-  width: min(28rem, 175%);
+  width: min(26rem, 168%);
   aspect-ratio: 440 / 300;
   opacity: 1;
-  transform: scale(1.18);
+  transform: scale(1.12);
   transform-origin: center center;
-  filter: drop-shadow(0 0 18px rgba(var(--constellation-node-rgb), 0.46));
+  filter: drop-shadow(0 0 14px rgba(var(--constellation-node-rgb), 0.36));
   transition:
     transform 0.55s ease,
     filter 0.55s ease;
+}
+
+.main-home .home-page-margin-echo .section-satellite--gutter-echo .section-satellite__edge {
+  stroke-width: 0.85;
+}
+
+.main-home .home-page-margin-echo .section-satellite--gutter-echo .section-satellite__node {
+  stroke-width: 0.9;
 }
 
 .main-home .home-page-margin-echo[data-echo-band='strategy'] {
@@ -690,8 +736,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   aspect-ratio: 440 / 300;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.42;
-  filter: drop-shadow(0 0 14px rgba(var(--constellation-node-rgb), 0.18));
+  opacity: 0.52;
+  filter: drop-shadow(0 0 14px rgba(var(--constellation-node-rgb), 0.22));
   overflow: hidden;
   contain: paint;
   transition:
@@ -718,14 +764,14 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .section .section-satellite__edge {
-  stroke: rgba(var(--constellation-link-rgb), 0.32);
-  stroke-width: 1.15;
+  stroke: rgba(var(--constellation-link-rgb), 0.36);
+  stroke-width: 0.85;
 }
 
 .main-home .home-sections-shell .section .section-satellite__node {
   fill: rgba(var(--constellation-node-rgb), 0.22);
-  stroke: rgba(var(--constellation-node-rgb), 0.72);
-  stroke-width: 1.15;
+  stroke: rgba(var(--constellation-node-rgb), 0.68);
+  stroke-width: 0.9;
 }
 
 .main-home .home-sections-shell .section.home-band--strategy .section-satellite {
@@ -840,7 +886,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   top: 38%;
   right: 0;
   width: min(8.5rem, calc(var(--home-page-margin-w) * 0.38));
-  height: 2px;
+  height: 1px;
   transform: translate(6%, -50%);
   background: linear-gradient(
     90deg,
@@ -861,7 +907,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   top: 38%;
   left: 0;
   width: min(8.5rem, calc(var(--home-page-margin-w) * 0.38));
-  height: 2px;
+  height: 1px;
   transform: translate(-6%, -50%);
   background: linear-gradient(
     270deg,
@@ -1159,9 +1205,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   margin-inline: auto;
   display: grid;
   grid-template-columns:
-    minmax(min(100%, 17.5rem), 0.382fr)
-    minmax(min(100%, 14rem), 0.618fr);
-  align-items: start;
+    minmax(min(100%, 18rem), 0.44fr)
+    minmax(min(100%, 12rem), 0.56fr);
+  align-items: stretch;
+  min-height: var(--hero-inner-min-height, var(--hero-min-height));
   gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
   justify-items: stretch;
 }
@@ -1191,9 +1238,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .hero-eyebrow {
   margin: 0 0 var(--space-md);
   font-size: var(--text-sm);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.76);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .hero-title,
@@ -1276,18 +1323,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 .hero-visual {
   justify-self: end;
-  /* Top-align with copy: stretch + min-height made the graphic live in a huge cell (felt “disconnected” on zoom) */
   align-self: start;
   width: 100%;
-  max-width: none;
+  max-width: min(100%, 34rem);
   margin-inline: 0;
   min-width: 0;
   position: relative;
-  /* SVG viewBox 800×600 — give the column intrinsic height so absolute .sierpinski-satellite has a box */
   aspect-ratio: 4 / 3;
-  /* vh-first cap: tall rem limits + absolute scroll CTA used to leave a huge empty band beside copy */
-  max-height: min(34rem, 58vh);
-  max-height: min(34rem, 58dvh);
+  max-height: min(28rem, 48dvh);
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Must stay absolute + inset — do not set position: relative here (it overrides the component and reflows inside padding, leaving a bottom gap). */
@@ -1400,8 +1448,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .page-hero__eyebrow {
   margin: 0 0 var(--space-md);
   font-size: var(--text-sm);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--primary-dark);
   font-weight: var(--font-weight-semibold);
 }
@@ -1597,7 +1645,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .site-main--marketing .section .container {
   width: 100%;
   max-width: var(--site-frame-wide);
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
+  margin-inline: auto;
+  padding-inline: var(--site-frame-gutter);
+  box-sizing: border-box;
 }
 
 .site-main--marketing .section .section-title {
@@ -1795,7 +1845,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 /* Same outer band as other sections; form was capped at 37.5rem in global.css — use the frame width. */
 .inquiry-section .inquiry-form {
-  max-width: min(52rem, 100%);
+  max-width: var(--site-inquiry-width);
   margin-inline: auto;
 }
 
@@ -1809,25 +1859,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     0 0 0 1px rgba(var(--accent-violet-rgb), 0.12);
 }
 
-.main-home #inquiry-section .inquiry-form::before {
-  content: 'Fixed Point';
-  position: absolute;
-  top: clamp(0.6rem, 1vw, 0.95rem);
-  right: clamp(0.7rem, 1.2vw, 1.2rem);
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  font-size: clamp(0.64rem, 0.72rem, 0.76rem);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(var(--primary-ink-rgb), 0.86);
-  background: linear-gradient(
-    120deg,
-    rgba(var(--accent-teal-rgb), 0.22) 0%,
-    rgba(var(--accent-violet-rgb), 0.2) 55%,
-    rgba(var(--accent-pink-rgb), 0.2) 100%
-  );
-  border: 1px solid rgba(var(--accent-violet-rgb), 0.24);
-  pointer-events: none;
+.main-home #inquiry-section .inquiry-form::before,
+#inquiry-section.inquiry-section .inquiry-form::before,
+.inquiry-section .inquiry-form::before {
+  content: none !important;
+  display: none !important;
 }
 
 .inquiry-form > h2,
@@ -2206,9 +2242,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 .portal-shell {
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   box-sizing: border-box;
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
+  padding-inline: 0;
   margin-inline: auto;
 }
 
@@ -2248,7 +2284,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .login-container {
-  width: var(--portal-login-max);
+  width: 100%;
+  max-width: var(--site-frame-wide);
   margin-inline: auto;
 }
 
@@ -2316,10 +2353,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     justify-self: center;
     width: 100%;
     max-width: min(100%, 44rem);
-    /* Intrinsic height from width × ratio (absolute satellite fills this box) */
-    aspect-ratio: 4 / 3;
-    max-height: min(34rem, 58vh);
-    max-height: min(34rem, 58dvh);
+    min-height: clamp(14rem, 36vh, 24rem);
+    min-height: clamp(14rem, 36dvh, 24rem);
+    max-height: none;
+    height: auto;
+    aspect-ratio: unset;
   }
 }
 
@@ -2364,6 +2402,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 /* ─── Inner marketing pages: clean sections (hero stays outside wrapper) ─── */
 .marketing-page-bands {
   position: relative;
+  z-index: 2;
+  isolation: isolate;
 }
 
 .marketing-page-bands::before,
@@ -2499,8 +2539,17 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.9rem);
   font-weight: var(--font-weight-semibold);
   color: rgba(var(--primary-ink-rgb), 0.45);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.client-site-card__preview:not(:has(.client-site-card__shot)) .client-site-card__placeholder,
+.client-site-card__preview:has(.client-site-card__placeholder:not([hidden])) .client-site-card__shot {
+  display: none;
+}
+
+.client-site-card__preview:has(.client-site-card__placeholder:not([hidden])) .client-site-card__placeholder {
+  display: grid;
 }
 
 .client-site-card__chrome {
@@ -2578,57 +2627,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   max-width: 62ch;
 }
 
-/* ─── Home: subtle in-section graphs only (no thick gutter “veins”) ─── */
-.main-home .home-page-margin-constellation,
-.main-home .home-page-margin-echo-stack {
-  display: none !important;
-}
-
-.main-home .home-interconnection-page-margin--left::after,
-.main-home .home-interconnection-page-margin--right::after {
-  display: none !important;
-}
-
+/* Gutter margin rails stay visible; section graphs bleed into gutters via active-band rules above. */
 .main-home .home-interconnection-page-margin--left,
 .main-home .home-interconnection-page-margin--right {
-  background: transparent !important;
-  border-color: transparent !important;
-}
-
-.main-home .home-sections-shell .section .section-satellite {
-  width: clamp(8.5rem, 18vw, 14rem);
-  max-height: min(28vh, 13rem);
-  opacity: 0.2;
-  contain: paint;
-}
-
-.main-home .home-sections-shell .section .section-satellite__edge {
-  stroke-width: 0.65;
-  stroke-linecap: round;
-}
-
-.main-home .home-sections-shell .section .section-satellite__node {
-  stroke-width: 0.75;
-}
-
-.main-home .home-interconnection-rig[data-margin-band] .section-satellite:not(.section-satellite--gutter-echo) {
-  width: clamp(8.5rem, 18vw, 14rem) !important;
-  max-height: min(28vh, 13rem) !important;
-  right: clamp(0, 1.5vw, 1rem) !important;
-  left: auto !important;
-  opacity: 0.22 !important;
-  transform: none !important;
-}
-
-.main-home .home-interconnection-rig[data-margin-band] .home-band--industry .section-satellite:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band] .home-band--solutions .section-satellite:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band] .home-band--contact .section-satellite:not(.section-satellite--gutter-echo) {
-  left: clamp(0, 1.5vw, 1rem) !important;
-  right: auto !important;
-}
-
-.main-home .home-interconnection-rig[data-margin-band] .section-satellite:not(.section-satellite--gutter-echo)::after {
-  display: none !important;
+  z-index: 1;
 }
 
 .main-home .home-sections-shell .section .card-grid {

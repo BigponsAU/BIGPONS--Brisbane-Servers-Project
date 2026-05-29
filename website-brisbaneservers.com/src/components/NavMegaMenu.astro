@@ -1,0 +1,50 @@
+---
+import { sitePath } from '../lib/site-path';
+import type { NavGroup } from '../data/navigation';
+
+interface Props {
+  groups: NavGroup[];
+  menuId: string;
+  toggleId: string;
+  currentPath: string;
+}
+
+const { groups, menuId, toggleId, currentPath } = Astro.props;
+
+function isActive(href: string): boolean {
+  const pathOnly = href.split('#')[0] || href;
+  if (pathOnly === '/' && currentPath === '/') return true;
+  if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
+  return false;
+}
+---
+
+<div
+  class="nav-dropdown-menu nav-dropdown-menu--mega"
+  role="menu"
+  id={menuId}
+  aria-labelledby={toggleId}
+>
+  <div class="nav-mega">
+    {
+      groups.map((group) => (
+        <div class="nav-mega__column">
+          <p class="nav-mega__heading">{group.title}</p>
+          <ul class="nav-mega__list">
+            {group.items.map((child) => (
+              <li>
+                <a
+                  href={sitePath(child.href)}
+                  class:list={['nav-mega__link', isActive(child.href) && 'active']}
+                  role="menuitem"
+                >
+                  {child.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</div>

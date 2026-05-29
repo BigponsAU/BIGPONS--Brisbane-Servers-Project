@@ -39,7 +39,13 @@ export type PublishedListFilters = {
 export async function getPublishedResourcesForPage(
   filters: PublishedListFilters = {},
 ): Promise<Resource[]> {
-  const url = new URL(resolveInternalApiUrl('/resources/public'));
+  const apiBase = resolveInternalApiUrl('/resources/public');
+  if (!/^https?:\/\//i.test(apiBase)) {
+    const all = await loadResources();
+    return filterLocal(all, filters);
+  }
+
+  const url = new URL(apiBase);
   if (filters.industry) url.searchParams.set('industry', filters.industry);
   if (filters.topic) url.searchParams.set('topic', filters.topic);
 
@@ -58,7 +64,15 @@ export async function getPublishedResourcesForPage(
 }
 
 export async function getPublishedResourceById(id: string): Promise<Resource | null> {
-  const url = new URL(resolveInternalApiUrl('/resources/public'));
+  const apiBase = resolveInternalApiUrl('/resources/public');
+  if (!/^https?:\/\//i.test(apiBase)) {
+    const all = await loadResources();
+    const r = all.find((x) => x.id === id);
+    if (!r || !isPublicResource(r)) return null;
+    return r;
+  }
+
+  const url = new URL(apiBase);
   url.searchParams.set('id', id);
 
   try {

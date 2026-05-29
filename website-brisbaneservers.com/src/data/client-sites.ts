@@ -14,5 +14,6 @@ export const clientSites: ClientSite[] = [
     name: 'Cool Finance',
     url: 'https://coolfinance.com.au/',
     tagline: 'Finance brand site — public-facing presence and information architecture.',
+    previewImage: '/client-previews/coolfinance.png',
   },
 ];

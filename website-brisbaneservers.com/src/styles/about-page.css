@@ -1,0 +1,101 @@
+/**
+ * About page — portal voice rule cards (constellation spine in marketing-constellation.css).
+ */
+
+.marketing-page-bands--about {
+  width: 100%;
+  max-width: 100%;
+}
+
+.marketing-page-bands--about > .section.section-tartan-accent {
+  padding-block: clamp(2rem, 4.5vw, 3.25rem);
+}
+
+.marketing-page-bands--about > .section.section-tartan-accent > .container {
+  width: 100%;
+  max-width: var(--site-frame-wide);
+}
+
+.about-portal-voice-section > .bg-pattern-phi-radial,
+.about-portal-voice-section > .phi-lateral-angular-4 {
+  z-index: 1;
+  opacity: 0.28;
+}
+
+.about-portal-voice__rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}
+
+.about-portal-voice__rule {
+  padding: var(--space-lg) var(--space-lg) var(--space-lg) calc(var(--space-lg) + 2px);
+  border-radius: var(--site-panel-radius);
+  border: var(--card-border-marketing, 2px solid rgba(15, 23, 42, 0.1));
+  border-left: 3px solid var(--primary-color);
+  background: var(--surface-glass-strong, #ffffff);
+  box-shadow: var(--card-shadow-marketing, var(--site-panel-shadow));
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.about-portal-voice__rule:hover {
+  border-left-color: var(--accent-violet);
+  box-shadow: 0 12px 32px rgba(8, 27, 54, 0.1);
+  transform: translateY(-2px);
+}
+
+.about-portal-voice__rule h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-dark);
+}
+
+.about-portal-voice__rule p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.about-portal-voice__cta {
+  margin: var(--space-2xl) 0 0;
+  text-align: center;
+}
+
+.about-portal-voice__cta .btn {
+  min-width: min(100%, 16rem);
+  padding: 0.65rem 1.5rem;
+}
+
+.about-corrections {
+  margin-top: var(--space-2xl);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.16);
+  background: linear-gradient(
+    145deg,
+    rgba(var(--primary-color-rgb), 0.05) 0%,
+    rgba(var(--accent-violet-rgb), 0.04) 100%
+  );
+}
+
+.about-corrections h3 {
+  margin: 0 0 var(--space-sm);
+  font-size: clamp(1.1rem, 1.25rem, 1.35rem);
+}
+
+.about-corrections p {
+  margin: 0 0 var(--space-sm);
+  max-width: var(--measure-prose);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.about-corrections a {
+  font-weight: var(--font-weight-semibold);
+}

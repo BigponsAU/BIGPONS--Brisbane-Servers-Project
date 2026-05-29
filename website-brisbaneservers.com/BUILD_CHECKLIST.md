@@ -1,52 +1,38 @@
 # Build & Run Checklist
 
-## Design / zoom policy
-- [ ] Layout follows **native browser zoom** + **CSS media-query breakpoints** (no root `transform` for zoom, no JS zoom tier) — see [../docs/development/FEATURE_RECONCILIATION.md](../docs/development/FEATURE_RECONCILIATION.md)
+> **Canonical guide:** [../docs/MASTER.md](../docs/MASTER.md) — §8 build & validation, §3 SEO checklist.
 
-## Pre-Build Validation
-- [ ] TypeScript compilation passes
-- [ ] Astro config is valid
-- [ ] Required dependencies are present
-- [ ] Viewport meta tags are present in layouts
-- [ ] Essential CSS variables are defined
-
-## Build targets
+## Quick commands
 
 | Command | Use |
-|--------|-----|
-| `npm run build` | **GitHub Pages static frontend** (default `astro.config.mjs`) |
-| `npm run build:cpanel` | **Node / cPanel** — see [../docs/operations/CPANEL_DEPLOY.md](../docs/operations/CPANEL_DEPLOY.md) |
+|---------|-----|
+| `npm run build` | Production static build (Cloudflare Pages) |
+| `npm run build:hosted` | Build matching production env |
+| `npm run build:cpanel` | Node / cPanel — [CPANEL_DEPLOY.md](../docs/operations/CPANEL_DEPLOY.md) |
+| `npm test` | Vitest (includes SEO tests) |
+| `npm run verify:go-live` | Phase 0 gate: test + typecheck + build 6/6 |
+| `npx tsx scripts/validate-content-seo.ts` | SEO field validation only |
 
-## Build Process
-- [ ] Build completes without errors
-- [ ] All TypeScript files compile successfully
-- [ ] CSS files are generated correctly
-- [ ] If the standalone API is unavailable during build, public resource pages still render with fallback content
+## Pre-build (automatic on `npm run build`)
 
-## Post-Build Verification
-- [ ] dist directory exists
-- [ ] index.html is generated
-- [ ] All HTML files have viewport meta tags
-- [ ] CSS files are present and have content
-- [ ] No broken asset references
+- TypeScript, Astro config, dependencies, viewport meta, CSS variables
+- **Content SEO validation** (case studies, industries, topics)
+- Hosted API HTTPS check (CI only)
 
-## Development Server
-- [ ] Server starts successfully (`npm run dev` or `astro dev`)
-- [ ] Localhost is accessible at **http://localhost:3000**
-- [ ] No console errors
-- [ ] Viewport enhancements work
-- [ ] Responsive design functions correctly
+## Post-build
 
-## Functionality Tests
-- [ ] Navigation works
-- [ ] Components render correctly
-- [ ] Viewport utilities function
-- [ ] Symmetry system applies correctly
-- [ ] CSS variables are accessible
+- `dist/` exists, `index.html`, viewport in HTML, CSS bundle, asset refs
 
-## Production / SEO
-- [ ] Set `PUBLIC_SITE_URL` on the deploy environment if the public origin is not `https://brisbaneservers.com` (canonical links, Open Graph, `/sitemap.xml`)
-- [ ] Confirm `public/og-default.png` is present (default OG art — **South Bank / riverfront**). Optional nature alternate: `public/og-nature.png` (set `OG_DEFAULT_PATH` or per-page `ogImage`)
-- [ ] Confirm `/sitemap.xml` returns XML and lists expected marketing URLs
-- [ ] Confirm `/robots.txt` is served and references the correct `Sitemap:` URL for your host
+## SEO checklist
 
+See [MASTER §3 & §8](../docs/MASTER.md#3-seo-organic-search):
+
+- [ ] `PUBLIC_SITE_URL` set on deploy environment
+- [ ] `public/og-default.png` present
+- [ ] `/sitemap.xml` and `/robots.txt` correct for host
+- [ ] `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on API host
+- [ ] Google Search Console sitemap submitted
+
+## Design / zoom policy
+
+Native browser zoom + CSS breakpoints only — [FEATURE_RECONCILIATION.md](../docs/development/FEATURE_RECONCILIATION.md)

@@ -1,18 +1,18 @@
 # Documentation index
 
-**Canonical hub:** [docs/README.md](docs/README.md) — every Markdown doc, grouped by topic, with correct paths.
+**Master reference (start here):** [docs/MASTER.md](docs/MASTER.md) — deployment, SEO, content publishing, build validation, operations.
+
+**Folder hub:** [docs/README.md](docs/README.md)
 
 ## Quick links
 
 | Topic | Document |
 |--------|-----------|
-| **Deploy (primary: GitHub Pages hybrid)** | [docs/operations/DEPLOYMENT_PATHWAYS.md](docs/operations/DEPLOYMENT_PATHWAYS.md) |
-| Run the stack | [docs/operations/RUN_AND_TROUBLESHOOT.md](docs/operations/RUN_AND_TROUBLESHOOT.md) |
+| **Everything (canonical)** | [docs/MASTER.md](docs/MASTER.md) |
+| Deploy (Cloudflare Pages) | [MASTER §5](docs/MASTER.md#5-deployment--cloudflare-pages-primary) |
+| SEO & content publishing | [MASTER §3–4](docs/MASTER.md#3-seo-organic-search) |
+| Run the stack | [MASTER §9](docs/MASTER.md#9-run-locally--troubleshoot) |
 | Account / workspace | [docs/portal/PORTAL.md](docs/portal/PORTAL.md) |
-| Portal + API scope map | [docs/portal/VOICE_PORTAL_SCOPE_MAP.md](docs/portal/VOICE_PORTAL_SCOPE_MAP.md) |
 | Login / admin env | [docs/portal/CREDENTIALS.md](docs/portal/CREDENTIALS.md) |
 | Architecture (fast) | [docs/project/CODEBASE_WIRE_CARD.md](docs/project/CODEBASE_WIRE_CARD.md) |
-| Zoom / responsive layout policy | [docs/development/FEATURE_RECONCILIATION.md](docs/development/FEATURE_RECONCILIATION.md) |
-| Live map / gotchas | [docs/development/RUNNING_NOTES_MAP.md](docs/development/RUNNING_NOTES_MAP.md) |
-| Next steps / priorities | [docs/development/PROJECT_NEXT_STEPS_REPORT.md](docs/development/PROJECT_NEXT_STEPS_REPORT.md) |
-| Repo status (snapshot) | [docs/project/REPOSITORY_STATUS.md](docs/project/REPOSITORY_STATUS.md) |
+| Environment variables | [docs/development/ENV_VARIABLES.md](docs/development/ENV_VARIABLES.md) |

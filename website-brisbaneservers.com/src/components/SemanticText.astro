@@ -1,4 +1,6 @@
 ---
+import { formatHeadingCopy } from '../lib/copy-style';
+
 interface Props {
   text: string;
   class?: string;
@@ -6,9 +8,22 @@ interface Props {
   isParent?: boolean;
   isChild?: boolean;
   parentClass?: string;
+  /** Keep source casing (brand names, legal copy) */
+  preserveCase?: boolean;
 }
 
-const { text, class: className = '', semanticLevel = 'normal', isParent = false, isChild = false, parentClass = '' } = Astro.props;
+const {
+  text,
+  class: className = '',
+  semanticLevel = 'normal',
+  isParent = false,
+  isChild = false,
+  parentClass = '',
+  preserveCase = false,
+} = Astro.props;
+
+const displayText =
+  !preserveCase && (isParent || semanticLevel === 'high') ? formatHeadingCopy(text) : text;
 
 // Simplified typography component - removed wave function cipher system
 // Semantic levels map to standard typography variants for hierarchy
@@ -23,7 +38,7 @@ const semanticClasses = [
 ---
 
 <span class={semanticClasses} data-semantic-level={semanticLevel}>
-  {text}
+  {displayText}
 </span>
 
 <style>

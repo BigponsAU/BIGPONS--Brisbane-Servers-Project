@@ -4,15 +4,21 @@ import Hero from '../components/Hero.astro';
 import Card from '../components/Card.astro';
 import CardGrid from '../components/CardGrid.astro';
 import InquiryForm from '../components/InquiryForm.astro';
-import SemanticText from '../components/SemanticText.astro';
+import SectionIntro from '../components/SectionIntro.astro';
+import SectionConstellationLayer from '../components/SectionConstellationLayer.astro';
+import SiteLink from '../components/SiteLink.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
+import SemanticText from '../components/SemanticText.astro';
 import { valueProposition } from '../data/value-proposition';
+import { portalVoiceRules } from '../lib/portal-voice-framework';
+import { sitePath } from '../lib/site-path';
 
 const currentPath = '/about';
+const { sections } = valueProposition.about;
 ---
 
-<SiteShell 
-  title="About - Brisbane Servers"
+<SiteShell
+  title="About"
   description={valueProposition.about.description}
   currentPath={currentPath}
   pageId="about"
@@ -20,111 +26,159 @@ const currentPath = '/about';
   zoomProfile="balanced"
   mainClass="main-phi-chassis"
 >
-    <Hero 
-      eyebrow={valueProposition.brandEyebrow}
-      title="About Brisbane Servers"
-      subtitle={valueProposition.about.heroSubtitle}
-    />
+  <Hero
+    eyebrow={valueProposition.brandEyebrow}
+    title="About Brisbane Servers"
+    subtitle={valueProposition.about.heroSubtitle}
+    secondaryCtaText={valueProposition.portalCtaLabel}
+    secondaryCtaHref="/account#portal-voice-framework"
+  />
 
-    <MarketingPageBands>
-    <section class="section section-tartan-accent section-home-band--surface">
+  <MarketingPageBands class="marketing-page-bands--about marketing-page-bands--constellation-spine">
+    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+      <SectionConstellationLayer variant="about" semanticKey="about-mission" tier="whisper" placement="top-right" />
       <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Our mission foundation" semanticLevel="high" isParent={true} />
-        </h2>
-        <CardGrid>
+        <SectionIntro
+          eyebrow={sections.mission.eyebrow}
+          title={sections.mission.title}
+          byline={sections.mission.byline}
+        />
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
           <Card
-            title="Access to Truth"
-            description="Providing documented, evidence-based information about technology solutions. Presenting facts about what works, implementation considerations, and practical applications."
+            title="Access to truth"
+            description="Documented, evidence-based information about technology solutions — what works, implementation considerations, and practical applications."
             icon="fas fa-lightbulb"
           />
           <Card
-            title="Supporting Domestic Growth"
-            description="Strengthening the Australian business ecosystem through real, applicable technology solutions. Better businesses, better economy."
+            title="Supporting domestic growth"
+            description="Strengthening the Australian business ecosystem through applicable technology — better businesses, better economy."
             icon="fas fa-handshake"
           />
           <Card
-            title="Brisbane Innovation Authority"
-            description="Building Brisbane's reputation as a recognized hub for quality, innovation, and authority in technology."
+            title="Brisbane innovation authority"
+            description="Building Brisbane's reputation as a hub for quality, innovation, and authority in technology."
             icon="fas fa-city"
           />
         </CardGrid>
       </div>
     </section>
 
-    <section class="section section-tartan-accent philosophy-section" aria-labelledby="philosophy-heading">
+    <section
+      class="section section-tartan-accent section-home-band--primary-light philosophy-section"
+      aria-labelledby="philosophy-heading"
+    >
+      <SectionConstellationLayer variant="about" semanticKey="about-philosophy" tier="whisper" placement="top-left" />
+      <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-tangent"></div>
       <div class="container">
-        <h2 class="section-title" id="philosophy-heading">
-          <SemanticText text="How we work with you" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text="Clarity over theatre: information architecture, evidence, and language that help you approve scope, budget, and risk — not slides that age in a week." semanticLevel="normal" />
-        </p>
-        <CardGrid>
+        <SectionIntro
+          eyebrow={sections.philosophy.eyebrow}
+          title={sections.philosophy.title}
+          byline={sections.philosophy.byline}
+          titleId="philosophy-heading"
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
-            title="Facts as Foundation"
-            description="We present reality-based information, not opinions or stances. Provable, documented, evidence-based. This is our authority."
+            title="Facts as foundation"
+            description="Reality-based information, not opinions. Provable, documented, evidence-based — that is our authority."
           />
           <Card
-            title="Openness to Dialogue"
-            description="We invite corrections, questions, and requests. This strengthens our authority and improves our understanding."
+            title="Openness to dialogue"
+            description="We invite corrections, questions, and requests. That strengthens our authority and improves our understanding."
           />
           <Card
-            title="Tailored Solutions"
-            description="We recognize that needs differ and solutions must be diverse. One-size-fits-all doesn't exist."
+            title="Tailored solutions"
+            description="Needs differ and solutions must be diverse. One-size-fits-all does not exist."
           />
           <Card
-            title="Collaborative Approach"
-            description="We work with you, not for you. Understanding your reality, your industry, your constraints."
+            title="Collaborative approach"
+            description="We work with you, not for you — your reality, industry, and constraints come first."
           />
         </CardGrid>
-        
-        <!-- Anchor kept for backwards-compatible links; philosophy now operationalized in portal voice framework. -->
+
         <div id="additive-semantics" class="sr-only" aria-hidden="true"></div>
-        
+
         <div
           id="corrections-welcome"
-          class="evidence-section evidence-section--additive-plain wisdom-section evidence-section--philosophy-stack"
+          class="about-corrections"
           aria-labelledby="corrections-welcome-heading"
         >
-          <h3 class="semantic-heading" id="corrections-welcome-heading">
-            <SemanticText text="Corrections Welcome" semanticLevel="high" isParent={true} />
+          <h3 id="corrections-welcome-heading">
+            <SemanticText text={valueProposition.about.correctionsTitle} semanticLevel="high" isParent={true} />
           </h3>
-          <div class="semantic-content semantic-content--tight">
-            <p>
-              <SemanticText text="If you find an error, have a question, or want to challenge something we've stated, we invite you to contact us. Openness to correction is not a courtesy—it's a reinforcement mechanism. Inviting challenge does not weaken our position—it proves our foundation is solid enough to bear weight." semanticLevel="normal" />
-            </p>
-          </div>
           <p>
-            <strong>Contact:</strong> <a href="mailto:connect@brisbaneservers.com">connect@brisbaneservers.com</a>
+            <SemanticText text={valueProposition.about.correctionsBody} semanticLevel="normal" />
+          </p>
+          <p>
+            <strong>Contact:</strong>{' '}
+            <a href={`mailto:${valueProposition.about.correctionsContact}`}>
+              {valueProposition.about.correctionsContact}
+            </a>
           </p>
         </div>
       </div>
     </section>
 
-    <section class="section section-tartan-accent section-home-band--primary-light">
+    <section
+      id="portal-voice-framework"
+      class="section section-tartan-accent section-home-band--surface about-portal-voice-section"
+      aria-labelledby="portal-voice-heading"
+    >
+      <SectionConstellationLayer
+        variant="about"
+        semanticKey="about-portal-voice-framework"
+        tier="whisper"
+        placement="bottom-right"
+      />
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-angular-4"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="A BIGPONS Project" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text="Brisbane Servers is operated by BIGPONS, contributing to our mission of providing genuine technological expertise to Australian businesses." semanticLevel="normal" isChild={true} />
+        <SectionIntro
+          eyebrow={sections.portalVoice.eyebrow}
+          title={sections.portalVoice.title}
+          byline={sections.portalVoice.byline}
+          titleId="portal-voice-heading"
+        />
+        <div class="about-portal-voice__rules">
+          {
+            portalVoiceRules.map((rule) => (
+              <article class="about-portal-voice__rule">
+                <h3>{rule.title}</h3>
+                <p>{rule.description}</p>
+              </article>
+            ))
+          }
+        </div>
+        <p class="about-portal-voice__cta">
+          <a href={sitePath('/account#portal-voice-framework')} class="btn btn-primary">
+            Open account workspace
+          </a>
         </p>
-        <CardGrid>
+      </div>
+    </section>
+
+    <section class="section section-tartan-accent section-home-band--primary-light">
+      <SectionConstellationLayer variant="about" semanticKey="about-bigpons" tier="whisper" placement="bottom-right" />
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-lateral-angular-4"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.bigpons.eyebrow}
+          title={sections.bigpons.title}
+          byline={sections.bigpons.byline}
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
             title="BIGPONS ABN"
-            description="ABN: 93 297 393 962<br>Registered Australian Business"
+            description="ABN: 93 297 393 962 — registered Australian business."
             icon="fas fa-certificate"
           />
           <Card
             title="Location"
-            description="Brisbane, Queensland, Australia<br>Serving businesses across Australia"
+            description="Brisbane, Queensland, Australia — serving businesses across Australia."
             icon="fas fa-map-marker-alt"
           />
         </CardGrid>
@@ -132,40 +186,48 @@ const currentPath = '/about';
     </section>
 
     <section class="section section-tartan-accent section-home-band--surface">
+      <SectionConstellationLayer variant="about" semanticKey="about-sme" tier="whisper" placement="bottom-left" />
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical phi-line-vertical-inv"></div>
       <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Why that matters for Australian SMEs" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text="The market is loud; your runway is not. We narrow the field to what fits your industry, compliance posture, and budget — then help you ship and support it." semanticLevel="normal" isChild={true} />
-        </p>
-        <CardGrid>
+        <SectionIntro
+          eyebrow={sections.sme.eyebrow}
+          title={sections.sme.title}
+          byline={sections.sme.byline}
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
-            title="Industry Understanding"
-            description="We know what works in retail, healthcare, hospitality, manufacturing, and professional services. Not general solutions—industry-specific guidance."
+            title="Industry understanding"
+            description="Retail, healthcare, hospitality, manufacturing, and professional services — industry-specific guidance, not generic solutions."
           />
           <Card
-            title="Grant & Incentive Awareness"
-            description="We identify available grants, tax incentives, and subsidies specific to your industry and business purpose. Accessing what you qualify for."
+            title="Grant and incentive awareness"
+            description="Grants, tax incentives, and subsidies for your industry and purpose — we help you access what you qualify for."
           />
           <Card
-            title="Reality-Based Recommendations"
-            description="We assess your size, costs, and constraints to recommend what actually makes sense, not what's being sold to you."
+            title="Reality-based recommendations"
+            description="We assess size, costs, and constraints — what makes sense for you, not what is being sold."
           />
           <Card
-            title="Time-Saving Focus"
-            description="We do the learning, sifting, and discernment. You focus on your business. We identify automation opportunities for tedious tasks."
+            title="Time-saving focus"
+            description="We do the learning and sifting; you focus on the business. Automation where tedious work can go."
           />
         </CardGrid>
+        <p class="section-description" style="margin-top: var(--space-xl); max-width: 62ch;">
+          <SemanticText
+            text="Explore delivery patterns on Projects, industry hubs under Resources, or request a consultation when you are ready to scope work."
+            semanticLevel="normal"
+          />
+          {' '}
+          <SiteLink href="/projects">Projects</SiteLink>
+          {' · '}
+          <SiteLink href="/resources">Resources</SiteLink>
+          {' · '}
+          <SiteLink href="/services#consultation">Services</SiteLink>
+        </p>
       </div>
     </section>
 
-    <InquiryForm 
-      title="Questions about who we are or what we do?"
-      industryField={false}
-    />
-    </MarketingPageBands>
+    <InquiryForm industryField={false} />
+  </MarketingPageBands>
 </SiteShell>
-

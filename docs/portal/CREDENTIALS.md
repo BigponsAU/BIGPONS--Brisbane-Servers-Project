@@ -40,8 +40,8 @@ export ADMIN_EMAIL="your-email@example.com"
 export ADMIN_PASSWORD="your-secure-password"
 ```
 
-## Production (Node host / GitHub Pages hybrid)
+## Production (Cloudflare Pages + API host)
 
-- Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in the production environment only.
-- Use a strong password and secure storage (panel env vars, not in code).
-- Prefer registered users + proper session storage for multi-instance deployments.
+- Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` on the **API host** only (never Cloudflare Pages).
+- Use a strong password and managed Postgres (`DATABASE_URL`) for all signups.
+- Full go-live: [docs/operations/BRISBANESERVERS_PRODUCTION.md](../operations/BRISBANESERVERS_PRODUCTION.md)

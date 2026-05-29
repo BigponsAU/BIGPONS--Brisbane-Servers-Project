@@ -1,0 +1,435 @@
+---
+import { industries } from '../../data/industries';
+---
+              <div id="resources-panel" class="portal-panel" role="main" aria-label="Resources management" style="display: none;">
+                <div class="admin-content">
+
+        <!-- Phi-Trailing Tartan Railing Information Card -->
+        <div id="info-card" class="info-card" role="dialog" aria-labelledby="info-card-title" aria-hidden="true">
+          <!-- Rail Guide (visible only when railed) -->
+          <div class="info-card-rail" id="info-card-rail">
+            <div class="rail-line rail-line-primary"></div>
+            <div class="rail-line rail-line-secondary"></div>
+            <div class="rail-line rail-line-tertiary"></div>
+            <div class="rail-indicator"></div>
+          </div>
+          
+          <!-- Tartan Overlay (covers content initially) -->
+          <div class="info-card-tartan-overlay" id="info-card-tartan-overlay"></div>
+          
+          <!-- Card Content -->
+          <div class="info-card-content">
+            <div class="info-card-header">
+              <h2 id="info-card-title">Information Guide</h2>
+              <button class="info-card-close" onclick="toggleInfoCard()" aria-label="Close information card">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="info-card-body">
+              <div class="info-section">
+                <h3>Resource Management</h3>
+                <p>Use the tree view to navigate resources by industry and topic. Click on any resource to view details in the workspace panel.</p>
+              </div>
+              <div class="info-section">
+                <h3>Voice Profiles</h3>
+                <p>Manage voice profiles for content generation. Archive unused profiles and analyze duplicates using the neural library tools.</p>
+              </div>
+              <div class="info-section">
+                <h3>Quick Actions</h3>
+                <p>Generate new resources, upload existing files, or refine content using the voice framework integration.</p>
+              </div>
+            </div>
+            <div class="info-card-footer">
+              <button class="btn btn-primary btn-sm" onclick="toggleInfoCard()">Got it</button>
+            </div>
+          </div>
+          
+          <!-- Phi Path Trailing Elements -->
+          <div class="info-card-trail">
+            <div class="trail-element trail-element-1"></div>
+            <div class="trail-element trail-element-2"></div>
+            <div class="trail-element trail-element-3"></div>
+          </div>
+        </div>
+
+                  <!-- Resources Panel Content -->
+          <section class="admin-section" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
+            <div class="section-header">
+              <div>
+                <h2 id="resource-voice-profile-heading" class="sr-only">Voice profile for resources</h2>
+                <p class="section-subtitle" style="margin: 0;">Voice profile used for upload, paste/process, and generate below. Choose a saved profile or leave on Auto to match the server default and library-derived voice.</p>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom: var(--space-lg);">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="resource-voice-profile-select">Voice profile</label>
+                <select id="resource-voice-profile-select" name="resourceVoiceProfile" aria-describedby="resource-voice-profile-hint">
+                  <option value="">Auto (saved default or library-derived)</option>
+                </select>
+                <small id="resource-voice-profile-hint" style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">Profiles load from the Voice Profiles panel. Open Profiles once or use Refresh there to update this list.</small>
+              </div>
+            </div>
+          </section>
+          <!-- Resource Upload Section -->
+          <section class="admin-section admin-section-collapsible" aria-labelledby="upload-resource-heading">
+            <div class="section-header">
+              <h2 id="upload-resource-heading">Upload Resource</h2>
+              <button class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div id="upload-resource-content" class="section-content">
+            <div class="card" style="position: relative; overflow: hidden;">
+              <form id="upload-resource-form" class="resource-form" aria-label="Resource upload form" enctype="multipart/form-data">
+                <div class="form-group">
+                  <label for="upload-file">Upload File</label>
+                  <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.doc,.docx" />
+                  <small style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">
+                    Supported: Text, Markdown, HTML files. Empty tests, very short paste-ins, or obvious noise are rejected before processing.
+                  </small>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="upload-industry">Industry</label>
+                    <select id="upload-industry" name="industry" required>
+                      <option value="">Select Industry...</option>
+                      {industries.map(industry => (
+                        <option value={industry.slug}>{industry.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="upload-topic">Topic</label>
+                    <input type="text" id="upload-topic" name="topic" required placeholder="e.g., Client Management Systems" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="upload-title">Title (optional)</label>
+                  <input type="text" id="upload-title" name="title" placeholder="Auto-generated from filename if not provided" />
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="upload-auto-process" checked /> Process through voice framework synchronously
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="upload-auto-publish" /> Auto-publish after processing
+                  </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload & Process Resource</button>
+                <div id="upload-status" class="status-message" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+          </section>
+
+          <!-- Create from content (paste / type, no file) -->
+          <section class="admin-section admin-section-collapsible" aria-labelledby="create-from-content-heading">
+            <div class="section-header">
+              <h2 id="create-from-content-heading">Create from Content</h2>
+              <button class="section-toggle" aria-expanded="false" aria-controls="create-from-content-content" onclick="toggleSection('create-from-content-content', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div id="create-from-content-content" class="section-content" style="display: none;">
+              <div class="card" style="position: relative; overflow: hidden;">
+                <p class="section-subtitle" style="margin-bottom: var(--space-md);">Paste or type content below. It will be processed through the voice framework (no file upload). For quality control, very short text, keyboard spam, or low-variance gibberish is rejected server-side.</p>
+                <form id="create-from-content-form" class="resource-form" aria-label="Create from content form">
+                  <div class="form-group">
+                    <label for="process-content">Content</label>
+                    <textarea id="process-content" name="content" rows="8" required placeholder="Paste or type your content here..." style="width: 100%; resize: vertical;"></textarea>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="process-industry">Industry</label>
+                      <select id="process-industry" name="industry" required>
+                        <option value="">Select Industry...</option>
+                        {industries.map(industry => (
+                          <option value={industry.slug}>{industry.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="process-topic">Topic</label>
+                      <input type="text" id="process-topic" name="topic" required placeholder="e.g., Client Management Systems" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="process-title">Title (optional)</label>
+                    <input type="text" id="process-title" name="title" placeholder="Auto-generated if not provided" />
+                  </div>
+                  <div class="form-group">
+                    <label>
+                      <input type="checkbox" id="process-auto-publish" /> Auto-publish after processing
+                    </label>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Process & Create Resource</button>
+                  <div id="process-status" class="status-message" role="status" aria-live="polite"></div>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- Resource Generation Section -->
+          <section class="admin-section admin-section-collapsible" aria-labelledby="generate-resource-heading">
+            <div class="section-header">
+              <h2 id="generate-resource-heading">Generate New Resource</h2>
+              <button class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div id="generate-resource-content" class="section-content" style="display: none;">
+            <div class="card" style="position: relative; overflow: hidden;">
+              <form id="generate-resource-form" class="resource-form" aria-label="Resource generation form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="resource-industry">Industry</label>
+                    <select id="resource-industry" name="industry" required>
+                      <option value="">Select Industry...</option>
+                      {industries.map(industry => (
+                        <option value={industry.slug}>{industry.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="resource-topic">Topic</label>
+                    <input type="text" id="resource-topic" name="topic" required placeholder="e.g., Client Management Systems" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="resource-title">Title (optional)</label>
+                  <input type="text" id="resource-title" name="title" placeholder="Auto-generated if not provided" />
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="include-examples" checked /> Include Examples
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label for="content-length">Content Length</label>
+                  <select id="content-length" name="length">
+                    <option value="short">Short</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="long">Long</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Generate Resource</button>
+                <div id="generate-status" class="status-message" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+            </div>
+          </section>
+
+          <!-- Resources Workspace -->
+          <section class="admin-section" aria-labelledby="resources-heading">
+            <div class="section-header">
+              <div>
+                <h2 id="resources-heading">Resource Workspace</h2>
+                <p class="section-subtitle">Create, refine, and organize your content resources. <strong>Start from template:</strong> pick a starter block (overview or below), then customise. Or use Create from content (paste) or upload a file.</p>
+              </div>
+              <div class="section-actions">
+                <button id="refresh-resources" class="btn btn-secondary btn-sm" aria-label="Refresh resources">
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  Refresh
+                </button>
+                <button id="view-toggle" class="btn btn-secondary btn-sm" onclick="toggleResourceView()" aria-label="Toggle view">
+                  <svg class="btn-icon" id="view-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                  <span id="view-toggle-text">List View</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Resource Workspace Layout -->
+            <div class="resource-workspace">
+              <!-- Tree Navigation Panel -->
+              <aside class="resource-tree-panel" id="resource-tree-panel">
+                <div class="tree-header">
+                  <h3>Resource Tree</h3>
+                  <div class="tree-search">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    <input 
+                      type="text" 
+                      id="tree-search" 
+                      placeholder="Search tree..." 
+                      class="tree-search-input"
+                      oninput="filterTree(this.value)"
+                    />
+                  </div>
+                </div>
+                <div class="tree-filters">
+                  <button class="btn btn-secondary btn-sm filter-btn active" onclick="filterTreeByStatus('')" data-status="" aria-label="Show all resources">
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                      <line x1="9" y1="3" x2="9" y2="21"></line>
+                      <line x1="15" y1="3" x2="15" y2="21"></line>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="3" y1="15" x2="21" y2="15"></line>
+                    </svg>
+                    <span>All</span>
+                  </button>
+                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('published')" data-status="published" aria-label="Show published resources">
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Published</span>
+                  </button>
+                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('draft')" data-status="draft" aria-label="Show draft resources">
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="12" y1="18" x2="12" y2="12"></line>
+                      <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Drafts</span>
+                  </button>
+                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('archived')" data-status="archived" aria-label="Show archived resources">
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="21 16 21 22 3 22 3 16"></polyline>
+                      <line x1="7" y1="16" x2="7" y2="2"></line>
+                      <line x1="17" y1="16" x2="17" y2="2"></line>
+                    </svg>
+                    <span>Archived</span>
+                  </button>
+                </div>
+                <div id="resource-tree" class="resource-tree" role="tree" aria-label="Resource hierarchy">
+                  <div class="tree-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading resource tree...</p>
+                  </div>
+                </div>
+              </aside>
+              
+              <!-- Workspace Content Area -->
+              <main class="resource-workspace-content" id="resource-workspace-content">
+                <div class="workspace-empty-state" id="workspace-empty-state">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <h3>Select a resource to refine</h3>
+                  <p>Choose a resource from the tree to view and edit it, or create a new one.</p>
+                  <div class="workspace-empty-actions">
+                    <button class="btn btn-primary" onclick="document.getElementById('generate-resource-heading').scrollIntoView({ behavior: 'smooth' })">
+                      <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Create New Resource
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Resource Detail/Refining Area -->
+                <div class="resource-detail-panel hidden" id="resource-detail-panel">
+                  <div class="detail-header">
+                    <div>
+                      <h3 id="detail-title">Resource Title</h3>
+                      <div class="detail-meta" id="detail-meta"></div>
+                    </div>
+                    <div class="detail-actions">
+                      <button class="btn btn-secondary btn-sm" onclick="closeResourceDetail()" aria-label="Close">
+                        <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="detail-content" id="detail-content">
+                    <!-- Resource content will be loaded here -->
+                  </div>
+                </div>
+              </main>
+            </div>
+            
+            <!-- Bulk Actions (for list view) -->
+            <div class="bulk-actions hidden" id="bulk-actions">
+              <span id="bulk-selected-count" class="bulk-count">0 selected</span>
+              <div class="bulk-buttons">
+                <button class="btn btn-success btn-sm" onclick="bulkPublish()">Publish</button>
+                <button class="btn btn-warning btn-sm" onclick="bulkUnpublish()">Unpublish</button>
+                <button class="btn btn-danger btn-sm" onclick="bulkDelete()">Delete</button>
+                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">Clear</button>
+              </div>
+            </div>
+            
+            <!-- List View (hidden by default) -->
+            <div id="resources-list-view" class="resources-list-view hidden" role="region" aria-live="polite">
+              <div class="resources-toolbar">
+                <div class="search-filter-group">
+                  <label for="resource-search" class="sr-only">Search resources</label>
+                  <div class="search-wrapper">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    <input 
+                      type="text" 
+                      id="resource-search" 
+                      placeholder="Search by title, topic, or industry..." 
+                      class="search-input"
+                      aria-label="Search resources"
+                    />
+                  </div>
+                  <label for="status-filter" class="sr-only">Filter by status</label>
+                  <select id="status-filter" class="filter-select" aria-label="Filter by status">
+                    <option value="">All Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                  <label for="resource-type-filter" class="sr-only">Filter by type</label>
+                  <select id="resource-type-filter" class="filter-select" aria-label="Filter by resource type">
+                    <option value="user">My Resources</option>
+                    <option value="starter">Starter Blocks</option>
+                    <option value="all">All Resources</option>
+                  </select>
+                </div>
+                <div class="toolbar-actions">
+                  <button id="seed-resources-btn" class="btn btn-secondary btn-sm" aria-label="Seed resources">
+                    <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v20M2 12h20"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Seed
+                  </button>
+                  <button id="deduplicate-resources-btn" class="btn btn-secondary btn-sm" aria-label="Remove duplicates">
+                    <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 6L6 18"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                    Dedupe
+                  </button>
+                </div>
+              </div>
+              <div id="resources-list" class="resources-list" role="region" aria-live="polite" aria-label="Resources list">
+                <p class="loading-message" role="status">Loading resources...</p>
+              </div>
+            </div>
+          </section>
+        </div>
+              </div>

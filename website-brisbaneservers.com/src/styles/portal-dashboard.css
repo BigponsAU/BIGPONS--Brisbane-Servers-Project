@@ -1,0 +1,507 @@
+/**
+ * Account workspace — layout + visuals aligned with marketing pages (Services, Contribute).
+ * Overrides legacy fixed-sidebar rules in portal.astro for Cloudflare Pages + hybrid API.
+ */
+
+.account-workspace-shell .admin-portal,
+.account-workspace-shell .account-workspace-root {
+  background: transparent;
+}
+
+.account-workspace-shell .login-screen {
+  display: block;
+  width: 100%;
+}
+
+.account-workspace-shell .account-workspace-signin-bands .login-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.account-workspace-shell .account-workspace-signin-section .login-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-xl);
+}
+
+.account-workspace-shell .login-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  padding: var(--space-xl);
+  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
+}
+
+.account-workspace-shell .workspace-toolbar-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .section-header--workspace {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.account-workspace-shell .account-workspace-panel-section {
+  padding-block: clamp(1.75rem, 4vw, 3rem);
+}
+
+.account-workspace-shell .account-workspace-panel-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.account-workspace-shell .account-workspace-panels {
+  width: 100%;
+}
+
+.account-workspace-shell .account-workspace-panels > .portal-panels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.account-workspace-shell .account-workspace-panels .portal-panel .admin-section,
+.account-workspace-shell .account-workspace-panels .portal-panel .admin-content > .admin-section {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .admin-portal,
+.site-shell--marketing.account-workspace-shell .admin-portal {
+  background: var(--bg-spectrum);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal #admin-dashboard.admin-dashboard {
+  min-height: calc(100dvh - var(--site-main-offset-top));
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, var(--portal-sidebar-width)) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(var(--space-md), 2vw, var(--space-xl));
+  width: 100%;
+  max-width: var(--site-frame-wide);
+  margin-inline: auto;
+  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter)
+    clamp(var(--space-2xl), 4vw, var(--space-3xl));
+  box-sizing: border-box;
+  min-height: calc(100dvh - var(--site-main-offset-top) - var(--space-lg));
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-sidebar {
+  position: sticky;
+  top: var(--site-main-offset-top);
+  left: auto;
+  width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - var(--site-main-offset-top) - var(--space-md));
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  box-shadow: var(--shadow-soft, 0 0.75rem 2rem rgba(8, 27, 54, 0.06));
+  background: var(--surface-elevated);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-sidebar::before {
+  display: none;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-header {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+  padding: var(--space-lg);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-header::before {
+  display: none;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-logo,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-subtitle {
+  color: var(--text-primary);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-subtitle {
+  opacity: 0.72;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-toggle {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-nav-item {
+  clip-path: none;
+  border: 1px solid transparent;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-nav-item:hover {
+  background: var(--primary-light);
+  border-color: rgba(var(--primary-color-rgb), 0.12);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-nav-item.active {
+  background: var(--primary-light);
+  border-color: rgba(var(--primary-color-rgb), 0.22);
+  color: var(--primary-dark);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .sidebar-nav-item.active .nav-icon {
+  color: var(--primary-color);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-main {
+  margin-left: 0;
+  min-height: 0;
+  background: transparent;
+  border-radius: var(--site-panel-radius);
+  overflow: hidden;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-header {
+  position: sticky;
+  top: var(--site-main-offset-top);
+  z-index: 30;
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
+  margin-bottom: clamp(var(--space-md), 2vw, var(--space-lg));
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-panels {
+  background: transparent;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-panel .admin-content {
+  padding: 0;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .admin-section {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  padding: clamp(var(--space-lg), 3vw, var(--space-2xl));
+  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .workspace-hero {
+  margin-bottom: clamp(var(--space-md), 2vw, var(--space-lg));
+  padding: clamp(var(--space-lg), 3vw, var(--space-xl));
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  background:
+    linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.08) 0%, transparent 55%),
+    var(--surface-elevated);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .workspace-hero__eyebrow {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-color);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .workspace-hero__title {
+  margin: 0 0 var(--space-sm);
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.15;
+  color: var(--primary-ink);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .workspace-hero__lead {
+  margin: 0;
+  max-width: var(--measure-prose);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal #api-connectivity-banner.api-connectivity-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-md);
+  width: min(100%, var(--site-frame-wide));
+  margin: 0 auto var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .api-connectivity-endpoint {
+  font-size: var(--text-xs);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  background: rgba(15, 23, 42, 0.06);
+  word-break: break-all;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal #login-screen ~ #api-connectivity-banner {
+  max-width: var(--site-frame-wide);
+  padding-inline: var(--site-frame-gutter);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .api-connectivity-banner[data-state='ok'] {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .api-connectivity-banner[data-state='warn'] {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .api-connectivity-banner[data-state='error'] {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .api-connectivity-banner[hidden] {
+  display: none !important;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  box-shadow: none;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .stat-card::before,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .stat-card::after {
+  display: none;
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .stat-icon {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: var(--border-radius);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .client-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-lg);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .client-token-card,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .client-contributions-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  padding: var(--space-lg);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .quick-action-card,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .starter-block-card {
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface-elevated);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .quick-action-card:hover,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .starter-block-card:hover {
+  border-color: rgba(var(--primary-color-rgb), 0.35);
+  box-shadow: 0 0.5rem 1.25rem rgba(var(--primary-color-rgb), 0.08);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .moderation-card,
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .site-review-card {
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface);
+  padding: var(--space-lg);
+}
+
+.site-shell--marketing.account-workspace-shell,
+.site-shell--portal .passkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.site-shell--marketing.account-workspace-shell .passkey-row:last-child,
+.site-shell--portal .passkey-row:last-child {
+  border-bottom: none;
+}
+
+.account-workspace-shell .library-growth-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+  padding: var(--space-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface-elevated);
+}
+
+.account-workspace-shell .library-growth-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .library-growth-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .library-growth-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .library-growth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .library-growth-schedule-state {
+  margin: 0.5rem 0 0;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--portal-text-secondary, #475569);
+}
+
+.account-workspace-shell .library-growth-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.account-workspace-shell .growth-proposals-queue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.account-workspace-shell .growth-proposal-card {
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  padding: var(--space-lg);
+  background: var(--surface);
+}
+
+.account-workspace-shell .growth-proposal-meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: var(--space-xs) 0 0;
+}
+
+.account-workspace-shell .growth-proposal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+@media (max-width: 1023px) {
+  .site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-layout {
+    grid-template-columns: 1fr;
+    padding-inline: var(--layout-padding-inline-start, var(--site-frame-gutter))
+      var(--layout-padding-inline-end, var(--site-frame-gutter));
+  }
+
+  .site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-sidebar {
+    position: fixed;
+    top: var(--site-main-offset-top);
+    left: 0;
+    bottom: 0;
+    width: min(100%, var(--portal-sidebar-width));
+    max-height: none;
+    height: calc(100dvh - var(--site-main-offset-top));
+    transform: translateX(-100%);
+    z-index: 120;
+  }
+
+  .site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .site-shell--marketing.account-workspace-shell,
+.site-shell--portal .portal-sidebar.open ~ .portal-main::before {
+    top: var(--site-main-offset-top);
+  }
+}

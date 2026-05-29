@@ -1,0 +1,35 @@
+---
+import { sitePath } from '../lib/site-path';
+import type { NavItem } from '../data/navigation';
+
+interface Props {
+  children: NavItem[];
+  menuId: string;
+  toggleId: string;
+  currentPath: string;
+}
+
+const { children, menuId, toggleId, currentPath } = Astro.props;
+
+function isActive(href: string): boolean {
+  const pathOnly = href.split('#')[0] || href;
+  if (pathOnly === '/' && currentPath === '/') return true;
+  if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
+  return false;
+}
+---
+
+<div
+  class="nav-dropdown-menu nav-dropdown-menu--simple"
+  role="menu"
+  id={menuId}
+  aria-labelledby={toggleId}
+>
+  {
+    children.map((child) => (
+      <a href={sitePath(child.href)} class={isActive(child.href) ? 'active' : ''} role="menuitem">
+        {child.label}
+      </a>
+    ))
+  }
+</div>

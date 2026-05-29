@@ -1,0 +1,19 @@
+---
+import CaseStudyPage from '../../components/CaseStudyPage.astro';
+import { caseStudies, getCaseStudyBySlug } from '../../data/case-studies';
+
+export function getStaticPaths() {
+  return caseStudies.map((study) => ({
+    params: { slug: study.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const study = getCaseStudyBySlug(slug!);
+
+if (!study) {
+  return Astro.redirect('/404');
+}
+---
+
+<CaseStudyPage study={study} />

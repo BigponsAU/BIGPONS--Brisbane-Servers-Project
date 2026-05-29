@@ -1,29 +1,35 @@
 ---
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
-import Card from '~/components/Card.astro';
-import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
+import MarketingPageBands from '~/components/MarketingPageBands.astro';
+import TopicGuideArticle from '~/components/TopicGuideArticle.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import { getIndustryBySlug, getTopicBySlug, industries } from '~/data/industries';
+import { getTopicGuide, isSubstantiveApiResource } from '~/data/topic-guides';
+import { topicHeroTitle, topicHeroSubtitle, topicOpportunityCards } from '~/data/resource-hub-copy';
+import { valueProposition } from '~/data/value-proposition';
 import { resolvePublicApiUrl } from '~/lib/api-config';
+import { topicGuidePageTitle, topicGuideSeo } from '~/lib/content-seo';
 import { sitePath } from '~/lib/site-path';
 import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
+import '~/styles/topic-guide.css';
 
 export async function getStaticPaths() {
   const paths: Array<{ params: { industry: string; topic: string } }> = [];
-  
+
   industries.forEach((industry) => {
     industry.topics.forEach((topic) => {
       paths.push({
         params: {
           industry: industry.slug,
-          topic: topic.slug
-        }
+          topic: topic.slug,
+        },
       });
     });
   });
-  
+
   return paths;
 }
 
@@ -40,374 +46,198 @@ const publishedResources = await getPublishedResourcesForPage({
   industry: industrySlug!,
   topic: topicSlug!,
 });
+const apiSupplements = publishedResources.filter(isSubstantiveApiResource);
 
 const currentPath = `/resources/${industrySlug}/${topicSlug}`;
-const hasGeneratedContent = publishedResources.length > 0;
-const primaryResource = publishedResources[0] || null;
-
-// Community contributions for this topic are loaded client-side via API.
+const topicGuide = getTopicGuide(industrySlug!, topicSlug!);
+const opportunityCards = topicOpportunityCards(topic, industry);
+const industryHubHref = sitePath(`/resources/${industry.slug}`);
+const siteOrigin = (Astro.site ?? new URL('https://brisbaneservers.com')).origin;
+const topicHeadline = topicHeroTitle(topic, industry);
+const { structuredData, breadcrumbs: breadcrumbItems } = topicGuideSeo(
+  industry,
+  topic,
+  topicHeadline,
+  siteOrigin,
+  import.meta.env.BASE_URL,
+);
 ---
 
-<SiteShell 
-  title={`${topic.name} - ${industry.name} Resources - Brisbane Servers`}
+<SiteShell
+  title={topicGuidePageTitle(topic, industry)}
   description={topic.description}
+  ogType="article"
+  structuredData={structuredData}
   currentPath={currentPath}
   pageId="resource-topic"
   valueProfile="evidence"
   zoomProfile="focused"
   mainClass="main-phi-chassis"
 >
-    <Hero 
-      title={topic.name}
-      subtitle={topic.description}
-    />
+  <Breadcrumbs items={breadcrumbItems} />
 
-    <!-- Comprehensive block usage: phi-line-vertical, phi-lateral-angular-2, bg-pattern-angular -->
-    <section class="section">
-      <div class="bg-pattern-angular bg-pattern-light"></div>
-      <div class="phi-line-vertical"></div>
-      <div class="phi-lateral-angular-2"></div>
-      <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Overview" semanticLevel="high" isParent={true} />
-        </h2>
-        
-        {hasGeneratedContent && primaryResource ? (
-          <>
-            <div class="section-description" style="white-space: pre-wrap; line-height: 1.8;">
-              <SemanticText text={primaryResource.content} semanticLevel="normal" isChild={true} />
-            </div>
-            {primaryResource.metadata?.voiceScore && (
-              <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-                <p style="margin: 0; font-size: var(--text-sm); color: var(--text-secondary);">
-                  <strong>Voice Consistency:</strong> {Math.round(primaryResource.metadata.voiceScore * 100)}% match with Brisbane Servers voice profile
-                </p>
-              </div>
-            )}
-            <div style="margin-top: var(--space-lg);">
-              <a href={`/resources/item/?id=${primaryResource.id}`} class="btn btn-secondary">
-                View Full Resource →
-              </a>
-            </div>
-          </>
+  <Hero
+    class="hero--guide-lead"
+    eyebrow={`${valueProposition.resources.topicEyebrow} · ${industry.name}`}
+    title={topicHeroTitle(topic, industry)}
+    subtitle={topicGuide?.proposition ?? topicHeroSubtitle(topic, industry)}
+    ctaText="Read guide"
+    ctaHref="#topic-content"
+    secondaryCtaText={`${industry.name} hub`}
+    secondaryCtaHref={industryHubHref}
+  />
+
+    <MarketingPageBands class="marketing-page-bands--guide">
+    <section
+      id="topic-content"
+      class="section section-tartan-accent topic-guide-page"
+    >
+      <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+      <div class="phi-line-vertical phi-line-vertical-inv"></div>
+      <div class="container container--guide-wide">
+        {topicGuide ? (
+          <TopicGuideArticle
+            guide={topicGuide}
+            industryName={industry.name}
+            topicName={topic.name}
+            opportunityCards={opportunityCards}
+            hideLede={true}
+          />
         ) : (
           <p class="section-description">
             <SemanticText text={topic.description} semanticLevel="normal" isChild={true} />
           </p>
         )}
-        
-        <CardGrid style="margin-top: var(--space-2xl);">
-          <Card
-            title="Key Considerations"
-            description="Understanding your business context, size, and constraints helps identify solutions that actually work. We assess your reality and recommend what makes sense for your situation."
-          />
-          
-          <Card
-            title="Implementation Approach"
-            description="Phased implementation, grant-assisted when available, tailored to your value framework. Not one-size-fits-all—genuine customization."
-          />
-        </CardGrid>
-        
-        {publishedResources.length > 1 && (
-          <>
-            <h2 class="section-title" style="margin-top: var(--space-4xl);">
-              <SemanticText text="Additional Resources" semanticLevel="high" isParent={true} />
-            </h2>
-            <div class="resources-list">
-              {publishedResources.slice(1).map((resource) => (
-                <div class="resource-item" id={`resource-${resource.id}`}>
-                  <details class="resource-details">
-                    <summary class="resource-summary">
-                      <div class="resource-header">
-                        <h3 class="resource-title">{resource.title}</h3>
-                        {resource.metadata?.voiceScore && (
-                          <span class="voice-score-badge" title="Voice Match Score">
-                            {Math.round(resource.metadata.voiceScore * 100)}% match
-                          </span>
-                        )}
-                      </div>
-                      <p class="resource-description">{resource.description}</p>
-                    </summary>
-                    <div class="resource-content">
-                      <div style="white-space: pre-wrap; line-height: 1.8; margin-top: var(--space-lg);">
-                        <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
-                      </div>
-                      {resource.metadata?.voiceScore && (
-                        <div style="margin-top: var(--space-lg); padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
-                          <p style="margin: 0; font-size: var(--text-sm); color: var(--text-secondary);">
-                            <strong>Voice Consistency:</strong> {Math.round(resource.metadata.voiceScore * 100)}% match with Brisbane Servers voice profile
-                          </p>
-                        </div>
-                      )}
-                      <div style="margin-top: var(--space-lg);">
-                        <a href={`/resources/item/?id=${resource.id}`} class="btn btn-secondary btn-sm">
-                          View Full Resource →
-                        </a>
-                      </div>
-                    </div>
-                  </details>
-                </div>
+
+        {apiSupplements.length > 0 && (
+          <details class="topic-guide-supplement">
+            <summary>
+              <SemanticText text="Additional published notes" semanticLevel="high" isParent={true} />
+            </summary>
+            <div class="topic-guide-supplement__list">
+              {apiSupplements.map((resource) => (
+                <article class="topic-guide-supplement__item" id={`resource-${resource.id}`}>
+                  <h3>{resource.title}</h3>
+                  <p>{resource.description}</p>
+                  <a href={sitePath(`/resources/item/${resource.id}`)} class="btn btn-secondary btn-sm">
+                    Open full entry
+                  </a>
+                </article>
               ))}
             </div>
-          </>
+          </details>
         )}
       </div>
     </section>
 
-    <section class="section">
-      <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Community Contributions" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText
-            text="Clients and community members can add their experience and context here. Our voice framework helps align contributions with accurate, helpful information."
-            semanticLevel="normal"
-            isChild={true}
-          />
-        </p>
-
-        <div id="community-contribution-callout" class="community-contribution-callout">
-          <p class="community-contribution-message">
-            To contribute your perspective on this topic, register or log in. You can
-            <a href={sitePath('/contribute')}>create an account or sign in</a> to unlock the contribution form here and earn tokens.
-          </p>
-          <a href={sitePath('/contribute')} class="btn btn-primary btn-sm">Register or log in</a>
-        </div>
-
-        <div id="community-contribution-form" class="community-contribution-form" data-visible="false">
-          <h3>Share your perspective</h3>
-          <form id="community-upload-form">
-            <div class="form-grid">
-              <label>
-                <span>Title (optional)</span>
-                <input type="text" name="title" placeholder={`Your angle on ${topic.name}`} />
-              </label>
-              <label class="full-width">
-                <span>Your experience or insights</span>
-                <textarea
-                  name="content"
-                  rows="5"
-                  placeholder={`Describe your experience with ${topic.name} in ${industry.name}. Practical details are especially helpful.`}
-                  required
-                ></textarea>
-              </label>
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn btn-secondary">Submit contribution</button>
-              <span id="community-upload-status" class="form-status" aria-live="polite"></span>
-            </div>
-          </form>
-        </div>
-
-        <div id="community-contributions-list" class="community-contributions-list" aria-live="polite">
-          <!-- Filled client-side from /api/community/by-topic -->
-        </div>
+    <div class="guide-page-tail">
+      <div class="container container--guide-wide">
+        <nav class="guide-page-tail__nav" aria-label="Guide navigation">
+          <a href={industryHubHref} class="guide-page-tail__nav-link guide-page-tail__nav-link--back">
+            ← {industry.name} hub
+          </a>
+          <span class="guide-page-tail__nav-sep" aria-hidden="true">·</span>
+          <a href={sitePath('/resources')} class="guide-page-tail__nav-link">
+            All resources
+          </a>
+        </nav>
       </div>
-    </section>
 
-    <InquiryForm 
-      title={`Questions about ${topic.name}?`}
-      subtitle={`We're experts in ${industry.name} technology—informal questions welcome.`}
-      defaultIndustry={industry.name}
-    />
+      <section class="guide-page-tail__community" aria-labelledby="guide-community-heading">
+        <div class="container container--guide-wide">
+          <details class="topic-guide-community__details">
+            <summary class="topic-guide-community__summary" id="guide-community-heading">
+              <SemanticText text="Community perspectives (optional)" semanticLevel="high" isParent={true} />
+            </summary>
+            <p class="guide-page-tail__community-lead">
+              <SemanticText
+                text="Operators who have lived this topic can add field context. Contributions are reviewed for accuracy."
+                semanticLevel="normal"
+                isChild={true}
+              />
+            </p>
+
+            <div id="community-contribution-callout" class="community-contribution-callout">
+              <p class="community-contribution-message">
+                To contribute, <a href={sitePath('/contribute')}>register or sign in</a> to unlock the form below.
+              </p>
+              <a href={sitePath('/contribute')} class="btn btn-primary btn-sm">Register or log in</a>
+            </div>
+
+            <div id="community-contribution-form" class="community-contribution-form" data-visible="false">
+              <h3>Share your perspective</h3>
+              <form id="community-upload-form">
+                <div class="form-grid">
+                  <label>
+                    <span>Title (optional)</span>
+                    <input type="text" name="title" placeholder={`Your angle on ${topic.name}`} />
+                  </label>
+                  <label class="full-width">
+                    <span>Your experience or insights</span>
+                    <textarea
+                      name="content"
+                      rows="5"
+                      placeholder={`Practical details on ${topic.name} in ${industry.name} — constraints, costs, outcomes.`}
+                      required></textarea>
+                  </label>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-secondary">Submit contribution</button>
+                  <span id="community-upload-status" class="form-status" aria-live="polite"></span>
+                </div>
+              </form>
+            </div>
+
+            <div id="community-contributions-list" class="community-contributions-list" aria-live="polite"></div>
+          </details>
+        </div>
+      </section>
+
+      <InquiryForm
+        id="inquiry-section"
+        title={`Discuss ${topic.name}`}
+        subtitle={`Share your ${industry.name} context and goals. ${valueProposition.inquiry.subtitle}`}
+        defaultIndustry={industry.name}
+      />
+    </div>
+  </MarketingPageBands>
 </SiteShell>
 
 <style>
-  .resources-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    margin-top: var(--space-xl);
-  }
-
-  .resource-item {
-    background: var(--surface-elevated);
-    border-radius: var(--border-radius);
-    border: var(--phi-line-width) solid var(--border-light);
-    overflow: hidden;
-    transition: var(--transition);
-  }
-
-  .resource-item:hover {
-    box-shadow: var(--card-shadow-hover);
-    border-color: var(--primary-color);
-  }
-
-  .resource-details {
-    width: 100%;
-  }
-
-  .resource-summary {
+  .topic-guide-supplement {
+    margin-top: var(--space-2xl);
     padding: var(--space-lg);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--border-radius);
+    background: var(--surface-subtle);
+  }
+
+  .topic-guide-supplement summary {
     cursor: pointer;
-    list-style: none;
-    user-select: none;
-  }
-
-  .resource-summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .resource-summary::marker {
-    display: none;
-  }
-
-  .resource-summary::before {
-    content: '▶';
-    display: inline-block;
-    margin-right: var(--space-sm);
-    transition: transform 0.2s ease;
-    color: var(--primary-color);
-  }
-
-  .resource-details[open] .resource-summary::before {
-    transform: rotate(90deg);
-  }
-
-  .resource-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    gap: var(--space-md);
-    margin-bottom: var(--space-sm);
-  }
-
-  .resource-title {
-    font-size: var(--text-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
-    margin: 0;
-    flex: 1;
   }
 
-  .voice-score-badge {
-    font-size: var(--text-sm);
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    border-radius: var(--border-radius-sm);
-    white-space: nowrap;
-    font-weight: var(--font-weight-medium);
+  .topic-guide-supplement__list {
+    margin-top: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
   }
 
-  .resource-description {
+  .topic-guide-supplement__item h3 {
+    margin: 0 0 var(--space-xs);
     font-size: var(--text-base);
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: calc(1em * var(--phi));
   }
 
-  .resource-content {
-    padding: 0 var(--space-lg) var(--space-lg) var(--space-lg);
-    border-top: var(--phi-line-width) solid var(--border-light);
-    margin-top: var(--space-md);
-    padding-top: var(--space-lg);
-  }
-
-  @media (max-width: 768px) {
-    .resource-header {
-      flex-direction: column;
-      align-items: start;
-    }
-
-    .voice-score-badge {
-      align-self: flex-start;
-    }
-  }
-
-  .community-contribution-callout {
-    margin-top: var(--space-2xl);
-    padding: var(--space-lg);
-    border-radius: var(--border-radius);
-    border: 1px dashed var(--border-subtle);
-    background: var(--surface-subtle);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-md);
-  }
-
-  .community-contribution-message {
-    margin: 0;
-    flex: 1;
+  .topic-guide-supplement__item p {
+    margin: 0 0 var(--space-md);
     font-size: var(--text-sm);
     color: var(--text-secondary);
-  }
-
-  .community-contribution-form {
-    margin-top: var(--space-2xl);
-    padding: var(--space-xl);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-light);
-    background: var(--surface-elevated);
-    display: none;
-  }
-
-  .community-contribution-form[data-visible="true"] {
-    display: block;
-  }
-
-  .community-contribution-form h3 {
-    margin-top: 0;
-    margin-bottom: var(--space-md);
-  }
-
-  .community-contributions-list {
-    margin-top: var(--space-2xl);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-lg);
-  }
-
-  .community-contribution-pair {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--space-md);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-subtle);
-    background: var(--surface-elevated);
-    padding: var(--space-lg);
-  }
-
-  .community-card {
-    border-radius: var(--border-radius);
-    padding: var(--space-md);
-    background: var(--surface-subtle);
-  }
-
-  .community-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-xs);
-  }
-
-  .community-card-title {
-    margin: 0;
-    font-size: var(--text-sm);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .community-badge {
-    font-size: var(--text-xs);
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    white-space: nowrap;
-  }
-
-  .community-card-body {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    white-space: pre-wrap;
   }
 
   .form-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-md);
   }
 
@@ -416,10 +246,6 @@ const primaryResource = publishedResources[0] || null;
     flex-direction: column;
     gap: var(--space-xs);
     font-size: var(--text-sm);
-  }
-
-  .form-grid .full-width {
-    grid-column: 1 / -1;
   }
 
   .form-actions {
@@ -448,16 +274,11 @@ const primaryResource = publishedResources[0] || null;
 
     async function checkAuthAndToggleForm() {
       try {
-        const headers: HeadersInit = { Accept: 'application/json' };
-        if (authToken) {
-          headers.Authorization = `Bearer ${authToken}`;
-        }
-
+        const headers = { Accept: 'application/json' };
+        if (authToken) headers.Authorization = `Bearer ${authToken}`;
         const res = await fetch(`${apiBaseUrl}/auth/me`, { headers });
         if (!res.ok) {
-          if (contributionFormContainer) {
-            contributionFormContainer.setAttribute('data-visible', 'false');
-          }
+          contributionFormContainer?.setAttribute('data-visible', 'false');
           return;
         }
         const data = await res.json();
@@ -466,18 +287,16 @@ const primaryResource = publishedResources[0] || null;
           callout.style.display = 'none';
         }
       } catch {
-        // Ignore auth errors on public page
+        /* ignore */
       }
     }
 
     async function loadCommunityPairs() {
       if (!listEl) return;
-      listEl.innerHTML = '<p class="form-status">Loading community contributions…</p>';
+      listEl.innerHTML = '<p class="form-status">Loading…</p>';
       try {
         const res = await fetch(
-          `${apiBaseUrl}/community/by-topic?industry=${encodeURIComponent(
-            industry
-          )}&topic=${encodeURIComponent(topic)}`
+          `${apiBaseUrl}/community/by-topic?industry=${encodeURIComponent(industry)}&topic=${encodeURIComponent(topic)}`
         );
         if (!res.ok) {
           listEl.innerHTML = '';
@@ -486,95 +305,51 @@ const primaryResource = publishedResources[0] || null;
         const data = await res.json();
         const items = data?.items || [];
         if (!items.length) {
-          listEl.innerHTML =
-            '<p class="form-status">No community contributions have been published for this topic yet.</p>';
+          listEl.innerHTML = '<p class="form-status">No published contributions yet.</p>';
           return;
         }
-
         listEl.innerHTML = '';
-        items.forEach((pair: any) => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'community-contribution-pair';
-
-          const originalCard = document.createElement('div');
-          originalCard.className = 'community-card';
-          originalCard.innerHTML = `
-            <div class="community-card-header">
-              <h4 class="community-card-title">Client submission</h4>
-              <span class="community-badge">${pair.contribution.status}</span>
-            </div>
-            <div class="community-card-body">
-              ${pair.contribution.payload.contentSnippet || ''}
-            </div>
-          `;
-
-          const communityCard = document.createElement('div');
-          communityCard.className = 'community-card';
-          const vs = pair.resource.metadata?.voiceScore;
-          const scoreText = typeof vs === 'number' ? `${Math.round(vs * 100)}% match` : '';
-          communityCard.innerHTML = `
-            <div class="community-card-header">
-              <h4 class="community-card-title">Community note</h4>
-              ${
-                scoreText
-                  ? `<span class="community-badge" title="Voice match score">${scoreText}</span>`
-                  : ''
-              }
-            </div>
-            <div class="community-card-body">
-              ${pair.resource.description || ''}
-            </div>
-          `;
-
-          wrapper.appendChild(originalCard);
-          wrapper.appendChild(communityCard);
-          listEl.appendChild(wrapper);
+        items.forEach((pair) => {
+          const el = document.createElement('article');
+          el.className = 'topic-guide-supplement__item';
+          el.innerHTML = `<p>${pair.contribution.payload.contentSnippet || pair.resource.description || ''}</p>`;
+          listEl.appendChild(el);
         });
       } catch {
         listEl.innerHTML = '';
       }
     }
 
-    const form = document.getElementById('community-upload-form') as HTMLFormElement | null;
+    const form = document.getElementById('community-upload-form');
     if (form && statusEl) {
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         statusEl.textContent = 'Submitting…';
-
         const formData = new FormData(form);
         const payload = {
           title: formData.get('title') || undefined,
           content: formData.get('content'),
           industry,
-          topic
+          topic,
         };
-
         try {
-          const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          };
-
-          if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-          }
-
+          const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+          if (authToken) headers.Authorization = `Bearer ${authToken}`;
           const res = await fetch(`${apiBaseUrl}/resources/community-upload`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            statusEl.textContent =
-              'Thank you – your contribution has been recorded and may appear here after review.';
+            statusEl.textContent = 'Thank you — recorded for review.';
             form.reset();
             loadCommunityPairs();
           } else {
-            statusEl.textContent = data.error || 'Unable to submit contribution right now.';
+            statusEl.textContent = data.error || 'Unable to submit.';
           }
         } catch {
-          statusEl.textContent = 'Network error while submitting contribution.';
+          statusEl.textContent = 'Network error.';
         }
       });
     }

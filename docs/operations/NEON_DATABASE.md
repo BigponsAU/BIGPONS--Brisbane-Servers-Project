@@ -16,8 +16,9 @@ One `DATABASE_URL` stores:
 ### 1. Create Neon project
 
 1. [console.neon.tech](https://console.neon.tech) → New project → e.g. `brisbane-servers`.
-2. Copy the **connection string** (pooled recommended), e.g.  
-   `postgresql://user:pass@ep-xxx.ap-southeast-2.aws.neon.tech/neondb?sslmode=require`
+2. Copy the **pooled** connection string (hostname contains `-pooler`), e.g.  
+   `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require`  
+   Use the pooler URL for Render/serverless — not the direct (non-pooler) host.
 
 ### 2. Set on Render API
 

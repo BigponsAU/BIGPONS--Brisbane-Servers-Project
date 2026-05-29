@@ -28,6 +28,11 @@ describe('Hybrid API contract coverage', () => {
       '/api/community/my-contributions',
       '/api/community/approve',
       '/api/community/reject',
+      '/api/admin/library-growth',
+      '/api/admin/growth-proposals',
+      '/api/cron/library-growth',
+      '/api/auth/passkey/login-options',
+      '/api/admin/vectors-summary',
     ];
 
     for (const path of required) {

@@ -1,0 +1,44 @@
+---
+import SemanticText from './SemanticText.astro';
+import type { TopicGuideSection } from '../data/topic-guides/types';
+
+interface Props {
+  section: TopicGuideSection;
+  meta?: { icon: string; step: string };
+  wide?: boolean;
+}
+
+const { section, meta, wide = false } = Astro.props;
+const step = meta?.step ?? '';
+const icon = meta?.icon ?? 'fas fa-layer-group';
+---
+
+<section
+  class:list={['topic-guide-panel', wide && 'topic-guide-panel--wide']}
+  id={section.id}
+  aria-labelledby={`${section.id}-heading`}
+>
+  <div class="topic-guide-panel__marker" aria-hidden="true">
+    {step && <span class="topic-guide-panel__step text-kicker">{step}</span>}
+    <i class={icon}></i>
+  </div>
+  <div class="topic-guide-panel__content">
+    <h3 class="topic-guide-panel__title" id={`${section.id}-heading`}>
+      <SemanticText text={section.title} semanticLevel="high" isParent={true} />
+    </h3>
+    {section.paragraphs.map((paragraph) => (
+      <p class="topic-guide-panel__text">
+        <SemanticText text={paragraph} semanticLevel="normal" isChild={true} />
+      </p>
+    ))}
+    {section.bullets && section.bullets.length > 0 && (
+      <ul class="topic-guide-panel__list">
+        {section.bullets.map((item) => (
+          <li>
+            <SemanticText text={item} semanticLevel="normal" isChild={true} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>

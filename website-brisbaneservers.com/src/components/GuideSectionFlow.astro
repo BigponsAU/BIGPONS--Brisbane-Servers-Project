@@ -1,0 +1,34 @@
+---
+import SemanticText from './SemanticText.astro';
+import type { TopicGuideSection } from '../data/topic-guides/types';
+
+interface Props {
+  section: TopicGuideSection;
+}
+
+const { section } = Astro.props;
+---
+
+<section class="guide-centric__section" id={section.id}>
+  <h2 class="guide-centric__heading" id={`${section.id}-heading`}>
+    <SemanticText text={section.title} semanticLevel="high" isParent={true} />
+  </h2>
+  {
+    section.paragraphs.map((paragraph) => (
+      <p class="guide-centric__text">
+        <SemanticText text={paragraph} semanticLevel="normal" isChild={true} />
+      </p>
+    ))
+  }
+  {
+    section.bullets && section.bullets.length > 0 && (
+      <ul class="guide-centric__list">
+        {section.bullets.map((item) => (
+          <li>
+            <SemanticText text={item} semanticLevel="normal" isChild={true} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>

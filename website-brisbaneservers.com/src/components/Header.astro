@@ -1,22 +1,18 @@
 ---
-import { navigation } from '../data/navigation';
+import { navigation, navItemIsActive } from '../data/navigation';
 import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
+import MobileNavMenu from './MobileNavMenu.astro';
+import NavMegaMenu from './NavMegaMenu.astro';
+import NavSimpleMenu from './NavSimpleMenu.astro';
 import SemanticText from './SemanticText.astro';
 
-/**
- * Header Component Props
- * 
- * @interface Props
- * @property {string} [currentPath] - Current page path for active navigation highlighting
- */
 interface Props {
   currentPath?: string;
 }
 
 const { currentPath = '' } = Astro.props;
 
-/** Hide Home on the homepage — active state is redundant and breaks without gradient paint. */
 const navItems = navigation.filter(
   (item) => !(item.href === '/' && currentPath === '/'),
 );
@@ -27,6 +23,10 @@ function isActive(href: string): boolean {
   if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
   return false;
 }
+
+function dropdownSlug(label: string): string {
+  return label.toLowerCase().replace(/\s+/g, '-');
+}
 ---
 
 <header data-state-aware="true" class="header-state-aware" role="banner">
@@ -35,66 +35,76 @@ function isActive(href: string): boolean {
     <a href={sitePath('/')} class="nav-brand" aria-label="Brisbane Servers - Home">
       <img src={logo.src} alt="Brisbane Servers Logo" width={logo.width} height={logo.height} />
       <span class="nav-brand-text">
-        <SemanticText text="Brisbane Servers" semanticLevel="high" />
+        <SemanticText text="Brisbane Servers" semanticLevel="high" preserveCase />
       </span>
       <span class="nav-tagline">
-        <SemanticText text="Access to Truth in Technology" semanticLevel="normal" />
+        <SemanticText text="Access to truth in technology" semanticLevel="normal" />
       </span>
     </a>
-    
+
     <ul class="nav-menu" role="menubar">
-      {navItems.map((item, index) => (
-        item.children ? (
-          <li class={`nav-dropdown ${isActive(item.href) ? 'active' : ''}`} role="none">
-            <a 
-              href={sitePath(item.href)} 
-              class={`nav-dropdown-toggle ${isActive(item.href) ? 'active' : ''}`}
-              role="menuitem"
-              aria-haspopup="true"
-              aria-expanded={isActive(item.href) ? 'true' : 'false'}
-              aria-controls={`dropdown-menu-${index}`}
-              id={`dropdown-toggle-${index}`}
+      {
+        navItems.map((item, index) => {
+          const hasPanel = Boolean(item.groups?.length || item.children?.length);
+          const active = navItemIsActive(item, currentPath);
+          const slug = dropdownSlug(item.label);
+          const menuId = `dropdown-menu-${index}`;
+          const toggleId = `dropdown-toggle-${index}`;
+
+          return hasPanel ? (
+            <li
+              class:list={['nav-dropdown', `nav-dropdown--${slug}`, active && 'active']}
+              role="none"
             >
-              <SemanticText text={item.label} semanticLevel="normal" />
-              <span class="sr-only">submenu</span>
-            </a>
-            <div 
-              class="nav-dropdown-menu" 
-              role="menu"
-              id={`dropdown-menu-${index}`}
-              aria-labelledby={`dropdown-toggle-${index}`}
-            >
-              {item.children.map((child) => (
-                <a 
-                  href={sitePath(child.href)} 
-                  class={isActive(child.href) ? 'active' : ''}
-                  role="menuitem"
-                >
-                  {child.label}
-                </a>
-              ))}
-            </div>
-          </li>
-        ) : (
-          <li role="none">
-            <a 
-              href={sitePath(item.href)} 
-              class={[
-                isActive(item.href) ? 'active' : '',
-                item.href === '/account' ? 'nav-account-cta' : '',
-              ].filter(Boolean).join(' ')}
-              data-account-link={item.href === '/account' ? 'true' : undefined}
-              role="menuitem"
-              aria-current={isActive(item.href) ? 'page' : undefined}
-            >
-              <SemanticText text={item.label} semanticLevel="normal" />
-            </a>
-          </li>
-        )
-      ))}
+              <a
+                href={sitePath(item.href)}
+                class:list={['nav-dropdown-toggle', active && 'active']}
+                role="menuitem"
+                aria-haspopup="true"
+                aria-expanded={active ? 'true' : 'false'}
+                aria-controls={menuId}
+                id={toggleId}
+              >
+                <SemanticText text={item.label} semanticLevel="normal" />
+                <span class="sr-only"> submenu</span>
+              </a>
+              {item.groups ? (
+                <NavMegaMenu
+                  groups={item.groups}
+                  menuId={menuId}
+                  toggleId={toggleId}
+                  currentPath={currentPath}
+                />
+              ) : (
+                <NavSimpleMenu
+                  children={item.children!}
+                  menuId={menuId}
+                  toggleId={toggleId}
+                  currentPath={currentPath}
+                />
+              )}
+            </li>
+          ) : (
+            <li role="none">
+              <a
+                href={sitePath(item.href)}
+                class:list={[
+                  isActive(item.href) && 'active',
+                  item.href === '/account' && 'nav-account-cta',
+                ]}
+                data-account-link={item.href === '/account' ? 'true' : undefined}
+                role="menuitem"
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                <SemanticText text={item.label} semanticLevel="normal" />
+              </a>
+            </li>
+          );
+        })
+      }
     </ul>
-    
-    <button 
+
+    <button
       class="hamburger"
       aria-label="Toggle mobile menu"
       aria-expanded="false"
@@ -105,52 +115,7 @@ function isActive(href: string): boolean {
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
     </button>
-    
-    <div 
-      class="mobile-menu" 
-      id="mobile-menu"
-      role="menu"
-      aria-label="Mobile navigation menu"
-      aria-hidden="true"
-    >
-      {navItems.map((item) => (
-        item.children ? (
-          <>
-            <a 
-              href={sitePath(item.href)} 
-              class={isActive(item.href) ? 'active' : ''}
-              role="menuitem"
-              aria-current={isActive(item.href) ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
-            {item.children.map((child) => (
-              <a 
-                href={sitePath(child.href)} 
-                class={`mobile-menu__child-link ${isActive(child.href) ? 'active' : ''}`}
-                role="menuitem"
-                aria-current={isActive(child.href) ? 'page' : undefined}
-              >
-                {child.label}
-              </a>
-            ))}
-          </>
-        ) : (
-          <a 
-            href={sitePath(item.href)} 
-            class={[
-              isActive(item.href) ? 'active' : '',
-              item.href === '/account' ? 'nav-account-cta' : '',
-            ].filter(Boolean).join(' ')}
-            data-account-link={item.href === '/account' ? 'true' : undefined}
-            role="menuitem"
-            aria-current={isActive(item.href) ? 'page' : undefined}
-          >
-            {item.label}
-          </a>
-        )
-      ))}
-    </div>
+
+    <MobileNavMenu navItems={navItems} currentPath={currentPath} />
   </nav>
 </header>
-

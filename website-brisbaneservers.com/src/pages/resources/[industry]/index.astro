@@ -1,17 +1,29 @@
 ---
-// Published resources can now be pulled from the standalone API during prerender.
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import Card from '~/components/Card.astro';
 import CardGrid from '~/components/CardGrid.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import SemanticText from '~/components/SemanticText.astro';
+import MarketingPageBands from '~/components/MarketingPageBands.astro';
+import TopicGuideArticle from '~/components/TopicGuideArticle.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import { getIndustryBySlug, industries } from '~/data/industries';
+import { getIndustryOverviewGuide, isSubstantiveApiResource } from '~/data/topic-guides';
+import {
+  industryHeroTitle,
+  industryContextLead,
+  industryOpportunityCards,
+  resourceHubShared,
+} from '~/data/resource-hub-copy';
+import { valueProposition } from '~/data/value-proposition';
+import { industryHubSeo } from '~/lib/content-seo';
+import { sitePath } from '~/lib/site-path';
 import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
 
 export async function getStaticPaths() {
   return industries.map((industry) => ({
-    params: { industry: industry.slug }
+    params: { industry: industry.slug },
   }));
 }
 
@@ -22,95 +34,166 @@ if (!industry) {
   return Astro.redirect('/resources');
 }
 
-const publishedResources = await getPublishedResourcesForPage({ industry: industrySlug! });
-
+const publishedResources = (
+  await getPublishedResourcesForPage({ industry: industrySlug! })
+).filter(isSubstantiveApiResource);
+const opportunityCards = industryOpportunityCards(industry);
+const industryOverviewGuide = getIndustryOverviewGuide(industrySlug!);
 const currentPath = `/resources/${industrySlug}`;
+const siteOrigin = (Astro.site ?? new URL('https://brisbaneservers.com')).origin;
+const industryHeadline = industryHeroTitle(industry);
+const { structuredData, breadcrumbs: breadcrumbItems } = industryHubSeo(
+  industry,
+  industryHeadline,
+  siteOrigin,
+  import.meta.env.BASE_URL,
+);
 ---
 
-<SiteShell 
-  title={`${industry.name} Resources - Brisbane Servers`}
+<SiteShell
+  title={`${industry.name} resources`}
   description={industry.description}
+  ogType="article"
+  structuredData={structuredData}
   currentPath={currentPath}
   pageId="resource-industry"
   valueProfile="evidence"
   zoomProfile="focused"
   mainClass="main-phi-chassis"
 >
-    <Hero 
-      title={`${industry.name} Technology Solutions`}
-      subtitle={industry.description}
-    />
+  <Breadcrumbs items={breadcrumbItems} />
 
-    <!-- Comprehensive block usage: phi-line-vertical, phi-tangent, bg-pattern-phi-radial -->
-    <section class="section">
-      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
-      <div class="phi-line-vertical"></div>
-      <div class="phi-tangent"></div>
-      <div class="container">
-        <h2 class="section-title">
-          <SemanticText text="Industry Context" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description">
-          <SemanticText text={`${industry.name} businesses face unique challenges in technology adoption. Understanding your industry context helps identify solutions that actually work for your specific needs, constraints, and opportunities.`} semanticLevel="normal" isChild={true} />
-        </p>
-        
-        {industry.topics.length > 0 && (
-          <>
-            <h2 class="section-title" style="margin-top: var(--space-4xl);">
-              <SemanticText text="Topics & Solutions" semanticLevel="high" isParent={true} />
-            </h2>
-            <CardGrid>
-              {industry.topics.map((topic) => (
-                <Card
-                  title={topic.name}
-                  description={topic.description}
-                  icon={topic.icon}
-                  href={`/resources/${industry.slug}/${topic.slug}`}
-                  actionLabel="Open topic"
-                />
-              ))}
-            </CardGrid>
-          </>
-        )}
+  <Hero
+    class="hero--guide-lead"
+    eyebrow={valueProposition.resources.industryEyebrow}
+    title={industryHeroTitle(industry)}
+    subtitle={industryOverviewGuide?.proposition ?? industry.description}
+    ctaText="Browse topics"
+    ctaHref={industry.topics.length > 0 ? `#topics-${industry.slug}` : '#published-resources'}
+    secondaryCtaText="All resources"
+    secondaryCtaHref={sitePath('/resources')}
+  />
 
-        {publishedResources.length > 0 && (
-          <>
-            <h2 class="section-title" style="margin-top: var(--space-4xl);">
-              <SemanticText text="Published Resources" semanticLevel="high" isParent={true} />
+  <MarketingPageBands class="marketing-page-bands--guide">
+    {industry.topics.length > 0 ? (
+      <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+        <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+        <div class="phi-line-vertical"></div>
+        <div class="container container--guide-wide">
+          <p class="section-description" style="margin-bottom: var(--space-xl); max-width: 68ch;">
+            <SemanticText text={industryContextLead(industry)} semanticLevel="normal" isChild={true} />
+          </p>
+        </div>
+      </section>
+    ) : null}
+
+    {industry.topics.length > 0 ? (
+      <section
+        id={`topics-${industry.slug}`}
+        class="section section-tartan-accent section-home-band--surface"
+      >
+        <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+        <div class="phi-line-vertical phi-line-vertical-inv"></div>
+        <div class="container">
+          <div class="section-intro-phi">
+            <h2 class="section-title">
+              <SemanticText text={resourceHubShared.industryTopicsTitle} semanticLevel="high" isParent={true} />
             </h2>
             <p class="section-description">
-              <SemanticText text="Explore our curated resources specific to ${industry.name} businesses. Each resource is validated for voice consistency and provides practical, actionable guidance." semanticLevel="normal" isChild={true} />
+              <SemanticText text={resourceHubShared.industryTopicsLead} semanticLevel="normal" isChild={true} />
             </p>
-            <CardGrid columns={2}>
-              {publishedResources.map((resource) => (
-                <Card
-                  title={resource.title}
-                  description={resource.description}
-                  href={`/resources/item/?id=${resource.id}`}
-                  actionLabel="Open resource"
-                >
-                  <div style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
-                    <span style="font-size: var(--text-sm); color: var(--text-secondary);">
-                      Topic: {resource.topic}
-                    </span>
-                    {resource.metadata?.voiceScore && (
-                      <span style="font-size: var(--text-sm); padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);">
-                        {Math.round(resource.metadata.voiceScore * 100)}% voice match
-                      </span>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </CardGrid>
-          </>
-        )}
-      </div>
-    </section>
+          </div>
+          <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+            {industry.topics.map((topic) => (
+              <Card
+                title={topic.name}
+                description={topic.description}
+                icon={topic.icon}
+                href={`/resources/${industry.slug}/${topic.slug}`}
+                actionLabel="Open topic guide"
+                size="medium"
+              />
+            ))}
+          </CardGrid>
+        </div>
+      </section>
+    ) : industryOverviewGuide ? (
+      <section id="industry-guide" class="section section-tartan-accent topic-guide-page">
+        <div class="bg-pattern-phi-grid bg-pattern-soft"></div>
+        <div class="phi-line-vertical phi-line-vertical-inv"></div>
+        <div class="container container--guide-wide">
+          <TopicGuideArticle
+            guide={industryOverviewGuide}
+            industryName={industry.name}
+            opportunityCards={opportunityCards}
+            hideLede={true}
+          />
+        </div>
+      </section>
+    ) : (
+      <section class="section section-tartan-accent section-home-band--surface">
+        <div class="container">
+          <div class="section-intro-phi">
+            <h2 class="section-title">
+              <SemanticText text={resourceHubShared.industryTopicsTitle} semanticLevel="high" isParent={true} />
+            </h2>
+            <p class="section-description">
+              <SemanticText text={resourceHubShared.emptyTopicsLead} semanticLevel="normal" isChild={true} />
+            </p>
+          </div>
+        </div>
+      </section>
+    )}
 
-    <InquiryForm 
-      title={`Questions about ${industry.name}? Need clarity on what's feasible?`}
-      subtitle="We're experts in your industry—informal questions welcome."
+    {publishedResources.length > 0 && (
+      <section id="published-resources" class="section section-tartan-accent section-home-band--primary-light">
+        <div class="bg-pattern-angular bg-pattern-light"></div>
+        <div class="phi-line-vertical"></div>
+        <div class="container">
+          <div class="section-intro-phi">
+            <h2 class="section-title">
+              <SemanticText text={resourceHubShared.publishedTitle} semanticLevel="high" isParent={true} />
+            </h2>
+            <p class="section-description">
+              <SemanticText
+                text={`${resourceHubShared.publishedLead} Guides below are specific to ${industry.name}.`}
+                semanticLevel="normal"
+                isChild={true}
+              />
+            </p>
+          </div>
+          <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+            {publishedResources.map((resource) => (
+              <Card
+                title={resource.title}
+                description={resource.description}
+                href={`/resources/${resource.industry}/${resource.topic}#resource-${resource.id}`}
+                actionLabel="Read guide"
+                size="medium"
+              >
+                <div
+                  style="margin-top: var(--space-md); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; font-size: var(--text-sm);"
+                >
+                  <span style="color: var(--text-secondary);">Topic: {resource.topic}</span>
+                  {resource.metadata?.voiceScore && (
+                    <span
+                      style="padding: var(--space-xs) var(--space-sm); background: var(--primary-light); color: var(--primary-dark); border-radius: var(--border-radius-sm);"
+                    >
+                      {Math.round(resource.metadata.voiceScore * 100)}% voice match
+                    </span>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </CardGrid>
+        </div>
+      </section>
+    )}
+
+    <InquiryForm
+      title={valueProposition.inquiry.title}
+      subtitle={`Share your ${industry.name} context and objectives. ${valueProposition.inquiry.subtitle}`}
       defaultIndustry={industry.name}
     />
+  </MarketingPageBands>
 </SiteShell>
-

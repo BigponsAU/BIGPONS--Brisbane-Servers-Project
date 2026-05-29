@@ -8,6 +8,8 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  ogType?: 'website' | 'article';
+  structuredData?: Record<string, unknown>[];
   noindex?: boolean;
   immediateRedirectUrl?: string;
   currentPath?: string;
@@ -25,6 +27,8 @@ const {
   title,
   description,
   ogImage,
+  ogType,
+  structuredData,
   noindex = false,
   immediateRedirectUrl,
   currentPath = '',
@@ -38,7 +42,17 @@ const {
   showFooter = true,
 } = Astro.props;
 
-const shellClassName = ['site-shell', `site-shell--${shellVariant}`].join(' ');
+/** Guide routes: header scrolls with the page (no fixed overlap / bleed). */
+const headerInFlow =
+  pageId === 'resource-topic' || pageId === 'resource-industry';
+
+const shellClassName = [
+  'site-shell',
+  `site-shell--${shellVariant}`,
+  headerInFlow && 'site-shell--header-in-flow',
+]
+  .filter(Boolean)
+  .join(' ');
 const mainClassName = [
   'site-main',
   shellVariant !== 'portal' ? 'site-main--public' : '',
@@ -52,6 +66,8 @@ const mainClassName = [
   title={title}
   description={description}
   ogImage={ogImage}
+  ogType={ogType}
+  structuredData={structuredData}
   noindex={noindex}
   immediateRedirectUrl={immediateRedirectUrl}
   pageId={pageId}

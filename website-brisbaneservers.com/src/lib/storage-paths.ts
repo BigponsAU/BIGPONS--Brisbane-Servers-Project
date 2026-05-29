@@ -4,14 +4,11 @@
  */
 
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { getMonorepoRoot } from './monorepo-root';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const storageDir = path.join(getMonorepoRoot(), 'voice-framework', 'storage');
 
-const projectRoot = path.resolve(__dirname, '../../../');
-
-export const RESOURCES_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'resources.json');
-export const SEMANTIC_INDEX_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'semantic-index.json');
-export const SQLITE_DB_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'resources.db');
-export const AUTH_SQLITE_DB_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'auth.db');
+export const RESOURCES_FILE = path.join(storageDir, 'resources.json');
+export const SEMANTIC_INDEX_FILE = path.join(storageDir, 'semantic-index.json');
+export const SQLITE_DB_FILE = path.join(storageDir, 'resources.db');
+export const AUTH_SQLITE_DB_FILE = path.join(storageDir, 'auth.db');

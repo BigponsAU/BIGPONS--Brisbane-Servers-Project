@@ -1,0 +1,187 @@
+---
+import SemanticText from './SemanticText.astro';
+import GuideInfographic from './GuideInfographic.astro';
+import GuideSectionPanel from './GuideSectionPanel.astro';
+import { getInfographicSpec } from '../data/topic-guides/infographics';
+import type { HubCard } from '../data/resource-hub-copy';
+import type { IndustryOverviewGuide, TopicGuide } from '../data/topic-guides/types';
+
+interface Props {
+  guide: TopicGuide | IndustryOverviewGuide;
+  industryName: string;
+  topicName?: string;
+  opportunityCards?: HubCard[];
+  hideLede?: boolean;
+  class?: string;
+}
+
+const SECTION_META: Record<string, { icon: string; step: string }> = {
+  pressure: { icon: 'fas fa-compress-alt', step: '01' },
+  outcomes: { icon: 'fas fa-bullseye', step: '02' },
+  tradeoffs: { icon: 'fas fa-sliders-h', step: '03' },
+  grants: { icon: 'fas fa-map-marked-alt', step: '04' },
+  sequencing: { icon: 'fas fa-stream', step: '03' },
+};
+
+const JUMP_LABELS: Record<string, string> = {
+  pressure: 'Pressure',
+  outcomes: 'Outcomes',
+  tradeoffs: 'Trade-offs',
+  grants: 'Context',
+  sequencing: 'Sequencing',
+};
+
+/** Sections the positioning model illustrates — shown beside the diagram */
+const MODEL_SECTION_IDS = new Set(['pressure', 'outcomes']);
+
+const { guide, industryName, topicName, opportunityCards = [], hideLede = false, class: className = '' } =
+  Astro.props;
+
+const industrySlug = guide.industrySlug;
+const topicSlug = 'topicSlug' in guide ? guide.topicSlug : undefined;
+const infographic = getInfographicSpec(industrySlug, topicSlug);
+
+const modelSections = guide.sections.filter((s) => MODEL_SECTION_IDS.has(s.id));
+const otherSections = guide.sections.filter((s) => !MODEL_SECTION_IDS.has(s.id));
+const hasPairedLayout = Boolean(infographic && modelSections.length > 0);
+---
+
+<article class:list={['topic-guide', 'guide-blend', className]} data-topic-guide>
+  <nav class="guide-blend__jump" aria-label="On this page">
+    <p class="guide-blend__jump-label">On this page</p>
+    <ol class="guide-blend__jump-list">
+      {
+        guide.sections.map((section) => {
+          const meta = SECTION_META[section.id];
+          const label = JUMP_LABELS[section.id] ?? section.title;
+          return (
+            <li>
+              <a href={`#${section.id}`} class="guide-blend__jump-link">
+                {meta?.step && <span class="guide-blend__jump-step">{meta.step}</span>}
+                <span>{label}</span>
+              </a>
+            </li>
+          );
+        })
+      }
+      <li>
+        <a href="#guide-next-actions" class="guide-blend__jump-link">
+          <span class="guide-blend__jump-step">→</span>
+          <span>Next steps</span>
+        </a>
+      </li>
+    </ol>
+  </nav>
+
+  {
+    !hideLede && (
+      <header class="guide-blend__lede">
+        <p class="guide-blend__eyebrow">
+          {topicName ? `${topicName} · ${industryName}` : industryName}
+        </p>
+        <p class="guide-blend__proposition">
+          <SemanticText text={guide.proposition} semanticLevel="high" isParent={true} />
+        </p>
+      </header>
+    )
+  }
+
+  {
+    hasPairedLayout ? (
+      <div class="guide-blend__paired">
+        <div class="guide-blend__paired-copy">
+          {modelSections.map((section) => (
+            <GuideSectionPanel section={section} meta={SECTION_META[section.id]} />
+          ))}
+        </div>
+        <aside
+          class="guide-blend__paired-model"
+          aria-labelledby={`ig-title-${infographic!.id}`}
+          aria-describedby="guide-model-context"
+        >
+          <p class="guide-blend__model-tie" id="guide-model-context">
+            Maps sections{' '}
+            {modelSections.map((s, i) => (
+              <span>
+                {i > 0 && (i === modelSections.length - 1 ? ' and ' : ', ')}
+                <a href={`#${s.id}`}>{SECTION_META[s.id]?.step ?? s.id}</a>
+              </span>
+            ))}
+            {' '}— read alongside these sections, not in isolation.
+          </p>
+          <GuideInfographic spec={infographic!} variant="aside" />
+        </aside>
+      </div>
+    ) : infographic ? (
+      <figure class="guide-blend__model-solo" aria-labelledby={`ig-title-${infographic.id}`}>
+        <GuideInfographic spec={infographic} variant="feature" />
+      </figure>
+    ) : null
+  }
+
+  {
+    (hasPairedLayout ? otherSections : guide.sections).length > 0 && (
+      <div class="guide-blend__sections">
+        {(hasPairedLayout ? otherSections : guide.sections).map((section) => (
+          <GuideSectionPanel
+            section={section}
+            meta={SECTION_META[section.id]}
+            wide={section.id === 'grants' || section.id === 'sequencing'}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  <div class="guide-blend__outro">
+    <section
+      class="topic-guide-panel topic-guide-panel--actions guide-blend__actions"
+      id="guide-next-actions"
+      aria-labelledby="guide-next-actions-heading"
+    >
+      <div class="topic-guide-panel__marker" aria-hidden="true">
+        <span class="topic-guide-panel__step">→</span>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+      <div class="topic-guide-panel__content">
+        <h3 class="topic-guide-panel__title" id="guide-next-actions-heading">
+          <SemanticText text="Practical next steps" semanticLevel="high" isParent={true} />
+        </h3>
+        <ol class="guide-blend__steps">
+          {guide.nextActions.map((action, i) => (
+            <li class="guide-blend__step">
+              <span class="guide-blend__step-num">{i + 1}</span>
+              <div class="guide-blend__step-body">
+                <strong>{action.label}</strong>
+                <p>
+                  <SemanticText text={action.detail} semanticLevel="normal" isChild={true} />
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    {
+      opportunityCards.length > 0 && (
+        <aside class="guide-blend__value" aria-labelledby="guide-value-heading">
+          <h3 class="guide-blend__value-title" id="guide-value-heading">
+            Where value and engagement land
+          </h3>
+          <ul class="guide-blend__value-grid">
+            {opportunityCards.map((card) => (
+              <li class="guide-blend__value-card">
+                <i class={card.icon} aria-hidden="true"></i>
+                <strong>{card.title}</strong>
+                <p>
+                  <SemanticText text={card.description} semanticLevel="normal" isChild={true} />
+                </p>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
+  </div>
+</article>

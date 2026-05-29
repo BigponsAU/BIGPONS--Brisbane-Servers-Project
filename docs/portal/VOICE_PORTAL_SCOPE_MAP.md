@@ -72,11 +72,14 @@ Or use your IDE file explorer with folders collapsed to `docs`, `voice-framework
 | File | Role |
 |------|------|
 | `website-brisbaneservers.com/src/pages/account.astro` | Thin re-export of `portal.astro` (same component tree). |
-| `website-brisbaneservers.com/src/pages/portal.astro` | **Entire workspace UI:** login gate, sidebar, panels (dashboard, resources, profiles, analytics), inline styles, client script for `fetch('/api/...')`. |
+| `website-brisbaneservers.com/src/pages/portal.astro` | **Orchestrator** (~70 lines): composes account components, boots `account-workspace-app.ts`. |
+| `website-brisbaneservers.com/src/components/account/*.astro` | Workspace UI panels (sign-in, sidebar, overview, resources, profiles, analytics, growth, moderation, site review, modals). |
+| `website-brisbaneservers.com/src/scripts/account-workspace-app.ts` | Client logic (auth, resources, profiles, navigation). |
+| `website-brisbaneservers.com/src/styles/portal-workspace.css` | Workspace-specific styles (extracted from legacy monolith). |
 | `website-brisbaneservers.com/src/lib/portal-voice-framework.ts` | Copy/rules constants for portal voice and resource/public interconnection messaging (not HTTP). |
 | `website-brisbaneservers.com/src-static/pages/account.astro` | Static build entry that pulls in the same page for GitHub Pages output. |
 
-**Logical panels** (DOM ids in `portal.astro`): `dashboard-panel`, `resources-panel`, `profiles-panel`, `analytics-panel`. Role-gated UI uses `data-min-role` (e.g. editor) where applicable.
+**Logical panels** (account components): Overview (`dashboard-panel`), Resources, Profiles, Analytics, **Library growth** (`library-growth-panel`, admin), Moderation, Site review. Role-gated UI uses `data-min-role` (e.g. editor, admin).
 
 ```mermaid
 flowchart LR
@@ -144,7 +147,8 @@ Related: `related`, `seed`, `deduplicate`, `community-upload` — admin/editor w
 - `/api/semantic/search` — search / RAG-style usage from portal when wired.
 - `/api/analytics/suggestions` — suggestions panel.
 - `/api/community/*` — contributions moderation.
-- `/api/admin/*` — users, auth audit, pipeline config, reindex, vectors summary (role-protected).
+- `/api/admin/*` — users, auth audit, pipeline config, reindex, vectors summary, **library-growth**, **growth-proposals** (role-protected).
+- `/api/cron/library-growth` — secured growth cycle (`CRON_SECRET`).
 
 ### Health
 

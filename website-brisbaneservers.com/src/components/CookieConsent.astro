@@ -3,6 +3,7 @@
  * Cookie consent — styles in `cookie-consent.css` (viewport-capped bar; native browser zoom).
  */
 import '../styles/cookie-consent.css';
+import { valueProposition } from '../data/value-proposition';
 
 interface Props {
   message?: string;
@@ -12,10 +13,10 @@ interface Props {
 }
 
 const {
-  message = "We use cookies to enhance your browsing experience and analyze site traffic. By continuing to use this site, you consent to our use of cookies.",
-  acceptText = "Accept All",
-  declineText = "Decline",
-  policyLink = "/privacy-policy"
+  message = valueProposition.cookies.message,
+  acceptText = valueProposition.cookies.acceptLabel,
+  declineText = valueProposition.cookies.declineLabel,
+  policyLink = '/privacy-policy',
 } = Astro.props;
 ---
 
@@ -30,7 +31,7 @@ const {
       </p>
     </div>
     <div class="cookie-consent-actions">
-      <button type="button" class="btn btn-primary cookie-btn cookie-btn-accept" data-action="accept" aria-label="Accept all cookies">
+      <button type="button" class="cookie-btn cookie-btn-accept" data-action="accept" aria-label="Accept all cookies">
         {acceptText}
       </button>
       <button type="button" class="cookie-btn cookie-btn-decline" data-action="decline" aria-label="Decline cookies">
