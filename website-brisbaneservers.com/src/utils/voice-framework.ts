@@ -16,7 +16,7 @@ import { ProfileBuilder } from '@voice-framework/builders/profile-builder';
 import { DocumentProcessor } from '@voice-framework/processors/document-processor';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { getMonorepoRoot } from '../lib/monorepo-root';
+import { getMonorepoRoot, voiceFrameworkStorageDir } from '../lib/monorepo-root';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +55,7 @@ export async function initializeVoiceFramework() {
     const monorepoRoot = getMonorepoRoot();
     testRunner = new TestRunner(path.join(monorepoRoot, 'voice-framework/test-results'));
 
-    const storageDir = path.join(monorepoRoot, 'voice-framework/storage');
+    const storageDir = voiceFrameworkStorageDir();
     const { CORPUS_DOC_KEYS, exportCorpusToFile } = await import('../lib/corpus-store');
     await exportCorpusToFile(CORPUS_DOC_KEYS.PROFILES, path.join(storageDir, 'profiles.json'));
     await exportCorpusToFile(CORPUS_DOC_KEYS.TEXT_STORAGE, path.join(storageDir, 'text-storage.json'));

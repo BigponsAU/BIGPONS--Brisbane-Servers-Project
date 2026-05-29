@@ -11,11 +11,14 @@ import {
   migrateAllCorpusFilesFromDisk,
 } from '../src/lib/corpus-store';
 import { usePostgres } from '../src/lib/db/pg-pool';
-import { getMonorepoRoot, voiceFrameworkStorageDir } from '../src/lib/monorepo-root';
+import {
+  voiceFrameworkSeedStorageDir,
+  voiceFrameworkStorageDir,
+} from '../src/lib/monorepo-root';
 
 async function main(): Promise<void> {
   const storageDir = voiceFrameworkStorageDir();
-  const seedDir = path.join(getMonorepoRoot(), 'voice-framework', 'storage');
+  const seedDir = voiceFrameworkSeedStorageDir();
 
   const entries = [
     { key: CORPUS_DOC_KEYS.RESOURCES, filePath: path.join(storageDir, 'resources.json') },
