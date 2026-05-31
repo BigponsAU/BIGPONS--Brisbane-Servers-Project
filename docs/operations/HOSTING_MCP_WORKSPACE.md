@@ -2,7 +2,7 @@
 
 Production is split across **Cloudflare Pages** (static site) and **Render** (Node API + Postgres). Both are managed from this repo via Cursor MCP (`.cursor/mcp.json`).
 
-**Last synced:** 2026-05-26
+**Last synced:** 2026-05-29
 
 ---
 
@@ -81,15 +81,22 @@ Use `https://api.brisbaneservers.com/api` only after `api` DNS is stable (no Clo
 
 ### API env (set on Render)
 
-`NODE_ENV`, `PORT`, `MONOREPO_ROOT`, `PUBLIC_SITE_URL`, `ALLOWED_ORIGINS`, `ALLOW_CLOUDFLARE_PAGES`, `TRUST_PROXY`, `JWT_SECRET`, `AUTH_EMAIL_*`
+`NODE_ENV`, `PORT`, `MONOREPO_ROOT`, `PUBLIC_SITE_URL`, `ALLOWED_ORIGINS`, `ALLOW_CLOUDFLARE_PAGES`, `TRUST_PROXY`, `JWT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `AUTH_EMAIL_REPLY_TO`
+
+| Auth email | Value |
+|------------|--------|
+| `AUTH_EMAIL_FROM` | `Brisbane Servers <support@mail.brisbaneservers.com>` |
+| `AUTH_EMAIL_REPLY_TO` | `connect@brisbaneservers.com` |
+
+Long-term target: `support@brisbaneservers.com` after Resend verifies the apex domain (add root DKIM in Cloudflare).
 
 ### Still wire in Render dashboard
 
 | Item | Why |
 |------|-----|
 | ~~Link Postgres → API~~ | **Done** — `DATABASE_URL` set (internal connection) |
+| **Google OAuth** | **Done** — `/api/auth/oauth/status` → `google: true` |
 | **Persistent disk** | `voice-framework/storage` JSON corpus ([`render.yaml`](../../render.yaml)) |
-| **`SMTP_*`** | Outbound auth email |
 | **`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`** | SEO rebuild on publish |
 
 ---

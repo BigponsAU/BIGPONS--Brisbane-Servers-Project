@@ -6,11 +6,18 @@
 .account-workspace-shell .admin-portal,
 .account-workspace-shell .account-workspace-root {
   background: transparent;
+  min-height: 0;
+  overflow: visible;
+  overflow-x: clip;
+  padding: 0;
 }
 
 .account-workspace-shell .login-screen {
   display: block;
   width: 100%;
+  min-height: 0;
+  overflow: visible;
+  padding: 0;
 }
 
 .account-workspace-shell .account-workspace-signin-bands .login-container {
@@ -85,7 +92,7 @@
 
 .site-shell--marketing.account-workspace-shell,
 .site-shell--portal #admin-dashboard.admin-dashboard {
-  min-height: calc(100dvh - var(--site-main-offset-top));
+  min-height: 0;
 }
 
 .site-shell--marketing.account-workspace-shell,
@@ -100,7 +107,7 @@
   padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter)
     clamp(var(--space-2xl), 4vw, var(--space-3xl));
   box-sizing: border-box;
-  min-height: calc(100dvh - var(--site-main-offset-top) - var(--space-lg));
+  min-height: 0;
 }
 
 .site-shell--marketing.account-workspace-shell,
@@ -108,6 +115,7 @@
   position: sticky;
   top: var(--site-main-offset-top);
   left: auto;
+  bottom: auto;
   width: 100%;
   min-width: 0;
   max-height: calc(100dvh - var(--site-main-offset-top) - var(--space-md));
@@ -117,7 +125,10 @@
   box-shadow: var(--shadow-soft, 0 0.75rem 2rem rgba(8, 27, 54, 0.06));
   background: var(--surface-elevated);
   overflow: hidden;
+  transform: none;
   z-index: 20;
+  display: flex;
+  flex-direction: column;
 }
 
 .site-shell--marketing.account-workspace-shell,
@@ -188,7 +199,19 @@
   min-height: 0;
   background: transparent;
   border-radius: var(--site-panel-radius);
-  overflow: hidden;
+  overflow: visible;
+}
+
+.site-shell--marketing.account-workspace-shell .sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.site-shell--marketing.account-workspace-shell .portal-panel {
+  height: auto;
 }
 
 .site-shell--marketing.account-workspace-shell,
@@ -504,4 +527,199 @@
 .site-shell--portal .portal-sidebar.open ~ .portal-main::before {
     top: var(--site-main-offset-top);
   }
+}
+
+/* Readable rhythm + single document scroll (overrides legacy portal-workspace traps) */
+body[data-page-id='account'] {
+  --page-density-multiplier: 1;
+  --page-measure-max: min(44rem, 100%);
+}
+
+.main-phi-chassis.account-workspace-shell {
+  overflow: visible;
+}
+
+.account-workspace-shell .login-screen .hero {
+  min-height: 0;
+  overflow: clip;
+}
+
+/* brand-chroma.css stretches .main-phi-chassis .hero-visual to 100% height — re-bound on account */
+.main-phi-chassis.account-workspace-shell .login-screen .hero-inner {
+  gap: clamp(var(--space-md), 2vw, var(--space-xl));
+  align-items: center;
+}
+
+.main-phi-chassis.account-workspace-shell .login-screen .hero-visual,
+.account-workspace-shell .login-screen .hero-visual {
+  aspect-ratio: 4 / 3 !important;
+  max-height: min(11rem, 26dvh) !important;
+  max-width: min(100%, 18rem) !important;
+  width: 100% !important;
+  height: auto !important;
+  align-self: center !important;
+  justify-self: center !important;
+  margin-inline: auto;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+.main-phi-chassis.account-workspace-shell .login-screen .hero-visual .sierpinski-satellite {
+  transform: scale(0.7) !important;
+  transform-origin: 50% 50% !important;
+  opacity: 0.72 !important;
+}
+
+.main-phi-chassis.account-workspace-shell .login-screen .hero-text-wrapper {
+  padding-block: clamp(var(--space-xl), 4vw, var(--space-2xl));
+}
+
+.account-workspace-shell .account-workspace-signin-section .login-grid {
+  gap: clamp(var(--space-lg), 3vw, var(--space-2xl));
+}
+
+@media (max-width: 56rem) {
+  .account-workspace-shell .account-workspace-signin-section .login-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.account-workspace-shell .login-card {
+  padding: clamp(var(--space-lg), 3vw, var(--space-2xl));
+}
+
+.account-workspace-shell .login-form {
+  gap: var(--space-lg);
+}
+
+.account-workspace-shell .login-form input,
+.account-workspace-shell .login-form textarea,
+.account-workspace-shell .login-form select {
+  font-size: 1rem;
+}
+
+.account-workspace-shell .login-subtitle,
+.account-workspace-shell .login-note {
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.account-workspace-shell .auth-help-stack {
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.account-workspace-shell .auth-help-form {
+  padding-top: var(--space-md);
+}
+
+.account-workspace-shell .account-workspace-panel-section {
+  padding-block: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.account-workspace-shell .account-workspace-panels,
+.account-workspace-shell .account-workspace-panels > .portal-panels {
+  overflow: visible;
+}
+
+@media (max-width: 1023px) {
+  .site-shell--marketing.account-workspace-shell .portal-sidebar.open {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Gutter constellation accents — slightly smaller on account (320×210 whisper graph) */
+.account-workspace-shell .section-constellation-layer--whisper {
+  width: clamp(5.25rem, 10.5vw, 8.25rem);
+  opacity: 0.4;
+}
+
+@media (max-width: 900px) {
+  .account-workspace-shell .section-constellation-layer--whisper {
+    width: clamp(4.5rem, 16vw, 6.75rem);
+    opacity: 0.36;
+  }
+
+  .main-phi-chassis.account-workspace-shell .login-screen .hero-visual {
+    max-height: min(9rem, 22dvh) !important;
+    max-width: min(88%, 15rem) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-workspace-shell .section-constellation-layer {
+    display: none;
+  }
+}
+
+/* Auth confirmation — signup / verify / resend */
+.account-workspace-shell .login-container > .auth-status-banner {
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.18);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  text-align: left;
+}
+
+.account-workspace-shell .auth-status-banner--success {
+  background: rgba(var(--portal-success-rgb, 16, 185, 129), 0.12);
+  color: var(--portal-success-dark, #047857);
+  border-color: rgba(var(--portal-success-rgb, 16, 185, 129), 0.28);
+}
+
+.account-workspace-shell .auth-status-banner--error {
+  background: var(--portal-error-bg);
+  color: var(--portal-error-dark);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.account-workspace-shell .auth-status-banner--warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.account-workspace-shell .auth-status-banner--info {
+  background: var(--portal-info-bg);
+  color: var(--portal-info-dark);
+}
+
+.account-workspace-shell .auth-confirmation-panel {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--portal-success-rgb, 16, 185, 129), 0.28);
+  background: rgba(var(--portal-success-rgb, 16, 185, 129), 0.08);
+}
+
+.account-workspace-shell .auth-confirmation-panel--warning {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.account-workspace-shell .auth-confirmation-panel__title {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-lg);
+}
+
+.account-workspace-shell .auth-confirmation-panel__lead {
+  margin: 0 0 var(--space-md);
+  line-height: 1.55;
+}
+
+.account-workspace-shell .auth-confirmation-panel__steps {
+  margin: 0 0 var(--space-md);
+  padding-left: var(--space-lg);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .auth-confirmation-panel__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
 }

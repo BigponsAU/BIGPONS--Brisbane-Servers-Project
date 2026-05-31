@@ -232,14 +232,47 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     (el as HTMLElement).style.color = isError ? 'var(--portal-error-dark)' : '';
   }
 
-  function showAuthBanner(message: string, isError = false): void {
+  type AuthBannerVariant = 'success' | 'error' | 'info' | 'warning';
+
+  function showAuthBanner(message: string, variant: AuthBannerVariant = 'info'): void {
     const banner = document.getElementById('auth-status-banner') as HTMLElement | null;
     if (!banner) return;
     banner.textContent = message;
     banner.style.display = 'block';
-    banner.style.background = isError ? 'var(--portal-error-bg)' : 'var(--portal-info-bg)';
-    banner.style.color = isError ? 'var(--portal-error-dark)' : 'var(--portal-info-dark)';
-    banner.style.borderColor = isError ? 'rgba(239, 68, 68, 0.18)' : 'rgba(var(--portal-primary-rgb), 0.18)';
+    banner.classList.remove(
+      'auth-status-banner--success',
+      'auth-status-banner--error',
+      'auth-status-banner--info',
+      'auth-status-banner--warning'
+    );
+    banner.classList.add(`auth-status-banner--${variant}`);
+    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideRegisterSuccessPanel(): void {
+    const panel = document.getElementById('register-success-panel') as HTMLElement | null;
+    const form = document.getElementById('register-form') as HTMLElement | null;
+    const submitBtn = document.getElementById('register-submit-btn') as HTMLButtonElement | null;
+    if (panel) panel.hidden = true;
+    if (form) form.style.display = '';
+    if (submitBtn) submitBtn.disabled = false;
+  }
+
+  function showRegisterSuccessPanel(email: string, deliveryWarning = false): void {
+    const panel = document.getElementById('register-success-panel') as HTMLElement | null;
+    const emailEl = document.getElementById('register-success-email');
+    const form = document.getElementById('register-form') as HTMLElement | null;
+    const submitBtn = document.getElementById('register-submit-btn') as HTMLButtonElement | null;
+    const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
+    if (emailEl) emailEl.textContent = email;
+    if (resendEmail) resendEmail.value = email;
+    if (form) form.style.display = 'none';
+    if (submitBtn) submitBtn.disabled = true;
+    if (panel) {
+      panel.hidden = false;
+      panel.classList.toggle('auth-confirmation-panel--warning', deliveryWarning);
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
   function maybeAppendPreviewLink(message: string, previewUrl?: string): string {
@@ -276,7 +309,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       return;
     }
     if (oauthError) {
-      showAuthBanner(decodeURIComponent(oauthError), true);
+      showAuthBanner(decodeURIComponent(oauthError), 'error');
       window.history.replaceState({}, '', ACCOUNT_PATH);
     }
   }
@@ -287,13 +320,20 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const response = await fetch(`${VOICE_API_URL}/auth/verify-email?token=${encodeURIComponent(VERIFY_TOKEN)}`);
       const data = await response.json();
       if (response.ok && data.success) {
-        showAuthBanner(data.message || 'Your email has been verified. You can now sign in.');
+        hideRegisterSuccessPanel();
+        showAuthBanner(
+          data.message || 'Email verified. You can sign in now with your email and password.',
+          'success'
+        );
+        const loginEmail = document.getElementById('email') as HTMLInputElement | null;
+        if (loginEmail && data.email) loginEmail.value = data.email;
         window.history.replaceState({}, '', ACCOUNT_PATH);
+        document.getElementById('sign-in')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        showAuthBanner(data.error || 'Verification link is invalid or expired.', true);
+        showAuthBanner(data.error || 'Verification link is invalid or expired.', 'error');
       }
     } catch {
-      showAuthBanner('Verification failed. Please try again.', true);
+      showAuthBanner('Verification failed. Please try again.', 'error');
     }
   }
 
@@ -378,8 +418,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
           if (resendEmail) resendEmail.value = email;
           showAuthBanner(
-            'Account exists but is not verified yet. Use "Resend verification email" below, then verify and sign in again.',
-            true
+            'This account is not verified yet. Use "Resend verification email" in the panel on the right, open the link in your inbox, then sign in again.',
+            'warning'
           );
         }
         if (data.code === 'USE_OAUTH') {
@@ -416,15 +456,24 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
       if (response.ok && data.success) {
         form.reset();
-        showAuthBanner(maybeAppendPreviewLink(data.message || 'Account created. Check your email to verify your account.', data.previewUrl));
+        showRegisterSuccessPanel(email, false);
+        showAuthBanner(
+          maybeAppendPreviewLink(
+            'Account created. Check your email and click the verification link before signing in.',
+            data.previewUrl
+          ),
+          'success'
+        );
       } else if (data.code === 'VERIFICATION_EMAIL_FAILED' && data.accountCreated) {
         form.reset();
+        showRegisterSuccessPanel(email, true);
         showAuthBanner(
-          'Account created, but verification email could not be sent yet. Use "Resend verification email" below after email delivery is fixed.',
-          true
+          maybeAppendPreviewLink(
+            'Account created, but the verification email could not be sent. Use "Resend verification email" below, or contact support if this keeps happening.',
+            data.previewUrl
+          ),
+          'warning'
         );
-        const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
-        if (resendEmail) resendEmail.value = email;
       } else {
         if (errorDiv) {
           errorDiv.textContent = data.error || 'Account creation failed';
@@ -452,8 +501,21 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         body: JSON.stringify({ email })
       });
       const data = await response.json();
-      setMessage('resend-verification-error', maybeAppendPreviewLink(data.message || 'Verification email sent.', data.previewUrl), !response.ok);
+      if (response.ok) {
+        showAuthBanner(
+          maybeAppendPreviewLink(
+            data.message || `Verification email sent to ${email}. Open the link, then sign in.`,
+            data.previewUrl
+          ),
+          'success'
+        );
+        setMessage('resend-verification-error', 'Email sent — check your inbox (and spam).', false);
+      } else {
+        showAuthBanner(data.error || 'Could not send verification email.', 'error');
+        setMessage('resend-verification-error', data.error || 'Could not send verification email.', true);
+      }
     } catch {
+      showAuthBanner('Connection error. Could not send verification email.', 'error');
       setMessage('resend-verification-error', 'Connection error. Please try again.', true);
     }
   });
@@ -875,7 +937,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         localStorage.removeItem('authToken');
         authToken = null;
         showLogin();
-        showAuthBanner('Your session expired. Please sign in again.', true);
+        showAuthBanner('Your session expired. Please sign in again.', 'warning');
       } else {
         setDashboardStatsError('Could not load workspace data. Check the API banner above and your PUBLIC_API_BASE_URL setting.');
       }

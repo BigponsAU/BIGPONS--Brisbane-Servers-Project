@@ -2,7 +2,7 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-05-26 (Cloudflare + Render MCP / API)
+**Last synced:** 2026-05-29 (Cloudflare + Render MCP / API)
 
 ---
 
@@ -22,8 +22,8 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | **Phase 0** — local gates | **Complete** — `npm run verify:go-live` |
 | **Phase 1** — API (Render) | **Live** — health OK on `*.onrender.com` |
 | **Phase 2** — Pages (Cloudflare) | **Live** — `https://brisbaneservers.com` |
-| **Phase 3** — `/account` on domain | **Live** — Resend + bootstrap admin; sign in at `/account` |
-| **Phase 4–6** | **Pending** — Resend domain verify, deploy hook, cron, sign-off |
+| **Phase 3** — `/account` on domain | **Live** — auth email from `support@mail.brisbaneservers.com`; signup UX fixes pushed |
+| **Phase 4–6** | **Pending** — root Resend domain (`support@brisbaneservers.com`), Google OAuth env, deploy hook, cron, sign-off |
 
 ---
 
@@ -49,9 +49,11 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | Custom domain `api.brisbaneservers.com` | **Verified** on Render |
 | Persistent disk `voice-storage` | **Blueprint: Starter + 1GB** — [STORAGE_AND_VECTORS.md](STORAGE_AND_VECTORS.md) |
 | Library growth APIs + bootstrap | **Pushed** — `prestart:api` seeds corpus if empty |
-| `RESEND_API_KEY` | **Done** — signup works (`onboarding@resend.dev` until domain verified) |
+| `RESEND_API_KEY` | **Done** |
+| `AUTH_EMAIL_FROM` | **Done** — `Brisbane Servers <support@mail.brisbaneservers.com>` |
+| Google OAuth env vars | **Done** — client ID, secret, redirect on Render |
 | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Pending** |
-| Push + `npm run seed:admin` or `POST /api/cron/provision-admin` | **Pending** — DB super-admin + credential email after deploy |
+| Push + `npm run seed:admin` or `POST /api/cron/provision-admin` | **Re-run** — credential email should deliver after `AUTH_EMAIL_FROM` fix |
 
 ---
 

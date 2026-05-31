@@ -69,12 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        document.addEventListener('keydown', function (e: KeyboardEvent) {
-            if (e.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
-                setMobileNavOpen(false);
-                menuButton.focus();
-            }
-        });
     }
     
     // Initialize dropdown menus with keyboard support

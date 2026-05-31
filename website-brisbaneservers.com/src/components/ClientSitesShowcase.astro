@@ -57,7 +57,7 @@ const layout = layoutProp ?? (clientSites.length <= 2 ? 'featured' : 'grid');
                   data-client-preview
                 />
                 <div class="client-site-card__placeholder" aria-hidden="true" hidden>
-                  <span class="client-site-card__placeholder-label">Preview loading…</span>
+                  <span class="client-site-card__placeholder-label">Preview unavailable</span>
                 </div>
                 <div class="client-site-card__chrome" aria-hidden="true">
                   <span class="client-site-card__dot" />
@@ -98,12 +98,25 @@ const layout = layoutProp ?? (clientSites.length <= 2 ? 'featured' : 'grid');
 </div>
 
 <script>
-  document.querySelectorAll('[data-client-preview]').forEach((img) => {
+  function wireClientPreview(img) {
     if (!(img instanceof HTMLImageElement)) return;
-    img.addEventListener('error', () => {
-      img.style.display = 'none';
-      const placeholder = img.parentElement?.querySelector('.client-site-card__placeholder');
+    const preview = img.closest('.client-site-card__preview');
+    const placeholder = preview?.querySelector('.client-site-card__placeholder');
+    const showShot = () => {
+      img.classList.remove('is-unavailable');
+      if (placeholder instanceof HTMLElement) placeholder.hidden = true;
+    };
+    const showPlaceholder = () => {
+      img.classList.add('is-unavailable');
       if (placeholder instanceof HTMLElement) placeholder.hidden = false;
-    });
-  });
+    };
+    if (img.complete) {
+      img.naturalWidth > 0 ? showShot() : showPlaceholder();
+    } else {
+      img.addEventListener('load', showShot, { once: true });
+      img.addEventListener('error', showPlaceholder, { once: true });
+    }
+  }
+
+  document.querySelectorAll('[data-client-preview]').forEach(wireClientPreview);
 </script>

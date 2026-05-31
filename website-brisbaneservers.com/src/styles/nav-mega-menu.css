@@ -453,8 +453,75 @@ body.nav-mobile-open .nav-dropdown {
 }
 
 @media (max-width: 1023px) {
+  header[role='banner'] {
+    position: relative;
+    z-index: 1000;
+  }
+
+  header[role='banner'] nav {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .nav-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 3.75rem);
+    padding: 0.35rem 0.5rem;
+  }
+
+  .nav-brand-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hamburger {
+    flex: 0 0 auto;
+    margin-left: auto;
+    z-index: 1004;
+  }
+
+  /* Full panel under header — not a single strip (avoid fixed + wrong top offset) */
+  .mobile-menu.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-height: min(18rem, 52vh);
+    max-height: min(92dvh, calc(100dvh - var(--site-header-clearance, 4.5rem)));
+    box-shadow:
+      0 16px 48px rgba(8, 27, 54, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
   body.nav-mobile-open {
     overflow: hidden;
     touch-action: none;
+  }
+
+  body.nav-mobile-open::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(8, 27, 54, 0.42);
+    pointer-events: auto;
+  }
+
+  body.nav-mobile-open header[role='banner'] {
+    z-index: 1005;
+    overflow: visible;
+  }
+
+  body.nav-mobile-open .mobile-menu {
+    z-index: 1006;
   }
 }

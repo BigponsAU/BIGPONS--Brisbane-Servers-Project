@@ -731,12 +731,12 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   position: absolute;
   top: clamp(0.5rem, 1vw, 1rem);
   right: clamp(0, 2vw, 1.25rem);
-  width: clamp(11rem, 28vw, 22rem);
-  max-height: min(36vh, 18rem);
+  width: clamp(7.5rem, 16vw, 13.5rem);
+  max-height: min(28vh, 11rem);
   aspect-ratio: 440 / 300;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.52;
+  opacity: 0.42;
   filter: drop-shadow(0 0 14px rgba(var(--constellation-node-rgb), 0.22));
   overflow: hidden;
   contain: paint;
@@ -847,6 +847,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   --constellation-link-rgb: var(--accent-violet-rgb);
 }
 
+.main-home .home-sections-shell .section .section-satellite--scale-whisper {
+  aspect-ratio: 320 / 210;
+  width: clamp(6rem, 12vw, 9.5rem);
+  max-height: min(22vh, 8.5rem);
+  opacity: 0.38;
+}
+
 .main-home .home-sections-shell .section.home-band--partnership .section-satellite {
   --constellation-node-rgb: var(--accent-violet-rgb);
   --constellation-link-rgb: var(--accent-pink-rgb);
@@ -858,10 +865,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-interconnection-rig[data-margin-band='about'] .home-band--about .section-satellite.section-satellite--about:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='challenge'] .home-band--challenge .section-satellite.section-satellite--challenge:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='partnership'] .home-band--partnership .section-satellite.section-satellite--partnership:not(.section-satellite--gutter-echo) {
-  width: min(34rem, calc(24rem + var(--home-page-margin-w) * 0.46));
+  width: min(20rem, calc(14rem + var(--home-page-margin-w) * 0.32));
   right: calc(-0.44 * var(--home-page-margin-w));
-  opacity: 0.86;
-  transform: scale(1.03);
+  opacity: 0.72;
+  transform: scale(1);
   transform-origin: 84% 38%;
 }
 
@@ -869,10 +876,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo),
 .main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo) {
-  width: min(34rem, calc(24rem + var(--home-page-margin-w) * 0.46));
+  width: min(20rem, calc(14rem + var(--home-page-margin-w) * 0.32));
   left: calc(-0.44 * var(--home-page-margin-w));
-  opacity: 0.86;
-  transform: scale(1.03);
+  opacity: 0.72;
+  transform: scale(1);
   transform-origin: 16% 38%;
 }
 
@@ -2516,6 +2523,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .client-site-card__preview {
   position: relative;
   aspect-ratio: 16 / 10;
+  overflow: hidden;
   background: linear-gradient(
     145deg,
     rgba(var(--accent-teal-rgb), 0.12) 0%,
@@ -2525,30 +2533,37 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .client-site-card__shot {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
+.client-site-card__shot.is-unavailable {
+  display: none;
+}
+
 .client-site-card__placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
-  display: grid;
+  display: none;
   place-items: center;
+  padding: var(--space-sm);
+  text-align: center;
   font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.9rem);
   font-weight: var(--font-weight-semibold);
   color: rgba(var(--primary-ink-rgb), 0.45);
   letter-spacing: normal;
   text-transform: none;
+  box-sizing: border-box;
 }
 
-.client-site-card__preview:not(:has(.client-site-card__shot)) .client-site-card__placeholder,
-.client-site-card__preview:has(.client-site-card__placeholder:not([hidden])) .client-site-card__shot {
-  display: none;
-}
-
-.client-site-card__preview:has(.client-site-card__placeholder:not([hidden])) .client-site-card__placeholder {
+.client-site-card__placeholder:not([hidden]) {
   display: grid;
 }
 

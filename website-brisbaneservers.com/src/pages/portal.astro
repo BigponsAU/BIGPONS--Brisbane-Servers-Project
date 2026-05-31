@@ -13,8 +13,8 @@ import AccountSiteReviewPanel from '../components/account/AccountSiteReviewPanel
 import AccountResourceModals from '../components/account/AccountResourceModals.astro';
 import { accountWorkspace } from '../data/account-workspace';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '../lib/api-config';
-import '../styles/portal-dashboard.css';
 import '../styles/portal-workspace.css';
+import '../styles/portal-dashboard.css';
 
 const publicApiBaseUrl = resolvePublicApiUrl('');
 const accountPath = resolvePublicSitePath('/account/');
@@ -34,7 +34,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
   shellVariant="marketing"
   valueProfile="utility"
   zoomProfile="focused"
-  density="compact"
+  density="comfortable"
   showFooter={true}
   mainClass="main-phi-chassis account-workspace-shell"
 >

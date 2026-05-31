@@ -67,14 +67,14 @@ const exactDescriptors: Record<string, PageDescriptor> = {
     shellVariant: 'marketing',
     valueProfile: 'utility',
     zoomProfile: 'focused',
-    density: 'compact',
+    density: 'comfortable',
   },
   '/portal': {
     pageId: 'account',
     shellVariant: 'marketing',
     valueProfile: 'utility',
     zoomProfile: 'focused',
-    density: 'compact',
+    density: 'comfortable',
   },
   '/privacy-policy': {
     pageId: 'privacy-policy',

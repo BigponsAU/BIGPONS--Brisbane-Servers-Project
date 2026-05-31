@@ -38,7 +38,11 @@ export const GET: APIRoute = async ({ request }) => {
   await markUserEmailVerified(user.id);
   await logAuthEvent({ userId: user.id, email: user.email, eventType: 'auth.verify-email.succeeded' });
   return new Response(
-    JSON.stringify({ success: true, message: 'Your email has been verified. You can now sign in.' }),
+    JSON.stringify({
+      success: true,
+      email: user.email,
+      message: 'Your email has been verified. You can now sign in with your email and password.'
+    }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 };

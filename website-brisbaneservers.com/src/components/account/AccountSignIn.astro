@@ -36,12 +36,18 @@ import { portalVoiceFrameworkSummary } from '../../lib/portal-voice-framework';
             <SectionConstellationLayer variant="solutions" semanticKey="account-sign-in" tier="whisper" placement="bottom-left" />
             <div class="bg-pattern-angular bg-pattern-light"></div>
             <div class="container login-container">
+          <div
+            id="auth-status-banner"
+            class="auth-status-banner"
+            style="display: none;"
+            role="status"
+            aria-live="polite"
+          ></div>
           <div class="login-grid">
             <div class="login-card">
               <h2 class="login-card__title">Sign in</h2>
               <p class="login-subtitle">Manage contributions, saved work, resources, and voice settings.</p>
               <p class="login-note">Browsing resources stays public. Use your account when you want to contribute, save progress, or review your workspace activity.</p>
-              <div id="auth-status-banner" class="auth-status-banner" style="display: none;" role="status" aria-live="polite"></div>
               <form id="login-form" class="login-form" aria-label="Account sign-in form">
                 <div class="form-group">
                   <label for="email">Email <span class="sr-only">(required)</span></label>
@@ -125,9 +131,23 @@ import { portalVoiceFrameworkSummary } from '../../lib/portal-voice-framework';
                     aria-required="true"
                   />
                 </div>
-                <button type="submit" class="btn btn-secondary btn-block">Create account</button>
+                <button type="submit" class="btn btn-secondary btn-block" id="register-submit-btn">Create account</button>
                 <div id="register-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
               </form>
+              <div id="register-success-panel" class="auth-confirmation-panel" hidden>
+                <h3 class="auth-confirmation-panel__title">Account created</h3>
+                <p class="auth-confirmation-panel__lead">
+                  We sent a verification link to <strong id="register-success-email"></strong>.
+                </p>
+                <ol class="auth-confirmation-panel__steps">
+                  <li>Open the email from Brisbane Servers (check spam if needed).</li>
+                  <li>Click the verification link — you will return here with a confirmation message.</li>
+                  <li>Sign in with the email and password you just created.</li>
+                </ol>
+                <p class="auth-confirmation-panel__hint">
+                  No email after a few minutes? Use <strong>Resend verification email</strong> below with the same address.
+                </p>
+              </div>
               <div class="auth-help-stack">
                 <form id="resend-verification-form" class="login-form auth-help-form" aria-label="Resend verification email form">
                   <h3>Resend verification email</h3>
