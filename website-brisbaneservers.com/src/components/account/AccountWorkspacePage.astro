@@ -1,0 +1,93 @@
+---
+import SiteShell from '../../layouts/SiteShell.astro';
+import AccountSignIn from './AccountSignIn.astro';
+import AccountApiBanner from './AccountApiBanner.astro';
+import AccountWorkspaceShell from './AccountWorkspaceShell.astro';
+import AccountOverviewPanel from './AccountOverviewPanel.astro';
+import AccountResourcesPanel from './AccountResourcesPanel.astro';
+import AccountProfilesPanel from './AccountProfilesPanel.astro';
+import AccountAnalyticsPanel from './AccountAnalyticsPanel.astro';
+import AccountGrowthPanel from './AccountGrowthPanel.astro';
+import AccountModerationPanel from './AccountModerationPanel.astro';
+import AccountSiteReviewPanel from './AccountSiteReviewPanel.astro';
+import AccountResourceModals from './AccountResourceModals.astro';
+import { accountWorkspace } from '../../data/account-workspace';
+import { resolvePublicApiUrl, resolvePublicSitePath } from '../../lib/api-config';
+import '../../styles/portal-workspace.css';
+import '../../styles/portal-dashboard.css';
+
+interface Props {
+  initialVerifyToken?: string;
+  initialResetToken?: string;
+}
+
+const { initialVerifyToken = '', initialResetToken = '' } = Astro.props;
+
+const publicApiBaseUrl = resolvePublicApiUrl('');
+const accountPath = resolvePublicSitePath('/account/');
+---
+
+<SiteShell
+  title={`Sign in · ${accountWorkspace.productName}`}
+  description="Secure account workspace for contributions, resources, and voice profile management"
+  noindex={true}
+  currentPath="/account"
+  pageId="account"
+  shellVariant="marketing"
+  valueProfile="utility"
+  zoomProfile="focused"
+  density="comfortable"
+  showFooter={true}
+  mainClass="main-phi-chassis account-workspace-shell"
+>
+  <div
+    id="admin-portal"
+    class="admin-portal account-workspace-root"
+    data-public-api-base-url={publicApiBaseUrl}
+    data-account-path={accountPath}
+    data-verify-token={initialVerifyToken}
+    data-reset-token={initialResetToken}
+  >
+    <AccountSignIn />
+    <AccountApiBanner />
+    <AccountWorkspaceShell>
+      <AccountOverviewPanel />
+      <AccountResourcesPanel />
+      <AccountProfilesPanel />
+      <AccountAnalyticsPanel />
+      <AccountGrowthPanel />
+      <AccountModerationPanel />
+      <AccountSiteReviewPanel />
+    </AccountWorkspaceShell>
+    <AccountResourceModals />
+    <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script>
+    import { bootAccountWorkspace } from '../../scripts/account-workspace-app.ts';
+    import { bootAccountWorkspaceExtensions } from '../../scripts/account-workspace-boot.ts';
+
+    function readBootConfig() {
+      const root = document.getElementById('admin-portal');
+      const dataset = root?.dataset ?? {};
+      return {
+        publicApiBaseUrl: dataset.publicApiBaseUrl ?? '',
+        accountPath: dataset.accountPath ?? '/account/',
+        initialVerifyToken: dataset.verifyToken ?? '',
+        initialResetToken: dataset.resetToken ?? '',
+      };
+    }
+
+    function boot() {
+      const config = readBootConfig();
+      bootAccountWorkspace(config);
+      bootAccountWorkspaceExtensions();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot, { once: true });
+    } else {
+      boot();
+    }
+  </script>
+</SiteShell>

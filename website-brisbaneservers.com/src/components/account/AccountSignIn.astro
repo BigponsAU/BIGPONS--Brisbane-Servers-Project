@@ -2,6 +2,19 @@
 /** Sign-in / register — no page-level hero; card titles are the only headings. */
 ---
 
+<script is:inline>
+  (function () {
+    try {
+      var url = new URL(window.location.href);
+      if (url.searchParams.has('password') || url.searchParams.has('email')) {
+        url.searchParams.delete('password');
+        url.searchParams.delete('email');
+        history.replaceState({}, '', url.pathname + url.search + url.hash);
+      }
+    } catch (e) {}
+  })();
+</script>
+
 <div id="login-screen" class="login-screen login-screen--classic">
   <div class="container login-container">
     <div
@@ -19,7 +32,7 @@
         <p class="login-note" id="login-remember-hint" hidden>
           You have a saved session on this device. Click Sign in to continue, or enter your password if prompted.
         </p>
-        <form id="login-form" class="login-form" aria-label="Account sign-in form">
+        <form id="login-form" class="login-form" method="post" action="#" aria-label="Account sign-in form">
           <div class="form-group">
             <label for="email">Email <span class="sr-only">(required)</span></label>
             <input
@@ -73,7 +86,7 @@
           <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
           <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
         </form>
-        <form id="reset-password-form" class="login-form auth-help-form" aria-label="Reset password form" style="display: none;">
+        <form id="reset-password-form" class="login-form auth-help-form" method="post" action="#" aria-label="Reset password form" style="display: none;">
           <h3>Set a new password</h3>
           <div class="form-group">
             <label for="reset-password">New password</label>
@@ -92,7 +105,7 @@
           <li>See your token balance and recent workspace activity.</li>
           <li>Return later to continue work without starting from scratch.</li>
         </ul>
-        <form id="register-form" class="login-form" aria-label="Create account form">
+        <form id="register-form" class="login-form" method="post" action="#" aria-label="Create account form">
           <div class="form-group">
             <label for="register-email">Email <span class="sr-only">(required)</span></label>
             <input
@@ -134,7 +147,7 @@
           </p>
         </div>
         <div class="auth-help-stack">
-          <form id="resend-verification-form" class="login-form auth-help-form" aria-label="Resend verification email form">
+          <form id="resend-verification-form" class="login-form auth-help-form" method="post" action="#" aria-label="Resend verification email form">
             <h3>Resend verification email</h3>
             <div class="form-group">
               <label for="resend-email">Email</label>
@@ -143,7 +156,7 @@
             <button type="submit" class="btn btn-secondary btn-block">Send verification email</button>
             <div id="resend-verification-error" class="status-message" role="status" aria-live="polite"></div>
           </form>
-          <form id="forgot-password-form" class="login-form auth-help-form" aria-label="Forgot password form">
+          <form id="forgot-password-form" class="login-form auth-help-form" method="post" action="#" aria-label="Forgot password form">
             <h3>Forgot your password?</h3>
             <div class="form-group">
               <label for="forgot-email">Email</label>
