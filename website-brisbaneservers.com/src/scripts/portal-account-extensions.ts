@@ -2,6 +2,7 @@
  * Account workspace extensions: passkeys, moderation, site review, client insights.
  */
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import { workspaceFetch } from '../lib/client-api';
 
 export interface PortalAccountContext {
   apiBaseUrl: string;
@@ -22,17 +23,20 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
+function hasSession(ctx: PortalAccountContext): boolean {
+  return Boolean(ctx.getAuthToken());
+}
+
 export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promise<void> {
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   const balanceEl = document.getElementById('client-token-balance');
   const listEl = document.getElementById('client-contributions-list');
 
   try {
     const [tokensRes, contribRes] = await Promise.all([
-      fetch(`${ctx.apiBaseUrl}/tokens/me`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${ctx.apiBaseUrl}/community/my-contributions`, { headers: { Authorization: `Bearer ${token}` } })
+      workspaceFetch(`${ctx.apiBaseUrl}/tokens/me`),
+      workspaceFetch(`${ctx.apiBaseUrl}/community/my-contributions`)
     ]);
 
     if (tokensRes.ok) {
@@ -71,14 +75,11 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
 export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('passkey-credentials-list');
   if (!container) return;
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   container.innerHTML = '<p class="status-message">Loading passkeys…</p>';
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`);
     const data = await res.json();
     if (!res.ok || !data.success) {
       container.innerHTML = '<p class="status-message">Unable to load passkeys.</p>';
@@ -100,9 +101,9 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
       btn.addEventListener('click', async () => {
         const id = (btn as HTMLElement).getAttribute('data-passkey-remove');
         if (!id) return;
-        await fetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
+        await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ctx.getAuthToken()}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ credentialId: id })
         });
         await loadPasskeyCredentials(ctx);
@@ -114,23 +115,21 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
 }
 
 export async function registerPasskey(ctx: PortalAccountContext): Promise<void> {
-  const token = ctx.getAuthToken();
   const statusEl = document.getElementById('passkey-register-status');
-  if (!token) return;
+  if (!hasSession(ctx)) return;
   if (statusEl) statusEl.textContent = 'Starting passkey registration…';
 
   try {
-    const optRes = await fetch(`${ctx.apiBaseUrl}/auth/passkey/register-options`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
+    const optRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/register-options`, {
+      method: 'POST'
     });
     const optData = await optRes.json();
     if (!optRes.ok || !optData.success) throw new Error(optData.error || 'Could not start registration');
 
     const attestation = await startRegistration({ optionsJSON: optData.options });
-    const verifyRes = await fetch(`${ctx.apiBaseUrl}/auth/passkey/register-verify`, {
+    const verifyRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/register-verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ challengeId: optData.challengeId, response: attestation })
     });
     const verifyData = await verifyRes.json();
@@ -147,7 +146,7 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
   if (errorDiv) errorDiv.classList.remove('show');
 
   try {
-    const optRes = await fetch(`${ctx.apiBaseUrl}/auth/passkey/login-options`, {
+    const optRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/login-options`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.trim().toLowerCase() })
@@ -158,7 +157,7 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
     }
 
     const assertion = await startAuthentication({ optionsJSON: optData.options });
-    const verifyRes = await fetch(`${ctx.apiBaseUrl}/auth/passkey/login-verify`, {
+    const verifyRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/login-verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ challengeId: optData.challengeId, response: assertion })
@@ -168,8 +167,7 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
       throw new Error(verifyData.error || 'Passkey sign-in failed');
     }
 
-    ctx.setAuthToken(verifyData.token);
-    localStorage.setItem('authToken', verifyData.token);
+    ctx.setAuthToken('cookie');
     ctx.showDashboard(verifyData.user);
   } catch (error) {
     if (errorDiv) {
@@ -184,12 +182,11 @@ async function moderateContribution(
   contributionId: string,
   action: 'approve' | 'reject'
 ): Promise<void> {
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
   const endpoint = action === 'approve' ? 'approve' : 'reject';
-  await fetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
+  await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contributionId })
   });
   await loadModerationQueue(ctx);
@@ -198,14 +195,11 @@ async function moderateContribution(
 export async function loadModerationQueue(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('moderation-queue');
   if (!container) return;
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   container.innerHTML = '<p class="status-message">Loading pending uploads…</p>';
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/community/contributions`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/community/contributions`);
     if (!res.ok) {
       container.innerHTML = '<p class="status-message">Admin access required to view the moderation queue.</p>';
       return;
@@ -264,14 +258,11 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
 export async function loadSiteReviewSections(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('site-review-list');
   if (!container) return;
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   container.innerHTML = '<p class="status-message">Loading public sections…</p>';
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/site-sections`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/site-sections`);
     if (!res.ok) {
       container.innerHTML = '<p class="status-message">Admin access required.</p>';
       return;
@@ -303,16 +294,13 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
   const container = document.getElementById('hosting-status-list');
   const message = document.getElementById('hosting-status-message');
   if (!container) return;
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   container.innerHTML = '<p class="status-message">Loading environment status…</p>';
   if (message) message.textContent = '';
 
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/hosting-status`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/hosting-status`);
     if (!res.ok) {
       container.innerHTML = '<p class="status-message">Super-admin access required.</p>';
       return;
@@ -342,15 +330,13 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
 
 export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<void> {
   const message = document.getElementById('hosting-status-message');
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
   if (message) message.textContent = 'Sending checklist email…';
 
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/email-hosting-checklist`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/email-hosting-checklist`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email: 'bigpons@brisbaneservers.com' }),

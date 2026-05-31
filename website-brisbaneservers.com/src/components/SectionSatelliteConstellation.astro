@@ -12,7 +12,7 @@ interface Props {
 }
 
 const SCALE_PRESETS = {
-  whisper: { w: 320, h: 210, level: 2, nodeScale: 0.2, nodeMin: 2 },
+  whisper: { w: 320, h: 210, level: 2, nodeScale: 0.16, nodeMin: 1.5 },
   default: { w: 440, h: 300, level: 3, nodeScale: 0.22, nodeMin: 2.2 },
   accent: { w: 560, h: 360, level: 3, nodeScale: 0.26, nodeMin: 2.8 },
   rim: { w: 720, h: 460, level: 4, nodeScale: 0.3, nodeMin: 3.2 },
@@ -78,3 +78,29 @@ const scaleClass = `section-satellite--scale-${scale}`;
     </g>
   </svg>
 </div>
+
+<style>
+  /* Fallback if band CSS fails to load — prevents solid black in-flow nodes */
+  .section-satellite__edge {
+    stroke: rgba(10, 116, 218, 0.28);
+    stroke-width: 1;
+    stroke-linecap: round;
+  }
+
+  .section-satellite__node {
+    fill: rgba(139, 92, 246, 0.22);
+    stroke: rgba(10, 116, 218, 0.55);
+    stroke-width: 1;
+  }
+
+  .section-satellite__node--hub {
+    fill: rgba(236, 72, 153, 0.28);
+    stroke: rgba(10, 116, 218, 0.75);
+  }
+
+  .section-satellite__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

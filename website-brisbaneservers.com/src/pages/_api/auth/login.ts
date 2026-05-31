@@ -54,7 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
       };
       const token = createSessionToken(user);
       return new Response(
-        JSON.stringify({ token, user, success: true }),
+        JSON.stringify({ user, success: true }),
         {
           status: 200,
           headers: {
@@ -101,7 +101,7 @@ export const POST: APIRoute = async ({ request }) => {
     await logAuthEvent({ userId: user.id, email: user.email, eventType: 'auth.login.succeeded' });
 
     return new Response(
-      JSON.stringify({ token, user, success: true }),
+      JSON.stringify({ user, success: true }),
       {
         status: 200,
         headers: {

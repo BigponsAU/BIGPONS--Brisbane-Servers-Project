@@ -4,9 +4,16 @@ import { joinUrl, normalizePathPrefix, readRuntimeEnv, stripTrailingSlash } from
 export const API_PATH_PREFIX = '/api';
 
 function normalizeApiBase(baseUrl: string): string {
-  return /^https?:\/\//i.test(baseUrl)
+  let normalized = /^https?:\/\//i.test(baseUrl)
     ? stripTrailingSlash(baseUrl)
     : normalizePathPrefix(baseUrl);
+
+  // Never bake plain http API origins into production client bundles.
+  if (import.meta.env.PROD && normalized.startsWith('http://')) {
+    normalized = `https://${normalized.slice('http://'.length)}`;
+  }
+
+  return normalized;
 }
 
 export function getPublicApiBaseUrl(): string {

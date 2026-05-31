@@ -3,6 +3,8 @@
  * Account workspace client app (auth, panels, resources, profiles).
  * Bootstrapped from portal.astro / account page.
  */
+import { workspaceFetch, clearLegacyAuthTokenStorage, hasActiveSession } from '../lib/client-api';
+
 export interface AccountWorkspaceBootConfig {
   publicApiBaseUrl: string;
   accountPath: string;
@@ -12,6 +14,7 @@ export interface AccountWorkspaceBootConfig {
 
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   const { publicApiBaseUrl, accountPath, initialVerifyToken, initialResetToken } = config;
+  clearLegacyAuthTokenStorage();
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
           (function() {
@@ -144,14 +147,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
   
-  let authToken: string | null = null;
+  let sessionActive = false;
   let pendingResetToken: string | null = RESET_TOKEN || null;
 
   function syncPortalAccountContext(): void {
     (window as any).__portalAccountCtx = {
       apiBaseUrl: VOICE_API_URL,
-      getAuthToken: () => authToken,
-      setAuthToken: (token: string | null) => { authToken = token; },
+      getAuthToken: () => (sessionActive ? 'cookie' : null),
+      setAuthToken: (token: string | null) => { sessionActive = !!token; },
       showDashboard,
       showLogin,
       showAuthBanner,
@@ -186,9 +189,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     try {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 8000);
-      const response = await fetch(`${VOICE_API_URL}/health`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/health`, {
         signal: controller.signal,
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
+        credentials: 'include'
       });
       window.clearTimeout(timeout);
 
@@ -285,7 +288,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const divider = document.getElementById('oauth-divider') as HTMLElement | null;
     if (!googleBtn) return;
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/oauth/status`);
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/oauth/status`);
       const data = await response.json();
       if (response.ok && data.google) {
         googleBtn.href = `${VOICE_API_URL}/auth/oauth/google/start`;
@@ -299,11 +302,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   function handleOAuthReturn(): void {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('oauth_token');
+    const oauthSuccess = params.get('oauth') === 'success';
     const oauthError = params.get('oauth_error');
-    if (token) {
-      authToken = token;
-      localStorage.setItem('authToken', token);
+    if (oauthSuccess) {
       window.history.replaceState({}, '', ACCOUNT_PATH);
       void verifyToken().then(() => updateRememberedSessionHint());
       return;
@@ -317,7 +318,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   async function handleVerificationToken(): Promise<void> {
     if (!VERIFY_TOKEN) return;
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/verify-email?token=${encodeURIComponent(VERIFY_TOKEN)}`);
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/verify-email?token=${encodeURIComponent(VERIFY_TOKEN)}`);
       const data = await response.json();
       if (response.ok && data.success) {
         hideRegisterSuccessPanel();
@@ -358,25 +359,24 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   function updateRememberedSessionHint(): void {
     const hint = document.getElementById('login-remember-hint') as HTMLElement | null;
     if (!hint) return;
-    hint.hidden = !localStorage.getItem('authToken');
+    hint.hidden = !sessionActive;
   }
 
   /** Resume an existing JWT on this device (same security model as page-load checkAuth). */
   async function resumeRememberedSession(): Promise<boolean> {
-    const token = localStorage.getItem('authToken');
-    if (!token) return false;
-    authToken = token;
+    if (!sessionActive) {
+      const active = await hasActiveSession(VOICE_API_URL);
+      if (!active) return false;
+    }
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/me`);
       if (response.ok) {
         const data = await response.json();
+        sessionActive = true;
         showDashboard(data.user);
         return true;
       }
-      localStorage.removeItem('authToken');
-      authToken = null;
+      sessionActive = false;
     } catch {
       /* fall through to password sign-in */
     }
@@ -385,32 +385,33 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   // Check for existing session
   function checkAuth(): void {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      authToken = token;
-      verifyToken();
-    } else {
-      showLogin();
-    }
+    void (async () => {
+      const active = await hasActiveSession(VOICE_API_URL);
+      if (active) {
+        sessionActive = true;
+        await verifyToken();
+      } else {
+        sessionActive = false;
+        showLogin();
+      }
+    })();
   }
 
   // Verify token
   async function verifyToken(): Promise<void> {
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/me`);
 
       if (response.ok) {
         const data = await response.json();
+        sessionActive = true;
         showDashboard(data.user);
       } else if (response.status >= 500) {
         setApiConnectivityBanner('error', 'Hosted API error during sign-in verification. Try again after the API host is healthy.');
+        sessionActive = false;
         showLogin();
       } else {
-        localStorage.removeItem('authToken');
+        sessionActive = false;
         showLogin();
       }
     } catch (error) {
@@ -419,6 +420,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         'error',
         'Cannot reach the hosted API to verify your session. Check PUBLIC_API_BASE_URL on Cloudflare Pages.'
       );
+      sessionActive = false;
       showLogin();
     }
   }
@@ -435,22 +437,24 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const submitBtn = document.getElementById('login-submit-btn') as HTMLButtonElement | null;
     if (errorDiv) errorDiv.classList.remove('show');
 
-    if (localStorage.getItem('authToken')) {
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Signing in…';
-      }
-      if (await resumeRememberedSession()) {
-        return;
-      }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in…';
+    }
+    if (await resumeRememberedSession()) {
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Sign in';
       }
+      return;
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/login`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -459,8 +463,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        authToken = data.token;
-        localStorage.setItem('authToken', authToken);
+        sessionActive = true;
         localStorage.setItem(ACCOUNT_LAST_EMAIL_KEY, email.trim().toLowerCase());
         showDashboard(data.user);
       } else {
@@ -505,7 +508,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (errorDiv) errorDiv.classList.remove('show');
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/register`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -540,11 +543,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         const forgotEmail = document.getElementById('forgot-email') as HTMLInputElement | null;
         if (forgotEmail) forgotEmail.value = email.trim().toLowerCase();
         showAuthBanner(
-          'An account with this email already exists. Sign in on the left, or use forgot password if you need to recover access.',
+          data.error || 'If that email is eligible for an account, sign in or use forgot password to continue.',
           'info'
         );
         if (errorDiv) {
-          errorDiv.textContent = 'This email is already registered.';
+          errorDiv.textContent = data.error || 'If that email is eligible for an account, sign in or use forgot password to continue.';
           errorDiv.classList.add('show');
         }
         document.querySelector('.login-card:not(.login-card--secondary)')?.scrollIntoView({
@@ -572,7 +575,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const email = formData.get('email') as string;
     setMessage('resend-verification-error', 'Sending verification email...');
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/resend-verification`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -604,7 +607,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const email = formData.get('email') as string;
     setMessage('forgot-password-error', 'Sending reset link...');
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/forgot-password`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -628,7 +631,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const password = formData.get('password') as string;
     setMessage('reset-password-error', 'Updating password...');
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/reset-password`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: pendingResetToken, password })
@@ -650,16 +653,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Logout handler
   const handleLogout = async () => {
     try {
-      await fetch(`${VOICE_API_URL}/auth/logout`, {
+      await workspaceFetch(`${VOICE_API_URL}/auth/logout`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` }
       });
     } catch (error) {
       console.error('Logout error:', error);
     }
     
-    authToken = null;
-    localStorage.removeItem('authToken');
+    sessionActive = false;
     showLogin();
   };
 
@@ -672,9 +673,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/auth/revoke-all`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/auth/revoke-all`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` }
       });
       const data = await response.json();
       if (!response.ok) {
@@ -683,8 +683,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (statusEl) {
         statusEl.textContent = data.message || 'All sessions revoked.';
       }
-      authToken = null;
-      localStorage.removeItem('authToken');
+      sessionActive = false;
       window.setTimeout(() => showLogin(), 500);
     } catch (error) {
       if (statusEl) {
@@ -702,10 +701,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const roles = ['super-admin', 'admin', 'editor'];
     if (!user?.role || !roles.includes(user.role)) return;
     try {
-      const res = await fetch(`${VOICE_API_URL}/profiles/create-base`, {
+      const res = await workspaceFetch(`${VOICE_API_URL}/profiles/create-base`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${authToken}`
         }
       });
       if (res.ok && import.meta.env.MODE === 'development') {
@@ -959,9 +957,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Load dashboard data
   async function loadDashboardData(): Promise<void> {
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -1013,8 +1010,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           loadStarterBlocks();
         }
       } else if (response.status === 401) {
-        localStorage.removeItem('authToken');
-        authToken = null;
+        sessionActive = false;
         showLogin();
         showAuthBanner('Your session expired. Please sign in again.', 'warning');
       } else {
@@ -1123,9 +1119,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     grid.innerHTML = '<div class="starter-blocks-loading">Loading starter blocks...</div>';
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/starter-blocks`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/starter-blocks`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -1241,11 +1236,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   async function createFromStarterBlock(starterBlockId: string): Promise<void> {
     showNotification('Creating resource from starter block...', 'info', 0);
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/from-starter-block`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/from-starter-block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           starterBlockId: starterBlockId
@@ -1458,11 +1452,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/generate`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           industry: formData.get('industry'),
@@ -1562,11 +1555,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (params.toString()) url += '?' + params.toString();
 
       console.log('[Portal] Fetching resources from:', url);
-      console.log('[Portal] Auth token present:', !!authToken);
+      console.log('[Portal] Session active:', sessionActive);
 
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -2685,11 +2677,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ status: 'published' })
       });
@@ -2724,11 +2715,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (!confirm('Unpublish this resource? It will no longer be visible on the website.')) return;
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ status: 'draft' })
       });
@@ -2753,11 +2743,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (!confirm('Archive this resource? It will be hidden from normal views but can be restored later.')) return;
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ status: 'archived' })
       });
@@ -2784,11 +2773,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (!confirm('Unarchive this resource? It will be restored to draft status.')) return;
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ status: 'draft' })
       });
@@ -2837,11 +2825,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           title,
@@ -2959,11 +2946,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     showNotification('Improving resource... This may take a moment.', 'info', 0);
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}/improve`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}/improve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({})
       });
@@ -3008,10 +2994,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${authToken}`
         }
       });
 
@@ -3105,11 +3090,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       populateWorkspaceVoiceProfileSelect(cached);
       return;
     }
-    if (!authToken) return;
+    if (!sessionActive) return;
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
@@ -3188,10 +3172,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const uploadProfileId = getWorkspaceVoiceProfileIdForApi();
       if (uploadProfileId) uploadFormData.append('profileId', uploadProfileId);
 
-      const response = await fetch(`${VOICE_API_URL}/resources/upload`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authToken}`
         },
         body: uploadFormData
       });
@@ -3304,9 +3287,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Process & Create Resource'; }
         return;
       }
-      const response = await fetch(`${VOICE_API_URL}/resources/process`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/process`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content,
           industry,
@@ -3376,11 +3359,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        fetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify({ status: 'published' })
         }).then(r => r.json())
@@ -3410,11 +3392,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        fetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
           },
           body: JSON.stringify({ status: 'draft' })
         }).then(r => r.json())
@@ -3444,10 +3425,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        fetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${authToken}`
           }
         }).then(r => r.json())
       ));
@@ -3539,11 +3519,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     btn.textContent = 'Deduplicating...';
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/deduplicate`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/deduplicate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -3583,11 +3562,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     btn.textContent = 'Seeding...';
     
     try {
-      const response = await fetch(`${VOICE_API_URL}/resources/seed`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources/seed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -3662,10 +3640,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const industry = industryEl?.value?.trim() || undefined;
       const body = industry ? { industry } : {};
 
-      const response = await fetch(`${VOICE_API_URL}/profiles/create-base`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/create-base`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
@@ -3721,9 +3698,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         console.log('[Portal] Fetching profiles from:', `${VOICE_API_URL}/profiles`);
       }
       
-      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
@@ -3954,9 +3930,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // View Default Profile
   document.getElementById('view-default-profile')?.addEventListener('click', async () => {
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/default`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/default`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
       });
@@ -4031,7 +4006,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
         const response = await fetch(url, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
           }
         });
@@ -4065,8 +4039,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const listEl = document.getElementById('analytics-suggestions-list');
     if (!configEl || !listEl) return;
     try {
-      const res = await fetch(`${VOICE_API_URL}/analytics/suggestions`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
+      const res = await workspaceFetch(`${VOICE_API_URL}/analytics/suggestions`, {
       });
       if (!res.ok) { configEl.innerHTML = '<p>Unable to load suggestions (admin only).</p>'; listEl.innerHTML = ''; return; }
       const data = await res.json();
@@ -4088,9 +4061,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           const value = parseFloat((btn as HTMLElement).getAttribute('data-value') || '0');
           if (!key) return;
           try {
-            const patchRes = await fetch(`${VOICE_API_URL}/admin/pipeline-config`, {
+            const patchRes = await workspaceFetch(`${VOICE_API_URL}/admin/pipeline-config`, {
               method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ [key]: value })
             });
             if (patchRes.ok) loadAnalyticsSuggestions();
@@ -4108,8 +4081,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (!container) return;
     try {
       const [usersRes, vectorsRes] = await Promise.all([
-        fetch(`${VOICE_API_URL}/admin/users`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
-        fetch(`${VOICE_API_URL}/admin/vectors-summary`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+        workspaceFetch(`${VOICE_API_URL}/admin/users`),
+        workspaceFetch(`${VOICE_API_URL}/admin/vectors-summary`)
       ]);
       const usersData = usersRes.ok ? await usersRes.json() : null;
       const vectorsData = vectorsRes.ok ? await vectorsRes.json() : null;
@@ -4676,9 +4649,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // View Profile
   (window as any).viewProfile = async (id: string) => {
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
       });
@@ -4786,10 +4758,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ archived: true })
@@ -4838,10 +4809,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ archived: false })
@@ -4983,10 +4953,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (!confirm('Set this profile as the default voice profile? New resource runs that use “Auto” will prefer this saved profile when present.')) return;
     }
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ isDefault: true })
@@ -5013,9 +4982,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     try {
       showNotification('Analyzing profile similarities...', 'info');
       
-      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
       });
@@ -5227,10 +5195,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     showNotification('Analyzing and sculpting profile library...', 'info');
 
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles/deduplicate`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/deduplicate`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -5323,9 +5290,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Export Profiles
   (window as any).exportProfiles = async () => {
     try {
-      const response = await fetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Accept': 'application/json'
         }
       });
@@ -5406,9 +5372,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   (window as any).exportResources = async () => {
     try {
       // Get all resources, not just filtered ones
-      const response = await fetch(`${VOICE_API_URL}/resources`, {
+      const response = await workspaceFetch(`${VOICE_API_URL}/resources`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         }
       });
@@ -5427,7 +5392,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       
       const exportData = {
         exportedAt: new Date().toISOString(),
-        exportedBy: authToken ? 'admin' : 'unknown',
+        exportedBy: sessionActive ? 'admin' : 'unknown',
         totalResources: resources.length,
         resources: resources
       };
@@ -5473,11 +5438,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         const batch = drafts.slice(i, i + batchSize);
         const results = await Promise.allSettled(
           batch.map(resource =>
-            fetch(`${VOICE_API_URL}/resources/${resource.id}/improve`, {
+            workspaceFetch(`${VOICE_API_URL}/resources/${resource.id}/improve`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
               },
               body: JSON.stringify({})
             }).then(r => r.json())
@@ -5720,8 +5684,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Initialize on load
   (window as any).__portalBridge = {
     apiBaseUrl: VOICE_API_URL,
-    getAuthToken: () => authToken,
-    setAuthToken: (token: string | null) => { authToken = token; },
+    getAuthToken: () => (sessionActive ? 'cookie' : null),
+    setAuthToken: (token: string | null) => { sessionActive = !!token; },
     showDashboard,
     showLogin,
     showAuthBanner,

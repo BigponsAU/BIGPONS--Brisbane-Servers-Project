@@ -85,7 +85,7 @@ import { industries } from '../../data/industries';
             </div>
             <div id="upload-resource-content" class="section-content">
             <div class="card" style="position: relative; overflow: hidden;">
-              <form id="upload-resource-form" class="resource-form" aria-label="Resource upload form" enctype="multipart/form-data">
+              <form id="upload-resource-form" class="resource-form" method="post" action="#" aria-label="Resource upload form" enctype="multipart/form-data">
                 <div class="form-group">
                   <label for="upload-file">Upload File</label>
                   <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.doc,.docx" />
@@ -141,7 +141,7 @@ import { industries } from '../../data/industries';
             <div id="create-from-content-content" class="section-content" style="display: none;">
               <div class="card" style="position: relative; overflow: hidden;">
                 <p class="section-subtitle" style="margin-bottom: var(--space-md);">Paste or type content below. It will be processed through the voice framework (no file upload). For quality control, very short text, keyboard spam, or low-variance gibberish is rejected server-side.</p>
-                <form id="create-from-content-form" class="resource-form" aria-label="Create from content form">
+                <form id="create-from-content-form" class="resource-form" method="post" action="#" aria-label="Create from content form">
                   <div class="form-group">
                     <label for="process-content">Content</label>
                     <textarea id="process-content" name="content" rows="8" required placeholder="Paste or type your content here..." style="width: 100%; resize: vertical;"></textarea>
@@ -189,7 +189,7 @@ import { industries } from '../../data/industries';
             </div>
             <div id="generate-resource-content" class="section-content" style="display: none;">
             <div class="card" style="position: relative; overflow: hidden;">
-              <form id="generate-resource-form" class="resource-form" aria-label="Resource generation form">
+              <form id="generate-resource-form" class="resource-form" method="post" action="#" aria-label="Resource generation form">
                 <div class="form-row">
                   <div class="form-group">
                     <label for="resource-industry">Industry</label>

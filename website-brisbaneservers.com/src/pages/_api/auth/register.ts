@@ -6,6 +6,9 @@ import { authRateLimitResponse } from '../../../lib/auth-rate-limit';
 import { isValidEmail } from '../../../utils/error-handling';
 import { logAuthEvent } from '../../../lib/auth-audit';
 
+const REGISTER_DUPLICATE_MESSAGE =
+  'If that email is eligible for an account, sign in or use forgot password to continue. Otherwise check your inbox for a verification link.';
+
 /**
  * Register a new user (client role) and require email verification before sign-in.
  * POST /api/auth/register
@@ -60,9 +63,9 @@ export const POST: APIRoute = async ({ request }) => {
       await logAuthEvent({ userId: existing.id, email: existing.email, eventType: 'auth.register.duplicate-email' });
       return new Response(
         JSON.stringify({
-          error: 'An account with this email already exists',
+          success: false,
           code: 'EMAIL_IN_USE',
-          success: false
+          error: REGISTER_DUPLICATE_MESSAGE
         }),
         { status: 409, headers: { 'Content-Type': 'application/json' } }
       );

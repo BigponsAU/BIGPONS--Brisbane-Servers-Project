@@ -1,3 +1,8 @@
 # Netlify / compatible static hosts: permanent redirect legacy portal URL to account workspace
 /portal        /account/        301
 /portal/       /account/        301
+
+# Canonical HTTPS host (Cloudflare Pages / compatible static hosts)
+https://www.brisbaneservers.com/*  https://brisbaneservers.com/:splat  301
+http://www.brisbaneservers.com/*   https://brisbaneservers.com/:splat  301
+http://brisbaneservers.com/*       https://brisbaneservers.com/:splat  301

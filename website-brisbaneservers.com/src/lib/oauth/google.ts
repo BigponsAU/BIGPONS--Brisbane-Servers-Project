@@ -7,6 +7,9 @@ import { logAuthEvent } from '~/lib/auth-audit';
 import { getRuntimeEnv } from '~/utils/runtime-env';
 import { saveChallenge, consumeChallenge } from '~/lib/webauthn/challenges';
 import { resolvePublicSitePath } from '~/lib/api-config';
+import { authTokenSetCookie } from '~/utils/http-cookies';
+
+const SESSION_MAX_AGE = 24 * 60 * 60;
 
 const OAUTH_PROVIDER = 'google' as const;
 const OAUTH_NO_PASSWORD = 'oauth:no-password';
@@ -164,8 +167,14 @@ export async function completeGoogleOAuth(
     });
 
     const returnUrl = new URL(getAccountReturnUrl());
-    returnUrl.searchParams.set('oauth_token', token);
-    return Response.redirect(returnUrl.toString(), 302);
+    returnUrl.searchParams.set('oauth', 'success');
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: returnUrl.toString(),
+        'Set-Cookie': authTokenSetCookie(token, SESSION_MAX_AGE, request)
+      }
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'oauth_failed';
     await logAuthEvent({ eventType: 'auth.oauth.google.failed', eventMeta: { message } });

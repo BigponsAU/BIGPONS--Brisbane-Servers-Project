@@ -166,7 +166,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = topicGuideSeo(
 
             <div id="community-contribution-form" class="community-contribution-form" data-visible="false">
               <h3>Share your perspective</h3>
-              <form id="community-upload-form">
+              <form id="community-upload-form" method="post" action="#" aria-label="Community contribution form">
                 <div class="form-grid">
                   <label>
                     <span>Title (optional)</span>
@@ -270,13 +270,13 @@ const { structuredData, breadcrumbs: breadcrumbItems } = topicGuideSeo(
     const callout = document.getElementById('community-contribution-callout');
     const statusEl = document.getElementById('community-upload-status');
     const listEl = document.getElementById('community-contributions-list');
-    const authToken = localStorage.getItem('authToken');
 
     async function checkAuthAndToggleForm() {
       try {
-        const headers = { Accept: 'application/json' };
-        if (authToken) headers.Authorization = `Bearer ${authToken}`;
-        const res = await fetch(`${apiBaseUrl}/auth/me`, { headers });
+        const res = await fetch(`${apiBaseUrl}/auth/me`, {
+          credentials: 'include',
+          headers: { Accept: 'application/json' }
+        });
         if (!res.ok) {
           contributionFormContainer?.setAttribute('data-visible', 'false');
           return;
@@ -333,11 +333,10 @@ const { structuredData, breadcrumbs: breadcrumbItems } = topicGuideSeo(
           topic,
         };
         try {
-          const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
-          if (authToken) headers.Authorization = `Bearer ${authToken}`;
           const res = await fetch(`${apiBaseUrl}/resources/community-upload`, {
             method: 'POST',
-            headers,
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify(payload),
           });
           const data = await res.json();

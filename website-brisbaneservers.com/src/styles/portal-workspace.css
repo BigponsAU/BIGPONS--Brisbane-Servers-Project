@@ -2146,12 +2146,12 @@
     gap: var(--space-lg);
   }
 
-  /* Form Elements - Fractal Design */
-  .form-group {
+  /* Form Elements - Fractal Design (scoped to workspace — never leak to public inquiry forms) */
+  .admin-portal .form-group {
     position: relative;
   }
 
-  .form-group label {
+  .admin-portal .form-group label {
     display: block;
     margin-bottom: var(--space-sm);
     color: var(--text-primary);
@@ -2162,7 +2162,7 @@
   }
 
   /* Sierpinski Path Indicator for Labels */
-  .form-group label::before {
+  .admin-portal .form-group label::before {
     content: '';
     position: absolute;
     left: 0;
@@ -2177,7 +2177,7 @@
     transition: opacity 0.3s ease;
   }
 
-  .form-group:focus-within label::before {
+  .admin-portal .form-group:focus-within label::before {
     opacity: 0.8;
   }
 

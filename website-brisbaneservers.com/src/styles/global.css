@@ -1986,8 +1986,14 @@ section.hero .hero-subtitle .semantic-child,
 .form-group label {
     display: block;
     margin-bottom: var(--space-sm);
+    padding-left: 0;
     font-weight: var(--font-weight-medium);
     color: var(--text-primary);
+}
+
+.form-group label::before {
+    content: none;
+    display: none;
 }
 
 .form-group input,

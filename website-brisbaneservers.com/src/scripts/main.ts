@@ -3,6 +3,8 @@
 
 // ===== NAVIGATION TOGGLE =====
 document.addEventListener('DOMContentLoaded', function() {
+    try { localStorage.removeItem('authToken'); } catch { /* legacy session cleanup */ }
+
     const hamburger = document.querySelector('.hamburger') as HTMLButtonElement | null;
     const mobileMenu = document.querySelector('.mobile-menu') as HTMLElement | null;
     
@@ -258,11 +260,8 @@ async function hydrateAccountLinks(): Promise<void> {
     const accountLinks = document.querySelectorAll('[data-account-link="true"]');
     if (!accountLinks.length) return;
 
-    const token = localStorage.getItem('authToken');
-    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-
     try {
-        const response = await fetch('/api/auth/me', { headers });
+        const response = await fetch('/api/auth/me', { credentials: 'include' });
         const isSignedIn = response.ok;
 
         accountLinks.forEach((link) => {
@@ -527,10 +526,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===== FORM HANDLING =====
+/** JS-handled forms: secure defaults so browsers allow autofill (no mailto/http actions). */
+function applySecureFormDefaults(): void {
+    const selectors = [
+        '.inquiry-form form',
+        'form.auth-form',
+        '#community-upload-form',
+        'form.resource-form',
+        '#edit-resource-form',
+        'form.login-form',
+    ];
+
+    selectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((node) => {
+            const form = node as HTMLFormElement;
+            if (!form.getAttribute('method')) {
+                form.method = 'post';
+            }
+            const action = form.getAttribute('action') ?? '';
+            if (!action || action.startsWith('mailto:')) {
+                form.setAttribute('action', '#');
+            }
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const inquiryForms = document.querySelectorAll('.inquiry-form');
-    
-    inquiryForms.forEach(form => {
+    applySecureFormDefaults();
+
+    document.querySelectorAll('.inquiry-form form').forEach((form) => {
         form.addEventListener('submit', handleFormSubmit);
     });
 });

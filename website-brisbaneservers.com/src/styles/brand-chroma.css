@@ -419,11 +419,17 @@ input[type='submit'].btn-primary {
 .inquiry-form .form-group label {
   display: block;
   margin-bottom: 0.45rem;
+  padding-left: 0;
   font-size: 0.9375rem;
   font-weight: var(--font-weight-semibold);
   letter-spacing: normal;
   text-transform: none;
   color: var(--primary-ink);
+}
+
+.inquiry-form .form-group label::before {
+  content: none;
+  display: none;
 }
 
 .section-title,

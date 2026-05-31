@@ -5,6 +5,7 @@ import {
   normalizeTopicSlug,
   type Resource
 } from '../../../lib/resources-api';
+import { filterResourcesForUser } from '../../../lib/resource-access';
 
 /**
  * Get all resources
@@ -35,18 +36,7 @@ export const GET: APIRoute = async ({ request }) => {
     const status = url.searchParams.get('status');
 
     let resources = await loadResources();
-
-    // Filter by access: super-admin/admin see all; editor/viewer see starter + own (or legacy no ownerId)
-    const user = authResult.user;
-    const canSeeAll = user.role === 'super-admin' || user.role === 'admin';
-    if (!canSeeAll) {
-      resources = resources.filter(
-        (r) =>
-          r.isStarterBlock === true ||
-          r.ownerId === user.id ||
-          !r.ownerId
-      );
-    }
+    resources = filterResourcesForUser(authResult.user, resources);
 
     // Query filters
     if (industry) {

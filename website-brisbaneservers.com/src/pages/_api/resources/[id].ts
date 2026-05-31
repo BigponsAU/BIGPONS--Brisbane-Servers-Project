@@ -11,6 +11,7 @@ import {
   saveResources,
   type Resource
 } from '../../../lib/resources-api';
+import { canAccessResource } from '../../../lib/resource-access';
 
 /**
  * Get a specific resource
@@ -52,6 +53,20 @@ export const GET: APIRoute = async ({ params, request }) => {
     const resource = resources.find((r) => r.id === id);
 
     if (!resource) {
+      return new Response(
+        JSON.stringify({
+          error: 'Resource not found',
+          code: 'NOT_FOUND',
+          success: false
+        }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    if (!canAccessResource(authResult.user, resource)) {
       return new Response(
         JSON.stringify({
           error: 'Resource not found',

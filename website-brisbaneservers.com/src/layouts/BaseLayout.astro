@@ -7,6 +7,7 @@ import '../styles/tartan-pattern.css';
 import '../styles/site-framework.css';
 import '../styles/site-frame-shell.css';
 import '../styles/brand-chroma.css';
+import '../styles/marketing-constellation.css';
 import CookieConsent from '../components/CookieConsent.astro';
 import favicon from '../favicon.png';
 import {
@@ -89,6 +90,7 @@ const jsonLd = mergeJsonLdGraph(
       <meta http-equiv="refresh" content={`0;url=${immediateRedirectUrl}`} />
     )}
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <meta name="theme-color" content="#0A74DA" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

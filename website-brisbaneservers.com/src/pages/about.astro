@@ -12,6 +12,7 @@ import SemanticText from '../components/SemanticText.astro';
 import { valueProposition } from '../data/value-proposition';
 import { portalVoiceRules } from '../lib/portal-voice-framework';
 import { sitePath } from '../lib/site-path';
+import '../styles/about-page.css';
 
 const currentPath = '/about';
 const { sections } = valueProposition.about;
@@ -69,7 +70,6 @@ const { sections } = valueProposition.about;
       class="section section-tartan-accent section-home-band--primary-light philosophy-section"
       aria-labelledby="philosophy-heading"
     >
-      <SectionConstellationLayer variant="about" semanticKey="about-philosophy" tier="whisper" placement="top-left" />
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-tangent"></div>
@@ -98,26 +98,33 @@ const { sections } = valueProposition.about;
             description="We work with you, not for you — your reality, industry, and constraints come first."
           />
         </CardGrid>
-
         <div id="additive-semantics" class="sr-only" aria-hidden="true"></div>
+      </div>
+    </section>
 
-        <div
-          id="corrections-welcome"
-          class="about-corrections"
-          aria-labelledby="corrections-welcome-heading"
-        >
-          <h3 id="corrections-welcome-heading">
+    <section
+      id="corrections-welcome"
+      class="section section-tartan-accent section-home-band--surface about-corrections-section"
+      aria-labelledby="corrections-welcome-heading"
+    >
+      <SectionConstellationLayer
+        variant="about"
+        semanticKey="about-corrections-welcome"
+        tier="whisper"
+        placement="bottom-right"
+      />
+      <div class="container">
+        <div class="about-corrections">
+          <p class="about-corrections__eyebrow">Open dialogue</p>
+          <h2 id="corrections-welcome-heading" class="about-corrections__title">
             <SemanticText text={valueProposition.about.correctionsTitle} semanticLevel="high" isParent={true} />
-          </h3>
-          <p>
+          </h2>
+          <p class="about-corrections__lead">
             <SemanticText text={valueProposition.about.correctionsBody} semanticLevel="normal" />
           </p>
-          <p>
-            <strong>Contact:</strong>{' '}
-            <a href={`mailto:${valueProposition.about.correctionsContact}`}>
-              {valueProposition.about.correctionsContact}
-            </a>
-          </p>
+          <a class="btn btn-secondary about-corrections__cta" href={`mailto:${valueProposition.about.correctionsContact}`}>
+            Email {valueProposition.about.correctionsContact}
+          </a>
         </div>
       </div>
     </section>

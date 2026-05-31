@@ -139,7 +139,7 @@ const { sections } = valueProposition.contribute;
         <div class="auth-cards" style="margin-top: var(--space-2xl);">
           <div class="auth-card">
             <h3>Register</h3>
-            <form id="register-form" class="auth-form">
+            <form id="register-form" class="auth-form" method="post" action="#" aria-label="Create account form">
               <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
               <label
                 ><span>Password (min 8 characters)</span><input
@@ -156,7 +156,7 @@ const { sections } = valueProposition.contribute;
           </div>
           <div class="auth-card">
             <h3>Log in</h3>
-            <form id="login-form" class="auth-form">
+            <form id="login-form" class="auth-form" method="post" action="#" aria-label="Sign in form">
               <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
               <label><span>Password</span><input type="password" name="password" required autocomplete="current-password" /></label>
               <button type="submit" class="btn btn-secondary btn-block">Log in</button>
@@ -218,6 +218,7 @@ const { sections } = valueProposition.contribute;
       const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json().catch(() => ({}));
@@ -225,7 +226,6 @@ const { sections } = valueProposition.contribute;
         setStatus(loginStatus, data.error || 'Login failed', true);
         return;
       }
-      if (data.token) localStorage.setItem('authToken', data.token);
       setStatus(loginStatus, 'Signed in. Redirecting…');
       window.location.href = accountPath;
     } catch {
