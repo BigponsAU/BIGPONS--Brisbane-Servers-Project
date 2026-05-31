@@ -305,7 +305,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       authToken = token;
       localStorage.setItem('authToken', token);
       window.history.replaceState({}, '', ACCOUNT_PATH);
-      void verifyToken();
+      void verifyToken().then(() => updateRememberedSessionHint());
       return;
     }
     if (oauthError) {
@@ -328,7 +328,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         const loginEmail = document.getElementById('email') as HTMLInputElement | null;
         if (loginEmail && data.email) loginEmail.value = data.email;
         window.history.replaceState({}, '', ACCOUNT_PATH);
-        document.getElementById('sign-in')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelector('.login-screen-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         showAuthBanner(data.error || 'Verification link is invalid or expired.', 'error');
       }
@@ -343,6 +343,44 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       resetForm.style.display = 'flex';
     }
     showAuthBanner('Choose a new password for your account.');
+  }
+
+  const ACCOUNT_LAST_EMAIL_KEY = 'accountLastEmail';
+
+  function prefillLoginEmail(): void {
+    const emailInput = document.getElementById('email') as HTMLInputElement | null;
+    const last = localStorage.getItem(ACCOUNT_LAST_EMAIL_KEY);
+    if (emailInput && last && !emailInput.value) {
+      emailInput.value = last;
+    }
+  }
+
+  function updateRememberedSessionHint(): void {
+    const hint = document.getElementById('login-remember-hint') as HTMLElement | null;
+    if (!hint) return;
+    hint.hidden = !localStorage.getItem('authToken');
+  }
+
+  /** Resume an existing JWT on this device (same security model as page-load checkAuth). */
+  async function resumeRememberedSession(): Promise<boolean> {
+    const token = localStorage.getItem('authToken');
+    if (!token) return false;
+    authToken = token;
+    try {
+      const response = await fetch(`${VOICE_API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        showDashboard(data.user);
+        return true;
+      }
+      localStorage.removeItem('authToken');
+      authToken = null;
+    } catch {
+      /* fall through to password sign-in */
+    }
+    return false;
   }
 
   // Check for existing session
@@ -394,7 +432,22 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const password = formData.get('password') as string;
 
     const errorDiv = document.getElementById('login-error');
+    const submitBtn = document.getElementById('login-submit-btn') as HTMLButtonElement | null;
     if (errorDiv) errorDiv.classList.remove('show');
+
+    if (localStorage.getItem('authToken')) {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing in…';
+      }
+      if (await resumeRememberedSession()) {
+        return;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+      }
+    }
 
     try {
       const response = await fetch(`${VOICE_API_URL}/auth/login`, {
@@ -408,6 +461,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (response.ok && data.success) {
         authToken = data.token;
         localStorage.setItem('authToken', authToken);
+        localStorage.setItem(ACCOUNT_LAST_EMAIL_KEY, email.trim().toLowerCase());
         showDashboard(data.user);
       } else {
         if (errorDiv) {
@@ -431,6 +485,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (errorDiv) {
         errorDiv.textContent = 'Connection error. Please try again.';
         errorDiv.classList.add('show');
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
       }
     }
   });
@@ -474,6 +533,24 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           ),
           'warning'
         );
+      } else if (response.status === 409 || data.code === 'EMAIL_IN_USE') {
+        hideRegisterSuccessPanel();
+        const loginEmail = document.getElementById('email') as HTMLInputElement | null;
+        if (loginEmail) loginEmail.value = email.trim().toLowerCase();
+        const forgotEmail = document.getElementById('forgot-email') as HTMLInputElement | null;
+        if (forgotEmail) forgotEmail.value = email.trim().toLowerCase();
+        showAuthBanner(
+          'An account with this email already exists. Sign in on the left, or use forgot password if you need to recover access.',
+          'info'
+        );
+        if (errorDiv) {
+          errorDiv.textContent = 'This email is already registered.';
+          errorDiv.classList.add('show');
+        }
+        document.querySelector('.login-card:not(.login-card--secondary)')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
       } else {
         if (errorDiv) {
           errorDiv.textContent = data.error || 'Account creation failed';
@@ -644,6 +721,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   function showLogin(): void {
     document.getElementById('login-screen')!.style.display = 'flex';
     document.getElementById('admin-dashboard')!.style.display = 'none';
+    prefillLoginEmail();
+    updateRememberedSessionHint();
     if (pendingResetToken) {
       showResetPasswordForm();
     }
