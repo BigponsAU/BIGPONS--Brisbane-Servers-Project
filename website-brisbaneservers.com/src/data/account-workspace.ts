@@ -8,9 +8,6 @@ export const accountWorkspace = {
   /** Default panel after sign-in (internal id remains `dashboard`). */
   overviewLabel: 'Overview',
   overviewDescription: 'Your activity, resources, contributions, and quick actions in one place.',
-  signInEyebrow: 'Signed-in workspace',
-  signInSubtitle:
-    'Create and manage voice-aligned resources, review contributions, and keep work in sync with the public resource hub.',
   libraryGrowthLabel: 'Library growth',
   libraryGrowthDescription:
     'Automates new guides, resources, and case study materials — not voice profiles. You create profiles in Voice profiles; growth writes content using your default site voice after you approve each proposal.',

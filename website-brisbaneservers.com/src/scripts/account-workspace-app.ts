@@ -328,7 +328,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         const loginEmail = document.getElementById('email') as HTMLInputElement | null;
         if (loginEmail && data.email) loginEmail.value = data.email;
         window.history.replaceState({}, '', ACCOUNT_PATH);
-        document.querySelector('.login-screen-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('auth-status-banner')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } else {
         showAuthBanner(data.error || 'Verification link is invalid or expired.', 'error');
       }

@@ -15,11 +15,11 @@
 .account-workspace-shell .login-screen {
   display: flex;
   width: 100%;
-  min-height: min(85dvh, calc(100dvh - var(--site-main-offset-top)));
-  overflow: hidden;
-  padding: clamp(var(--space-lg), 3vw, var(--space-2xl)) var(--site-frame-gutter);
-  align-items: center;
-  justify-content: center;
+  min-height: 0;
+  overflow: visible;
+  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter);
+  align-items: stretch;
+  justify-content: flex-start;
   box-sizing: border-box;
   background:
     radial-gradient(circle at 18% 22%, rgba(var(--portal-primary-rgb, 10, 116, 218), 0.07) 0%, transparent 48%),
@@ -33,37 +33,8 @@
   margin-inline: auto;
 }
 
-.account-workspace-shell .login-screen-header {
-  text-align: center;
-  margin-bottom: clamp(var(--space-lg), 3vw, var(--space-xl));
-  max-width: 40rem;
-  margin-inline: auto;
-}
-
-.account-workspace-shell .login-screen-header__eyebrow {
-  margin: 0 0 var(--space-xs);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.account-workspace-shell .login-screen-header__title {
-  margin: 0 0 var(--space-sm);
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
-  font-weight: var(--font-weight-bold);
-  color: var(--primary-ink);
-  line-height: 1.15;
-}
-
-.account-workspace-shell .login-screen-header__subtitle {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.55;
-  color: var(--text-secondary);
-  max-width: 36rem;
-  margin-inline: auto;
+.account-workspace-shell .login-container > .auth-status-banner {
+  scroll-margin-top: calc(var(--site-main-offset-top) + var(--space-md));
 }
 
 .account-workspace-shell .account-workspace-signin-bands .login-container {
@@ -657,10 +628,6 @@ body[data-page-id='account'] {
 @media (max-width: 640px) {
   .account-workspace-shell .section-constellation-layer {
     display: none;
-  }
-
-  .account-workspace-shell .login-screen-header__title {
-    font-size: clamp(1.35rem, 5vw, 1.65rem);
   }
 }
 

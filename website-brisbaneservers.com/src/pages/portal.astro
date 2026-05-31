@@ -25,7 +25,7 @@ const initialResetToken = Astro.url.searchParams.get('reset') ?? '';
 ---
 
 <SiteShell
-  title={accountWorkspace.productName}
+  title={`Sign in · ${accountWorkspace.productName}`}
   description="Secure account workspace for contributions, resources, and voice profile management"
   noindex={true}
   immediateRedirectUrl={isLegacyPortalRoute ? accountPath : undefined}
