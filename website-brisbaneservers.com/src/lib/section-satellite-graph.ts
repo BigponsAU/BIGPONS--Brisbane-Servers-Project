@@ -46,32 +46,77 @@ function collectNodes(
   out: SatelliteNode[],
   phi: number,
   phiInv: number,
+  span: number,
 ): void {
   if (level >= maxLevel) return;
 
-  const size = 20 * phiInv ** level;
-  const radius = 100 * phi ** level;
+  const size = span * 0.045 * phiInv ** level;
+  const radius = span * 0.26 * phiInv ** (level + 1);
 
   if (level === 0) {
-    out.push({ x: centerX, y: centerY, level, size: size * 1.5 });
+    out.push({ x: centerX, y: centerY, level, size: size * 1.35 });
   }
 
   const azimuthAngles = [23.6, 38.2, 61.8, 76.4];
-  const numChildren = Math.floor(phi * 3);
+  const numChildren = Math.min(4, Math.floor(phi * 2.5));
 
   for (let i = 0; i < numChildren; i++) {
-    const jitter = (rng() - 0.5) * 16;
+    const jitter = (rng() - 0.5) * 10;
     const angleDeg = azimuthAngles[i % azimuthAngles.length] + i * (360 / numChildren) + jitter;
     const angle = (angleDeg * Math.PI) / 180;
     const childX = centerX + radius * Math.cos(angle);
     const childY = centerY + radius * Math.sin(angle);
     out.push({ x: childX, y: childY, level, size });
 
-    collectNodes(childX, childY, level + 1, maxLevel, rng, out, phi, phiInv);
+    collectNodes(childX, childY, level + 1, maxLevel, rng, out, phi, phiInv, span);
   }
 }
 
-function findPhiEdges(nodes: SatelliteNode[], rng: () => number, maxPerNode: number): SatelliteEdge[] {
+/** Scale graph into viewBox with padding so SVG nodes never spill into page layout. */
+function fitNodesToViewBox(
+  nodes: SatelliteNode[],
+  viewWidth: number,
+  viewHeight: number,
+  pad = 10,
+): void {
+  if (!nodes.length) return;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const n of nodes) {
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x);
+    maxY = Math.max(maxY, n.y);
+  }
+
+  const width = Math.max(maxX - minX, 1);
+  const height = Math.max(maxY - minY, 1);
+  const innerW = Math.max(viewWidth - pad * 2, 1);
+  const innerH = Math.max(viewHeight - pad * 2, 1);
+  const scale = Math.min(innerW / width, innerH / height, 1.15);
+
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const targetCx = viewWidth * 0.5;
+  const targetCy = viewHeight * 0.48;
+
+  for (const n of nodes) {
+    n.x = targetCx + (n.x - cx) * scale;
+    n.y = targetCy + (n.y - cy) * scale;
+    n.size *= scale;
+  }
+}
+
+function findPhiEdges(
+  nodes: SatelliteNode[],
+  rng: () => number,
+  maxPerNode: number,
+  span: number,
+): SatelliteEdge[] {
   const phi = 1.618;
   const edges: SatelliteEdge[] = [];
   const seen = new Set<string>();
@@ -93,7 +138,7 @@ function findPhiEdges(nodes: SatelliteNode[], rng: () => number, maxPerNode: num
     nodes.forEach((target, j) => {
       if (i === j) return;
       const distance = Math.hypot(node.x - target.x, node.y - target.y);
-      const connectionRadius = 150 * phi ** -Math.abs(node.level - target.level);
+      const connectionRadius = span * 0.42 * phi ** -Math.abs(node.level - target.level);
       if (distance >= connectionRadius) return;
       const w = rng();
       if (w < 0.28) return;
@@ -139,8 +184,9 @@ export function buildSectionSatelliteGraph(params: BuildSectionSatelliteGraphPar
 
   const centerX = viewWidth * 0.5;
   const centerY = viewHeight * 0.48;
+  const span = Math.min(viewWidth, viewHeight);
   const nodes: SatelliteNode[] = [];
-  collectNodes(centerX, centerY, 0, maxLevel, rng, nodes, phi, phiInv);
+  collectNodes(centerX, centerY, 0, maxLevel, rng, nodes, phi, phiInv, span);
 
   const rotDeg =
     params.rotationDeg ??
@@ -155,8 +201,10 @@ export function buildSectionSatelliteGraph(params: BuildSectionSatelliteGraphPar
     n.y = centerY + dx * sin + dy * cos;
   }
 
+  fitNodesToViewBox(nodes, viewWidth, viewHeight);
+
   const edgeRng = mulberry32(hashSeedKey([params.seedKey, 'edges']));
-  const edges = findPhiEdges(nodes, edgeRng, 4);
+  const edges = findPhiEdges(nodes, edgeRng, 3, span);
 
   return { nodes, edges, viewWidth, viewHeight };
 }

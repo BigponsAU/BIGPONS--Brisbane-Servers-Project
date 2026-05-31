@@ -1,7 +1,26 @@
 ---
 import { resolvePublicSitePath } from '../lib/api-config';
 
+/** Static redirect page — edge `_redirects` also maps /portal → /account (301). */
 const accountPath = resolvePublicSitePath('/account/');
 const query = Astro.url.search;
-return Astro.redirect(`${accountPath}${query}`, 301);
+const target = `${accountPath}${query}`;
+const canonicalTarget = new URL(target, Astro.site ?? 'https://brisbaneservers.com').href;
 ---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalTarget} />
+    <title>Redirecting to account workspace</title>
+  </head>
+  <body>
+    <p>
+      <a href={target}>Continue to account workspace</a>
+    </p>
+  </body>
+</html>

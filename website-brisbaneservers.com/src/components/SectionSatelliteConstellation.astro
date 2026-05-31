@@ -1,5 +1,5 @@
 ---
-import { buildSectionSatelliteGraph, type SectionSatelliteVariant } from '../lib/section-satellite-graph';
+import { buildSectionSatelliteGraph, hashSeedKey, type SectionSatelliteVariant } from '../lib/section-satellite-graph';
 
 interface Props {
   variant?: SectionSatelliteVariant;
@@ -12,10 +12,10 @@ interface Props {
 }
 
 const SCALE_PRESETS = {
-  whisper: { w: 320, h: 210, level: 2, nodeScale: 0.16, nodeMin: 1.5 },
-  default: { w: 440, h: 300, level: 3, nodeScale: 0.22, nodeMin: 2.2 },
-  accent: { w: 560, h: 360, level: 3, nodeScale: 0.26, nodeMin: 2.8 },
-  rim: { w: 720, h: 460, level: 4, nodeScale: 0.3, nodeMin: 3.2 },
+  whisper: { w: 320, h: 210, level: 1, nodeScale: 0.12, nodeMin: 1.1 },
+  default: { w: 440, h: 300, level: 2, nodeScale: 0.18, nodeMin: 1.6 },
+  accent: { w: 560, h: 360, level: 2, nodeScale: 0.22, nodeMin: 2 },
+  rim: { w: 720, h: 460, level: 3, nodeScale: 0.26, nodeMin: 2.4 },
 } as const;
 
 const { variant = 'strategy', semanticKey = '', mode = 'section', scale = 'default' } = Astro.props;
@@ -36,6 +36,7 @@ const { nodes, edges, viewWidth, viewHeight } = buildSectionSatelliteGraph({
 const nodeRadiusScale = preset.nodeScale;
 const nodeRadiusMin = preset.nodeMin;
 const scaleClass = `section-satellite--scale-${scale}`;
+const clipId = `section-satellite-clip-${hashSeedKey([seedKey, scale]).toString(36)}`;
 ---
 
 <div
@@ -50,10 +51,17 @@ const scaleClass = `section-satellite--scale-${scale}`;
   <svg
     class="section-satellite__svg"
     viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+    overflow="hidden"
     role="presentation"
     focusable="false"
     preserveAspectRatio="xMidYMid meet"
   >
+    <defs>
+      <clipPath id={clipId}>
+        <rect x="0" y="0" width={viewWidth} height={viewHeight} />
+      </clipPath>
+    </defs>
+    <g clip-path={`url(#${clipId})`}>
     <g class="section-satellite__edges">
       {
         edges.map(({ i, j }) => {
@@ -76,11 +84,19 @@ const scaleClass = `section-satellite--scale-${scale}`;
         ))
       }
     </g>
+    </g>
   </svg>
 </div>
 
-<style>
-  /* Fallback if band CSS fails to load — prevents solid black in-flow nodes */
+<style is:global>
+  .section-satellite {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* Always clip + tint nodes — prevents default black SVG circles in page flow */
   .section-satellite__edge {
     stroke: rgba(10, 116, 218, 0.28);
     stroke-width: 1;
@@ -102,5 +118,6 @@ const scaleClass = `section-satellite--scale-${scale}`;
     display: block;
     width: 100%;
     height: 100%;
+    overflow: hidden;
   }
 </style>
