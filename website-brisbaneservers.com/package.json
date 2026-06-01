@@ -31,10 +31,10 @@
     "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.5",
+    "@astrojs/node": "^10.0.5",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
-    "astro": "^5.18.2",
+    "astro": "^6.4.2",
     "nodemailer": "^8.0.4",
     "pg": "^8.13.1",
     "sql.js": "^1.11.0",
@@ -45,6 +45,6 @@
     "@types/pg": "^8.11.10",
     "glob": "^10.3.10",
     "typescript": "^5.0.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.0"
   }
 }
