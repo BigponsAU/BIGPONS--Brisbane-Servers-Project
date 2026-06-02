@@ -2,6 +2,7 @@ import { joinUrl, normalizePathPrefix, readRuntimeEnv, stripTrailingSlash } from
 
 /** Relative prefix — works on Cloudflare Pages (same origin) and local Astro dev (Vite proxy). */
 export const API_PATH_PREFIX = '/api';
+const PROD_PUBLIC_API_FALLBACK = 'https://brisbane-servers-api.onrender.com/api';
 
 function normalizeApiBase(baseUrl: string): string {
   let normalized = /^https?:\/\//i.test(baseUrl)
@@ -17,7 +18,8 @@ function normalizeApiBase(baseUrl: string): string {
 }
 
 export function getPublicApiBaseUrl(): string {
-  return normalizeApiBase(readRuntimeEnv('PUBLIC_API_BASE_URL', API_PATH_PREFIX) ?? API_PATH_PREFIX);
+  const fallback = import.meta.env.PROD ? PROD_PUBLIC_API_FALLBACK : API_PATH_PREFIX;
+  return normalizeApiBase(readRuntimeEnv('PUBLIC_API_BASE_URL', fallback) ?? fallback);
 }
 
 export function getInternalApiBaseUrl(): string {
