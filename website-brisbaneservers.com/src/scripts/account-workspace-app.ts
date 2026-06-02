@@ -88,7 +88,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           })();
           
           // API URL - hosted hybrid API (Cloudflare Pages static frontend).
-          const VOICE_API_URL = publicApiBaseUrl;
+          let VOICE_API_URL = (publicApiBaseUrl || '').replace(/\/+$/, '');
           const ACCOUNT_PATH = accountPath;
           const VERIFY_TOKEN = initialVerifyToken;
           const RESET_TOKEN = initialResetToken;
@@ -176,6 +176,54 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  function setResendVerificationVisibility(show: boolean): void {
+    const resendForm = document.getElementById('resend-verification-form') as HTMLElement | null;
+    if (!resendForm) return;
+    resendForm.style.display = show ? 'flex' : 'none';
+  }
+
+  async function isApiBaseHealthy(baseUrl: string): Promise<boolean> {
+    try {
+      const response = await workspaceFetch(`${baseUrl.replace(/\/+$/, '')}/health`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) return false;
+      const contentType = response.headers.get('content-type') ?? '';
+      return contentType.includes('application/json');
+    } catch {
+      return false;
+    }
+  }
+
+  async function ensureReachableApiBase(): Promise<void> {
+    const configuredBase = VOICE_API_URL || '/api';
+    const candidates: string[] = [configuredBase];
+    const isRelativeConfigured = !/^https?:\/\//i.test(configuredBase);
+    const isProdSite = window.location.hostname === 'brisbaneservers.com' || window.location.hostname.endsWith('.pages.dev');
+
+    if (import.meta.env.PROD && (isRelativeConfigured || isProdSite)) {
+      candidates.push('https://api.brisbaneservers.com/api');
+      candidates.push('https://brisbane-servers-api.onrender.com/api');
+    }
+
+    const seen = new Set<string>();
+    for (const candidate of candidates) {
+      const normalized = candidate.replace(/\/+$/, '');
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      if (await isApiBaseHealthy(normalized)) {
+        if (VOICE_API_URL !== normalized) {
+          VOICE_API_URL = normalized;
+          syncPortalAccountContext();
+          const bridge = (window as any).__portalBridge;
+          if (bridge) bridge.apiBaseUrl = VOICE_API_URL;
+          showAuthBanner('Connected to live API endpoint for sign-in.', 'info');
+        }
+        return;
+      }
+    }
+  }
+
   async function checkApiConnectivity(): Promise<void> {
     const relativeApi = !/^https?:\/\//i.test(VOICE_API_URL);
     if (relativeApi && import.meta.env.PROD) {
@@ -259,6 +307,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (panel) panel.hidden = true;
     if (form) form.style.display = '';
     if (submitBtn) submitBtn.disabled = false;
+    setResendVerificationVisibility(false);
   }
 
   function showRegisterSuccessPanel(email: string, deliveryWarning = false): void {
@@ -276,6 +325,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       panel.classList.toggle('auth-confirmation-panel--warning', deliveryWarning);
       panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+    setResendVerificationVisibility(true);
   }
 
   function maybeAppendPreviewLink(message: string, previewUrl?: string): string {
@@ -347,6 +397,30 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   }
 
   const ACCOUNT_LAST_EMAIL_KEY = 'accountLastEmail';
+
+  function setupPasswordVisibilityToggles(): void {
+    const toggles = document.querySelectorAll<HTMLButtonElement>('[data-password-toggle-target]');
+    toggles.forEach((toggle) => {
+      const inputId = toggle.dataset.passwordToggleTarget;
+      if (!inputId) return;
+      const input = document.getElementById(inputId) as HTMLInputElement | null;
+      if (!input) return;
+
+      const setState = (show: boolean): void => {
+        input.type = show ? 'text' : 'password';
+        toggle.textContent = show ? 'Hide' : 'Show';
+        toggle.setAttribute('aria-label', `${show ? 'Hide' : 'Show'} password`);
+        toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+      };
+
+      setState(false);
+      toggle.addEventListener('click', () => {
+        const shouldShow = input.type === 'password';
+        setState(shouldShow);
+        input.focus({ preventScroll: true });
+      });
+    });
+  }
 
   function prefillLoginEmail(): void {
     const emailInput = document.getElementById('email') as HTMLInputElement | null;
@@ -474,6 +548,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (data.code === 'EMAIL_NOT_VERIFIED') {
           const resendEmail = document.getElementById('resend-email') as HTMLInputElement | null;
           if (resendEmail) resendEmail.value = email;
+          setResendVerificationVisibility(true);
           showAuthBanner(
             'This account is not verified yet. Use "Resend verification email" in the panel on the right, open the link in your inbox, then sign in again.',
             'warning'
@@ -5694,15 +5769,19 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   };
 
   syncPortalAccountContext();
-  void checkApiConnectivity();
-
-  handleOAuthReturn();
-  void loadOAuthProviders();
-  void handleVerificationToken();
-  if (pendingResetToken) {
-    showResetPasswordForm();
-  }
-  checkAuth();
+  setupPasswordVisibilityToggles();
+  setResendVerificationVisibility(false);
+  void (async () => {
+    await ensureReachableApiBase();
+    await checkApiConnectivity();
+    handleOAuthReturn();
+    await loadOAuthProviders();
+    await handleVerificationToken();
+    if (pendingResetToken) {
+      showResetPasswordForm();
+    }
+    checkAuth();
+  })();
 
 }
 

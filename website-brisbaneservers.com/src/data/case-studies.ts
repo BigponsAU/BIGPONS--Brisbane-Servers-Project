@@ -53,7 +53,7 @@ const curatedCaseStudies: CaseStudy[] = [
     cardTitle: 'Retail: inventory and e-commerce integration',
     navLabel: 'Retail inventory and e-commerce',
     cardDescription:
-      'Small retail business transitioning from manual tracking to automated inventory with e-commerce integration. Grant-assisted implementation. Brisbane-based business.',
+      'Brisbane retail SME transitioning from manual tracking to automated inventory with e-commerce integration, delivered through a grant-assisted rollout.',
     icon: 'fas fa-store',
     industryFilter: 'retail',
     relatedResourcesHref: '/resources/retail',
@@ -135,7 +135,7 @@ The solution was designed to scale with the business while remaining cost-effect
     cardTitle: 'Gallery: semantic search and NLP categorisation',
     navLabel: 'Gallery semantic search',
     cardDescription:
-      'Art gallery implementing semantic product categorisation with NLP-powered search. Visitors explore collections by style, theme, and technique.',
+      'Australian gallery implementing semantic categorisation with NLP-assisted search, helping visitors explore collections by style, theme, and technique.',
     icon: 'fas fa-palette',
     industryFilter: 'retail',
     relatedResourcesHref: '/resources/retail/customer-systems',
@@ -216,7 +216,7 @@ Rollout stayed incremental — the in-room experience unchanged while the online
     cardTitle: 'Healthcare: patient management system',
     navLabel: 'Healthcare patient management',
     cardDescription:
-      'Medical practice implementing compliant patient management with automated appointments and secure data storage. APP-aligned, phased implementation. Brisbane-based practice.',
+      'Brisbane medical practice implementing APP-aligned patient management with automated appointments and secure records through a phased rollout.',
     icon: 'fas fa-heartbeat',
     industryFilter: 'healthcare',
     relatedResourcesHref: '/resources/healthcare',
@@ -299,7 +299,7 @@ Throughout implementation, we ensured all systems met Australian Privacy Princip
     cardTitle: 'Professional services: spreadsheet to database',
     navLabel: 'Spreadsheet to database',
     cardDescription:
-      'Professional services company outgrowing spreadsheets. Database with semantic search and automated reporting. Time savings, improved accuracy, scalability.',
+      'Professional services firm moving beyond spreadsheets to a governed database with semantic search and automated reporting for accuracy and scalability.',
     icon: 'fas fa-database',
     industryFilter: 'professional-services',
     relatedResourcesHref: '/resources/professional-services',

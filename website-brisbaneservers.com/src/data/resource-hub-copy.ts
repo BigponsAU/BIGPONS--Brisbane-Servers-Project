@@ -9,7 +9,7 @@ export interface HubCard {
 
 /** Hero title for an industry hub — outcome-led, not catalogue-led. */
 export function industryHeroTitle(industry: Industry): string {
-  return `${industry.name}: decide with sector context`;
+  return `${industry.name}: decisions grounded in sector context`;
 }
 
 /** Section lead tying operating reality to technology necessity. */
@@ -215,7 +215,7 @@ export function topicHeroSubtitle(topic: Topic, industry: Industry): string {
 
 /** Why this topic matters — inference from sector + topic pressure. */
 export function topicNecessityLead(topic: Topic, industry: Industry): string {
-  return `In ${industry.name}, ${topic.name.toLowerCase()} is not a catalogue item — it is a response to constraints you already feel: time lost to rework, margin leaked to inconsistency, or risk from systems that do not match how the business runs. ${valueProposition.fragments.agreedDelivery}`;
+  return `In ${industry.name}, ${topic.name.toLowerCase()} is not a catalogue item; it is a response to existing constraints such as rework, margin loss from inconsistency, and risk from systems that do not fit operational reality. ${valueProposition.fragments.agreedDelivery}`;
 }
 
 /** Three-card decision framework per topic (context → evidence → action). */
@@ -229,13 +229,13 @@ export function topicDecisionCards(topic: Topic, industry: Industry): HubCard[] 
     {
       title: 'Evidence and trade-offs',
       description:
-        'Options are compared on documented outcomes, integration cost, and what you can measure — grants and incentives included when they change the maths.',
+        'Options are compared using documented outcomes, integration cost, and measurable impact, with grants and incentives included where they materially change feasibility.',
       icon: 'fas fa-balance-scale',
     },
     {
       title: 'Next actions',
       description:
-        'Each guide ends with sequencing you can use: what to fix first, what to defer, and what to agree in scope before major spend.',
+        'Each guide ends with practical sequencing: what to address first, what to defer, and what to lock into scope before major spend.',
       icon: 'fas fa-arrow-right',
     },
   ];
@@ -252,7 +252,7 @@ export function topicOpportunityCards(topic: Topic, industry: Industry): HubCard
     {
       title: 'Grants and phased delivery',
       description:
-        'Digital transformation and industry programs can offset implementation when the project shape matches eligibility — we surface that early so scope and funding align.',
+        'Digital transformation and industry programmes can offset implementation when project structure matches eligibility; we surface this early so scope and funding remain aligned.',
       icon: 'fas fa-hand-holding-usd',
     },
     {
@@ -266,12 +266,12 @@ export function topicOpportunityCards(topic: Topic, industry: Industry): HubCard
 export const resourceHubShared = {
   industryTopicsTitle: 'Topics that change decisions',
   industryTopicsLead:
-    'Each topic collects guides, playbooks, and published resources — context, evidence, and practical next steps in one place, consistent with how Brisbane Servers consults.',
+    'Each topic gathers guides, playbooks, and published resources with context, evidence, and practical next steps in one place, consistent with how Brisbane Servers consults.',
   publishedTitle: 'Published guides',
   publishedLead:
-    'Voice-validated resources with practical recommendations — open a guide for full detail or discuss how it applies to your operation.',
+    'Voice-validated resources with practical recommendations. Open a guide for full detail or discuss application within your operating context.',
   consultTitle: 'From reading to agreed scope',
   consultLead: valueProposition.fragments.presenceAndOps,
   emptyTopicsLead:
-    'Topic guides for this sector are expanding — share your context and we map feasible priorities, grants, and sequencing while the hub grows.',
+    'Topic guides for this sector are expanding. Share your context and we can map feasible priorities, incentives, and sequencing while the hub grows.',
 } as const;

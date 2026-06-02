@@ -59,28 +59,28 @@ const currentPath = '/projects';
         <SectionIntro
           eyebrow="How we deliver"
           title="Our project approach"
-          byline="Every project follows our value framework: understanding your business context, identifying what's feasible given your constraints, and delivering solutions that actually work. We don't sell one-size-fits-all—we assess your reality and recommend what makes sense."
+          byline="Every engagement follows a clear value framework: understand your operating context, test what is feasible within constraints, and deliver solutions that perform in practice."
         />
 
         <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
-            title="Assessment Phase"
-            description="We start by understanding your business size, budget constraints, available grants, industry requirements, and strategic objectives. No assumptions—we gather facts."
+            title="Assessment phase"
+            description="We start with facts: business scale, budget limits, available incentives, industry obligations, and strategic priorities."
             icon="fas fa-search"
           />
           <Card
-            title="Solution Design"
-            description="Based on your reality, we design solutions that fit your constraints. This might mean phased implementation, grant-assisted projects, or cost-effective alternatives."
+            title="Solution design"
+            description="Recommendations are designed around your operating reality, including phased delivery, grant-aligned options, and cost-effective alternatives."
             icon="fas fa-drafting-compass"
           />
           <Card
             title="Implementation"
-            description="We work with you through implementation, ensuring solutions are properly configured, staff are trained, and systems are integrated with your existing processes."
+            description="We deliver with your team, ensuring systems are configured correctly, staff are supported, and workflows integrate with existing operations."
             icon="fas fa-cogs"
           />
           <Card
-            title="Results & Documentation"
-            description="Every project is documented with real results, lessons learned, and measurable outcomes. This documentation becomes part of our knowledge base."
+            title="Results and documentation"
+            description="Each project records measurable outcomes, lessons learned, and implementation detail to support future decision-making."
             icon="fas fa-chart-bar"
           />
         </CardGrid>
@@ -95,35 +95,35 @@ const currentPath = '/projects';
         <SectionIntro
           eyebrow="Decision lens"
           title="Value framework"
-          byline="Our value framework guides every project decision:"
+          byline="Our value framework guides every material project decision:"
         />
         <div class="projects-value-list">
           <p>
-            <strong>Business Context:</strong>{' '}
-            <SemanticText text="Understanding your industry, size, location, and specific challenges. What works for a large enterprise doesn't work for a small Brisbane business." semanticLevel="normal" isChild={true} />
+            <strong>Business context:</strong>{' '}
+            <SemanticText text="Recommendations reflect your industry, scale, and operating conditions. What suits a large enterprise rarely suits a smaller Australian business without adjustment." semanticLevel="normal" isChild={true} />
           </p>
           <p>
-            <strong>Reality Assessment:</strong>{' '}
-            <SemanticText text="Honest evaluation of what's feasible given your budget, resources, and constraints. We identify grant opportunities, cost-effective alternatives, and phased approaches." semanticLevel="normal" isChild={true} />
+            <strong>Reality assessment:</strong>{' '}
+            <SemanticText text="Feasibility is tested against budget, team capacity, and constraints, including grant pathways, alternatives, and phased rollout options." semanticLevel="normal" isChild={true} />
           </p>
           <p>
-            <strong>Evidence-Based Recommendations:</strong>{' '}
-            <SemanticText text="Every recommendation is backed by documented proof—case studies, implementation details, and real results from similar businesses." semanticLevel="normal" isChild={true} />
+            <strong>Evidence-based recommendations:</strong>{' '}
+            <SemanticText text="Recommendations are supported by documented delivery patterns, implementation detail, and measurable outcomes from comparable scenarios." semanticLevel="normal" isChild={true} />
           </p>
           <p>
-            <strong>Practical Implementation:</strong>{' '}
-            <SemanticText text="Solutions designed to be implemented, not just conceptualized. We consider staff training, integration requirements, and ongoing maintenance." semanticLevel="normal" isChild={true} />
+            <strong>Practical implementation:</strong>{' '}
+            <SemanticText text="Solutions are designed to be deployed, adopted, and maintained, with training, integration requirements, and support obligations considered early." semanticLevel="normal" isChild={true} />
           </p>
           <p>
-            <strong>Measurable Outcomes:</strong>{' '}
-            <SemanticText text="Every project includes clear success metrics and documentation of actual results. This transparency helps you make informed decisions." semanticLevel="normal" isChild={true} />
+            <strong>Measurable outcomes:</strong>{' '}
+            <SemanticText text="Success criteria are defined upfront and results are documented transparently so stakeholders can make informed decisions." semanticLevel="normal" isChild={true} />
           </p>
         </div>
 
         <aside class="projects-highlight-band" aria-labelledby="projects-case-studies-heading">
           <h3 id="projects-case-studies-heading">Why case studies matter</h3>
           <p>
-            <SemanticText text="Each case study documents a real project with actual results. You can see how we assessed the business context, what solutions we recommended, and what outcomes were achieved. This transparency helps you understand our approach and evaluate whether it's right for your business." semanticLevel="normal" isChild={true} />
+            <SemanticText text="Each case study documents a real engagement and outcome. You can review context, options considered, and delivery results to evaluate fit before committing." semanticLevel="normal" isChild={true} />
           </p>
         </aside>
       </div>
@@ -139,7 +139,7 @@ const currentPath = '/projects';
         <SectionIntro
           eyebrow="Case studies and patterns"
           title="Projects by industry"
-          byline="Each project demonstrates our value framework in action: understanding your business context, identifying what's feasible, and delivering tailored solutions for Brisbane and Australian businesses."
+          byline="Each project demonstrates the framework in action: context first, feasibility second, then tailored delivery for Brisbane and Australian businesses."
         />
         
         <IndustryFilters />
@@ -158,7 +158,7 @@ const currentPath = '/projects';
                 .filter((h) => h.status === 'overview-only')
                 .map((h) => h.label)
                 .join(', ')}{' '}
-              include overview guides today; topic libraries are expanding — see{' '}
+              currently include overview guides while topic libraries expand — see{' '}
               <a href={sitePath('/case-studies')}>case studies</a> and{' '}
               <a href={sitePath('/resources')}>resources</a> for what is live now.
             </p>
@@ -175,38 +175,38 @@ const currentPath = '/projects';
         <SectionIntro
           eyebrow="Engagement shapes"
           title="Types of projects we handle"
-          byline="We deliver projects from targeted automation to full system implementation. These are common engagement types:"
+          byline="We deliver work ranging from targeted automation to broader system implementation. Common engagement types include:"
         />
 
         <CardGrid columns={2} style="margin-top: var(--space-xl);">
           <Card
-            title="Database & Data Management"
-            description="Moving from spreadsheets to proper databases, implementing data management systems, and setting up automated reporting."
+            title="Database and data management"
+            description="Transitioning from spreadsheets to structured data platforms, with governance and automated reporting where appropriate."
             icon="fas fa-database"
           />
           <Card
-            title="E-commerce Integration"
-            description="Connecting physical stores with online platforms, inventory synchronization, and unified customer experiences."
+            title="E-commerce integration"
+            description="Connecting physical operations with online channels, including inventory synchronisation and unified customer workflows."
             icon="fas fa-shopping-cart"
           />
           <Card
-            title="Process Automation"
-            description="Identifying repetitive tasks that can be automated, implementing workflow systems, and reducing manual effort."
+            title="Process automation"
+            description="Identifying repetitive tasks suitable for automation, implementing workflow systems, and reducing manual overhead."
             icon="fas fa-robot"
           />
           <Card
-            title="Compliance & Security"
-            description="Implementing systems that meet industry compliance requirements (APP, healthcare regulations, etc.) with proper security."
+            title="Compliance and security"
+            description="Implementing systems that meet relevant compliance obligations, including APP and sector-specific requirements, with appropriate controls."
             icon="fas fa-shield-alt"
           />
           <Card
-            title="Grant-Assisted Projects"
-            description="Identifying and applying for digital transformation grants, then implementing solutions that qualify for funding."
+            title="Grant-assisted projects"
+            description="Identifying suitable digital transformation grants, supporting applications, and delivering projects aligned with funding criteria."
             icon="fas fa-hand-holding-usd"
           />
           <Card
-            title="System Integration"
-            description="Connecting existing systems, APIs, and platforms to create unified workflows and eliminate data silos."
+            title="System integration"
+            description="Connecting existing systems, APIs, and platforms to create unified workflows and reduce data silos."
             icon="fas fa-plug"
           />
         </CardGrid>
@@ -220,13 +220,13 @@ const currentPath = '/projects';
         <SectionIntro
           eyebrow="Next step"
           title="Getting started"
-          byline="Review case studies and public sites, then book a consultation — we will map feasibility, grants where relevant, and a sensible first slice of work."
+          byline="Review case studies and public sites, then book a consultation. We will map feasibility, relevant incentives, and a practical first phase of work."
         />
 
         <div class="projects-cta-row">
           <a href={sitePath('/case-studies')} class="btn btn-primary">View case studies</a>
-          <a href={sitePath('/resources')} class="btn btn-secondary">Explore Resources</a>
-          <a href={sitePath('/services')} class="btn btn-secondary">Our Services</a>
+          <a href={sitePath('/resources')} class="btn btn-secondary">Explore resources</a>
+          <a href={sitePath('/services')} class="btn btn-secondary">Our services</a>
         </div>
       </div>
     </section>

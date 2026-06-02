@@ -48,15 +48,27 @@
           </div>
           <div class="form-group">
             <label for="password">Password <span class="sr-only">(required)</span></label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              autocomplete="current-password"
-              aria-required="true"
-              aria-describedby="password-error"
-            />
+            <div class="password-input-wrap">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                autocomplete="current-password"
+                aria-required="true"
+                aria-describedby="password-error"
+                class="has-password-toggle"
+              />
+              <button
+                type="button"
+                class="password-toggle-btn"
+                data-password-toggle-target="password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                Show
+              </button>
+            </div>
             <span id="password-error" class="sr-only">Enter your account password</span>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="login-submit-btn" aria-describedby="login-submit-hint">
@@ -90,7 +102,26 @@
           <h3>Set a new password</h3>
           <div class="form-group">
             <label for="reset-password">New password</label>
-            <input type="password" id="reset-password" name="password" required minlength="8" autocomplete="new-password" />
+            <div class="password-input-wrap">
+              <input
+                type="password"
+                id="reset-password"
+                name="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                class="has-password-toggle"
+              />
+              <button
+                type="button"
+                class="password-toggle-btn"
+                data-password-toggle-target="reset-password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                Show
+              </button>
+            </div>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Update password</button>
           <div id="reset-password-error" class="status-message" role="status" aria-live="polite"></div>
@@ -119,15 +150,27 @@
           </div>
           <div class="form-group">
             <label for="register-password">Password <span class="sr-only">(required)</span></label>
-            <input
-              type="password"
-              id="register-password"
-              name="password"
-              required
-              minlength="8"
-              autocomplete="new-password"
-              aria-required="true"
-            />
+            <div class="password-input-wrap">
+              <input
+                type="password"
+                id="register-password"
+                name="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                aria-required="true"
+                class="has-password-toggle"
+              />
+              <button
+                type="button"
+                class="password-toggle-btn"
+                data-password-toggle-target="register-password"
+                aria-label="Show password"
+                aria-pressed="false"
+              >
+                Show
+              </button>
+            </div>
           </div>
           <button type="submit" class="btn btn-secondary btn-block" id="register-submit-btn">Create account</button>
           <div id="register-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
@@ -147,7 +190,7 @@
           </p>
         </div>
         <div class="auth-help-stack">
-          <form id="resend-verification-form" class="login-form auth-help-form" method="post" action="#" aria-label="Resend verification email form">
+          <form id="resend-verification-form" class="login-form auth-help-form" method="post" action="#" aria-label="Resend verification email form" style="display: none;">
             <h3>Resend verification email</h3>
             <div class="form-group">
               <label for="resend-email">Email</label>

@@ -36,8 +36,9 @@ const { sections } = valueProposition.about;
   />
 
   <MarketingPageBands class="marketing-page-bands--about marketing-page-bands--constellation-spine">
-    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical">
+    <section class="section section-tartan-accent section-home-band--surface phi-line-symmetrical about-band about-band--mission">
       <SectionConstellationLayer variant="about" semanticKey="about-mission" tier="whisper" placement="top-right" />
+      <div class="home-phase-indicator home-phase-indicator--strategy" aria-hidden="true"></div>
       <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
       <div class="phi-lateral-horizontal"></div>
       <div class="container">
@@ -49,17 +50,17 @@ const { sections } = valueProposition.about;
         <CardGrid columns={3} style="margin-top: var(--space-2xl);">
           <Card
             title="Access to truth"
-            description="Documented, evidence-based information about technology solutions — what works, implementation considerations, and practical applications."
+            description="Documented, evidence-based guidance on technology solutions, including what works, implementation considerations, and practical applications."
             icon="fas fa-lightbulb"
           />
           <Card
             title="Supporting domestic growth"
-            description="Strengthening the Australian business ecosystem through applicable technology — better businesses, better economy."
+            description="Strengthening the Australian business ecosystem through practical technology adoption and delivery."
             icon="fas fa-handshake"
           />
           <Card
             title="Brisbane innovation authority"
-            description="Building Brisbane's reputation as a hub for quality, innovation, and authority in technology."
+            description="Contributing to Brisbane's reputation as a centre for quality technology practice and innovation."
             icon="fas fa-city"
           />
         </CardGrid>
@@ -67,9 +68,10 @@ const { sections } = valueProposition.about;
     </section>
 
     <section
-      class="section section-tartan-accent section-home-band--primary-light philosophy-section"
+      class="section section-tartan-accent section-home-band--primary-light philosophy-section about-band about-band--philosophy"
       aria-labelledby="philosophy-heading"
     >
+      <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical"></div>
       <div class="phi-tangent"></div>
@@ -83,19 +85,19 @@ const { sections } = valueProposition.about;
         <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
             title="Facts as foundation"
-            description="Reality-based information, not opinions. Provable, documented, evidence-based — that is our authority."
+            description="Reality-based information over opinion, with documented evidence and clear reasoning behind recommendations."
           />
           <Card
             title="Openness to dialogue"
-            description="We invite corrections, questions, and requests. That strengthens our authority and improves our understanding."
+            description="We welcome corrections, questions, and requests because they improve quality and strengthen outcomes."
           />
           <Card
             title="Tailored solutions"
-            description="Needs differ and solutions must be diverse. One-size-fits-all does not exist."
+            description="Business needs differ, so solutions are tailored to context rather than forced into one-size-fits-all models."
           />
           <Card
             title="Collaborative approach"
-            description="We work with you, not for you — your reality, industry, and constraints come first."
+            description="We work with you, not around you; your operating reality, industry, and constraints come first."
           />
         </CardGrid>
         <div id="additive-semantics" class="sr-only" aria-hidden="true"></div>
@@ -104,7 +106,7 @@ const { sections } = valueProposition.about;
 
     <section
       id="corrections-welcome"
-      class="section section-tartan-accent section-home-band--surface about-corrections-section"
+      class="section section-tartan-accent section-home-band--surface about-corrections-section about-band about-band--corrections"
       aria-labelledby="corrections-welcome-heading"
     >
       <SectionConstellationLayer
@@ -131,9 +133,10 @@ const { sections } = valueProposition.about;
 
     <section
       id="portal-voice-framework"
-      class="section section-tartan-accent section-home-band--surface about-portal-voice-section"
+      class="section section-tartan-accent section-home-band--surface about-portal-voice-section about-band about-band--voice"
       aria-labelledby="portal-voice-heading"
     >
+      <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
       <SectionConstellationLayer
         variant="about"
         semanticKey="about-portal-voice-framework"
@@ -167,8 +170,9 @@ const { sections } = valueProposition.about;
       </div>
     </section>
 
-    <section class="section section-tartan-accent section-home-band--primary-light">
+    <section class="section section-tartan-accent section-home-band--primary-light about-band about-band--operator">
       <SectionConstellationLayer variant="about" semanticKey="about-bigpons" tier="whisper" placement="bottom-right" />
+      <div class="home-phase-indicator home-phase-indicator--about" aria-hidden="true"></div>
       <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
       <div class="phi-lateral-angular-4"></div>
       <div class="container">
@@ -185,15 +189,16 @@ const { sections } = valueProposition.about;
           />
           <Card
             title="Location"
-            description="Brisbane, Queensland, Australia — serving businesses across Australia."
+            description="Brisbane, Queensland, Australia — supporting businesses across Australia."
             icon="fas fa-map-marker-alt"
           />
         </CardGrid>
       </div>
     </section>
 
-    <section class="section section-tartan-accent section-home-band--surface">
+    <section class="section section-tartan-accent section-home-band--surface about-band about-band--sme">
       <SectionConstellationLayer variant="about" semanticKey="about-sme" tier="whisper" placement="bottom-left" />
+      <div class="home-phase-indicator home-phase-indicator--contact" aria-hidden="true"></div>
       <div class="bg-pattern-angular bg-pattern-light"></div>
       <div class="phi-line-vertical phi-line-vertical-inv"></div>
       <div class="container">
@@ -205,33 +210,34 @@ const { sections } = valueProposition.about;
         <CardGrid columns={2} style="margin-top: var(--space-2xl);">
           <Card
             title="Industry understanding"
-            description="Retail, healthcare, hospitality, manufacturing, and professional services — industry-specific guidance, not generic solutions."
+            description="Retail, healthcare, hospitality, manufacturing, and professional services receive industry-specific guidance rather than generic solutions."
           />
           <Card
             title="Grant and incentive awareness"
-            description="Grants, tax incentives, and subsidies for your industry and purpose — we help you access what you qualify for."
+            description="Grants, tax incentives, and subsidies are assessed against your industry and goals so you can pursue relevant support."
           />
           <Card
             title="Reality-based recommendations"
-            description="We assess size, costs, and constraints — what makes sense for you, not what is being sold."
+            description="We assess scale, cost, and constraints to recommend what makes sense for your business, not what is easiest to sell."
           />
           <Card
             title="Time-saving focus"
-            description="We do the learning and sifting; you focus on the business. Automation where tedious work can go."
+            description="We handle the research and filtering so your team can focus on operations, with automation applied where repetitive work can be reduced."
           />
         </CardGrid>
-        <p class="section-description" style="margin-top: var(--space-xl); max-width: 62ch;">
-          <SemanticText
-            text="Explore delivery patterns on Projects, industry hubs under Resources, or request a consultation when you are ready to scope work."
-            semanticLevel="normal"
-          />
-          {' '}
-          <SiteLink href="/projects">Projects</SiteLink>
-          {' · '}
-          <SiteLink href="/resources">Resources</SiteLink>
-          {' · '}
-          <SiteLink href="/services#consultation">Services</SiteLink>
-        </p>
+        <div class="about-next-steps">
+          <p class="about-next-steps__copy">
+            <SemanticText
+              text="Explore delivery patterns on Projects, industry hubs under Resources, or request a consultation when you are ready to scope work."
+              semanticLevel="normal"
+            />
+          </p>
+          <div class="about-next-steps__actions">
+            <SiteLink href="/projects" class="btn btn-secondary">Projects</SiteLink>
+            <SiteLink href="/resources" class="btn btn-secondary">Resources</SiteLink>
+            <SiteLink href="/services#consultation" class="btn btn-primary">Book consultation</SiteLink>
+          </div>
+        </div>
       </div>
     </section>
 

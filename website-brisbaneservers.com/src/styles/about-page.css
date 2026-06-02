@@ -1,132 +1,238 @@
-/**
- * About page — portal voice rule cards + corrections welcome band.
- */
-
-.marketing-page-bands--about {
-  width: 100%;
-  max-width: 100%;
-}
-
-.marketing-page-bands--about > .section.section-tartan-accent {
-  padding-block: clamp(2rem, 4.5vw, 3.25rem);
-}
-
-.marketing-page-bands--about > .section.section-tartan-accent > .container {
-  width: 100%;
-  max-width: var(--site-frame-wide);
-}
-
-.about-corrections-section {
-  position: relative;
-  overflow: hidden;
-}
-
-.about-corrections-section > .container {
-  position: relative;
-  z-index: 2;
-}
-
-.about-corrections {
-  max-width: min(44rem, 100%);
-  margin-inline: auto;
-  padding: clamp(var(--space-xl), 4vw, var(--space-2xl));
-  border-radius: var(--site-panel-radius);
-  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
-  background: linear-gradient(
-    155deg,
-    rgba(var(--primary-color-rgb), 0.04) 0%,
-    rgba(var(--accent-violet-rgb), 0.05) 48%,
-    rgba(255, 255, 255, 0.92) 100%
-  );
-  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.05);
-  text-align: center;
-}
-
-.about-corrections__eyebrow {
-  margin: 0 0 var(--space-xs);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.about-corrections__title {
-  margin: 0 0 var(--space-md);
-  font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.85rem);
-  line-height: 1.2;
-  color: var(--primary-ink);
-}
-
-.about-corrections__lead {
-  margin: 0 auto var(--space-lg);
-  max-width: var(--measure-prose);
-  line-height: 1.65;
-  color: var(--text-secondary);
-}
-
-.about-corrections__cta {
-  min-width: min(100%, 14rem);
-}
-
-.about-portal-voice-section > .bg-pattern-phi-radial,
-.about-portal-voice-section > .phi-lateral-angular-4 {
-  z-index: 1;
-  opacity: 0.28;
-}
-
-.about-portal-voice__rules {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
-  gap: var(--space-md);
-  margin-top: var(--space-2xl);
-}
-
-.about-portal-voice__rule {
-  padding: var(--space-lg) var(--space-lg) var(--space-lg) calc(var(--space-lg) + 2px);
-  border-radius: var(--site-panel-radius);
-  border: var(--card-border-marketing, 2px solid rgba(15, 23, 42, 0.1));
-  border-left: 3px solid var(--primary-color);
-  background: var(--surface-glass-strong, #ffffff);
-  box-shadow: var(--card-shadow-marketing, var(--site-panel-shadow));
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.about-portal-voice__rule:hover {
-  border-left-color: var(--accent-violet);
-  box-shadow: 0 12px 32px rgba(8, 27, 54, 0.1);
-  transform: translateY(-2px);
-}
-
-.about-portal-voice__rule h3 {
-  margin: 0 0 var(--space-xs);
-  font-size: var(--text-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--primary-dark);
-}
-
-.about-portal-voice__rule p {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.55;
-  color: var(--text-secondary);
-}
-
-.about-portal-voice__cta {
-  margin: var(--space-2xl) 0 0;
-  text-align: center;
-}
-
-.about-portal-voice__cta .btn {
-  min-width: min(100%, 16rem);
-  padding: 0.65rem 1.5rem;
-}
-
-.marketing-page-bands--constellation-spine .about-corrections-section .container {
-  position: relative;
-  z-index: 2;
-}
-
+/**
+ * About page — portal voice rule cards + corrections welcome band.
+ */
+
+.marketing-page-bands--about {
+  width: 100%;
+  max-width: 100%;
+}
+
+.marketing-page-bands--about > .section.section-tartan-accent {
+  padding-block: clamp(2rem, 4.5vw, 3.25rem);
+}
+
+.marketing-page-bands--about > .section.section-tartan-accent > .container {
+  width: 100%;
+  max-width: var(--site-frame-wide);
+}
+
+.marketing-page-bands--about .about-band {
+  position: relative;
+}
+
+.marketing-page-bands--about .about-band > .container {
+  position: relative;
+  z-index: 2;
+}
+
+.marketing-page-bands--about .about-band .section-intro-phi,
+.marketing-page-bands--about .about-band .section-description {
+  max-width: min(84ch, 100%);
+}
+
+.marketing-page-bands--about .about-band .card-grid-grid {
+  gap: clamp(0.9rem, 1.25vw, 1.4rem);
+}
+
+.marketing-page-bands--about .about-band .card {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-height: clamp(8.5rem, 9.5vw, 11rem);
+  padding: clamp(1rem, 1.2vw, 1.45rem) !important;
+  border-left: none !important;
+  background-color: rgba(255, 255, 255, 0.94);
+  background-image: radial-gradient(
+    120% 85% at 100% 0%,
+    rgba(var(--accent-violet-rgb), 0.09) 0%,
+    transparent 60%
+  );
+  box-shadow:
+    0 4px 24px rgba(15, 23, 42, 0.055),
+    0 0 0 1px rgba(var(--primary-color-rgb), 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marketing-page-bands--about .about-band .card:hover {
+  transform: translateY(-0.2rem);
+  box-shadow:
+    0 10px 28px rgba(8, 27, 54, 0.1),
+    0 0 0 1px rgba(var(--primary-color-rgb), 0.18);
+}
+
+.about-band .home-phase-indicator {
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.about-band--mission .home-phase-indicator,
+.about-band--voice .home-phase-indicator {
+  right: clamp(0.8rem, 2.5vw, 1.75rem);
+  top: clamp(0.8rem, 2.8vw, 1.6rem);
+}
+
+.about-band--philosophy .home-phase-indicator,
+.about-band--operator .home-phase-indicator,
+.about-band--sme .home-phase-indicator {
+  right: clamp(0.8rem, 2.5vw, 1.75rem);
+  bottom: clamp(0.8rem, 2.8vw, 1.6rem);
+  top: auto;
+}
+
+.about-corrections-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.about-corrections-section > .container {
+  position: relative;
+  z-index: 2;
+}
+
+.about-corrections {
+  max-width: min(44rem, 100%);
+  margin-inline: auto;
+  padding: clamp(var(--space-xl), 4vw, var(--space-2xl));
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  background: linear-gradient(
+    155deg,
+    rgba(var(--primary-color-rgb), 0.04) 0%,
+    rgba(var(--accent-violet-rgb), 0.05) 48%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.05);
+  text-align: center;
+}
+
+.about-corrections__eyebrow {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.about-corrections__title {
+  margin: 0 0 var(--space-md);
+  font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.85rem);
+  line-height: 1.2;
+  color: var(--primary-ink);
+}
+
+.about-corrections__lead {
+  margin: 0 auto var(--space-lg);
+  max-width: var(--measure-prose);
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.about-corrections__cta {
+  min-width: min(100%, 14rem);
+}
+
+.about-next-steps {
+  margin-top: var(--space-xl);
+  padding: clamp(var(--space-lg), 2.5vw, var(--space-xl));
+  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  background: linear-gradient(
+    160deg,
+    rgba(var(--primary-color-rgb), 0.035) 0%,
+    rgba(var(--accent-violet-rgb), 0.05) 100%
+  );
+}
+
+.about-next-steps__copy {
+  margin: 0 0 var(--space-md);
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.about-next-steps__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.about-next-steps__actions .btn {
+  min-width: 10.5rem;
+}
+
+.about-portal-voice-section > .bg-pattern-phi-radial,
+.about-portal-voice-section > .phi-lateral-angular-4 {
+  z-index: 1;
+  opacity: 0.28;
+}
+
+.about-portal-voice__rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}
+
+.about-portal-voice__rule {
+  padding: var(--space-lg) var(--space-lg) var(--space-lg) calc(var(--space-lg) + 2px);
+  border-radius: var(--site-panel-radius);
+  border: var(--card-border-marketing, 2px solid rgba(15, 23, 42, 0.1));
+  border-left: 3px solid var(--primary-color);
+  background: var(--surface-glass-strong, #ffffff);
+  box-shadow: var(--card-shadow-marketing, var(--site-panel-shadow));
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.about-portal-voice__rule:hover {
+  border-left-color: var(--accent-violet);
+  box-shadow: 0 12px 32px rgba(8, 27, 54, 0.1);
+  transform: translateY(-2px);
+}
+
+.about-portal-voice__rule h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-dark);
+}
+
+.about-portal-voice__rule p {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.about-portal-voice__cta {
+  margin: var(--space-2xl) 0 0;
+  text-align: center;
+}
+
+.about-portal-voice__cta .btn {
+  min-width: min(100%, 16rem);
+  padding: 0.65rem 1.5rem;
+}
+
+.marketing-page-bands--constellation-spine .about-corrections-section .container {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 780px) {
+  .about-band .home-phase-indicator {
+    display: none;
+  }
+
+  .about-next-steps__actions {
+    flex-direction: column;
+  }
+
+  .about-next-steps__actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+

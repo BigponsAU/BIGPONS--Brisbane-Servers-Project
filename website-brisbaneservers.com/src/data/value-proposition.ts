@@ -6,7 +6,7 @@ export const valueProposition = {
   brandEyebrow: 'BIGPONS · Access to truth in technology',
 
   /** Hero / inline CTA to the account workspace and portal voice framework */
-  portalCtaLabel: 'The portal; voicing framework',
+  portalCtaLabel: 'Account workspace',
 
   /**
    * Default meta / OpenGraph description when a page omits `description`.
@@ -45,14 +45,14 @@ export const valueProposition = {
   },
 
   home: {
-    title: 'Elite Technology Solutions',
+    title: 'Technology Consulting for Australian Businesses',
     description:
       'Tailored technology consulting for Australian businesses: web applications, automation, integration, and ongoing support—with clear scope and delivery aligned to agreement.',
-    heroTitle: 'Transform your business with tailored technology consulting',
+    heroTitle: 'Access to truth in technology',
     heroSubtitle:
-      'From public web presence and high-performance sites to integrations, automation, and enterprise-style delivery—we set expectations in scope and budget, then build what we agreed on: honest trade-offs, visible costs, and outcomes you can measure.',
+      'From public web presence and high-performance sites to integrations, automation, and practical delivery, we define scope and budget early, then deliver with transparent trade-offs, visible costs, and measurable outcomes.',
     coreServicesLead:
-      'Enterprise-grade delivery without the enterprise fog: technology sized to your business—websites and digital presence, automation, and integrations—so the value you get matches what we scoped together, with consulting that keeps decisions grounded.',
+      'Technology delivery sized to your business: web presence, automation, and integrations delivered with clear scope, practical sequencing, and decision-ready guidance.',
   },
 
   about: {
@@ -69,13 +69,13 @@ export const valueProposition = {
         eyebrow: 'Why we exist',
         title: 'Our mission foundation',
         byline:
-          'Documented, evidence-based technology guidance for Australian businesses — not vendor theatre or one-size-fits-all playbooks.',
+          'Documented, evidence-based technology guidance for Australian businesses, replacing vendor noise with practical, context-aware direction.',
       },
       philosophy: {
         eyebrow: 'How we consult',
         title: 'How we work with you',
         byline:
-          'Clarity over theatre: information architecture, evidence, and language that help you approve scope, budget, and risk — not slides that age in a week.',
+          'Clarity over theatre: evidence, structure, and language that help you approve scope, budget, and risk with confidence.',
       },
       portalVoice: {
         eyebrow: 'Workspace standard',
@@ -87,13 +87,13 @@ export const valueProposition = {
         eyebrow: 'Operator',
         title: 'A BIGPONS project',
         byline:
-          'Brisbane Servers is operated by BIGPONS, contributing genuine technological expertise to Australian businesses.',
+          'Brisbane Servers is operated by BIGPONS, providing practical technology expertise to Australian businesses.',
       },
       sme: {
         eyebrow: 'Australian SMEs',
         title: 'Why that matters for your business',
         byline:
-          'The market is loud; your runway is not. We narrow the field to what fits your industry, compliance posture, and budget — then help you ship and support it.',
+          'The market is loud and your runway is finite. We narrow options to what fits your industry, compliance posture, and budget, then support delivery.',
       },
     },
   },
@@ -108,7 +108,7 @@ export const valueProposition = {
   services: {
     description:
       'Consultation, build, and support—websites, integrations, automation—for Australian teams. Costs, sequencing, and trade-offs visible before you commit.',
-    heroTitle: 'Enterprise-grade services, human-sized engagement',
+    heroTitle: 'Professional services with practical delivery',
     heroSubtitle:
       'Consultation, architecture, implementation, and support—from web presence and integrations to automation—with costs, sequencing, and trade-offs visible before you commit.',
     sections: {
@@ -116,7 +116,7 @@ export const valueProposition = {
         eyebrow: 'Engagement model',
         title: 'How delivery works in practice',
         byline:
-          'If you are not sure what you need yet, that is a valid starting point. We move from baseline reality to a sequenced plan — each step testable before the next tranche of spend.',
+          'If requirements are still evolving, that is a valid starting point. We move from current-state assessment to a sequenced plan, with each step testable before further spend.',
       },
       valueProfile: {
         eyebrow: 'Recommendation lens',
