@@ -612,6 +612,62 @@ body[data-page-id='account'] {
   }
 }
 
+/* Desktop: keep sidebar in grid flow (override legacy fixed positioning) */
+@media (min-width: 1024px) {
+  .site-shell--marketing.account-workspace-shell .portal-layout {
+    display: grid !important;
+  }
+
+  .site-shell--marketing.account-workspace-shell .portal-sidebar {
+    position: sticky !important;
+    left: auto !important;
+    top: var(--site-main-offset-top) !important;
+    bottom: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    transform: none !important;
+    display: flex !important;
+    z-index: 20 !important;
+  }
+
+  .site-shell--marketing.account-workspace-shell .portal-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .site-shell--marketing.account-workspace-shell .sidebar-toggle {
+    display: none !important;
+  }
+}
+
+/* Single page scroll: footer stays in document flow below workspace */
+.site-shell--marketing.account-workspace-shell .admin-portal,
+.site-shell--marketing.account-workspace-shell .account-workspace-root {
+  overflow-y: visible !important;
+  overflow-x: clip;
+  min-height: 0 !important;
+}
+
+body[data-page-id='account'] .site-shell--marketing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-page-id='account'] .site-shell--marketing > main.account-workspace-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body[data-page-id='account'] .site-shell--marketing > footer {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
 /* Gutter constellation accents — slightly smaller on account (320×210 whisper graph) */
 .account-workspace-shell .section-constellation-layer--whisper {
   width: clamp(5.25rem, 10.5vw, 8.25rem);

@@ -6771,14 +6771,14 @@
     }
   }
 
-  /* Ensure sidebar is visible on desktop */
+  /* Legacy portal: fixed sidebar on desktop. Account workspace uses grid layout in portal-dashboard.css */
   @media (min-width: 1024px) {
-    .portal-sidebar {
+    .admin-portal:not(.account-workspace-root) .portal-sidebar {
       transform: translateX(0) !important;
       position: fixed;
     }
 
-    .sidebar-toggle {
+    .admin-portal:not(.account-workspace-root) .sidebar-toggle {
       display: none;
     }
   }

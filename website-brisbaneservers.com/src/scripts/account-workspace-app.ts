@@ -3,7 +3,14 @@
  * Account workspace client app (auth, panels, resources, profiles).
  * Bootstrapped from portal.astro / account page.
  */
-import { workspaceFetch, clearLegacyAuthTokenStorage, hasActiveSession, setInMemorySessionToken, getInMemorySessionToken } from '../lib/client-api';
+import {
+  workspaceFetch,
+  clearLegacyAuthTokenStorage,
+  hasActiveSession,
+  setInMemorySessionToken,
+  getInMemorySessionToken,
+  setAccountNavSignedIn,
+} from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
 
 const API_PROBE_TIMEOUT_MS = 6000;
@@ -244,8 +251,12 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       }
     }
 
+    const usableCandidates = candidates.filter(
+      (base) => !/\/api1(\/|$)/i.test(base) && !/api1\./i.test(base)
+    );
+
     const seen = new Set<string>();
-    for (const candidate of candidates) {
+    for (const candidate of usableCandidates) {
       const normalized = candidate.replace(/\/+$/, '');
       if (!normalized || seen.has(normalized)) continue;
       seen.add(normalized);
@@ -831,12 +842,26 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  function syncWorkspaceSidebarLayout(): void {
+    const sidebar = document.getElementById('portal-sidebar');
+    if (!sidebar) return;
+    sidebar.style.removeProperty('transform');
+    sidebar.style.removeProperty('display');
+    sidebar.style.removeProperty('position');
+    if (window.innerWidth >= 1024) {
+      sidebar.classList.add('open');
+    } else {
+      sidebar.classList.remove('open');
+    }
+  }
+
   // Show login screen
   function showLogin(): void {
     document.getElementById('login-screen')!.style.display = 'flex';
     document.getElementById('admin-dashboard')!.style.display = 'none';
     prefillLoginEmail();
     updateRememberedSessionHint();
+    setAccountNavSignedIn(false);
     if (pendingResetToken) {
       showResetPasswordForm();
     }
@@ -872,16 +897,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
     applyRoleAccess(user);
 
-    // Ensure sidebar is visible
-    const sidebar = document.getElementById('portal-sidebar');
-    if (sidebar) {
-      if (window.innerWidth >= 1024) {
-        sidebar.style.transform = 'translateX(0)';
-        sidebar.style.display = 'flex';
-      } else {
-        sidebar.classList.remove('open');
-      }
-    }
+    syncWorkspaceSidebarLayout();
+    setAccountNavSignedIn(true);
 
     // Show dashboard panel by default
     navigateToPanel('dashboard');
@@ -5665,14 +5682,16 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (filterAll) filterAll.classList.add('active');
     initWorkspaceVoiceProfileSelect();
 
-    // Ensure sidebar is visible on page load if dashboard is shown
     const dashboard = document.getElementById('admin-dashboard');
-    const sidebar = document.getElementById('portal-sidebar');
-    if (dashboard && dashboard.style.display !== 'none' && sidebar) {
-      if (window.innerWidth >= 1024) {
-        sidebar.style.transform = 'translateX(0)';
-        sidebar.style.display = 'flex';
-      }
+    if (dashboard && dashboard.style.display !== 'none') {
+      syncWorkspaceSidebarLayout();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    const dashboard = document.getElementById('admin-dashboard');
+    if (dashboard && dashboard.style.display !== 'none') {
+      syncWorkspaceSidebarLayout();
     }
   });
 

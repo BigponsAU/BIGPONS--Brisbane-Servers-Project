@@ -267,23 +267,14 @@ async function hydrateAccountLinks(): Promise<void> {
     const accountLinks = document.querySelectorAll('[data-account-link="true"]');
     if (!accountLinks.length) return;
 
-    try {
-        const response = await fetch('/api/auth/me', { credentials: 'include' });
-        const isSignedIn = response.ok;
+    const { resolveNavApiBaseUrl, setAccountNavSignedIn, workspaceFetch } = await import('../lib/client-api');
 
-        accountLinks.forEach((link) => {
-            const anchor = link as HTMLAnchorElement;
-            anchor.href = '/account';
-            anchor.textContent = isSignedIn ? 'Workspace' : 'Sign in';
-            anchor.setAttribute('aria-label', isSignedIn ? 'Open your account workspace' : 'Sign in to your account');
-        });
+    try {
+        const apiBase = resolveNavApiBaseUrl();
+        const response = await workspaceFetch(`${apiBase}/auth/me`);
+        setAccountNavSignedIn(response.ok);
     } catch {
-        accountLinks.forEach((link) => {
-            const anchor = link as HTMLAnchorElement;
-            anchor.href = '/account';
-            anchor.textContent = 'Sign in';
-            anchor.setAttribute('aria-label', 'Sign in to your account');
-        });
+        setAccountNavSignedIn(false);
     }
 }
 

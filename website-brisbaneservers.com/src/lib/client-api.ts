@@ -42,3 +42,44 @@ export async function hasActiveSession(apiBaseUrl: string): Promise<boolean> {
     return false;
   }
 }
+
+const PRODUCTION_API_FALLBACKS = [
+  'https://api.brisbaneservers.com/api',
+  'https://brisbane-servers-api.onrender.com/api',
+] as const;
+
+function isUsableAbsoluteApiBase(value: string): boolean {
+  if (!/^https?:\/\//i.test(value)) return false;
+  if (/\/api1(\/|$)/i.test(value) || /api1\./i.test(value)) return false;
+  return true;
+}
+
+/** Resolve API base for header nav + account page (matches workspace failover). */
+export function resolveNavApiBaseUrl(): string {
+  const root = document.getElementById('admin-portal');
+  const configured = root?.dataset?.publicApiBaseUrl?.trim() ?? '';
+  if (configured && isUsableAbsoluteApiBase(configured)) {
+    return configured.replace(/\/+$/, '');
+  }
+
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isProdSite = host === 'brisbaneservers.com' || host.endsWith('.pages.dev');
+  if (isProdSite) {
+    return PRODUCTION_API_FALLBACKS[0];
+  }
+
+  return (configured || '/api').replace(/\/+$/, '');
+}
+
+export function setAccountNavSignedIn(signedIn: boolean): void {
+  document.querySelectorAll('[data-account-link="true"]').forEach((link) => {
+    const anchor = link as HTMLAnchorElement;
+    anchor.href = '/account/';
+    anchor.textContent = signedIn ? 'Workspace' : 'Sign in';
+    anchor.setAttribute(
+      'aria-label',
+      signedIn ? 'Open your account workspace' : 'Sign in to your account'
+    );
+    anchor.classList.toggle('nav-account-cta--signed-in', signedIn);
+  });
+}
