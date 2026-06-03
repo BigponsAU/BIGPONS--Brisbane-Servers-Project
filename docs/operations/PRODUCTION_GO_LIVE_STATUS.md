@@ -9,6 +9,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 ## Recent changes (2026-06-03)
 
 - **Account sign-in CORS fix** (`90a048c`): Render API now sends `Access-Control-Allow-Credentials: true` for `https://brisbaneservers.com`. Session cookies use `SameSite=Lax` on `api.brisbaneservers.com`. Pages fallback API URL is `https://api.brisbaneservers.com/api`.
+- **Session persistence fix** (`0c2eaf1`): Standalone API forwards `Set-Cookie` correctly; auth cookies use `Domain=.brisbaneservers.com`; login returns an in-memory Bearer token so dashboard API calls stay authenticated after sign-in.
 
 ## MCP-linked hosting (active)
 
