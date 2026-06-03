@@ -96,7 +96,7 @@ export const POST: APIRoute = async ({ request }) => {
     await logAuthEvent({ userId: user.id, email: user.email, eventType: 'auth.passkey.login.succeeded' });
 
     return new Response(
-      JSON.stringify({ user, success: true }),
+      JSON.stringify({ user, success: true, token }),
       {
         status: 200,
         headers: {

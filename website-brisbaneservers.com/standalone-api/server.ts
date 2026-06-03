@@ -252,9 +252,26 @@ async function sendResponse(nodeResponse: ServerResponse, response: Response, re
   nodeResponse.statusCode = response.status;
   nodeResponse.statusMessage = response.statusText;
 
+  const setCookies =
+    typeof response.headers.getSetCookie === 'function'
+      ? response.headers.getSetCookie()
+      : [];
+
   response.headers.forEach((value, key) => {
+    if (key.toLowerCase() === 'set-cookie') {
+      return;
+    }
     nodeResponse.setHeader(key, value);
   });
+
+  if (setCookies.length > 0) {
+    nodeResponse.setHeader('Set-Cookie', setCookies);
+  } else {
+    const singleCookie = response.headers.get('set-cookie');
+    if (singleCookie) {
+      nodeResponse.setHeader('Set-Cookie', singleCookie);
+    }
+  }
 
   applyCorsHeaders(nodeResponse, requestOrigin);
 

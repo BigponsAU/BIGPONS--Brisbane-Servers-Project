@@ -167,7 +167,7 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
       throw new Error(verifyData.error || 'Passkey sign-in failed');
     }
 
-    ctx.setAuthToken('cookie');
+    ctx.setAuthToken(verifyData.token || 'session');
     ctx.showDashboard(verifyData.user);
   } catch (error) {
     if (errorDiv) {

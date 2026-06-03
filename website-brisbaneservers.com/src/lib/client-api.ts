@@ -1,7 +1,17 @@
 /**
- * Browser API client — HttpOnly session cookie (credentials: include).
- * Do not persist auth tokens in localStorage.
+ * Browser API client — HttpOnly cookie when same-origin; in-memory Bearer for cross-subdomain API.
+ * Never persist auth tokens in localStorage.
  */
+
+let inMemorySessionToken: string | null = null;
+
+export function setInMemorySessionToken(token: string | null): void {
+  inMemorySessionToken = token?.trim() ? token.trim() : null;
+}
+
+export function getInMemorySessionToken(): string | null {
+  return inMemorySessionToken;
+}
 
 export function clearLegacyAuthTokenStorage(): void {
   try {
@@ -9,13 +19,18 @@ export function clearLegacyAuthTokenStorage(): void {
   } catch {
     /* ignore */
   }
+  setInMemorySessionToken(null);
 }
 
 export function workspaceFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  if (inMemorySessionToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${inMemorySessionToken}`);
+  }
   return fetch(input, {
     ...init,
     credentials: 'include',
-    headers: new Headers(init.headers),
+    headers,
   });
 }
 

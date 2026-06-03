@@ -3,7 +3,7 @@
  * Account workspace client app (auth, panels, resources, profiles).
  * Bootstrapped from portal.astro / account page.
  */
-import { workspaceFetch, clearLegacyAuthTokenStorage, hasActiveSession } from '../lib/client-api';
+import { workspaceFetch, clearLegacyAuthTokenStorage, hasActiveSession, setInMemorySessionToken, getInMemorySessionToken } from '../lib/client-api';
 
 export interface AccountWorkspaceBootConfig {
   publicApiBaseUrl: string;
@@ -148,13 +148,35 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   }
   
   let sessionActive = false;
+
+  function applySessionToken(token: string | null | undefined): void {
+    if (typeof token === 'string' && token.trim()) {
+      setInMemorySessionToken(token);
+      sessionActive = true;
+      return;
+    }
+    if (token === 'cookie' || token === 'session') {
+      sessionActive = true;
+    }
+  }
+
+  function clearSessionToken(): void {
+    setInMemorySessionToken(null);
+    sessionActive = false;
+  }
   let pendingResetToken: string | null = RESET_TOKEN || null;
 
   function syncPortalAccountContext(): void {
     (window as any).__portalAccountCtx = {
       apiBaseUrl: VOICE_API_URL,
-      getAuthToken: () => (sessionActive ? 'cookie' : null),
-      setAuthToken: (token: string | null) => { sessionActive = !!token; },
+      getAuthToken: () => getInMemorySessionToken() ?? (sessionActive ? 'session' : null),
+      setAuthToken: (token: string | null) => {
+        if (!token) {
+          clearSessionToken();
+          return;
+        }
+        applySessionToken(token);
+      },
       showDashboard,
       showLogin,
       showAuthBanner,
@@ -464,6 +486,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Check for existing session
   function checkAuth(): void {
     void (async () => {
+      if (sessionActive) return;
       const active = await hasActiveSession(VOICE_API_URL);
       if (active) {
         sessionActive = true;
@@ -530,7 +553,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        sessionActive = true;
+        applySessionToken(data.token);
         localStorage.setItem(ACCOUNT_LAST_EMAIL_KEY, email.trim().toLowerCase());
         showDashboard(data.user);
       } else {
@@ -728,7 +751,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       console.error('Logout error:', error);
     }
     
-    sessionActive = false;
+    clearSessionToken();
     showLogin();
   };
 
@@ -751,7 +774,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       if (statusEl) {
         statusEl.textContent = data.message || 'All sessions revoked.';
       }
-      sessionActive = false;
+      clearSessionToken();
       window.setTimeout(() => showLogin(), 500);
     } catch (error) {
       if (statusEl) {
@@ -1077,8 +1100,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (dashboardPanel && dashboardPanel.classList.contains('active')) {
           loadStarterBlocks();
         }
+      } else if (response.status === 401 && sessionActive) {
+        setDashboardStatsError('Could not load workspace data. Try signing in again if this persists.');
       } else if (response.status === 401) {
-        sessionActive = false;
+        clearSessionToken();
         showLogin();
         showAuthBanner('Your session expired. Please sign in again.', 'warning');
       } else {
@@ -5752,8 +5777,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   // Initialize on load
   (window as any).__portalBridge = {
     apiBaseUrl: VOICE_API_URL,
-    getAuthToken: () => (sessionActive ? 'cookie' : null),
-    setAuthToken: (token: string | null) => { sessionActive = !!token; },
+    getAuthToken: () => getInMemorySessionToken() ?? (sessionActive ? 'session' : null),
+    setAuthToken: (token: string | null) => {
+      if (!token) {
+        clearSessionToken();
+        return;
+      }
+      applySessionToken(token);
+    },
     showDashboard,
     showLogin,
     showAuthBanner,
