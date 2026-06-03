@@ -202,8 +202,12 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const isProdSite = window.location.hostname === 'brisbaneservers.com' || window.location.hostname.endsWith('.pages.dev');
 
     if (import.meta.env.PROD && (isRelativeConfigured || isProdSite)) {
-      candidates.push('https://api.brisbaneservers.com/api');
-      candidates.push('https://brisbane-servers-api.onrender.com/api');
+      if (!candidates.includes('https://api.brisbaneservers.com/api')) {
+        candidates.unshift('https://api.brisbaneservers.com/api');
+      }
+      if (!candidates.includes('https://brisbane-servers-api.onrender.com/api')) {
+        candidates.push('https://brisbane-servers-api.onrender.com/api');
+      }
     }
 
     const seen = new Set<string>();
@@ -514,17 +518,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Signing in…';
-    }
-    if (await resumeRememberedSession()) {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign in';
-      }
-      return;
-    }
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign in';
     }
 
     try {

@@ -12,23 +12,44 @@ function useSecureCookie(request: Request): boolean {
   return process.env.NODE_ENV === 'production';
 }
 
+/** Same-site subdomain (api.brisbaneservers.com) can use Lax; cross-site hosts need None. */
+function authCookieSameSite(request: Request): 'Strict' | 'Lax' | 'None' {
+  try {
+    const { hostname } = new URL(request.url);
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'Lax';
+    }
+    if (hostname === 'brisbaneservers.com' || hostname.endsWith('.brisbaneservers.com')) {
+      return 'Lax';
+    }
+    if (process.env.NODE_ENV === 'production') {
+      return 'None';
+    }
+  } catch {
+    /* ignore */
+  }
+  return 'Strict';
+}
+
 export function authTokenSetCookie(token: string, maxAgeSeconds: number, request: Request): string {
   const secure = useSecureCookie(request);
+  const sameSite = authCookieSameSite(request);
   const parts = [
     `authToken=${token}`,
     'HttpOnly',
-    'SameSite=Strict',
+    `SameSite=${sameSite}`,
     'Path=/',
     `Max-Age=${maxAgeSeconds}`
   ];
-  if (secure) parts.push('Secure');
+  if (secure || sameSite === 'None') parts.push('Secure');
   return parts.join('; ');
 }
 
 /** Clear auth cookie (same flags as set). */
 export function authTokenClearCookie(request: Request): string {
   const secure = useSecureCookie(request);
-  const parts = ['authToken=', 'HttpOnly', 'SameSite=Strict', 'Path=/', 'Max-Age=0'];
-  if (secure) parts.push('Secure');
+  const sameSite = authCookieSameSite(request);
+  const parts = ['authToken=', 'HttpOnly', `SameSite=${sameSite}`, 'Path=/', 'Max-Age=0'];
+  if (secure || sameSite === 'None') parts.push('Secure');
   return parts.join('; ');
 }

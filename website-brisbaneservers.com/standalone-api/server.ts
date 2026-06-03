@@ -193,6 +193,10 @@ function applyCorsHeaders(response: ServerResponse, requestOrigin: string | null
   if (corsOrigin) {
     response.setHeader('Access-Control-Allow-Origin', corsOrigin);
     response.setHeader('Vary', 'Origin');
+    // Required when the browser sends credentialed requests (cookie sessions from Pages).
+    if (corsOrigin !== '*') {
+      response.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
   }
 
   response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');

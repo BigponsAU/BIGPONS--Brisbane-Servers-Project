@@ -2,7 +2,8 @@ import { joinUrl, normalizePathPrefix, readRuntimeEnv, stripTrailingSlash } from
 
 /** Relative prefix — works on Cloudflare Pages (same origin) and local Astro dev (Vite proxy). */
 export const API_PATH_PREFIX = '/api';
-const PROD_PUBLIC_API_FALLBACK = 'https://brisbane-servers-api.onrender.com/api';
+/** Same-site subdomain — session cookies work with the marketing site on brisbaneservers.com. */
+const PROD_PUBLIC_API_FALLBACK = 'https://api.brisbaneservers.com/api';
 
 function normalizeApiBase(baseUrl: string): string {
   let normalized = /^https?:\/\//i.test(baseUrl)
