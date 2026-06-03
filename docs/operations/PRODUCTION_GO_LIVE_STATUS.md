@@ -2,9 +2,13 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-05-29 (Cloudflare + Render MCP / API)
+**Last synced:** 2026-06-03 (Render redeploy + Cloudflare Pages)
 
 ---
+
+## Recent changes (2026-06-03)
+
+- **Account sign-in CORS fix** (`90a048c`): Render API now sends `Access-Control-Allow-Credentials: true` for `https://brisbaneservers.com`. Session cookies use `SameSite=Lax` on `api.brisbaneservers.com`. Pages fallback API URL is `https://api.brisbaneservers.com/api`.
 
 ## MCP-linked hosting (active)
 
@@ -65,7 +69,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | `brisbaneservers.com` custom domain | **Active** |
 | Apex CNAME → `brisbaneservers.pages.dev` | **Done** |
 | `api` CNAME → Render (DNS only) | **Done** |
-| Pages `PUBLIC_API_BASE_URL` | **Done** — `https://brisbane-servers-api.onrender.com/api` |
+| Pages `PUBLIC_API_BASE_URL` | **Done** — prefer `https://api.brisbaneservers.com/api` (same-site cookies) |
 
 ---
 
@@ -74,7 +78,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | Check | Status |
 |-------|--------|
 | UI on domain | **Verify** — [ACCOUNT_DOMAIN_VERIFICATION.md](ACCOUNT_DOMAIN_VERIFICATION.md) |
-| API calls from browser | Should target `PUBLIC_API_BASE_URL` (Render) |
+| API calls from browser | **Fixed** — credentialed CORS + `api.brisbaneservers.com` session cookies |
 
 ---
 
