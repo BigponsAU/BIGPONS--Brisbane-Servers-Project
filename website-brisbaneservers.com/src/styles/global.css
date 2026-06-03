@@ -4285,8 +4285,6 @@ button,
 a.btn,
 input[type="submit"],
 input[type="button"],
-.mobile-menu a,
-.hamburger,
 .filter-btn,
 .topic-card,
 .search-input {
@@ -4295,6 +4293,13 @@ input[type="button"],
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Mobile menu links + hamburger: touch size only — display/visibility from nav-mega-menu.css */
+.mobile-menu a,
+.hamburger {
+    min-height: 44px;
+    min-width: 44px;
 }
 
 .nav-menu a,
@@ -4472,14 +4477,11 @@ a.card .card-description {
     outline: none;
 }
 
-/* Mobile menu accessibility */
-.mobile-menu[aria-hidden="true"] {
-    display: none;
-}
-
-.mobile-menu[aria-hidden="false"] {
-    display: flex;
-    flex-direction: column;
+/* Mobile menu visibility — .active only (nav-mega-menu.css positions the panel; avoid in-flow bleed) */
+@media (max-width: 1023px) {
+    .mobile-menu:not(.active) {
+        display: none !important;
+    }
 }
 
 /* Hamburger button states */

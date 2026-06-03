@@ -1,6 +1,8 @@
 // Simplified main script — navigation, search, forms, progressive disclosure.
 // Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
+import { closeMobileNav } from './nav-mobile';
+
 // ===== NAVIGATION TOGGLE =====
 document.addEventListener('DOMContentLoaded', function() {
     try { localStorage.removeItem('authToken'); } catch { /* legacy session cleanup */ }
@@ -22,15 +24,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function setMobileNavOpen(open: boolean) {
-            menuButton.classList.toggle('active', open);
-            menuPanel.classList.toggle('active', open);
-            menuButton.setAttribute('aria-expanded', String(open));
-            menuPanel.setAttribute('aria-hidden', String(!open));
-            document.body.classList.toggle('nav-mobile-open', open);
-            if (open) {
-                closeAllDesktopDropdowns();
+            if (!open) {
+                closeMobileNav();
+                return;
             }
+            menuButton.classList.add('active');
+            menuPanel.classList.add('active');
+            menuButton.setAttribute('aria-expanded', 'true');
+            menuPanel.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('nav-mobile-open');
+            closeAllDesktopDropdowns();
         }
+
+        // Ensure closed on load (stale SSR/hydration or cached body class).
+        closeMobileNav();
 
         const desktopNavMq = window.matchMedia('(min-width: 1024px)');
         const onViewportNavMode = (): void => {

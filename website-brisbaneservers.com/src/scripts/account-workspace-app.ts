@@ -4,6 +4,10 @@
  * Bootstrapped from portal.astro / account page.
  */
 import { workspaceFetch, clearLegacyAuthTokenStorage, hasActiveSession, setInMemorySessionToken, getInMemorySessionToken } from '../lib/client-api';
+import { closeMobileNav } from './nav-mobile';
+
+const API_PROBE_TIMEOUT_MS = 6000;
+const LOGIN_TIMEOUT_MS = 25000;
 
 export interface AccountWorkspaceBootConfig {
   publicApiBaseUrl: string;
@@ -39,9 +43,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
             
             function forceCleanup() {
               try {
+                closeMobileNav();
                 // Reset body
                 document.body.style.overflow = '';
                 document.body.style.pointerEvents = '';
+                document.body.style.touchAction = '';
                 
                 // Close ALL modals aggressively
                 const allModals = document.querySelectorAll('.modal');
@@ -107,9 +113,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           
           // Immediately reset any stuck overlays/modals (backup cleanup)
   if (typeof document !== 'undefined') {
+    closeMobileNav();
     // Reset body overflow immediately
     document.body.style.overflow = '';
     document.body.style.pointerEvents = '';
+    document.body.style.touchAction = '';
     
     // Close any stuck modals - check both aria-hidden and display
     const allModals = document.querySelectorAll('.modal');
@@ -206,9 +214,13 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   async function isApiBaseHealthy(baseUrl: string): Promise<boolean> {
     try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), API_PROBE_TIMEOUT_MS);
       const response = await workspaceFetch(`${baseUrl.replace(/\/+$/, '')}/health`, {
-        headers: { Accept: 'application/json' }
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
       });
+      window.clearTimeout(timeout);
       if (!response.ok) return false;
       const contentType = response.headers.get('content-type') ?? '';
       return contentType.includes('application/json');
@@ -526,6 +538,12 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  function resetLoginSubmitButton(submitBtn: HTMLButtonElement | null): void {
+    if (!submitBtn) return;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+  }
+
   // Login handler
   document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -544,18 +562,25 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
+      await ensureReachableApiBase();
+      const controller = new AbortController();
+      const loginTimeout = window.setTimeout(() => controller.abort(), LOGIN_TIMEOUT_MS);
       const response = await workspaceFetch(`${VOICE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+      window.clearTimeout(loginTimeout);
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.success) {
         applySessionToken(data.token);
         localStorage.setItem(ACCOUNT_LAST_EMAIL_KEY, email.trim().toLowerCase());
+        resetLoginSubmitButton(submitBtn);
         showDashboard(data.user);
+        return;
       } else {
         if (errorDiv) {
           errorDiv.textContent = data.error || 'Login failed';
@@ -577,14 +602,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       }
     } catch (error) {
       if (errorDiv) {
-        errorDiv.textContent = 'Connection error. Please try again.';
+        const timedOut = error instanceof DOMException && error.name === 'AbortError';
+        errorDiv.textContent = timedOut
+          ? 'Sign-in timed out. The API may be waking up — wait a moment and try again.'
+          : 'Connection error. Please try again.';
         errorDiv.classList.add('show');
       }
     } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign in';
-      }
+      resetLoginSubmitButton(submitBtn);
     }
   });
 
@@ -1100,8 +1125,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (dashboardPanel && dashboardPanel.classList.contains('active')) {
           loadStarterBlocks();
         }
-      } else if (response.status === 401 && sessionActive) {
-        setDashboardStatsError('Could not load workspace data. Try signing in again if this persists.');
+      } else if (response.status === 401 && getInMemorySessionToken()) {
+        setDashboardStatsError('Could not load workspace data. Try refreshing the page or signing in again.');
       } else if (response.status === 401) {
         clearSessionToken();
         showLogin();
@@ -5796,15 +5821,28 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
   void (async () => {
-    await ensureReachableApiBase();
-    await checkApiConnectivity();
-    handleOAuthReturn();
-    await loadOAuthProviders();
-    await handleVerificationToken();
-    if (pendingResetToken) {
-      showResetPasswordForm();
+    const loginSubmitBtn = document.getElementById('login-submit-btn') as HTMLButtonElement | null;
+    if (loginSubmitBtn) {
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = 'Connecting…';
     }
-    checkAuth();
+    closeMobileNav();
+    try {
+      await ensureReachableApiBase();
+      await checkApiConnectivity();
+      handleOAuthReturn();
+      await loadOAuthProviders();
+      await handleVerificationToken();
+      if (pendingResetToken) {
+        showResetPasswordForm();
+      }
+      checkAuth();
+    } finally {
+      if (loginSubmitBtn && !sessionActive) {
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.textContent = 'Sign in';
+      }
+    }
   })();
 
 }
