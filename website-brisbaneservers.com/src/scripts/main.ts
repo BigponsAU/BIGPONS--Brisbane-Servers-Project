@@ -267,7 +267,9 @@ async function hydrateAccountLinks(): Promise<void> {
     const accountLinks = document.querySelectorAll('[data-account-link="true"]');
     if (!accountLinks.length) return;
 
-    const { resolveNavApiBaseUrl, setAccountNavSignedIn, workspaceFetch } = await import('../lib/client-api');
+    const { resolveNavApiBaseUrl, setAccountNavSignedIn, workspaceFetch, restorePersistedSessionToken } = await import('../lib/client-api');
+
+    restorePersistedSessionToken();
 
     try {
         const apiBase = resolveNavApiBaseUrl();

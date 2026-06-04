@@ -168,6 +168,7 @@ export async function completeGoogleOAuth(
 
     const returnUrl = new URL(getAccountReturnUrl());
     returnUrl.searchParams.set('oauth', 'success');
+    returnUrl.hash = `session=${encodeURIComponent(token)}`;
     return new Response(null, {
       status: 302,
       headers: {

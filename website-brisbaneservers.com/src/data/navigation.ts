@@ -1,4 +1,14 @@
 import { caseStudies } from './case-studies';
+import { projectPurposeNav } from './brisbane-servers-project-objective';
+
+const projectPurposeGroup = {
+  title: projectPurposeNav.groupTitle,
+  items: [
+    projectPurposeNav.programPage,
+    projectPurposeNav.inferenceHub,
+    projectPurposeNav.contribute,
+  ],
+};
 
 export interface NavItem {
   label: string;
@@ -45,9 +55,9 @@ export const navigation: NavItem[] = [
         title: 'Start here',
         items: [
           { label: 'All resources', href: '/resources' },
-          { label: 'Contribute', href: '/contribute' },
         ],
       },
+      projectPurposeGroup,
       {
         title: 'Industry hubs',
         items: [
@@ -66,6 +76,7 @@ export const navigation: NavItem[] = [
     label: 'Projects',
     href: '/projects',
     groups: [
+      projectPurposeGroup,
       {
         title: 'Delivery',
         items: [
@@ -89,14 +100,25 @@ export const navigation: NavItem[] = [
   {
     label: 'About',
     href: '/about',
-    children: [
-      { label: 'About Brisbane Servers', href: '/about' },
-      { label: 'Voice framework', href: '/account#portal-voice-framework' },
-      { label: 'Corrections welcome', href: '/about#corrections-welcome' },
+    groups: [
+      projectPurposeGroup,
+      {
+        title: 'About Brisbane Servers',
+        items: [
+          { label: 'About us', href: '/about' },
+          { label: 'Corrections welcome', href: '/about#corrections-welcome' },
+        ],
+      },
+      {
+        title: 'Workspace standards',
+        items: [
+          { label: 'Voice framework', href: '/account#portal-voice-framework' },
+        ],
+      },
     ],
   },
   {
-    label: 'Account',
+    label: 'Sign in',
     href: '/account',
   },
 ];

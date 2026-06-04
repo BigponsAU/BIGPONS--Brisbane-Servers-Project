@@ -10,6 +10,9 @@ import {
   setInMemorySessionToken,
   getInMemorySessionToken,
   setAccountNavSignedIn,
+  restorePersistedSessionToken,
+  persistSessionToken,
+  clearPersistedSession,
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
 
@@ -26,6 +29,7 @@ export interface AccountWorkspaceBootConfig {
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   const { publicApiBaseUrl, accountPath, initialVerifyToken, initialResetToken } = config;
   clearLegacyAuthTokenStorage();
+  restorePersistedSessionToken();
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
           (function() {
@@ -166,7 +170,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   function applySessionToken(token: string | null | undefined): void {
     if (typeof token === 'string' && token.trim()) {
-      setInMemorySessionToken(token);
+      persistSessionToken(token);
       sessionActive = true;
       return;
     }
@@ -176,7 +180,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   }
 
   function clearSessionToken(): void {
-    setInMemorySessionToken(null);
+    clearPersistedSession();
     sessionActive = false;
   }
   let pendingResetToken: string | null = RESET_TOKEN || null;
@@ -238,38 +242,44 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   async function ensureReachableApiBase(): Promise<void> {
     const configuredBase = VOICE_API_URL || '/api';
-    const candidates: string[] = [configuredBase];
+    const candidates: string[] = [];
     const isRelativeConfigured = !/^https?:\/\//i.test(configuredBase);
     const isProdSite = window.location.hostname === 'brisbaneservers.com' || window.location.hostname.endsWith('.pages.dev');
 
     if (import.meta.env.PROD && (isRelativeConfigured || isProdSite)) {
-      if (!candidates.includes('https://api.brisbaneservers.com/api')) {
-        candidates.unshift('https://api.brisbaneservers.com/api');
-      }
-      if (!candidates.includes('https://brisbane-servers-api.onrender.com/api')) {
-        candidates.push('https://brisbane-servers-api.onrender.com/api');
-      }
+      candidates.push('https://brisbane-servers-api.onrender.com/api');
+      candidates.push('https://api.brisbaneservers.com/api');
     }
+    if (configuredBase) candidates.push(configuredBase);
 
-    const usableCandidates = candidates.filter(
-      (base) => !/\/api1(\/|$)/i.test(base) && !/api1\./i.test(base)
-    );
+    const usableCandidates = [...new Set(
+      candidates
+        .map((base) => base.replace(/\/+$/, ''))
+        .filter((base) => base && !/\/api1(\/|$)/i.test(base) && !/api1\./i.test(base))
+    )];
 
-    const seen = new Set<string>();
-    for (const candidate of usableCandidates) {
-      const normalized = candidate.replace(/\/+$/, '');
-      if (!normalized || seen.has(normalized)) continue;
-      seen.add(normalized);
-      if (await isApiBaseHealthy(normalized)) {
-        if (VOICE_API_URL !== normalized) {
-          VOICE_API_URL = normalized;
-          syncPortalAccountContext();
-          const bridge = (window as any).__portalBridge;
-          if (bridge) bridge.apiBaseUrl = VOICE_API_URL;
-          showAuthBanner('Connected to live API endpoint for sign-in.', 'info');
-        }
-        return;
-      }
+    const probe = async (baseUrl: string): Promise<string | null> => {
+      if (await isApiBaseHealthy(baseUrl)) return baseUrl;
+      return null;
+    };
+
+    const overallTimeout = new Promise<null>((resolve) => {
+      window.setTimeout(() => resolve(null), 9000);
+    });
+
+    const winner = await Promise.race([
+      Promise.any(usableCandidates.map((base) => probe(base))).catch(() => null),
+      overallTimeout,
+    ]);
+
+    if (winner && VOICE_API_URL !== winner) {
+      VOICE_API_URL = winner;
+      syncPortalAccountContext();
+      const bridge = (window as any).__portalBridge;
+      if (bridge) bridge.apiBaseUrl = VOICE_API_URL;
+    } else if (!winner && isProdSite && !/^https?:\/\//i.test(VOICE_API_URL)) {
+      VOICE_API_URL = 'https://brisbane-servers-api.onrender.com/api';
+      syncPortalAccountContext();
     }
   }
 
@@ -399,7 +409,17 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  function consumeOAuthSessionFromHash(): void {
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const token = hashParams.get('session');
+    if (!token) return;
+    persistSessionToken(token);
+    sessionActive = true;
+    window.history.replaceState({}, '', ACCOUNT_PATH + window.location.search);
+  }
+
   function handleOAuthReturn(): void {
+    consumeOAuthSessionFromHash();
     const params = new URLSearchParams(window.location.search);
     const oauthSuccess = params.get('oauth') === 'success';
     const oauthError = params.get('oauth_error');
@@ -507,18 +527,21 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   }
 
   // Check for existing session
-  function checkAuth(): void {
-    void (async () => {
-      if (sessionActive) return;
-      const active = await hasActiveSession(VOICE_API_URL);
-      if (active) {
-        sessionActive = true;
-        await verifyToken();
-      } else {
-        sessionActive = false;
-        showLogin();
-      }
-    })();
+  async function checkAuth(): Promise<void> {
+    restorePersistedSessionToken();
+    if (getInMemorySessionToken()) {
+      sessionActive = true;
+      await verifyToken();
+      return;
+    }
+    const active = await hasActiveSession(VOICE_API_URL);
+    if (active) {
+      sessionActive = true;
+      await verifyToken();
+      return;
+    }
+    sessionActive = false;
+    showLogin();
   }
 
   // Verify token
@@ -535,7 +558,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         sessionActive = false;
         showLogin();
       } else {
-        sessionActive = false;
+        clearSessionToken();
         showLogin();
       }
     } catch (error) {
@@ -544,8 +567,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         'error',
         'Cannot reach the hosted API to verify your session. Check PUBLIC_API_BASE_URL on Cloudflare Pages.'
       );
-      sessionActive = false;
-      showLogin();
+      if (!getInMemorySessionToken()) {
+        sessionActive = false;
+        showLogin();
+      }
     }
   }
 
@@ -861,6 +886,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     document.getElementById('admin-dashboard')!.style.display = 'none';
     prefillLoginEmail();
     updateRememberedSessionHint();
+    resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
     setAccountNavSignedIn(false);
     if (pendingResetToken) {
       showResetPasswordForm();
@@ -5840,27 +5866,28 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
   void (async () => {
-    const loginSubmitBtn = document.getElementById('login-submit-btn') as HTMLButtonElement | null;
-    if (loginSubmitBtn) {
-      loginSubmitBtn.disabled = true;
-      loginSubmitBtn.textContent = 'Connecting…';
-    }
-    closeMobileNav();
+    const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
       await ensureReachableApiBase();
-      await checkApiConnectivity();
+      await Promise.all([checkApiConnectivity(), loadOAuthProviders()]);
       handleOAuthReturn();
-      await loadOAuthProviders();
       await handleVerificationToken();
       if (pendingResetToken) {
         showResetPasswordForm();
       }
-      checkAuth();
-    } finally {
-      if (loginSubmitBtn && !sessionActive) {
-        loginSubmitBtn.disabled = false;
-        loginSubmitBtn.textContent = 'Sign in';
+      await checkAuth();
+      if (window.location.hash === '#create-account' && !sessionActive) {
+        document.getElementById('create-account-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        (document.getElementById('register-email') as HTMLInputElement | null)?.focus();
       }
+    } catch {
+      showLogin();
+      showAuthBanner('Could not reach the sign-in service. Try again in a moment.', 'warning');
+    } finally {
+      if (authStatusBanner && !authStatusBanner.textContent?.trim()) {
+        authStatusBanner.style.display = 'none';
+      }
+      resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
     }
   })();
 

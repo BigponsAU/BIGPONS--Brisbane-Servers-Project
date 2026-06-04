@@ -19,7 +19,44 @@ export function clearLegacyAuthTokenStorage(): void {
   } catch {
     /* ignore */
   }
+}
+
+const SESSION_STORAGE_KEY = 'bsAccountSession';
+
+/** Tab-scoped session for cross-origin API (Render). HttpOnly cookie preferred when API is on *.brisbaneservers.com. */
+export function restorePersistedSessionToken(): boolean {
+  try {
+    const token = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (token?.trim()) {
+      setInMemorySessionToken(token.trim());
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+export function persistSessionToken(token: string | null | undefined): void {
+  if (!token?.trim()) {
+    clearPersistedSession();
+    return;
+  }
+  setInMemorySessionToken(token.trim());
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_KEY, token.trim());
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearPersistedSession(): void {
   setInMemorySessionToken(null);
+  try {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function workspaceFetch(input: string, init: RequestInit = {}): Promise<Response> {
@@ -71,15 +108,22 @@ export function resolveNavApiBaseUrl(): string {
   return (configured || '/api').replace(/\/+$/, '');
 }
 
+function setAccountLinkLabel(anchor: HTMLAnchorElement, label: string, ariaLabel: string): void {
+  anchor.href = '/account/';
+  anchor.setAttribute('aria-label', ariaLabel);
+  const semantic = anchor.querySelector('.semantic-text');
+  if (semantic) {
+    semantic.textContent = label;
+  } else {
+    anchor.textContent = label;
+  }
+}
+
 export function setAccountNavSignedIn(signedIn: boolean): void {
+  const label = signedIn ? 'Workspace' : 'Sign in';
+  const ariaLabel = signedIn ? 'Open your account workspace' : 'Sign in to your account';
   document.querySelectorAll('[data-account-link="true"]').forEach((link) => {
-    const anchor = link as HTMLAnchorElement;
-    anchor.href = '/account/';
-    anchor.textContent = signedIn ? 'Workspace' : 'Sign in';
-    anchor.setAttribute(
-      'aria-label',
-      signedIn ? 'Open your account workspace' : 'Sign in to your account'
-    );
-    anchor.classList.toggle('nav-account-cta--signed-in', signedIn);
+    setAccountLinkLabel(link as HTMLAnchorElement, label, ariaLabel);
+    link.classList.toggle('nav-account-cta--signed-in', signedIn);
   });
 }
