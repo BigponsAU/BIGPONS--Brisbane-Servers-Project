@@ -8,6 +8,8 @@ $expectedApis = @(
   'https://api.brisbaneservers.com/api'
 )
 
+$accountUrl = 'https://brisbaneservers.com/account/'
+
 Write-Host "Checking live account page ..." -ForegroundColor Cyan
 $html = (Invoke-WebRequest -Uri $accountUrl -UseBasicParsing -TimeoutSec 45).Content
 
