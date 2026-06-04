@@ -13,6 +13,11 @@ import {
   restorePersistedSessionToken,
   persistSessionToken,
   clearPersistedSession,
+  usesHttpOnlyCookieAuth,
+  usesSessionStorageAuth,
+  PRODUCTION_API_URL,
+  PRODUCTION_API_CUSTOM_DOMAIN,
+  isUsableAbsoluteApiBase,
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
 
@@ -29,7 +34,6 @@ export interface AccountWorkspaceBootConfig {
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   const { publicApiBaseUrl, accountPath, initialVerifyToken, initialResetToken } = config;
   clearLegacyAuthTokenStorage();
-  restorePersistedSessionToken();
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
           (function() {
@@ -170,11 +174,23 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   function applySessionToken(token: string | null | undefined): void {
     if (typeof token === 'string' && token.trim()) {
-      persistSessionToken(token);
-      sessionActive = true;
+      applyLoginSession(token);
       return;
     }
     if (token === 'cookie' || token === 'session') {
+      persistSessionToken(null, VOICE_API_URL);
+      sessionActive = true;
+    }
+  }
+
+  function applyLoginSession(token: string | null | undefined): void {
+    if (usesHttpOnlyCookieAuth(VOICE_API_URL)) {
+      persistSessionToken(null, VOICE_API_URL);
+      sessionActive = true;
+      return;
+    }
+    if (token?.trim()) {
+      persistSessionToken(token, VOICE_API_URL);
       sessionActive = true;
     }
   }
@@ -247,15 +263,15 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const isProdSite = window.location.hostname === 'brisbaneservers.com' || window.location.hostname.endsWith('.pages.dev');
 
     if (import.meta.env.PROD && (isRelativeConfigured || isProdSite)) {
-      candidates.push('https://brisbane-servers-api.onrender.com/api');
-      candidates.push('https://api.brisbaneservers.com/api');
+      candidates.push(PRODUCTION_API_CUSTOM_DOMAIN);
+      candidates.push(PRODUCTION_API_URL);
     }
-    if (configuredBase) candidates.push(configuredBase);
+    if (configuredBase && isUsableAbsoluteApiBase(configuredBase)) {
+      candidates.push(configuredBase);
+    }
 
     const usableCandidates = [...new Set(
-      candidates
-        .map((base) => base.replace(/\/+$/, ''))
-        .filter((base) => base && !/\/api1(\/|$)/i.test(base) && !/api1\./i.test(base))
+      candidates.map((base) => base.replace(/\/+$/, '')).filter(Boolean)
     )];
 
     const probe = async (baseUrl: string): Promise<string | null> => {
@@ -278,7 +294,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const bridge = (window as any).__portalBridge;
       if (bridge) bridge.apiBaseUrl = VOICE_API_URL;
     } else if (!winner && isProdSite && !/^https?:\/\//i.test(VOICE_API_URL)) {
-      VOICE_API_URL = 'https://brisbane-servers-api.onrender.com/api';
+      VOICE_API_URL = PRODUCTION_API_URL;
       syncPortalAccountContext();
     }
   }
@@ -413,7 +429,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const token = hashParams.get('session');
     if (!token) return;
-    persistSessionToken(token);
+    if (usesHttpOnlyCookieAuth(VOICE_API_URL)) {
+      window.history.replaceState({}, '', ACCOUNT_PATH + window.location.search);
+      return;
+    }
+    persistSessionToken(token, VOICE_API_URL);
     sessionActive = true;
     window.history.replaceState({}, '', ACCOUNT_PATH + window.location.search);
   }
@@ -528,7 +548,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   // Check for existing session
   async function checkAuth(): Promise<void> {
-    restorePersistedSessionToken();
+    if (usesSessionStorageAuth(VOICE_API_URL)) {
+      restorePersistedSessionToken(VOICE_API_URL);
+    }
     if (getInMemorySessionToken()) {
       sessionActive = true;
       await verifyToken();
@@ -612,7 +634,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.success) {
-        applySessionToken(data.token);
+        applyLoginSession(data.token);
         localStorage.setItem(ACCOUNT_LAST_EMAIL_KEY, email.trim().toLowerCase());
         resetLoginSubmitButton(submitBtn);
         showDashboard(data.user);

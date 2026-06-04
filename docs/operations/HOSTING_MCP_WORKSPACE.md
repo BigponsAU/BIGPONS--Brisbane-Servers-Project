@@ -64,6 +64,8 @@ GitHub: BigponsAU/BIGPONS--Brisbane-Servers-Project (main)
 | `PUBLIC_API_BASE_URL` | `https://brisbane-servers-api.onrender.com/api` |
 | `INTERNAL_API_BASE_URL` | `https://brisbane-servers-api.onrender.com/api` |
 
+**Auth security (approved):** No JWT in `localStorage`. HttpOnly cookie when API uses `*.brisbaneservers.com`; `sessionStorage` tab fallback only for cross-origin Render API. CI rejects `api1` misconfigurations. Apply env: `npm run configure:cloudflare-pages-env` (requires `CLOUDFLARE_API_TOKEN`).
+
 Use `https://api.brisbaneservers.com/api` only after `api` DNS is stable (no Cloudflare Error 1000 on proxied orange-cloud).
 
 ---

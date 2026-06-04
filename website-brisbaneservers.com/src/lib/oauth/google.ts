@@ -168,7 +168,16 @@ export async function completeGoogleOAuth(
 
     const returnUrl = new URL(getAccountReturnUrl());
     returnUrl.searchParams.set('oauth', 'success');
-    returnUrl.hash = `session=${encodeURIComponent(token)}`;
+    try {
+      const apiHost = new URL(request.url).hostname;
+      const isBrisbaneApi =
+        apiHost === 'brisbaneservers.com' || apiHost.endsWith('.brisbaneservers.com');
+      if (!isBrisbaneApi) {
+        returnUrl.hash = `session=${encodeURIComponent(token)}`;
+      }
+    } catch {
+      returnUrl.hash = `session=${encodeURIComponent(token)}`;
+    }
     return new Response(null, {
       status: 302,
       headers: {

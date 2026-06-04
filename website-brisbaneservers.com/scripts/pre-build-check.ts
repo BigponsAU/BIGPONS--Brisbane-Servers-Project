@@ -326,6 +326,23 @@ function checkHostedApiForStaticDeploy(): ValidationResult {
     };
   }
 
+  if (/\/api1(\/|$)/i.test(apiUrl) || /api1\./i.test(apiUrl)) {
+    return {
+      name: 'Hosted API (static deploy CI)',
+      passed: false,
+      message:
+        'PUBLIC_API_BASE_URL looks misconfigured (api1). Use https://brisbane-servers-api.onrender.com/api or https://api.brisbaneservers.com/api.'
+    };
+  }
+
+  if (apiUrl.endsWith('/api/') || apiUrl.endsWith('/api1/')) {
+    return {
+      name: 'Hosted API (static deploy CI)',
+      passed: false,
+      message: 'PUBLIC_API_BASE_URL should end with /api (no trailing slash after api).'
+    };
+  }
+
   return {
     name: 'Hosted API (static deploy CI)',
     passed: true,

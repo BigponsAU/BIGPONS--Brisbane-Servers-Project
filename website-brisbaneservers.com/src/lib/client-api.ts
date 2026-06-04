@@ -1,6 +1,9 @@
 /**
- * Browser API client — HttpOnly cookie when same-origin; in-memory Bearer for cross-subdomain API.
- * Never persist auth tokens in localStorage.
+ * Browser API client — security model:
+ * - Never store auth tokens in localStorage (XSS persistence risk).
+ * - Prefer HttpOnly cookies when API is on *.brisbaneservers.com (same-site family).
+ * - sessionStorage fallback only for cross-origin API hosts (e.g. Render) where HttpOnly cookies cannot be shared with the Pages origin.
+ * - Invalid sessions cleared on failed /auth/me (see account-workspace-app).
  */
 
 let inMemorySessionToken: string | null = null;
@@ -23,8 +26,39 @@ export function clearLegacyAuthTokenStorage(): void {
 
 const SESSION_STORAGE_KEY = 'bsAccountSession';
 
-/** Tab-scoped session for cross-origin API (Render). HttpOnly cookie preferred when API is on *.brisbaneservers.com. */
-export function restorePersistedSessionToken(): boolean {
+export const PRODUCTION_API_URL = 'https://brisbane-servers-api.onrender.com/api';
+export const PRODUCTION_API_CUSTOM_DOMAIN = 'https://api.brisbaneservers.com/api';
+
+export function isUsableAbsoluteApiBase(value: string): boolean {
+  if (!/^https?:\/\//i.test(value)) return false;
+  if (/\/api1(\/|$)/i.test(value) || /api1\./i.test(value)) return false;
+  return true;
+}
+
+export function isBrisbaneServersApiHost(apiBaseUrl: string): boolean {
+  try {
+    const normalized = apiBaseUrl.replace(/\/+$/, '');
+    const host = new URL(normalized.startsWith('http') ? normalized : `https://${normalized}`).hostname;
+    return host === 'brisbaneservers.com' || host.endsWith('.brisbaneservers.com');
+  } catch {
+    return false;
+  }
+}
+
+/** HttpOnly cookie auth — API on *.brisbaneservers.com; browser sends cookie via credentials: include. */
+export function usesHttpOnlyCookieAuth(apiBaseUrl: string): boolean {
+  return isBrisbaneServersApiHost(apiBaseUrl);
+}
+
+/** Tab-scoped bearer fallback for cross-origin API (Render hostname). */
+export function usesSessionStorageAuth(apiBaseUrl: string): boolean {
+  return !usesHttpOnlyCookieAuth(apiBaseUrl);
+}
+
+export function restorePersistedSessionToken(apiBaseUrl?: string): boolean {
+  if (apiBaseUrl && usesHttpOnlyCookieAuth(apiBaseUrl)) {
+    return false;
+  }
   try {
     const token = sessionStorage.getItem(SESSION_STORAGE_KEY);
     if (token?.trim()) {
@@ -37,11 +71,22 @@ export function restorePersistedSessionToken(): boolean {
   return false;
 }
 
-export function persistSessionToken(token: string | null | undefined): void {
+export function persistSessionToken(token: string | null | undefined, apiBaseUrl?: string): void {
   if (!token?.trim()) {
     clearPersistedSession();
     return;
   }
+
+  if (apiBaseUrl && usesHttpOnlyCookieAuth(apiBaseUrl)) {
+    setInMemorySessionToken(null);
+    try {
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+
   setInMemorySessionToken(token.trim());
   try {
     sessionStorage.setItem(SESSION_STORAGE_KEY, token.trim());
@@ -80,16 +125,7 @@ export async function hasActiveSession(apiBaseUrl: string): Promise<boolean> {
   }
 }
 
-const PRODUCTION_API_FALLBACKS = [
-  'https://api.brisbaneservers.com/api',
-  'https://brisbane-servers-api.onrender.com/api',
-] as const;
-
-function isUsableAbsoluteApiBase(value: string): boolean {
-  if (!/^https?:\/\//i.test(value)) return false;
-  if (/\/api1(\/|$)/i.test(value) || /api1\./i.test(value)) return false;
-  return true;
-}
+const PRODUCTION_API_FALLBACKS = [PRODUCTION_API_CUSTOM_DOMAIN, PRODUCTION_API_URL] as const;
 
 /** Resolve API base for header nav + account page (matches workspace failover). */
 export function resolveNavApiBaseUrl(): string {
@@ -102,7 +138,7 @@ export function resolveNavApiBaseUrl(): string {
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   const isProdSite = host === 'brisbaneservers.com' || host.endsWith('.pages.dev');
   if (isProdSite) {
-    return PRODUCTION_API_FALLBACKS[0];
+    return PRODUCTION_API_URL.replace(/\/+$/, '');
   }
 
   return (configured || '/api').replace(/\/+$/, '');
