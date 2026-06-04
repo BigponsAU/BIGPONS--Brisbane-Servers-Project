@@ -40,6 +40,13 @@ Write-Host "Saved CLOUDFLARE_API_TOKEN and CLOUDFLARE_AUTH_HEADER to your Window
 Write-Host "Reload Cursor (Developer: Reload Window) so cloudflare-api MCP reconnects." -ForegroundColor Yellow
 Write-Host ""
 
+$pagesScript = Join-Path $PSScriptRoot 'configure-cloudflare-pages-env.ps1'
+if (Test-Path $pagesScript) {
+  Write-Host "Applying Cloudflare Pages production env (PUBLIC_API_BASE_URL) ..." -ForegroundColor Cyan
+  & $pagesScript
+  Write-Host ""
+}
+
 $site = Split-Path $PSScriptRoot -Parent
 Push-Location $site
 try {

@@ -21,6 +21,7 @@
     "setup:cloudflare-email": "node scripts/setup-cloudflare-email-routing.mjs",
     "configure:cloudflare-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-cloudflare-mcp.ps1",
     "configure:cloudflare-pages-env": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-cloudflare-pages-env.ps1",
+    "verify:cloudflare-pages-env": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-cloudflare-pages-env.ps1",
     "configure:render-mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-render-mcp.ps1",
     "configure:render-auth": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-render-auth.ps1",
     "build:cpanel": "npm run prebuild && astro build --config astro.config.cpanel.mjs && npm run postbuild",
