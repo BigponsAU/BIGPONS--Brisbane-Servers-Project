@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-04 (Neon migration path; Render Postgres retired from blueprint)
+**Last synced:** 2026-06-05 (Brisbane 2032 UI + auth hardening deployed)
 
 ---
+
+## Recent changes (2026-06-05)
+
+- **Brisbane 2032 UI shipped** (`7ca0395`): `/brisbane-2032`, Project purpose nav (Resources / Projects / About), `ProjectObjectivePanel`, inference links on Resources. Cloudflare Pages deploy `97b64977` live on `brisbaneservers.com`.
+- **Auth hardening:** Logout clears HttpOnly cookie even when session invalid; sign-up/resend/forgot probe API on cold start; `npm run verify:production-auth` E2E script. Render API deploy `dep-d8hbqki8qa3s73bh5mn0` live.
 
 ## Recent changes (2026-06-04)
 
