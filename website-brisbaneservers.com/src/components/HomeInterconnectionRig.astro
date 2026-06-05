@@ -51,8 +51,14 @@ import GutterEchoConstellationStack from './GutterEchoConstellationStack.astro';
 
   function boot() {
     updateMarginBandAccent();
+    let scheduled = false;
     const onScroll = () => {
-      window.requestAnimationFrame(updateMarginBandAccent);
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(() => {
+        scheduled = false;
+        updateMarginBandAccent();
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });

@@ -92,9 +92,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set active nav link based on current page
     setActiveNavLink();
 
-        // Reflect auth state in account links
-        hydrateAccountLinks();
+    // Defer auth probe — avoids blocking first paint / interaction (Render cold-start).
+    scheduleAccountLinkHydration();
 });
+
+function scheduleAccountLinkHydration(): void {
+    const accountLinks = document.querySelectorAll('[data-account-link="true"]');
+    if (!accountLinks.length) return;
+
+    const run = (): void => {
+        void hydrateAccountLinks();
+    };
+
+    const idle = (window as Window & { requestIdleCallback?: typeof requestIdleCallback }).requestIdleCallback;
+    if (typeof idle === 'function') {
+        idle(run, { timeout: 3000 });
+    } else {
+        setTimeout(run, 1200);
+    }
+}
 
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====
 function initializeDropdownMenus(): void {
@@ -274,11 +290,16 @@ async function hydrateAccountLinks(): Promise<void> {
       restorePersistedSessionToken(apiBase);
     }
 
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 4000);
+
     try {
-        const response = await workspaceFetch(`${apiBase}/auth/me`);
+        const response = await workspaceFetch(`${apiBase}/auth/me`, { signal: controller.signal });
         setAccountNavSignedIn(response.ok);
     } catch {
         setAccountNavSignedIn(false);
+    } finally {
+        window.clearTimeout(timeout);
     }
 }
 
@@ -522,9 +543,25 @@ class SemanticSearch {
     }
 }
 
-// Initialize search
+// Initialize search only when the user engages (avoids fetch + DOM scan on every page).
+function initSemanticSearchLazy(): void {
+    const searchInput = document.querySelector('.search-input') as HTMLInputElement | null;
+    if (!searchInput) return;
+
+    let started = false;
+    const boot = (): void => {
+        if (started) return;
+        started = true;
+        new SemanticSearch();
+    };
+
+    searchInput.addEventListener('focus', boot, { once: true });
+    searchInput.addEventListener('pointerdown', boot, { once: true });
+    searchInput.addEventListener('input', boot, { once: true });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    new SemanticSearch();
+    initSemanticSearchLazy();
 });
 
 // ===== FORM HANDLING =====

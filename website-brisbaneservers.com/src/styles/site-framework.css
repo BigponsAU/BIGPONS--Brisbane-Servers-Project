@@ -376,6 +376,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   isolation: isolate;
 }
 
+.main-home .home-sections-shell > .section:not(:first-of-type) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 .main-home .home-sections-shell::before,
 .main-home .home-sections-shell::after {
   content: none;
