@@ -21,9 +21,11 @@ import {
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
 
-const API_PROBE_TIMEOUT_MS = 2500;
-const API_PROBE_OVERALL_MS = 4000;
-const LOGIN_TIMEOUT_MS = 25000;
+const API_PROBE_TIMEOUT_MS = 8000;
+const API_PROBE_OVERALL_MS = 12000;
+const API_WAKE_ATTEMPTS = 4;
+const LOGIN_TIMEOUT_MS = 45000;
+const OAUTH_STATUS_TIMEOUT_MS = 15000;
 
 export interface AccountWorkspaceBootConfig {
   publicApiBaseUrl: string;
@@ -420,20 +422,64 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     return `${message} Preview link: ${previewUrl}`;
   }
 
-  async function loadOAuthProviders(): Promise<void> {
-    const googleBtn = document.getElementById('google-oauth-btn') as HTMLAnchorElement | null;
-    const divider = document.getElementById('oauth-divider') as HTMLElement | null;
-    if (!googleBtn) return;
-    try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/auth/oauth/status`);
-      const data = await response.json();
-      if (response.ok && data.google) {
-        googleBtn.href = `${VOICE_API_URL}/auth/oauth/google/start`;
-        googleBtn.style.display = 'block';
-        if (divider) divider.style.display = 'block';
+  async function wakeApiBeforeAuth(): Promise<void> {
+    await ensureReachableApiBase();
+    for (let attempt = 0; attempt < API_WAKE_ATTEMPTS; attempt += 1) {
+      if (await isApiBaseHealthy(VOICE_API_URL)) {
+        return;
       }
-    } catch {
-      /* OAuth optional — hide button when API unreachable */
+      if (attempt < API_WAKE_ATTEMPTS - 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 2000 * (attempt + 1)));
+      }
+    }
+  }
+
+  function isProductionSiteHost(): boolean {
+    const host = window.location.hostname;
+    return host === 'brisbaneservers.com' || host.endsWith('.pages.dev');
+  }
+
+  function setGoogleOAuthVisible(visible: boolean, href?: string): void {
+    document.querySelectorAll('.oauth-google-btn').forEach((node) => {
+      const anchor = node as HTMLAnchorElement;
+      if (href) anchor.href = href;
+      anchor.style.display = visible ? 'block' : 'none';
+    });
+    document.querySelectorAll('.oauth-divider').forEach((node) => {
+      (node as HTMLElement).style.display = visible ? 'block' : 'none';
+    });
+    document.querySelectorAll('.login-oauth-note').forEach((node) => {
+      (node as HTMLElement).style.display = visible ? 'block' : 'none';
+    });
+  }
+
+  async function loadOAuthProviders(): Promise<void> {
+    const googleStartHref = `${VOICE_API_URL.replace(/\/+$/, '')}/auth/oauth/google/start`;
+    if (isProductionSiteHost()) {
+      setGoogleOAuthVisible(true, googleStartHref);
+    }
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), OAUTH_STATUS_TIMEOUT_MS);
+        const response = await workspaceFetch(`${VOICE_API_URL}/auth/oauth/status`, {
+          signal: controller.signal,
+        });
+        window.clearTimeout(timeout);
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.google) {
+          setGoogleOAuthVisible(true, googleStartHref);
+          return;
+        }
+        if (response.ok && !data.google) {
+          setGoogleOAuthVisible(false);
+          return;
+        }
+      } catch {
+        /* retry after wake */
+      }
+      await wakeApiBeforeAuth();
     }
   }
 
@@ -634,16 +680,29 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      await ensureReachableApiBase();
+      await wakeApiBeforeAuth();
       const controller = new AbortController();
       const loginTimeout = window.setTimeout(() => controller.abort(), LOGIN_TIMEOUT_MS);
-      const response = await workspaceFetch(`${VOICE_API_URL}/auth/login`, {
+      let response = await workspaceFetch(`${VOICE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
         signal: controller.signal,
       });
       window.clearTimeout(loginTimeout);
+
+      if (!response.ok && response.status >= 500) {
+        await wakeApiBeforeAuth();
+        const retryController = new AbortController();
+        const retryTimeout = window.setTimeout(() => retryController.abort(), LOGIN_TIMEOUT_MS);
+        response = await workspaceFetch(`${VOICE_API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          signal: retryController.signal,
+        });
+        window.clearTimeout(retryTimeout);
+      }
 
       const data = await response.json().catch(() => ({}));
 
@@ -668,15 +727,15 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           );
         }
         if (data.code === 'USE_OAUTH') {
-          const googleBtn = document.getElementById('google-oauth-btn') as HTMLAnchorElement | null;
-          googleBtn?.focus();
+          document.querySelector('.oauth-google-btn')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          (document.querySelector('.oauth-google-btn') as HTMLElement | null)?.focus();
         }
       }
     } catch (error) {
       if (errorDiv) {
         const timedOut = error instanceof DOMException && error.name === 'AbortError';
         errorDiv.textContent = timedOut
-          ? 'Sign-in timed out. The API may be waking up — wait a moment and try again.'
+          ? 'Sign-in timed out while the API was waking up. Wait a few seconds, then try again or use Continue with Google.'
           : 'Connection error. Please try again.';
         errorDiv.classList.add('show');
       }
@@ -701,7 +760,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     try {
-      await ensureReachableApiBase();
+      await wakeApiBeforeAuth();
       const controller = new AbortController();
       const registerTimeout = window.setTimeout(() => controller.abort(), LOGIN_TIMEOUT_MS);
       const response = await workspaceFetch(`${VOICE_API_URL}/auth/register`, {
@@ -5939,16 +5998,16 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
   void (async () => {
-    const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
+      const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
-      const oauthPromise = loadOAuthProviders();
       await ensureReachableApiBase();
+      await wakeApiBeforeAuth();
       handleOAuthReturn();
       await handleVerificationToken();
       if (pendingResetToken) {
         showResetPasswordForm();
       }
-      await Promise.all([checkAuth(), oauthPromise]);
+      await Promise.all([checkAuth(), loadOAuthProviders()]);
       if (window.location.hash === '#create-account' && !sessionActive) {
         document.getElementById('create-account-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         (document.getElementById('register-email') as HTMLInputElement | null)?.focus();

@@ -138,7 +138,7 @@ export function resolveNavApiBaseUrl(): string {
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   const isProdSite = host === 'brisbaneservers.com' || host.endsWith('.pages.dev');
   if (isProdSite) {
-    return PRODUCTION_API_URL.replace(/\/+$/, '');
+    return PRODUCTION_API_CUSTOM_DOMAIN.replace(/\/+$/, '');
   }
 
   return (configured || '/api').replace(/\/+$/, '');

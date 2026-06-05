@@ -77,27 +77,31 @@
           <button type="button" id="passkey-login-btn" class="btn btn-secondary btn-block" style="margin-top: var(--space-sm);">
             Sign in with passkey
           </button>
+          <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
+        </form>
+        <div class="login-oauth-stack" id="login-oauth-stack">
           <p
-            class="login-oauth-divider"
-            id="oauth-divider"
+            class="login-oauth-divider oauth-divider"
             style="display: none; margin: var(--space-md) 0 var(--space-sm); text-align: center; color: var(--portal-text-tertiary); font-size: var(--text-sm);"
           >
             or
           </p>
           <a
-            id="google-oauth-btn"
             class="btn btn-secondary btn-block oauth-google-btn"
             href="#"
             style="display: none; text-align: center; text-decoration: none;"
+            data-oauth-label="Continue with Google"
           >
             Continue with Google
           </a>
-          <p class="login-note" style="margin-top: var(--space-sm);">
-            Passkeys use your device biometrics or security key. Register one after your first password or Google sign-in.
+          <p class="login-note login-oauth-note" style="display: none; margin-top: var(--space-sm);">
+            Google sign-in creates your account on first use — no separate sign-up step.
           </p>
-          <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
-          <div id="login-error" class="error-message" role="alert" aria-live="polite" aria-atomic="true"></div>
-        </form>
+        </div>
+        <p class="login-note" style="margin-top: var(--space-sm);">
+          Passkeys use your device biometrics or security key. Register one after your first password or Google sign-in.
+        </p>
+        <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
         <form id="reset-password-form" class="login-form auth-help-form" method="post" action="#" aria-label="Reset password form" style="display: none;">
           <h3>Set a new password</h3>
           <div class="form-group">
@@ -130,7 +134,7 @@
 
       <div class="login-card login-card--secondary" id="create-account-section">
         <h2>Create an account</h2>
-        <p class="login-subtitle">Set up your workspace to contribute, track tokens, and keep your resources in one place.</p>
+        <p class="login-subtitle">Set up your workspace to contribute, track tokens, and keep your resources in one place. Or use Google on the left — first sign-in creates your account.</p>
         <ul class="login-benefits">
           <li>Keep a history of submissions and accepted contributions.</li>
           <li>See your token balance and recent workspace activity.</li>
