@@ -258,9 +258,9 @@ header .nav-mega__link.active {
   mask-composite: intersect;
 }
 
-.hero-visual .sierpinski-satellite,
-.hero-visual .hero-constellation-visual {
+.hero-visual .sierpinski-satellite {
   inset: clamp(0.6rem, 1.4vw, 1.15rem) !important;
+  /* Slightly zoomed out inside the same frame — less visual noise, same boundary */
   transform: scale(0.82);
   transform-origin: 60% 50%;
   opacity: 0.8;
