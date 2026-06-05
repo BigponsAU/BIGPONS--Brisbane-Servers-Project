@@ -1,14 +1,10 @@
 ---
 import '../styles/global.css';
-import '../styles/symmetry-harmony.css';
-import '../styles/geometric-detailing.css';
-import '../styles/floral-pattern.css';
-import '../styles/tartan-pattern.css';
 import '../styles/site-framework.css';
 import '../styles/site-frame-shell.css';
 import '../styles/brand-chroma.css';
 import '../styles/nav-mega-menu.css';
-import '../styles/marketing-constellation.css';
+import MarketingDecorStyles from '../components/MarketingDecorStyles.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import favicon from '../favicon.png';
 import {
@@ -46,6 +42,8 @@ interface Props {
   valueProfile?: PageValueProfile;
   zoomProfile?: PageZoomProfile;
   density?: PageDensity;
+  /** Utility routes (account) skip decorative marketing CSS for faster paint. */
+  styleProfile?: 'full' | 'utility';
 }
 
 const {
@@ -61,7 +59,10 @@ const {
   valueProfile,
   zoomProfile,
   density,
+  styleProfile: styleProfileProp,
 } = Astro.props;
+
+const styleProfile = styleProfileProp ?? (pageId === 'account' ? 'utility' : 'full');
 
 const siteUrl = Astro.site ?? new URL('https://brisbaneservers.com');
 const siteOrigin = siteUrl.origin;
@@ -170,6 +171,8 @@ const skipFontAwesome = pageId === 'account';
       })();
     </script>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+    {pageId === 'account' && <link rel="dns-prefetch" href="https://api.brisbaneservers.com" />}
+    {pageId === 'account' && <link rel="preconnect" href="https://api.brisbaneservers.com" crossorigin />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -194,6 +197,7 @@ const skipFontAwesome = pageId === 'account';
         </noscript>
       </>
     )}
+    {styleProfile === 'full' && <MarketingDecorStyles />}
   </head>
   <body
     data-page-id={pageId ?? descriptor.pageId}

@@ -3,6 +3,10 @@
 
 import { closeMobileNav } from './nav-mobile';
 
+function isAccountUtilityPage(): boolean {
+  return document.body?.dataset.pageId === 'account';
+}
+
 // ===== NAVIGATION TOGGLE =====
 document.addEventListener('DOMContentLoaded', function() {
     try { localStorage.removeItem('authToken'); } catch { /* legacy session cleanup */ }
@@ -93,7 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setActiveNavLink();
 
     // Defer auth probe — avoids blocking first paint / interaction (Render cold-start).
-    scheduleAccountLinkHydration();
+    if (!isAccountUtilityPage()) {
+        scheduleAccountLinkHydration();
+    }
 });
 
 function scheduleAccountLinkHydration(): void {
@@ -563,6 +569,7 @@ function initSemanticSearchLazy(): void {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (isAccountUtilityPage()) return;
     initSemanticSearchLazy();
 });
 
@@ -594,6 +601,8 @@ function applySecureFormDefaults(): void {
 
 document.addEventListener('DOMContentLoaded', function() {
     applySecureFormDefaults();
+
+    if (isAccountUtilityPage()) return;
 
     document.querySelectorAll('.inquiry-form form').forEach((form) => {
         form.addEventListener('submit', handleFormSubmit);
@@ -716,6 +725,8 @@ function expandCards(button: HTMLElement): void {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    if (isAccountUtilityPage()) return;
+
     document.addEventListener('click', function(e: MouseEvent) {
         const target = e.target as HTMLElement;
         const expandButton = target.closest('[data-expand-cards]') as HTMLElement | null;
@@ -744,6 +755,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // ===== INDUSTRY FILTERING =====
 document.addEventListener('DOMContentLoaded', function() {
+    if (isAccountUtilityPage()) return;
+
     const filterButtons = document.querySelectorAll('.filter-btn');
     const resourceItems = document.querySelectorAll('.resource-item');
     const projectItems = document.querySelectorAll('.project-item');
