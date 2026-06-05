@@ -1,0 +1,169 @@
+---
+import Card from './Card.astro';
+import CardGrid from './CardGrid.astro';
+import SemanticText from './SemanticText.astro';
+import SiteLink from './SiteLink.astro';
+import SectionIntro from './SectionIntro.astro';
+import {
+  brisbaneServersProjectObjective,
+  type InferenceSource,
+} from '../data/brisbane-servers-project-objective';
+import { sitePath } from '../lib/site-path';
+
+interface Props {
+  /** Show full objective block including indicators; compact omits indicator grid */
+  variant?: 'full' | 'compact';
+  sectionId?: string;
+  showInferenceSources?: boolean;
+}
+
+const {
+  variant = 'full',
+  sectionId = 'project-objective',
+  showInferenceSources = true,
+} = Astro.props;
+
+const { businessObjective, indicators, inferenceProgram, primaryOutcome, necessityForSite } =
+  brisbaneServersProjectObjective;
+---
+
+<section
+  id={sectionId}
+  class="section section-tartan-accent section-home-band--surface project-objective-panel"
+  aria-labelledby={`${sectionId}-heading`}
+>
+  <div class="container">
+    <SectionIntro
+      eyebrow={businessObjective.title}
+      title="Implementation and inference"
+      byline={businessObjective.summary}
+      titleId={`${sectionId}-heading`}
+    />
+
+    <p class="project-objective-panel__outcome">
+      <SemanticText text={primaryOutcome} semanticLevel="high" />
+    </p>
+
+    {
+      variant === 'full' && (
+        <>
+          <p class="project-objective-panel__implementation">
+            <SemanticText text={businessObjective.implementationGoal} semanticLevel="normal" />
+          </p>
+          <CardGrid columns={2} style="margin-top: var(--space-xl);">
+            {indicators.map((indicator) => (
+              <Card title={indicator.label} description={indicator.description} icon="fas fa-bullseye" />
+            ))}
+          </CardGrid>
+        </>
+      )
+    }
+
+    <div class="project-objective-panel__temporal">
+      <h3 class="project-objective-panel__subhead">{inferenceProgram.title}</h3>
+      <p>
+        <strong>Capture:</strong>{' '}
+        <SemanticText text={inferenceProgram.temporalFrame.capture} semanticLevel="normal" isChild={true} />
+      </p>
+      <p>
+        <strong>Contemplation:</strong>{' '}
+        <SemanticText text={inferenceProgram.temporalFrame.contemplation} semanticLevel="normal" isChild={true} />
+      </p>
+    </div>
+
+    {
+      showInferenceSources && (
+        <ul class="project-objective-panel__sources" aria-label="Inference sources on this site">
+          {inferenceProgram.sources.map((source: InferenceSource) => (
+            <li>
+              <SiteLink href={source.href} class="project-objective-panel__source-link">
+                {source.label}
+              </SiteLink>
+              <span class="project-objective-panel__source-role">{source.role}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <p class="project-objective-panel__necessity">
+      <SemanticText text={necessityForSite} semanticLevel="normal" />
+    </p>
+  </div>
+</section>
+
+<style>
+  .project-objective-panel__outcome {
+    margin-top: var(--space-lg);
+    max-width: 72ch;
+    font-size: var(--text-md);
+    line-height: 1.65;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+  }
+
+  .project-objective-panel__implementation {
+    margin-top: var(--space-md);
+    max-width: 72ch;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  .project-objective-panel__temporal {
+    margin-top: var(--space-2xl);
+    max-width: 72ch;
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.12);
+  }
+
+  .project-objective-panel__subhead {
+    margin: 0 0 var(--space-md);
+    font-size: var(--text-lg);
+  }
+
+  .project-objective-panel__temporal p {
+    margin: 0 0 var(--space-sm);
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .project-objective-panel__sources {
+    list-style: none;
+    margin: var(--space-xl) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    max-width: 80ch;
+  }
+
+  .project-objective-panel__sources li {
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--border-radius);
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.18);
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .project-objective-panel__source-link {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+  }
+
+  .project-objective-panel__source-role {
+    display: block;
+    margin-top: var(--space-xs);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  .project-objective-panel__necessity {
+    margin-top: var(--space-xl);
+    max-width: 72ch;
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+</style>

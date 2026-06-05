@@ -10,6 +10,12 @@ import SemanticText from '../components/SemanticText.astro';
 import SectionIntro from '../components/SectionIntro.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ProjectObjectivePanel from '../components/ProjectObjectivePanel.astro';
+import SiteLink from '../components/SiteLink.astro';
+import {
+  brisbaneServersProjectObjective,
+  projectPurposeNav,
+} from '../data/brisbane-servers-project-objective';
 import { industries } from '../data/industries';
 import { valueProposition } from '../data/value-proposition';
 import { resourcesHubSeo } from '../lib/content-seo';
@@ -69,6 +75,18 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
         <p class="section-description section-intro__byline" style="margin-top: calc(-1 * var(--space-md)); max-width: 62ch;">
           <SemanticText text={resourceVoiceInterconnection.headline} semanticLevel="normal" isChild={true} />
         </p>
+        <p class="section-description section-intro__byline" style="margin-top: var(--space-md); max-width: 62ch;">
+          <SemanticText text={projectPurposeNav.publicLead} semanticLevel="normal" isChild={true} />
+        </p>
+        <p class="resources-2032-bridge">
+          <SemanticText text={valueProposition.projectObjective.implementationLead} semanticLevel="normal" />
+          {' '}
+          <SiteLink href={projectPurposeNav.programPage.href}>Brisbane 2032 program</SiteLink>
+          {' '}
+          documents the civic-scale side; this hub holds industry inference and BIGPONS-captured history for
+          {' '}
+          {brisbaneServersProjectObjective.inferenceProgram.temporalFrame.contemplation.toLowerCase()}.
+        </p>
         
         <CardGrid columns={3} style="margin-top: var(--space-2xl);">
           <Card
@@ -89,6 +107,8 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
         </CardGrid>
       </div>
     </section>
+
+    <ProjectObjectivePanel sectionId="resources-project-objective" variant="compact" />
 
     {featuredResources.length > 0 && (
       <!-- Featured Resources Section -->
@@ -207,4 +227,18 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
     <InquiryForm locationField={true} />
     </MarketingPageBands>
 </SiteShell>
+
+<style>
+  .resources-2032-bridge {
+    margin-top: var(--space-md);
+    max-width: 72ch;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  .resources-2032-bridge a {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+  }
+</style>
 

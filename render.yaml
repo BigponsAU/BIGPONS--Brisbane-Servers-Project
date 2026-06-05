@@ -1,18 +1,17 @@
 # Render Blueprint — Brisbane Servers hybrid production
 # https://render.com/docs/blueprint-spec
 #
-# LIVE (2026-05-26, workspace My Workspace via Render MCP):
+# LIVE (workspace My Workspace via Render MCP):
 #   - brisbane-servers-api  → https://brisbane-servers-api.onrender.com
-#   - brisbane-servers-db   → Postgres (link to API for DATABASE_URL)
+#   - Postgres: Neon only (DATABASE_URL on API — not Render Postgres; free Render DB expires in 30 days)
 # Static frontend: Cloudflare Pages project "brisbaneservers" (MCP cloudflare-api).
-# Map: docs/operations/HOSTING_MCP_WORKSPACE.md
+# Map: docs/operations/HOSTING_MCP_WORKSPACE.md · Neon: docs/operations/NEON_DATABASE.md
 #
 # Remaining operator steps:
-# 1. ~~Link Postgres → brisbane-servers-api~~ DATABASE_URL set on API.
-# 2. Set sync:false env: SMTP_*, CLOUDFLARE_PAGES_DEPLOY_HOOK_URL.
-# 3. Confirm disk voice-storage mounted (below).
-# 4. Cloudflare Pages env: PUBLIC_API_BASE_URL=https://brisbane-servers-api.onrender.com/api
-#    (or https://api.brisbaneservers.com/api when api DNS is stable, DNS-only).
+# 1. Set DATABASE_URL to Neon pooled URL: npm run configure:neon-database
+# 2. Decommission legacy Render Postgres if present: npm run decommission:render-postgres
+# 3. Set sync:false env: SMTP_*, CLOUDFLARE_PAGES_DEPLOY_HOOK_URL.
+# 4. Cloudflare Pages env: PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api
 
 services:
   - type: web
@@ -65,6 +64,12 @@ services:
         sync: false
       - key: SMTP_PASS
         sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_OAUTH_REDIRECT_URI
+        sync: false
 
   # Optional legacy voice-framework dashboard (port 3001) — not used by brisbaneservers.com Pages site
   - type: web
@@ -85,8 +90,4 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-databases:
-  - name: brisbane-servers-db
-    databaseName: brisbane_servers
-    user: brisbane_servers
-    plan: free
+# Postgres: Neon only — see docs/operations/NEON_DATABASE.md (no Render Postgres in blueprint).

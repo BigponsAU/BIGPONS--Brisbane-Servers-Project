@@ -54,9 +54,16 @@ See [RENDER_MCP.md](RENDER_MCP.md) — `render` server in `.cursor/mcp.json`. Li
 
 Direct `url: https://mcp.cloudflare.com/mcp` in Cursor often fails with **`Failed to open SSE stream: Not Found`**. Use **`mcp-remote`** in `.cursor/mcp.json` with **no** `Authorization` header (OAuth stores tokens locally).
 
-1. **Settings → Tools & MCP** → **`cloudflare-api`** → **Connect** → complete browser OAuth (grant **Pages Edit**, **Email Routing Edit**, **DNS Edit**).
-2. **Developer: Reload Window** if the server stays red after authorizing.
-3. Confirm **`cloudflare-api`** is green.
+`.cursor/mcp.json` uses `--host 127.0.0.1`, `--auth-timeout 180`, and `--debug` to reduce **localhost refused to connect** during OAuth.
+
+1. **Developer: Reload Window** (pick up `.cursor/mcp.json` changes).
+2. Run **`npm run connect:cloudflare-mcp-oauth`** — opens a helper window that keeps the callback listener alive; complete Cloudflare sign-in in the browser.
+3. Or **Settings → Tools & MCP** → **`cloudflare-api`** → **Connect** (complete within 3 minutes; do not reload Cursor mid-flow).
+4. Grant **Pages Edit**, **Email Routing Edit**, **DNS Edit** on the Cloudflare consent screen.
+5. **Developer: Reload Window** if the server stays red after authorizing.
+6. Confirm **`cloudflare-api`** is green.
+
+**`ERR_CONNECTION_REFUSED` on `localhost:…/oauth/callback`:** the OAuth listener died before the browser returned. Clear cache (`npm run reset:cloudflare-mcp-oauth`), then use `npm run connect:cloudflare-mcp-oauth` instead of Connect-only. Debug logs: `%USERPROFILE%\.mcp-auth\*_debug.log`.
 
 **Do not** add `--header Authorization:...` unless you are using an API token only — an empty header causes **`401 after successful authentication`**.
 

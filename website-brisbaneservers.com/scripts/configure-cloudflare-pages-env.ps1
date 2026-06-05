@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 
 $accountId = '92d738484386c6b613628bbeafebe2f9'
 $projectName = 'brisbaneservers'
-$apiUrl = 'https://brisbane-servers-api.onrender.com/api'
+$apiUrl = 'https://api.brisbaneservers.com/api'
 $siteUrl = 'https://brisbaneservers.com'
 
 $requiredEnv = [ordered]@{
@@ -107,4 +107,4 @@ if ($deploy.success) {
 
 Write-Host ""
 Write-Host "Verify after deploy completes:" -ForegroundColor Yellow
-Write-Host "  https://brisbaneservers.com/account/ — view source: data-public-api-base-url=`"$apiUrl`"" -ForegroundColor DarkGray
+Write-Host ('  https://brisbaneservers.com/account/ - view source: data-public-api-base-url=' + $apiUrl) -ForegroundColor DarkGray

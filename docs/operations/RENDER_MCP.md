@@ -38,10 +38,12 @@ List my Render services
 | Render resource | ID / URL | Status |
 |-----------------|----------|--------|
 | API `brisbane-servers-api` | `srv-d8ae7qbbc2fs73fv227g` · https://brisbane-servers-api.onrender.com | **Live** |
-| Postgres `brisbane-servers-db` | `dpg-d8ae84reo5us739jtpi0-a` | **Available** — link to API for `DATABASE_URL` |
+| Postgres | **Neon** via `DATABASE_URL` on API — **not** Render Postgres | See [NEON_DATABASE.md](NEON_DATABASE.md) |
 | Custom domain | `api.brisbaneservers.com` | **Verified** on Render |
 
-Cloudflare Pages **`brisbaneservers`** points `PUBLIC_API_BASE_URL` at the Render URL above.
+Legacy `brisbane-servers-db` (Render free Postgres) should be deleted after Neon migration: `npm run decommission:render-postgres`.
+
+Cloudflare Pages **`brisbaneservers`** uses `PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api`.
 
 **Full map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md) · [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md)
 

@@ -1,5 +1,5 @@
 /**
- * Shared Postgres pool for auth + corpus (Neon, Supabase, Render Postgres, etc.).
+ * Shared Postgres pool for auth + corpus (Neon recommended; Supabase also supported).
  */
 import { Pool } from 'pg';
 import { getRuntimeEnv } from '../../utils/runtime-env';

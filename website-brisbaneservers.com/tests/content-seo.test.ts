@@ -31,7 +31,7 @@ describe('content registry', () => {
 
     expect(paths).toEqual(expect.arrayContaining(getCaseStudyPaths()));
     expect(paths).toEqual(expect.arrayContaining(getTopicGuidePaths()));
-    expect(paths).toEqual(expect.arrayContaining(['/case-studies']));
+    expect(paths).toEqual(expect.arrayContaining(['/case-studies', '/brisbane-2032']));
   });
 
   it('passes validation for current static content', () => {

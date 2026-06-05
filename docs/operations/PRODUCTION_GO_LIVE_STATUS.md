@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-03 (Render redeploy + Cloudflare Pages)
+**Last synced:** 2026-06-04 (Neon migration path; Render Postgres retired from blueprint)
 
 ---
+
+## Recent changes (2026-06-04)
+
+- **Neon-only Postgres:** Removed `brisbane-servers-db` from `render.yaml`. Scripts: `configure:neon-database`, `migrate:render-postgres-to-neon`, `decommission:render-postgres`, `verify:hosting-mcp`.
+- **Health endpoint** exposes `persistence.databaseProvider` (neon vs render) for ops checks.
 
 ## Recent changes (2026-06-03)
 
@@ -16,7 +21,8 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | Platform | MCP | Live resource |
 |----------|-----|----------------|
 | **Cloudflare** | `cloudflare-api` | Pages **`brisbaneservers`**, zone **`brisbaneservers.com`** |
-| **Render** | `render` | **`brisbane-servers-api`**, **`brisbane-servers-db`** |
+| **Render** | `render` | **`brisbane-servers-api`** (API host only) |
+| **Neon** | — | Postgres via `DATABASE_URL` on API |
 
 ---
 
@@ -46,8 +52,9 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 | Check | Status |
 |-------|--------|
 | `brisbane-servers-api` deployed | **Live** — https://brisbane-servers-api.onrender.com/api/health |
-| `brisbane-servers-db` (Postgres 16) | **Available** |
-| `DATABASE_URL` on API | **Done** — internal URL (no `sslmode=require`; fixes self-signed cert on sessions) |
+| Postgres (Neon) | **Migrate** — `npm run configure:neon-database` |
+| ~~`brisbane-servers-db` (Render)~~ | **Retire** — `npm run decommission:render-postgres` after Neon verified |
+| `DATABASE_URL` on API | **Set to Neon pooled URL** |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | **Set** — `bigpons@brisbaneservers.com` bootstrap super-admin |
 | `CRON_SECRET` | **Set** — for `provision-admin` after next deploy |
 | `JWT_SECRET` | **Set** |

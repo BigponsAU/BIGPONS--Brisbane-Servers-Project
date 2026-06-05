@@ -581,6 +581,13 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         showLogin();
       } else {
         clearSessionToken();
+        if (usesHttpOnlyCookieAuth(VOICE_API_URL)) {
+          try {
+            await workspaceFetch(`${VOICE_API_URL}/auth/logout`, { method: 'POST' });
+          } catch {
+            /* best-effort cookie clear */
+          }
+        }
         showLogin();
       }
     } catch (error) {
@@ -679,16 +686,26 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const password = formData.get('password') as string;
 
     const errorDiv = document.getElementById('register-error');
+    const submitBtn = document.getElementById('register-submit-btn') as HTMLButtonElement | null;
     if (errorDiv) errorDiv.classList.remove('show');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating account…';
+    }
 
     try {
+      await ensureReachableApiBase();
+      const controller = new AbortController();
+      const registerTimeout = window.setTimeout(() => controller.abort(), LOGIN_TIMEOUT_MS);
       const response = await workspaceFetch(`${VOICE_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+      window.clearTimeout(registerTimeout);
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.success) {
         form.reset();
@@ -736,8 +753,16 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       }
     } catch (error) {
       if (errorDiv) {
-        errorDiv.textContent = 'Connection error. Please try again.';
+        const timedOut = error instanceof DOMException && error.name === 'AbortError';
+        errorDiv.textContent = timedOut
+          ? 'Sign-up timed out. The API may be waking up — wait a moment and try again.'
+          : 'Connection error. Please try again.';
         errorDiv.classList.add('show');
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create account';
       }
     }
   });
@@ -749,12 +774,13 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const email = formData.get('email') as string;
     setMessage('resend-verification-error', 'Sending verification email...');
     try {
+      await ensureReachableApiBase();
       const response = await workspaceFetch(`${VOICE_API_URL}/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
         showAuthBanner(
           maybeAppendPreviewLink(
@@ -781,12 +807,13 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const email = formData.get('email') as string;
     setMessage('forgot-password-error', 'Sending reset link...');
     try {
+      await ensureReachableApiBase();
       const response = await workspaceFetch(`${VOICE_API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       setMessage('forgot-password-error', maybeAppendPreviewLink(data.message || 'If the account exists, a reset link has been sent.', data.previewUrl), !response.ok);
     } catch {
       setMessage('forgot-password-error', 'Connection error. Please try again.', true);

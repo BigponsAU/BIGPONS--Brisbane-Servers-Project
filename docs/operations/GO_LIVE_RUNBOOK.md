@@ -8,7 +8,7 @@ Cohesive checklist to connect **Cloudflare Pages** (public site) + **Node API** 
 |-------|-------------------|
 | Pages | `brisbaneservers` → https://brisbaneservers.com |
 | API | `brisbane-servers-api` → https://brisbane-servers-api.onrender.com/api |
-| Postgres | `brisbane-servers-db` (link → API for `DATABASE_URL`) |
+| Postgres | **Neon** via `DATABASE_URL` on API ([NEON_DATABASE.md](NEON_DATABASE.md)) |
 
 **Canonical API URL (target):** `https://api.brisbaneservers.com/api`  
 **Current Pages env:** `https://brisbane-servers-api.onrender.com/api`

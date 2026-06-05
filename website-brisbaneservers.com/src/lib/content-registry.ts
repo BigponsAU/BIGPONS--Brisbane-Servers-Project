@@ -24,6 +24,7 @@ export type ContentSeoIssue = {
 const STATIC_MARKETING_PATHS = [
   '/',
   '/about',
+  '/brisbane-2032',
   '/services',
   '/resources',
   '/projects',

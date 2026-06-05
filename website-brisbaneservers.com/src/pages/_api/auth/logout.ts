@@ -13,15 +13,18 @@ export const POST: APIRoute = async ({ request }) => {
   const authResult = await requireAuth(request);
   if ('error' in authResult) {
     await logAuthEvent({ eventType: 'auth.logout.unauthorized' });
+    // Still clear the HttpOnly cookie so stale sessions do not block the next sign-in.
     return new Response(
       JSON.stringify({
-        error: authResult.error,
-        code: authResult.code,
-        success: false
+        success: true,
+        message: 'Signed out (session was already invalid)'
       }),
       {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Set-Cookie': authTokenClearCookie(request)
+        }
       }
     );
   }

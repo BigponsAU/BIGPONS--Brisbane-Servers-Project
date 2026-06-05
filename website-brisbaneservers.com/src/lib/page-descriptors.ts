@@ -34,6 +34,13 @@ const exactDescriptors: Record<string, PageDescriptor> = {
     zoomProfile: 'balanced',
     density: 'comfortable',
   },
+  '/brisbane-2032': {
+    pageId: 'brisbane-2032',
+    shellVariant: 'public',
+    valueProfile: 'foundation',
+    zoomProfile: 'balanced',
+    density: 'comfortable',
+  },
   '/services': {
     pageId: 'services',
     shellVariant: 'public',

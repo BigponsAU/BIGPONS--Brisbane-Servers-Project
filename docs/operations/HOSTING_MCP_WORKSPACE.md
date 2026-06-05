@@ -1,8 +1,16 @@
-# Hosting — MCP-linked workspace
+# Hosting stack — who does what
 
-Production is split across **Cloudflare Pages** (static site) and **Render** (Node API + Postgres). Both are managed from this repo via Cursor MCP (`.cursor/mcp.json`).
+**Last updated:** 2026-06-04
 
-**Last synced:** 2026-05-29
+| Platform | Role | MCP in Cursor | Setup script |
+|----------|------|---------------|--------------|
+| **Cloudflare** | Static site (Pages), DNS, inbound email routing | `cloudflare-api`, `cloudflare-docs` | `npm run configure:cloudflare-mcp` |
+| **Render** | **Node API only** (`brisbane-servers-api`) | `render` | `npm run configure:render-mcp` |
+| **Neon** | **Postgres** (users, sessions, corpus) | *none* — dashboard + env on Render | `npm run configure:neon-database` |
+| **Resend** | Outbound auth email | *none* — `RESEND_API_KEY` on Render | `configure-render-auth.ps1` |
+| **Google Cloud** | Sign-in with Google (OAuth client) | `google-cloud-bigquery` optional (analytics only) | Google Console + Render env |
+
+**Render is not removed** — only **Render Postgres** is retired. Neon replaces the database; Render still runs the API.
 
 ---
 
@@ -10,11 +18,12 @@ Production is split across **Cloudflare Pages** (static site) and **Render** (No
 
 | Server | Config | Use for |
 |--------|--------|---------|
-| `cloudflare-api` | OAuth via `mcp-remote` → `https://mcp.cloudflare.com/mcp` | Pages, DNS, Email Routing |
+| `cloudflare-api` | OAuth via `mcp-remote` → `https://mcp.cloudflare.com/mcp` | Pages env, DNS, Email Routing (chat) |
+| `cloudflare-api-token` | Optional — add after `npm run configure:cloudflare-mcp` | Same API, token auth (backup) |
 | `cloudflare-docs` | `https://docs.mcp.cloudflare.com/mcp` | Cloudflare documentation |
-| `render` | `RENDER_AUTH_HEADER` → `https://mcp.render.com/mcp` | Services, env vars, logs, Postgres |
+| `render` | `RENDER_AUTH_HEADER` → `https://mcp.render.com/mcp` | API service, env vars, logs, deploys |
 
-Setup: [CLOUDFLARE_PAGES.md](CLOUDFLARE_PAGES.md) · [RENDER_MCP.md](RENDER_MCP.md)
+One-shot local setup: **`npm run configure:hosting`** · Verify: **`npm run verify:hosting-mcp`**
 
 In chat after connect:
 
@@ -32,14 +41,13 @@ GitHub: BigponsAU/BIGPONS--Brisbane-Servers-Project (main)
     ├─► Cloudflare Pages: brisbaneservers
     │       Build: website-brisbaneservers.com → npm run build → dist
     │       URL: https://brisbaneservers.com
-    │       Env: PUBLIC_API_BASE_URL → Render API (below)
+    │       Env: PUBLIC_API_BASE_URL → https://api.brisbaneservers.com/api
     │
-    └─► Render (workspace: My Workspace)
-            ├─ Web: brisbane-servers-api
-            │     https://brisbane-servers-api.onrender.com
-            │     Custom domain: api.brisbaneservers.com (verified on Render)
-            │     Health: /api/health
-            └─ Postgres: brisbane-servers-db (available)
+    └─► Render: brisbane-servers-api (web service only)
+            URL: https://brisbane-servers-api.onrender.com
+            Custom domain: api.brisbaneservers.com
+            DATABASE_URL → Neon (pooled connection string)
+            Health: /api/health (includes persistence.databaseProvider)
 ```
 
 ---
@@ -50,10 +58,8 @@ GitHub: BigponsAU/BIGPONS--Brisbane-Servers-Project (main)
 |------|--------|
 | Zone | `brisbaneservers.com` (active) |
 | Pages project | `brisbaneservers` |
-| Pages subdomain | `brisbaneservers.pages.dev` |
 | Custom domain | `brisbaneservers.com` — **active** |
-| Apex DNS | CNAME → `brisbaneservers.pages.dev` |
-| `api` DNS | CNAME → `brisbane-servers-api.onrender.com` (**DNS only**, grey cloud) |
+| `api` DNS | CNAME → Render (**DNS only**, grey cloud) |
 
 ### Pages production env
 
@@ -61,45 +67,43 @@ GitHub: BigponsAU/BIGPONS--Brisbane-Servers-Project (main)
 |----------|--------|
 | `PUBLIC_SITE_URL` | `https://brisbaneservers.com` |
 | `PUBLIC_SITE_BASE` | `/` |
-| `PUBLIC_API_BASE_URL` | `https://brisbane-servers-api.onrender.com/api` |
-| `INTERNAL_API_BASE_URL` | `https://brisbane-servers-api.onrender.com/api` |
+| `PUBLIC_API_BASE_URL` | `https://api.brisbaneservers.com/api` |
+| `INTERNAL_API_BASE_URL` | `https://api.brisbaneservers.com/api` |
 
-**Auth security (approved):** No JWT in `localStorage`. HttpOnly cookie when API uses `*.brisbaneservers.com`; `sessionStorage` tab fallback only for cross-origin Render API. CI rejects `api1` misconfigurations. Apply env: `npm run configure:cloudflare-pages-env` (requires `CLOUDFLARE_API_TOKEN`).
+Apply: `npm run configure:cloudflare-pages-env` (requires `CLOUDFLARE_API_TOKEN` or MCP OAuth with Pages Edit).
 
-Use `https://api.brisbaneservers.com/api` only after `api` DNS is stable (no Cloudflare Error 1000 on proxied orange-cloud).
+**Never** put `DATABASE_URL`, `JWT_SECRET`, or `RESEND_API_KEY` on Cloudflare Pages.
 
 ---
 
-## Render (linked)
+## Render (API host only)
 
 | Item | Value |
 |------|--------|
 | Workspace | My Workspace (`tea-d89suggg4nts73evj2pg`) |
 | API service | `brisbane-servers-api` — `srv-d8ae7qbbc2fs73fv227g` |
-| Postgres | `brisbane-servers-db` — `dpg-d8ae84reo5us739jtpi0-a` |
+| ~~Postgres~~ | **Removed** — use Neon ([NEON_DATABASE.md](NEON_DATABASE.md)) |
 | Repo | `https://github.com/BigponsAU/BIGPONS--Brisbane-Servers-Project` |
-| Root dir | `website-brisbaneservers.com` |
 | Start | `npm run start:api` |
 
 ### API env (set on Render)
 
-`NODE_ENV`, `PORT`, `MONOREPO_ROOT`, `PUBLIC_SITE_URL`, `ALLOWED_ORIGINS`, `ALLOW_CLOUDFLARE_PAGES`, `TRUST_PROXY`, `JWT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `AUTH_EMAIL_REPLY_TO`
+`NODE_ENV`, `PORT`, `DATABASE_URL` (Neon), `JWT_SECRET`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `GOOGLE_OAUTH_*`, `CRON_SECRET`, `ADMIN_*`
 
 | Auth email | Value |
 |------------|--------|
 | `AUTH_EMAIL_FROM` | `Brisbane Servers <support@mail.brisbaneservers.com>` |
 | `AUTH_EMAIL_REPLY_TO` | `connect@brisbaneservers.com` |
 
-Long-term target: `support@brisbaneservers.com` after Resend verifies the apex domain (add root DKIM in Cloudflare).
+---
 
-### Still wire in Render dashboard
+## Neon migration checklist
 
-| Item | Why |
-|------|-----|
-| ~~Link Postgres → API~~ | **Done** — `DATABASE_URL` set (internal connection) |
-| **Google OAuth** | **Done** — `/api/auth/oauth/status` → `google: true` |
-| **Persistent disk** | `voice-framework/storage` JSON corpus ([`render.yaml`](../../render.yaml)) |
-| **`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`** | SEO rebuild on publish |
+1. Create project at [console.neon.tech](https://console.neon.tech) → copy **pooled** connection string.
+2. `npm run configure:neon-database` — saves `NEON_DATABASE_URL` locally, sets Render `DATABASE_URL`, redeploys API.
+3. If users exist on old Render Postgres: `npm run migrate:render-postgres-to-neon`.
+4. Verify: `npm run verify:production -- --api https://api.brisbaneservers.com` (expects `databaseProvider: neon`).
+5. `npm run decommission:render-postgres` — deletes `brisbane-servers-db`.
 
 ---
 
@@ -107,15 +111,16 @@ Long-term target: `support@brisbaneservers.com` after Resend verifies the apex d
 
 ```bash
 cd website-brisbaneservers.com
-npm run verify:production -- --api https://brisbane-servers-api.onrender.com
-curl -sS https://brisbaneservers.com/api/health   # via Pages proxy path — use Render URL for API
-curl -sS https://brisbane-servers-api.onrender.com/api/health
+npm run verify:hosting-mcp
+npm run verify:production -- --api https://api.brisbaneservers.com
+npm run verify:cloudflare-pages-env
 ```
 
 ---
 
 ## Related
 
-- [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md) — phased checklist
-- [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md)
-- [`render.yaml`](../../render.yaml) — blueprint (matches live service names)
+- [NEON_DATABASE.md](NEON_DATABASE.md)
+- [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md)
+- [RENDER_MCP.md](RENDER_MCP.md)
+- [CLOUDFLARE_PAGES.md](CLOUDFLARE_PAGES.md)

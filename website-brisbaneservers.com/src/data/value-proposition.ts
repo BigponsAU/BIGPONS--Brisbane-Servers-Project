@@ -135,7 +135,7 @@ export const valueProposition = {
         eyebrow: 'Community programme',
         title: 'Why contribute',
         byline:
-          'Field-tested context strengthens every hub. Submissions are reviewed, scored against our voice profile, and published with clear attribution.',
+          'Field-tested context strengthens every hub and the inference corpus BIGPONS maintains — including Brisbane 2032 network implementation history captured for future contemplation on Resources.',
       },
       pipeline: {
         eyebrow: 'Review pipeline',
@@ -166,9 +166,16 @@ export const valueProposition = {
       'Case studies and delivery patterns connect your operating context to architecture, build work, and documentation you can reuse—substantive delivery aligned to what we scope together.',
   },
 
+  projectObjective: {
+    description:
+      'Modelable objective: implement and document 2032-scale network capacity, capture BIGPONS delivery history on this site, and infer next steps from Resources — past evidence informing future contemplation.',
+    implementationLead:
+      'Networking hardware, backbone capacity, and operational structure are not abstract goals — they are what we implement, measure, and publish so the corpus stays inference-ready.',
+  },
+
   resources: {
     description:
-      'Industry guides on technology, grants, automation, and implementation—evidence-led content for Australian SMEs, consistent with how Brisbane Servers consults.',
+      'Industry guides on technology, grants, automation, and implementation—evidence-led content for Australian SMEs, consistent with how Brisbane Servers consults. The hub also carries civic-scale context (Brisbane 2032) and BIGPONS-captured history for inference.',
     heroTitle: 'Resources and insights',
     heroSubtitle:
       'Practical articles and playbooks—grants, automation, compliance-aware technology—so you can decide with context, evidence, and next actions in one place.',

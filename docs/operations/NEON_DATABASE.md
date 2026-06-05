@@ -1,6 +1,8 @@
-# Neon Postgres — durable $0 corpus + auth
+# Neon Postgres — production database (required)
 
-Use **[Neon](https://neon.tech)** (or Supabase) for **long-term free** Postgres. Avoid Render’s **free** Postgres (`brisbane-servers-db`) — it **expires after 30 days**.
+**Neon is the only supported production Postgres.** Render hosts the API; Neon stores all durable data.
+
+Use **[Neon](https://neon.tech)** for long-term free Postgres. **Do not use Render free Postgres** — it expires after 30 days and is removed from [`render.yaml`](../../render.yaml).
 
 One `DATABASE_URL` stores:
 
@@ -22,11 +24,16 @@ One `DATABASE_URL` stores:
 
 ### 2. Set on Render API
 
-**brisbane-servers-api** → **Environment**:
+```powershell
+cd website-brisbaneservers.com
+npm run configure:neon-database
+```
+
+Or manually in **brisbane-servers-api** → **Environment**:
 
 | Variable | Value |
 |----------|--------|
-| `DATABASE_URL` | Neon connection string (replace Render Postgres URL) |
+| `DATABASE_URL` | Neon **pooled** connection string |
 
 Save → redeploy.
 
@@ -40,7 +47,11 @@ Save → redeploy.
 
 ### 4. Migrate existing Render auth (optional)
 
-If you already have users on Render Postgres:
+```powershell
+npm run migrate:render-postgres-to-neon
+```
+
+Or manually:
 
 ```bash
 # Export from Render (dashboard → Connect → external URL)
@@ -52,7 +63,15 @@ psql "$NEON_DATABASE_URL" -f render-auth.sql
 
 Or register fresh accounts after switching.
 
-### 5. Verify
+### 5. Decommission Render Postgres
+
+After verify passes with `databaseProvider: neon`:
+
+```powershell
+npm run decommission:render-postgres
+```
+
+### 6. Verify
 
 ```bash
 cd website-brisbaneservers.com

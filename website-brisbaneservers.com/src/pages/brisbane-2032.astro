@@ -1,0 +1,327 @@
+---
+import SiteShell from '../layouts/SiteShell.astro';
+import Hero from '../components/Hero.astro';
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
+import InquiryForm from '../components/InquiryForm.astro';
+import SectionIntro from '../components/SectionIntro.astro';
+import SectionConstellationLayer from '../components/SectionConstellationLayer.astro';
+import MarketingPageBands from '../components/MarketingPageBands.astro';
+import SemanticText from '../components/SemanticText.astro';
+import SiteLink from '../components/SiteLink.astro';
+import ProjectObjectivePanel from '../components/ProjectObjectivePanel.astro';
+import { brisbane2032Infrastructure } from '../data/brisbane-2032-infrastructure';
+import { brisbaneServersProjectObjective } from '../data/brisbane-servers-project-objective';
+import { valueProposition } from '../data/value-proposition';
+import { sitePath } from '../lib/site-path';
+
+const currentPath = '/brisbane-2032';
+const { hero, sections, timelineNote } = brisbane2032Infrastructure;
+---
+
+<SiteShell
+  title="Brisbane 2032 · Network infrastructure"
+  description={brisbane2032Infrastructure.metaDescription}
+  currentPath={currentPath}
+  pageId="brisbane-2032"
+  valueProfile="foundation"
+  zoomProfile="balanced"
+  mainClass="main-phi-chassis"
+>
+  <Hero
+    eyebrow={hero.eyebrow}
+    title={hero.title}
+    subtitle={hero.subtitle}
+    secondaryCtaText="Explore resources"
+    secondaryCtaHref="/resources"
+    ctaText="Discuss your initiative"
+    ctaHref="/services#consultation"
+    scrollTargetId="#2032-moment"
+    scrollLabel="Read the context"
+  />
+
+  <MarketingPageBands class="marketing-page-bands--constellation-spine">
+    <section
+      id="2032-moment"
+      class="section section-tartan-accent section-home-band--surface phi-line-symmetrical"
+    >
+      <SectionConstellationLayer variant="about" semanticKey="brisbane-2032-moment" tier="whisper" placement="top-right" />
+      <div class="bg-pattern-phi-grid bg-pattern-subtle"></div>
+      <div class="phi-lateral-horizontal"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.moment.eyebrow}
+          title={sections.moment.title}
+          byline={sections.moment.byline}
+        />
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          {
+            sections.moment.points.map((point) => (
+              <Card title={point.title} description={point.description} />
+            ))
+          }
+        </CardGrid>
+        <p class="brisbane-2032-timeline-note">
+          <SemanticText text={timelineNote} semanticLevel="normal" />
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="2032-network-capacity"
+      class="section section-tartan-accent section-home-band--primary-light"
+      aria-labelledby="2032-network-heading"
+    >
+      <div class="bg-pattern-angular bg-pattern-light"></div>
+      <div class="phi-line-vertical"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.necessity.eyebrow}
+          title={sections.necessity.title}
+          byline={sections.necessity.byline}
+          titleId="2032-network-heading"
+        />
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+          {
+            sections.necessity.layers.map((layer) => (
+              <Card title={layer.title} description={layer.description} icon={layer.icon} />
+            ))
+          }
+        </CardGrid>
+      </div>
+    </section>
+
+    <section
+      id="2032-implementation"
+      class="section section-tartan-accent section-home-band--surface"
+      aria-labelledby="2032-implementation-heading"
+    >
+      <SectionConstellationLayer
+        variant="about"
+        semanticKey="brisbane-2032-implementation"
+        tier="whisper"
+        placement="bottom-right"
+      />
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-tangent"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.structure.eyebrow}
+          title={sections.structure.title}
+          byline={sections.structure.byline}
+          titleId="2032-implementation-heading"
+        />
+        <ol class="brisbane-2032-phases">
+          {
+            sections.structure.phases.map((phase, index) => (
+              <li class="brisbane-2032-phases__item">
+                <span class="brisbane-2032-phases__step" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <div>
+                  <h3>{phase.title}</h3>
+                  <p>{phase.description}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <ProjectObjectivePanel sectionId="project-purpose" variant="full" />
+
+    <section
+      id="2032-inference-corpus"
+      class="section section-tartan-accent section-home-band--surface"
+      aria-labelledby="2032-inference-heading"
+    >
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.inference.eyebrow}
+          title={sections.inference.title}
+          byline={sections.inference.byline}
+          titleId="2032-inference-heading"
+        />
+        <div class="brisbane-2032-inference-pair">
+          <article>
+            <h3>History captured</h3>
+            <p>{sections.inference.capture}</p>
+          </article>
+          <article>
+            <h3>Future contemplation</h3>
+            <p>{sections.inference.contemplation}</p>
+          </article>
+        </div>
+        <p class="brisbane-2032-inference-cta">
+          <SemanticText
+            text={`BIGPONS data published through ${brisbaneServersProjectObjective.programName} — guides, 2032 context, and reviewed contributions — feeds the same inference standard as industry Resources.`}
+            semanticLevel="normal"
+          />
+        </p>
+        <SiteLink href="/resources" class="btn btn-secondary">
+          Open Resources for inference
+        </SiteLink>
+        <SiteLink href="/contribute" class="btn btn-secondary" style="margin-left: var(--space-md);">
+          Contribute evidence
+        </SiteLink>
+      </div>
+    </section>
+
+    <section
+      id="brisbane-servers-project"
+      class="section section-tartan-accent section-home-band--primary-light"
+      aria-labelledby="2032-project-heading"
+    >
+      <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+      <div class="phi-lateral-angular-4"></div>
+      <div class="container">
+        <SectionIntro
+          eyebrow={sections.project.eyebrow}
+          title={sections.project.title}
+          byline={sections.project.byline}
+          titleId="2032-project-heading"
+        />
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          {
+            sections.project.commitments.map((item) => (
+              <Card title={item.title} description={item.description} />
+            ))
+          }
+        </CardGrid>
+        <div class="brisbane-2032-next-steps">
+          <p>
+            <SemanticText
+              text="For delivery patterns and documented outcomes, see Projects and case studies. For industry-specific guides, start under Resources."
+              semanticLevel="normal"
+            />
+          </p>
+          <div class="brisbane-2032-next-steps__actions">
+            <SiteLink href="/projects" class="btn btn-secondary">Projects</SiteLink>
+            <SiteLink href="/resources" class="btn btn-secondary">Resources</SiteLink>
+            <SiteLink href="/about" class="btn btn-secondary">About</SiteLink>
+            <SiteLink href="/services#consultation" class="btn btn-primary">Book consultation</SiteLink>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <InquiryForm
+      industryField={true}
+      title="Discuss 2032-related technology work"
+      subtitle={`Share your context — venue, supplier, operations, or civic-adjacent programme. ${valueProposition.inquiry.disclaimer}`}
+    />
+  </MarketingPageBands>
+</SiteShell>
+
+<style>
+  .brisbane-2032-timeline-note {
+    margin-top: var(--space-2xl);
+    max-width: 72ch;
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    color: var(--text-secondary);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--border-radius);
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.22);
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .brisbane-2032-phases {
+    list-style: none;
+    margin: var(--space-2xl) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    max-width: 80ch;
+  }
+
+  .brisbane-2032-phases__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-md) var(--space-lg);
+    align-items: start;
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.12);
+  }
+
+  .brisbane-2032-phases__step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--text-sm);
+    color: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.1);
+  }
+
+  .brisbane-2032-phases__item h3 {
+    margin: 0 0 var(--space-xs);
+    font-size: var(--text-lg);
+  }
+
+  .brisbane-2032-phases__item p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .brisbane-2032-next-steps {
+    margin-top: var(--space-2xl);
+    max-width: 72ch;
+  }
+
+  .brisbane-2032-next-steps p {
+    margin-bottom: var(--space-lg);
+    line-height: 1.65;
+  }
+
+  .brisbane-2032-next-steps__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .brisbane-2032-inference-pair {
+    display: grid;
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+    max-width: 80ch;
+  }
+
+  @media (min-width: 48rem) {
+    .brisbane-2032-inference-pair {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .brisbane-2032-inference-pair article {
+    padding: var(--space-lg);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.12);
+  }
+
+  .brisbane-2032-inference-pair h3 {
+    margin: 0 0 var(--space-sm);
+    font-size: var(--text-lg);
+  }
+
+  .brisbane-2032-inference-pair p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .brisbane-2032-inference-cta {
+    margin: var(--space-xl) 0 var(--space-lg);
+    max-width: 72ch;
+    line-height: 1.65;
+  }
+</style>

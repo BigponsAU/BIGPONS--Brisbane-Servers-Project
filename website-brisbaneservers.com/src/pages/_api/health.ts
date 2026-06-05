@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
 import { getVoiceFramework } from '../../utils/voice-framework';
 import { performHealthCheck } from '@voice-framework/dashboard/utils/health-check';
+import { detectDatabaseProvider } from '../../lib/db/database-provider';
+import { getRuntimeEnv } from '../../utils/runtime-env';
+import { usePostgres } from '../../lib/db/pg-pool';
 
 /**
  * Health check endpoint
@@ -11,13 +14,23 @@ export const GET: APIRoute = async () => {
   try {
     const { textStorage, profileManager } = await getVoiceFramework();
     const healthResult = await performHealthCheck(textStorage, profileManager);
+    const databaseUrl = getRuntimeEnv('DATABASE_URL');
+    const databaseProvider = detectDatabaseProvider(databaseUrl);
+    const body = {
+      ...healthResult,
+      persistence: {
+        postgresEnabled: usePostgres(),
+        databaseProvider,
+        durable: databaseProvider === 'neon' || databaseProvider === 'supabase' || databaseProvider === 'other',
+      },
+    };
     
     // Map status to HTTP status code
     const statusCode = healthResult.status === 'ok' ? 200 : 
                        healthResult.status === 'degraded' ? 200 : 503;
     
     return new Response(
-      JSON.stringify(healthResult),
+      JSON.stringify(body),
       {
         status: statusCode,
         headers: {

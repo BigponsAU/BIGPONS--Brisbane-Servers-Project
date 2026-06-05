@@ -52,6 +52,24 @@ async function main(): Promise<void> {
     detail: health.ok ? 'OK' : `HTTP ${health.status} — ${JSON.stringify(health.body)}`,
   });
 
+  const persistence =
+    health.ok &&
+    typeof health.body === 'object' &&
+    health.body !== null &&
+    'persistence' in (health.body as object)
+      ? (health.body as { persistence?: { databaseProvider?: string; durable?: boolean } }).persistence
+      : undefined;
+  if (persistence?.databaseProvider) {
+    const neonOk = persistence.databaseProvider === 'neon';
+    results.push({
+      name: 'Database provider (Neon expected)',
+      ok: neonOk,
+      detail: neonOk
+        ? 'neon'
+        : `${persistence.databaseProvider} — run npm run configure:neon-database`,
+    });
+  }
+
   const pub = await fetchJson('/resources/public');
   const pubOk =
     pub.ok &&
