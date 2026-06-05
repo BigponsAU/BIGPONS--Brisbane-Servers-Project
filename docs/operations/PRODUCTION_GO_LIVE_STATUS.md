@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-05 (Brisbane 2032 UI + auth hardening deployed)
+**Last synced:** 2026-06-05 (auth wake-up + Google OAuth UI deployed)
 
 ---
+
+## Recent changes (2026-06-05, evening)
+
+- **Auth sign-in UX** (`4289ab7`): API wake retries before login/register; **Continue with Google** shown optimistically on production; 45s login timeout + retry on 5xx; nav session probe uses `api.brisbaneservers.com`. Cloudflare Pages deploy `1e0e26b3` live on `brisbaneservers.com`.
+- **Validated:** `npm run verify:production` PASS; `npm run verify:production-auth` PASS (CORS, register, login cookie, logout); live `/account/` markup + JS bundle; `GET /api/auth/oauth/google/start` → Google OAuth redirect.
 
 ## Recent changes (2026-06-05)
 
