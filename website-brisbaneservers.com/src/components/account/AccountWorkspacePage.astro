@@ -1,7 +1,6 @@
 ---
 import SiteShell from '../../layouts/SiteShell.astro';
 import AccountSignIn from './AccountSignIn.astro';
-import AccountApiBanner from './AccountApiBanner.astro';
 import AccountWorkspaceShell from './AccountWorkspaceShell.astro';
 import AccountOverviewPanel from './AccountOverviewPanel.astro';
 import AccountResourcesPanel from './AccountResourcesPanel.astro';
@@ -53,7 +52,6 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     data-reset-token={initialResetToken}
   >
     <AccountSignIn />
-    <AccountApiBanner />
     <AccountWorkspaceShell>
       <AccountOverviewPanel />
       <AccountResourcesPanel />

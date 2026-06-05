@@ -235,23 +235,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     document.title = base.includes('| Brisbane Servers') ? base : `${base} | Brisbane Servers`;
   }
 
-  function setApiConnectivityBanner(state: 'ok' | 'warn' | 'error', message: string): void {
-    const banner = document.getElementById('api-connectivity-banner') as HTMLElement | null;
-    const messageEl = document.getElementById('api-connectivity-message');
-    const endpointEl = document.getElementById('api-connectivity-endpoint');
-    if (!banner || !messageEl) return;
-    banner.hidden = false;
-    banner.dataset.state = state;
-    messageEl.textContent = message;
-    if (endpointEl) {
-      endpointEl.textContent = state === 'ok' ? '' : VOICE_API_URL;
-    }
-    if (state === 'ok' && sessionActive) {
-      window.setTimeout(() => {
-        if (banner.dataset.state === 'ok') {
-          banner.hidden = true;
-        }
-      }, 4000);
+  function setApiConnectivityBanner(_state: 'ok' | 'warn' | 'error', message: string): void {
+    if (import.meta.env.DEV) {
+      console.debug('[Portal API]', message);
     }
   }
 
@@ -602,7 +588,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         sessionActive = true;
         showDashboard(data.user);
       } else if (response.status >= 500) {
-        setApiConnectivityBanner('error', 'Hosted API error during sign-in verification. Try again after the API host is healthy.');
         sessionActive = false;
         showLogin();
       } else {
@@ -618,10 +603,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       }
     } catch (error) {
       console.error('Auth verification failed:', error);
-      setApiConnectivityBanner(
-        'error',
-        'Cannot reach the hosted API to verify your session. Check PUBLIC_API_BASE_URL on Cloudflare Pages.'
-      );
       if (!getInMemorySessionToken()) {
         sessionActive = false;
         showLogin();
@@ -1005,7 +986,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
 
     syncPortalAccountContext();
-    void checkApiConnectivity();
 
     applyRoleAccess(user);
 
@@ -1201,7 +1181,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   });
 
   // Load dashboard data
-  async function loadDashboardData(): Promise<void> {
+  async function loadDashboardData(retryCount = 0): Promise<void> {
     try {
       const response = await workspaceFetch(`${VOICE_API_URL}/resources`, {
         headers: {
@@ -1255,18 +1235,24 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (dashboardPanel && dashboardPanel.classList.contains('active')) {
           loadStarterBlocks();
         }
-      } else if (response.status === 401 && getInMemorySessionToken()) {
-        setDashboardStatsError('Could not load workspace data. Try refreshing the page or signing in again.');
       } else if (response.status === 401) {
+        if (sessionActive && retryCount < 2) {
+          await new Promise((resolve) => window.setTimeout(resolve, 350 * (retryCount + 1)));
+          return loadDashboardData(retryCount + 1);
+        }
+        if (sessionActive) {
+          setDashboardStatsError('Could not load workspace data right now. Try refreshing the page.');
+          return;
+        }
         clearSessionToken();
         showLogin();
         showAuthBanner('Your session expired. Please sign in again.', 'warning');
       } else {
-        setDashboardStatsError('Could not load workspace data. Check the API banner above and your PUBLIC_API_BASE_URL setting.');
+        setDashboardStatsError('Could not load workspace data. Please try again in a moment.');
       }
     } catch (error) {
       console.error('[Portal] Error loading dashboard data:', error);
-      setDashboardStatsError('Could not reach the hosted API. Confirm Cloudflare Pages build env and API host are running.');
+      setDashboardStatsError('Could not reach the workspace service. Please try again in a moment.');
     }
   }
 
@@ -1805,7 +1791,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       console.log('[Portal] Fetching resources from:', url);
       console.log('[Portal] Session active:', sessionActive);
 
-      const response = await fetch(url, {
+      const response = await workspaceFetch(url, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -4252,7 +4238,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
         if (statusFilter) params.append('status', statusFilter);
         if (params.toString()) url += '?' + params.toString();
 
-        const response = await fetch(url, {
+        const response = await workspaceFetch(url, {
           headers: {
             'Content-Type': 'application/json'
           }
