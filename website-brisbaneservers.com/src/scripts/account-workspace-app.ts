@@ -229,7 +229,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     banner.dataset.state = state;
     messageEl.textContent = message;
     if (endpointEl) {
-      endpointEl.textContent = VOICE_API_URL;
+      endpointEl.textContent = state === 'ok' ? '' : VOICE_API_URL;
+    }
+    if (state === 'ok' && sessionActive) {
+      window.setTimeout(() => {
+        if (banner.dataset.state === 'ok') {
+          banner.hidden = true;
+        }
+      }, 4000);
     }
   }
 
