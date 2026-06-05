@@ -97,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function scheduleAccountLinkHydration(): void {
+    if (document.body.dataset.pageId === 'account') return;
+
     const accountLinks = document.querySelectorAll('[data-account-link="true"]');
     if (!accountLinks.length) return;
 

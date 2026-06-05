@@ -43,7 +43,7 @@ export default defineConfig({
       },
     },
     build: {
-      cssCodeSplit: false,
+      cssCodeSplit: true,
       cssMinify: true,
       assetsInlineLimit: 4096,
     },

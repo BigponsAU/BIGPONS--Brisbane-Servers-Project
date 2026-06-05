@@ -68,8 +68,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
   </div>
 
   <script>
-    import { bootAccountWorkspace } from '../../scripts/account-workspace-app.ts';
-    import { bootAccountWorkspaceExtensions } from '../../scripts/account-workspace-boot.ts';
+    import { bootAccountPage } from '../../scripts/account-page-loader.ts';
 
     function readBootConfig() {
       const root = document.getElementById('admin-portal');
@@ -85,9 +84,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     }
 
     function boot() {
-      const config = readBootConfig();
-      bootAccountWorkspace(config);
-      bootAccountWorkspaceExtensions();
+      bootAccountPage(readBootConfig());
     }
 
     if (document.readyState === 'loading') {

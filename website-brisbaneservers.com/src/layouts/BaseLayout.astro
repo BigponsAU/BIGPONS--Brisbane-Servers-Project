@@ -81,6 +81,9 @@ const jsonLd = mergeJsonLdGraph(
   buildOrganizationJsonLd(siteOrigin),
   ...structuredData,
 );
+
+/** Account workspace uses inline SVG/icons — skip Font Awesome CDN (~70KB). */
+const skipFontAwesome = pageId === 'account';
 ---
 
 <!doctype html>
@@ -178,15 +181,19 @@ const jsonLd = mergeJsonLdGraph(
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
     </noscript>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    </noscript>
+    {!skipFontAwesome && (
+      <>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          media="print"
+          onload="this.media='all'"
+        />
+        <noscript>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        </noscript>
+      </>
+    )}
   </head>
   <body
     data-page-id={pageId ?? descriptor.pageId}

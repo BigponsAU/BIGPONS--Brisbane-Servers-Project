@@ -21,7 +21,8 @@ import {
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
 
-const API_PROBE_TIMEOUT_MS = 6000;
+const API_PROBE_TIMEOUT_MS = 2500;
+const API_PROBE_OVERALL_MS = 4000;
 const LOGIN_TIMEOUT_MS = 25000;
 
 export interface AccountWorkspaceBootConfig {
@@ -278,6 +279,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   }
 
   async function ensureReachableApiBase(): Promise<void> {
+    if (isUsableAbsoluteApiBase(VOICE_API_URL)) {
+      return;
+    }
+
     const configuredBase = VOICE_API_URL || '/api';
     const candidates: string[] = [];
     const isRelativeConfigured = !/^https?:\/\//i.test(configuredBase);
@@ -301,7 +306,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     };
 
     const overallTimeout = new Promise<null>((resolve) => {
-      window.setTimeout(() => resolve(null), 9000);
+      window.setTimeout(() => resolve(null), API_PROBE_OVERALL_MS);
     });
 
     const winner = await Promise.race([
@@ -332,7 +337,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
     try {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 8000);
+      const timeout = window.setTimeout(() => controller.abort(), 4000);
       const response = await workspaceFetch(`${VOICE_API_URL}/health`, {
         signal: controller.signal,
         credentials: 'include'
@@ -964,8 +969,18 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  let extensionsBooted = false;
+
+  function ensureWorkspaceExtensions(): void {
+    if (extensionsBooted) return;
+    extensionsBooted = true;
+    void import('./account-workspace-boot.ts').then((mod) => mod.bootAccountWorkspaceExtensions());
+  }
+
   // Show dashboard
   function showDashboard(user: any): void {
+    ensureWorkspaceExtensions();
+
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Showing dashboard for user:', user);
     }
@@ -5940,14 +5955,14 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   void (async () => {
     const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
+      const oauthPromise = loadOAuthProviders();
       await ensureReachableApiBase();
-      await Promise.all([checkApiConnectivity(), loadOAuthProviders()]);
       handleOAuthReturn();
       await handleVerificationToken();
       if (pendingResetToken) {
         showResetPasswordForm();
       }
-      await checkAuth();
+      await Promise.all([checkAuth(), oauthPromise]);
       if (window.location.hash === '#create-account' && !sessionActive) {
         document.getElementById('create-account-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         (document.getElementById('register-email') as HTMLInputElement | null)?.focus();

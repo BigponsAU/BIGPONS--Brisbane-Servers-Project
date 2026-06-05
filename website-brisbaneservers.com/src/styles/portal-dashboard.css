@@ -21,6 +21,8 @@
   align-items: stretch;
   justify-content: flex-start;
   box-sizing: border-box;
+  content-visibility: visible;
+  contain-intrinsic-size: auto 720px;
   background:
     radial-gradient(circle at 18% 22%, rgba(var(--portal-primary-rgb, 10, 116, 218), 0.07) 0%, transparent 48%),
     radial-gradient(circle at 82% 78%, rgba(var(--accent-violet-rgb, 139, 92, 246), 0.06) 0%, transparent 45%),
@@ -109,6 +111,13 @@
 .site-shell--marketing.account-workspace-shell #admin-dashboard.admin-dashboard,
 .site-shell--portal #admin-dashboard.admin-dashboard {
   min-height: 0;
+  content-visibility: hidden;
+  contain-intrinsic-size: auto 600px;
+}
+
+.site-shell--marketing.account-workspace-shell #admin-dashboard.admin-dashboard[style*="display: block"],
+.site-shell--portal #admin-dashboard.admin-dashboard[style*="display: block"] {
+  content-visibility: visible;
 }
 
 .site-shell--marketing.account-workspace-shell .portal-layout,

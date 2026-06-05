@@ -153,7 +153,7 @@ function checkBrandChromaCSS(): VerificationResult {
       };
     }
 
-    const bundle = readFileSync(join(cssRoot, cssFiles[0]!), 'utf-8');
+    const bundle = cssFiles.map((file) => readFileSync(join(cssRoot, file), 'utf-8')).join('\n');
     const hasLiteralGradient =
       bundle.includes('#8b5cf6') &&
       bundle.includes('#ec4899') &&
