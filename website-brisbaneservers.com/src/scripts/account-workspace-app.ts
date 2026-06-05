@@ -27,12 +27,21 @@ const LOGIN_TIMEOUT_MS = 25000;
 export interface AccountWorkspaceBootConfig {
   publicApiBaseUrl: string;
   accountPath: string;
+  pageTitleSignedOut: string;
+  pageTitleSignedIn: string;
   initialVerifyToken: string;
   initialResetToken: string;
 }
 
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
-  const { publicApiBaseUrl, accountPath, initialVerifyToken, initialResetToken } = config;
+  const {
+    publicApiBaseUrl,
+    accountPath,
+    pageTitleSignedOut,
+    pageTitleSignedIn,
+    initialVerifyToken,
+    initialResetToken,
+  } = config;
   clearLegacyAuthTokenStorage();
           // IMMEDIATE CLEANUP - Runs before any cached scripts
           // This ensures Chrome's cached version doesn't leave stuck overlays
@@ -218,6 +227,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       navigateToPanel: (panel: string) => (window as any).navigateToPanel(panel),
       selectResource: (resourceId: string) => (window as any).selectResource?.(resourceId)
     };
+  }
+
+  function syncAccountPageTitle(signedIn: boolean): void {
+    const base = signedIn ? pageTitleSignedIn : pageTitleSignedOut;
+    document.title = base.includes('| Brisbane Servers') ? base : `${base} | Brisbane Servers`;
   }
 
   function setApiConnectivityBanner(state: 'ok' | 'warn' | 'error', message: string): void {
@@ -944,6 +958,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     updateRememberedSessionHint();
     resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
     setAccountNavSignedIn(false);
+    syncAccountPageTitle(false);
     if (pendingResetToken) {
       showResetPasswordForm();
     }
@@ -981,6 +996,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
     syncWorkspaceSidebarLayout();
     setAccountNavSignedIn(true);
+    syncAccountPageTitle(true);
 
     // Show dashboard panel by default
     navigateToPanel('dashboard');

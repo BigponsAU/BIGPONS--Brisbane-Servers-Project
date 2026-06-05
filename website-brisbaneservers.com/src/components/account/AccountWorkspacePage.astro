@@ -25,10 +25,12 @@ const { initialVerifyToken = '', initialResetToken = '' } = Astro.props;
 
 const publicApiBaseUrl = resolvePublicApiUrl('');
 const accountPath = resolvePublicSitePath('/account/');
+const pageTitleSignedOut = `Sign in · ${accountWorkspace.productName}`;
+const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWorkspace.productName}`;
 ---
 
 <SiteShell
-  title={`Sign in · ${accountWorkspace.productName}`}
+  title={pageTitleSignedOut}
   description="Secure account workspace for contributions, resources, and voice profile management"
   noindex={true}
   currentPath="/account"
@@ -45,6 +47,8 @@ const accountPath = resolvePublicSitePath('/account/');
     class="admin-portal account-workspace-root"
     data-public-api-base-url={publicApiBaseUrl}
     data-account-path={accountPath}
+    data-page-title-signed-out={pageTitleSignedOut}
+    data-page-title-signed-in={pageTitleSignedIn}
     data-verify-token={initialVerifyToken}
     data-reset-token={initialResetToken}
   >
@@ -73,6 +77,8 @@ const accountPath = resolvePublicSitePath('/account/');
       return {
         publicApiBaseUrl: dataset.publicApiBaseUrl ?? '',
         accountPath: dataset.accountPath ?? '/account/',
+        pageTitleSignedOut: dataset.pageTitleSignedOut ?? 'Sign in · Account workspace',
+        pageTitleSignedIn: dataset.pageTitleSignedIn ?? 'Workspace · Account workspace',
         initialVerifyToken: dataset.verifyToken ?? '',
         initialResetToken: dataset.resetToken ?? '',
       };
