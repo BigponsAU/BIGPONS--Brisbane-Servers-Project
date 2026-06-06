@@ -6,6 +6,11 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 
 ---
 
+## Recent changes (2026-06-05, CSP)
+
+- **Site CSP** (`public/_headers`): explicit policy for scripts, `connect-src` (API + Cloudflare RUM), Google OAuth frames. Removed duplicate CSP meta from `BaseLayout`. Account scripts use `data-cfasync="false"` to avoid Rocket Loader preload/credentials mismatch.
+- **If console still shows report-only violations** with `connect-src 'none'`: that policy is **not** from the repo — disable **Cloudflare → Security → Page Shield → Client-side resource monitoring / CSP reporting** for `brisbaneservers.com`, or remove any zone CSP report-only rule in **Rules → Configuration rules**.
+
 ## Recent changes (2026-06-05, evening)
 
 - **Auth sign-in UX** (`4289ab7`): API wake retries before login/register; **Continue with Google** shown optimistically on production; 45s login timeout + retry on 5xx; nav session probe uses `api.brisbaneservers.com`. Cloudflare Pages deploy `1e0e26b3` live on `brisbaneservers.com`.

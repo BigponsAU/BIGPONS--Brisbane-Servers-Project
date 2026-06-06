@@ -95,7 +95,6 @@ const skipFontAwesome = pageId === 'account';
       <meta http-equiv="refresh" content={`0;url=${immediateRedirectUrl}`} />
     )}
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <meta name="theme-color" content="#0A74DA" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -130,7 +129,7 @@ const skipFontAwesome = pageId === 'account';
     <title>{pageTitle}</title>
     {!noindex && <script type="application/ld+json" set:html={jsonLd} />}
     {/* Immediate cleanup script - runs before any cached scripts */}
-    <script is:inline>
+    <script is:inline data-cfasync="false">
       // Force cleanup immediately - Chrome cache workaround
       (function() {
         'use strict';
@@ -213,7 +212,7 @@ const skipFontAwesome = pageId === 'account';
   </body>
 </html>
 
-<script>
+<script data-cfasync="false">
   import '../scripts/main.ts';
 </script>
 

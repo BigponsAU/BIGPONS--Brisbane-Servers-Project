@@ -65,7 +65,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>
   </div>
 
-  <script>
+  <script data-cfasync="false">
     import { bootAccountPage } from '../../scripts/account-page-loader.ts';
 
     function readBootConfig() {
