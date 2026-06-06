@@ -8,7 +8,7 @@ export function closeDesktopNavDropdowns(): void {
     const parent = el.closest('.nav-dropdown');
     const dropdown = el.nextElementSibling as HTMLElement | null;
     el.setAttribute('aria-expanded', 'false');
-    parent?.classList.remove('active');
+    parent?.classList.remove('is-open');
     dropdown?.style.removeProperty('margin-left');
     dropdown?.style.removeProperty('left');
     dropdown?.style.removeProperty('right');

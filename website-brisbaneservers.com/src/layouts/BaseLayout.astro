@@ -152,8 +152,13 @@ const skipFontAwesome = pageId === 'account';
               overlays[i].style.display = 'none';
               overlays[i].style.pointerEvents = 'none';
             }
-            // Close info card
-            var infoCard = document.getElementById('info-card');
+            // Close route-stuck mega menus (SSR used to mark <li> active and block Sign in).
+            var stuckDropdowns = document.querySelectorAll('.nav-dropdown.active, .nav-dropdown.is-open');
+            for (var d = 0; d < stuckDropdowns.length; d++) {
+              stuckDropdowns[d].classList.remove('active', 'is-open');
+              var toggle = stuckDropdowns[d].querySelector('.nav-dropdown-toggle');
+              if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            }
             if (infoCard) {
               infoCard.classList.remove('active', 'railed');
               infoCard.setAttribute('aria-hidden', 'true');

@@ -170,7 +170,7 @@ body.nav-mobile-open .nav-dropdown {
 }
 
 .nav-dropdown:hover .nav-dropdown-toggle::after,
-.nav-dropdown.active .nav-dropdown-toggle::after,
+.nav-dropdown.is-open .nav-dropdown-toggle::after,
 .nav-dropdown:focus-within .nav-dropdown-toggle::after {
   transform: rotate(-135deg) translateY(0.05rem);
 }

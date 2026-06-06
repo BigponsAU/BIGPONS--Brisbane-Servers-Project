@@ -137,7 +137,7 @@ header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta) :is(.semantic-
 /* Gradient nav pills (hover + current page): white labels — not dark ink */
 header .nav-menu a:not(.nav-account-cta):is(:hover, .active),
 header .nav-dropdown-toggle:is(:hover, .active),
-header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle {
+header .nav-dropdown:is(:hover, :focus-within, .is-open) > .nav-dropdown-toggle {
   background: var(--brand-gradient-chroma) !important;
   background-image: var(--brand-gradient-chroma) !important;
   background-color: #8b5cf6 !important;
@@ -149,7 +149,7 @@ header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle {
 
 header .nav-menu a:not(.nav-account-cta):is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
 header .nav-dropdown-toggle:is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
-header .nav-dropdown:is(:hover, .active, :focus-within) > .nav-dropdown-toggle :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child) {
+header .nav-dropdown:is(:hover, :focus-within, .is-open) > .nav-dropdown-toggle :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child) {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
 }
@@ -159,7 +159,7 @@ header .nav-dropdown-toggle::after {
 }
 
 header .nav-dropdown:hover > .nav-dropdown-toggle::after,
-header .nav-dropdown.active > .nav-dropdown-toggle::after,
+header .nav-dropdown.is-open > .nav-dropdown-toggle::after,
 header .nav-dropdown-toggle:is(:hover, .active)::after {
   color: #fff !important;
   border-color: #fff !important;

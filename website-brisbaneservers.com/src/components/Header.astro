@@ -53,7 +53,7 @@ function dropdownSlug(label: string): string {
 
           return hasPanel ? (
             <li
-              class:list={['nav-dropdown', `nav-dropdown--${slug}`, active && 'active']}
+              class:list={['nav-dropdown', `nav-dropdown--${slug}`]}
               role="none"
             >
               <a
@@ -61,7 +61,7 @@ function dropdownSlug(label: string): string {
                 class:list={['nav-dropdown-toggle', active && 'active']}
                 role="menuitem"
                 aria-haspopup="true"
-                aria-expanded={active ? 'true' : 'false'}
+                aria-expanded="false"
                 aria-controls={menuId}
                 id={toggleId}
               >

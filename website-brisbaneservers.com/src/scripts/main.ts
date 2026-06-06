@@ -43,6 +43,8 @@ function initializeNavDismissOnScrollAndNavigation(): void {
 document.addEventListener('DOMContentLoaded', function() {
     try { localStorage.removeItem('authToken'); } catch { /* legacy session cleanup */ }
 
+    closeDesktopNavDropdowns();
+
     const hamburger = document.querySelector('.hamburger') as HTMLButtonElement | null;
     const mobileMenu = document.querySelector('.mobile-menu') as HTMLElement | null;
     
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDropdownMenus();
 
     window.addEventListener('resize', () => {
-        document.querySelectorAll('.nav-dropdown.active .nav-dropdown-menu').forEach((menu) => {
+        document.querySelectorAll('.nav-dropdown.is-open .nav-dropdown-menu').forEach((menu) => {
             clampDropdownToViewport(menu as HTMLElement);
         });
     });
@@ -283,7 +285,7 @@ function clampDropdownToViewport(dropdown: HTMLElement): void {
 function openDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
     toggle.setAttribute('aria-expanded', 'true');
-    parent?.classList.add('active');
+    parent?.classList.add('is-open');
     requestAnimationFrame(() => {
         clampDropdownToViewport(dropdown);
     });
@@ -292,7 +294,7 @@ function openDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
 function closeDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
     toggle.setAttribute('aria-expanded', 'false');
-    parent?.classList.remove('active');
+    parent?.classList.remove('is-open');
     resetDropdownViewportPosition(dropdown);
 }
 

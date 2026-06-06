@@ -1073,6 +1073,12 @@ nav {
     outline-offset: 3px;
 }
 
+/* Keep Sign in above open mega menus (route-active panels used to stack over the CTA). */
+.nav-menu > li:has(.nav-account-cta) {
+    position: relative;
+    z-index: 1003;
+}
+
 /* ===== NAVIGATION DROPDOWN ===== */
 
 .nav-dropdown {
@@ -1135,7 +1141,7 @@ nav {
 }
 
 .nav-dropdown:hover .nav-dropdown-menu,
-.nav-dropdown.active .nav-dropdown-menu {
+.nav-dropdown.is-open .nav-dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
