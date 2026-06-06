@@ -126,6 +126,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize dropdown menus with keyboard support
     initializeDropdownMenus();
 
+    document.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (window.innerWidth < 1024) return;
+        const target = e.target as HTMLElement;
+        if (target.closest('.nav-dropdown')) return;
+        closeDesktopNavDropdowns();
+    });
+
     window.addEventListener('resize', () => {
         document.querySelectorAll('.nav-dropdown.is-open .nav-dropdown-menu').forEach((menu) => {
             clampDropdownToViewport(menu as HTMLElement);
@@ -170,13 +177,19 @@ function initializeDropdownMenus(): void {
         
         if (!dropdown || !parent) return;
         
-        // Mouse events
+        // Mouse events — single open panel at a time
         toggleElement.addEventListener('mouseenter', () => {
             openDropdown(toggleElement, dropdown);
         });
-        
-        parent.addEventListener('mouseleave', () => {
+
+        parent.addEventListener('mouseleave', (e: MouseEvent) => {
+            const related = e.relatedTarget as Node | null;
+            if (related && parent.contains(related)) return;
             closeDropdown(toggleElement, dropdown);
+        });
+
+        toggleElement.addEventListener('click', () => {
+            closeAllDropdownsExcept(null);
         });
         
         // Keyboard events
@@ -282,8 +295,20 @@ function clampDropdownToViewport(dropdown: HTMLElement): void {
     }
 }
 
+function closeAllDropdownsExcept(exceptParent?: HTMLElement | null): void {
+    document.querySelectorAll('.nav-dropdown.is-open').forEach((node) => {
+        if (exceptParent && node === exceptParent) return;
+        const toggle = node.querySelector('.nav-dropdown-toggle') as HTMLElement | null;
+        const menu = toggle?.nextElementSibling as HTMLElement | null;
+        if (toggle && menu) {
+            closeDropdown(toggle, menu);
+        }
+    });
+}
+
 function openDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
+    closeAllDropdownsExcept(parent);
     toggle.setAttribute('aria-expanded', 'true');
     parent?.classList.add('is-open');
     requestAnimationFrame(() => {

@@ -1,5 +1,6 @@
 ---
-import { navItemIsActive, type NavItem } from '../data/navigation';
+import { navItemIsActive, navigation, type NavItem } from '../data/navigation';
+import { inquiryNavHref } from '../lib/inquiry-nav-href';
 import { sitePath } from '../lib/site-path';
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 const { navItems, currentPath } = Astro.props;
+const inquireHref = inquiryNavHref(currentPath, sitePath);
 
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;
@@ -19,7 +21,7 @@ function isActive(href: string): boolean {
 const topLevelItems = navItems.filter(
   (item) => !item.groups?.length && !item.children?.length && item.href !== '/account',
 );
-const accountItem = navItems.find((item) => item.href === '/account');
+const accountItem = navigation.find((item) => item.href === '/account');
 const featureItems = navItems.filter((item) => item.groups?.length || item.children?.length);
 ---
 
@@ -116,6 +118,9 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
           role="menuitem"
         >
           {accountItem.label}
+        </a>
+        <a href={inquireHref} class="mobile-menu__inquire" role="menuitem">
+          Inquire
         </a>
       </div>
     )

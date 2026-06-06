@@ -42,6 +42,15 @@ export function navItemIsActive(item: NavItem, currentPath: string): boolean {
   });
 }
 
+/** Route highlight for dropdown toggles only — avoids lighting Projects/About on /resources via nested links. */
+export function navDropdownToggleIsActive(item: NavItem, currentPath: string): boolean {
+  const pathOnly = item.href.split('#')[0] || item.href;
+  if (pathOnly === '/' && currentPath === '/') return true;
+  if (pathOnly !== '/' && currentPath.startsWith(pathOnly)) return true;
+  if (item.href === '/projects' && currentPath.startsWith('/case-studies')) return true;
+  return false;
+}
+
 export const navigation: NavItem[] = [
   {
     label: 'Home',

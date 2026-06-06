@@ -1,5 +1,6 @@
 ---
-import { navigation, navItemIsActive } from '../data/navigation';
+import { navigation, navDropdownToggleIsActive } from '../data/navigation';
+import { inquiryNavHref } from '../lib/inquiry-nav-href';
 import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
 import MobileNavMenu from './MobileNavMenu.astro';
@@ -14,8 +15,12 @@ interface Props {
 const { currentPath = '' } = Astro.props;
 
 const navItems = navigation.filter(
-  (item) => !(item.href === '/' && currentPath === '/'),
+  (item) =>
+    !(item.href === '/' && currentPath === '/') &&
+    item.href !== '/account',
 );
+
+const inquireHref = inquiryNavHref(currentPath, sitePath);
 
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;
@@ -46,7 +51,7 @@ function dropdownSlug(label: string): string {
       {
         navItems.map((item, index) => {
           const hasPanel = Boolean(item.groups?.length || item.children?.length);
-          const active = navItemIsActive(item, currentPath);
+          const active = navDropdownToggleIsActive(item, currentPath);
           const slug = dropdownSlug(item.label);
           const menuId = `dropdown-menu-${index}`;
           const toggleId = `dropdown-toggle-${index}`;
@@ -102,6 +107,21 @@ function dropdownSlug(label: string): string {
           );
         })
       }
+      <li class="nav-menu__cta" role="none">
+        <a
+          href={sitePath('/account')}
+          class="nav-account-cta"
+          data-account-link="true"
+          role="menuitem"
+        >
+          <SemanticText text="Sign in" semanticLevel="normal" />
+        </a>
+      </li>
+      <li class="nav-menu__cta" role="none">
+        <a href={inquireHref} class="nav-inquire-cta" role="menuitem">
+          <SemanticText text="Inquire" semanticLevel="normal" />
+        </a>
+      </li>
     </ul>
 
     <button
