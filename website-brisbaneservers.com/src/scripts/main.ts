@@ -611,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===== FORM HANDLING =====
-/** JS-handled forms: secure defaults so browsers allow autofill (no mailto/http actions). */
+/** JS-handled forms: block native navigation; handlers attach via addEventListener. */
 function applySecureFormDefaults(): void {
     const selectors = [
         '.inquiry-form form',
@@ -625,12 +625,10 @@ function applySecureFormDefaults(): void {
     selectors.forEach((selector) => {
         document.querySelectorAll(selector).forEach((node) => {
             const form = node as HTMLFormElement;
-            if (!form.getAttribute('method')) {
-                form.method = 'post';
-            }
+            form.removeAttribute('method');
             const action = form.getAttribute('action') ?? '';
-            if (!action || action.startsWith('mailto:')) {
-                form.setAttribute('action', '#');
+            if (!action || action === '#' || action.startsWith('mailto:')) {
+                form.setAttribute('action', 'javascript:void(0)');
             }
         });
     });

@@ -169,6 +169,20 @@ const skipFontAwesome = pageId === 'account';
         window.addEventListener('load', cleanup);
       })();
     </script>
+    {/* Block native POST to static Pages URLs when JS modules load late (HTTP 405). */}
+    <script is:inline data-cfasync="false">
+      (function () {
+        'use strict';
+        function blockStaticFormPost(event) {
+          var form = event.target;
+          if (!form || !form.closest) return;
+          if (form.closest('.inquiry-form') || form.closest('.login-form')) {
+            event.preventDefault();
+          }
+        }
+        document.addEventListener('submit', blockStaticFormPost, true);
+      })();
+    </script>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     {pageId === 'account' && <link rel="dns-prefetch" href="https://api.brisbaneservers.com" />}
     {pageId === 'account' && <link rel="preconnect" href="https://api.brisbaneservers.com" crossorigin />}

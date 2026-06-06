@@ -12,23 +12,6 @@
         history.replaceState({}, '', url.pathname + url.search + url.hash);
       }
     } catch (e) {}
-
-    function blockNativeAuthSubmit(event) {
-      event.preventDefault();
-    }
-
-    function attachAuthFormGuards() {
-      document.querySelectorAll('.login-form[method="post"]').forEach(function (form) {
-        form.setAttribute('action', 'javascript:void(0)');
-        form.addEventListener('submit', blockNativeAuthSubmit);
-      });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', attachAuthFormGuards);
-    } else {
-      attachAuthFormGuards();
-    }
   })();
 </script>
 
@@ -49,7 +32,7 @@
         <p class="login-note" id="login-remember-hint" hidden>
           You have a saved session on this device. Click Sign in to continue, or enter your password if prompted.
         </p>
-        <form id="login-form" class="login-form" method="post" action="#" aria-label="Account sign-in form">
+        <form id="login-form" class="login-form" action="javascript:void(0)" aria-label="Account sign-in form">
           <div class="form-group">
             <label for="email">Email <span class="sr-only">(required)</span></label>
             <input
@@ -119,7 +102,7 @@
           Passkeys use your device biometrics or security key. Register one after your first password or Google sign-in.
         </p>
         <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
-        <form id="reset-password-form" class="login-form auth-help-form" method="post" action="#" aria-label="Reset password form" style="display: none;">
+        <form id="reset-password-form" class="login-form auth-help-form" action="javascript:void(0)" aria-label="Reset password form" style="display: none;">
           <h3>Set a new password</h3>
           <div class="form-group">
             <label for="reset-password">New password</label>
@@ -157,7 +140,7 @@
           <li>See your token balance and recent workspace activity.</li>
           <li>Return later to continue work without starting from scratch.</li>
         </ul>
-        <form id="register-form" class="login-form" method="post" action="#" aria-label="Create account form">
+        <form id="register-form" class="login-form" action="javascript:void(0)" aria-label="Create account form">
           <div class="form-group">
             <label for="register-email">Email <span class="sr-only">(required)</span></label>
             <input
@@ -211,7 +194,7 @@
           </p>
         </div>
         <div class="auth-help-stack">
-          <form id="resend-verification-form" class="login-form auth-help-form" method="post" action="#" aria-label="Resend verification email form" style="display: none;">
+          <form id="resend-verification-form" class="login-form auth-help-form" action="javascript:void(0)" aria-label="Resend verification email form" style="display: none;">
             <h3>Resend verification email</h3>
             <div class="form-group">
               <label for="resend-email">Email</label>
@@ -220,7 +203,7 @@
             <button type="submit" class="btn btn-secondary btn-block">Send verification email</button>
             <div id="resend-verification-error" class="status-message" role="status" aria-live="polite"></div>
           </form>
-          <form id="forgot-password-form" class="login-form auth-help-form" method="post" action="#" aria-label="Forgot password form">
+          <form id="forgot-password-form" class="login-form auth-help-form" action="javascript:void(0)" aria-label="Forgot password form">
             <h3>Forgot your password?</h3>
             <div class="form-group">
               <label for="forgot-email">Email</label>
