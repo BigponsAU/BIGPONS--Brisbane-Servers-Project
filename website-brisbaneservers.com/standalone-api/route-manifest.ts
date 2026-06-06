@@ -2,6 +2,7 @@ import type { RouteDefinition } from './astro-adapter';
 
 export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/health', loadModule: () => import('../src/pages/_api/health') },
+  { path: '/api/contact/inquiry', loadModule: () => import('../src/pages/_api/contact/inquiry') },
   { path: '/api/test', loadModule: () => import('../src/pages/_api/test') },
   { path: '/api/auth/login', loadModule: () => import('../src/pages/_api/auth/login') },
   { path: '/api/auth/logout', loadModule: () => import('../src/pages/_api/auth/logout') },

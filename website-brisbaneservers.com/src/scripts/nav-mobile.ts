@@ -1,5 +1,20 @@
 /** Shared mobile nav state — used by main.ts and account workspace cleanup. */
 
+export function closeDesktopNavDropdowns(): void {
+  if (typeof document === 'undefined') return;
+
+  document.querySelectorAll('.nav-dropdown-toggle').forEach((toggle) => {
+    const el = toggle as HTMLElement;
+    const parent = el.closest('.nav-dropdown');
+    const dropdown = el.nextElementSibling as HTMLElement | null;
+    el.setAttribute('aria-expanded', 'false');
+    parent?.classList.remove('active');
+    dropdown?.style.removeProperty('margin-left');
+    dropdown?.style.removeProperty('left');
+    dropdown?.style.removeProperty('right');
+  });
+}
+
 export function closeMobileNav(): void {
   if (typeof document === 'undefined') return;
 

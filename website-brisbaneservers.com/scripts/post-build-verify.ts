@@ -8,7 +8,7 @@
  * - No broken references
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
 import { join, dirname, extname, normalize } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -373,16 +373,122 @@ function checkIndexHTML(): VerificationResult {
 }
 
 /**
+ * Cloudflare Rocket Loader breaks Astro module bundles unless opted out.
+ * Astro strips `data-cfasync` from source `<script>` tags (breaks bundling), so patch output HTML.
+ */
+function patchModuleScriptsForRocketLoader(): VerificationResult {
+  try {
+    const htmlFiles = findHTMLFiles(distPath);
+    let patchedFiles = 0;
+    let patchedScripts = 0;
+
+    for (const filePath of htmlFiles) {
+      const original = readFileSync(filePath, 'utf-8');
+      let content = original;
+      let filePatches = 0;
+
+      content = content.replace(/<script(?![^>]*\bdata-cfasync=)([^>]*\btype="module"[^>]*)>/g, (match) => {
+        filePatches += 1;
+        return match.replace('<script', '<script data-cfasync="false"');
+      });
+
+      if (content !== original) {
+        writeFileSync(filePath, content, 'utf-8');
+        patchedFiles += 1;
+        patchedScripts += filePatches;
+      }
+    }
+
+    return {
+      name: 'Rocket Loader module opt-out',
+      passed: true,
+      message:
+        patchedScripts > 0
+          ? `Added data-cfasync="false" to ${patchedScripts} module script(s) in ${patchedFiles} HTML file(s)`
+          : 'No module scripts needed Rocket Loader opt-out',
+    };
+  } catch (error) {
+    return {
+      name: 'Rocket Loader module opt-out',
+      passed: false,
+      message: `Failed to patch module scripts: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+/**
+ * Fail build if Astro emitted unbundled TypeScript imports (sign-in POST 405 regression).
+ */
+function checkBundledClientScripts(): VerificationResult {
+  try {
+    const htmlFiles = findHTMLFiles(distPath);
+    const offenders: string[] = [];
+
+    for (const filePath of htmlFiles) {
+      const content = readFileSync(filePath, 'utf-8');
+      if (/import\s+[^;]+from\s+['"][^'"]+\.ts['"]/.test(content)) {
+        offenders.push(filePath.replace(distPath, 'dist'));
+      }
+    }
+
+    if (offenders.length > 0) {
+      return {
+        name: 'Bundled Client Scripts',
+        passed: false,
+        message: `Unbundled .ts imports in: ${offenders.slice(0, 5).join(', ')}${offenders.length > 5 ? '…' : ''}`,
+      };
+    }
+
+    const assetsDir = join(distPath, 'assets');
+    if (!existsSync(assetsDir)) {
+      return {
+        name: 'Bundled Client Scripts',
+        passed: false,
+        message: 'dist/assets not found',
+      };
+    }
+
+    const jsAssets = readdirSync(assetsDir).filter((name) => name.endsWith('.js'));
+    const hasMain = jsAssets.some((name) => name.includes('BaseLayout'));
+    const hasAccount = jsAssets.some((name) => name.includes('account-workspace-app'));
+
+    if (!hasMain) {
+      return {
+        name: 'Bundled Client Scripts',
+        passed: false,
+        message: 'Missing BaseLayout client bundle in dist/assets',
+      };
+    }
+
+    return {
+      name: 'Bundled Client Scripts',
+      passed: true,
+      message: hasAccount
+        ? `Client bundles present (${jsAssets.length} JS assets, including account workspace)`
+        : `Client bundles present (${jsAssets.length} JS assets)`,
+    };
+  } catch (error) {
+    return {
+      name: 'Bundled Client Scripts',
+      passed: false,
+      message: `Could not verify client bundles: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+/**
  * Run all verification checks
  */
 function runVerification(): void {
   console.log('🔍 Running post-build verification...\n');
 
   results.push(checkDistDirectory());
+  results.push(patchModuleScriptsForRocketLoader());
   results.push(checkIndexHTML());
   results.push(checkHTMLViewportTags());
   results.push(checkCSSFiles());
   results.push(checkBrandChromaCSS());
+  results.push(checkBundledClientScripts());
   results.push(checkAssetReferences());
 
   // Print results

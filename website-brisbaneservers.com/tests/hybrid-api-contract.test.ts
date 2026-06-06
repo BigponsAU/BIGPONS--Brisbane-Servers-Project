@@ -9,6 +9,7 @@ describe('Hybrid API contract coverage', () => {
 
     const required = [
       '/api/health',
+      '/api/contact/inquiry',
       '/api/auth/register',
       '/api/auth/login',
       '/api/auth/logout',

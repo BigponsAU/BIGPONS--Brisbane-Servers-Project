@@ -1,10 +1,42 @@
 // Simplified main script — navigation, search, forms, progressive disclosure.
 // Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
-import { closeMobileNav } from './nav-mobile';
+import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
 
 function isAccountUtilityPage(): boolean {
   return document.body?.dataset.pageId === 'account';
+}
+
+function initializeNavDismissOnScrollAndNavigation(): void {
+    let scrollTick = false;
+
+    const dismissOpenNav = (): void => {
+        closeMobileNav();
+        closeDesktopNavDropdowns();
+    };
+
+    window.addEventListener(
+        'scroll',
+        () => {
+            if (scrollTick) return;
+            scrollTick = true;
+            requestAnimationFrame(() => {
+                scrollTick = false;
+                dismissOpenNav();
+            });
+        },
+        { passive: true },
+    );
+
+    document.addEventListener('click', (e: MouseEvent) => {
+        const link = (e.target as HTMLElement).closest('.nav-menu a[href], .nav-mega__link[href]');
+        if (!link) return;
+        const href = link.getAttribute('href') ?? '';
+        if (href.startsWith('#')) return;
+        dismissOpenNav();
+    });
+
+    window.addEventListener('pageshow', dismissOpenNav);
 }
 
 // ===== NAVIGATION TOGGLE =====
@@ -19,12 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuPanel = mobileMenu;
 
         function closeAllDesktopDropdowns(): void {
-            document.querySelectorAll('.nav-dropdown-toggle').forEach((toggle) => {
-                const el = toggle as HTMLElement;
-                const parent = el.closest('.nav-dropdown');
-                el.setAttribute('aria-expanded', 'false');
-                parent?.classList.remove('active');
-            });
+            closeDesktopNavDropdowns();
         }
 
         function setMobileNavOpen(open: boolean) {
@@ -82,7 +109,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        menuPanel.addEventListener('click', (e: MouseEvent) => {
+            const link = (e.target as HTMLElement).closest('a[href]');
+            if (!link) return;
+            const href = link.getAttribute('href') ?? '';
+            if (href.startsWith('#')) return;
+            setMobileNavOpen(false);
+        });
+
     }
+
+    initializeNavDismissOnScrollAndNavigation();
     
     // Initialize dropdown menus with keyboard support
     initializeDropdownMenus();
@@ -611,9 +648,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleFormSubmit(e: Event): void {
     e.preventDefault();
-    
+    void submitInquiryForm(e.target as HTMLFormElement);
+}
+
+async function submitInquiryForm(form: HTMLFormElement | null): Promise<void> {
     try {
-        const form = e.target as HTMLFormElement;
         if (!form) {
             console.error('Form submission error: form element not found');
             return;
@@ -622,7 +661,6 @@ function handleFormSubmit(e: Event): void {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData) as Record<string, string>;
         
-        // Validate email using proper regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const emailInput = form.querySelector('#email') as HTMLInputElement;
         const emailError = form.querySelector('#email-error') as HTMLElement;
@@ -639,51 +677,82 @@ function handleFormSubmit(e: Event): void {
             }
             emailInput?.focus();
             return;
-        } else {
-            if (emailInput) {
-                emailInput.setAttribute('aria-invalid', 'false');
-                emailInput.classList.remove('error');
-            }
-            if (emailError) {
-                emailError.textContent = '';
-            }
+        }
+
+        if (emailInput) {
+            emailInput.setAttribute('aria-invalid', 'false');
+            emailInput.classList.remove('error');
+        }
+        if (emailError) {
+            emailError.textContent = '';
+        }
+
+        if (!data.message?.trim()) {
+            showFormMessage(form, 'Please include a message with your enquiry.', 'error');
+            (form.querySelector('#message') as HTMLTextAreaElement | null)?.focus();
+            return;
         }
     
-    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-    if (submitBtn) {
-        submitBtn.classList.add('success');
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Message Sent';
-    }
-    
-    form.querySelectorAll('.form-group').forEach(group => {
-        group.classList.add('success');
-    });
-    
-    const subject = `Inquiry from ${data.name || 'Guest'}`;
-    const body = `
-Name: ${data.name || 'Not provided'}
-Email: ${data.email || 'Not provided'}
-Industry: ${data.industry || 'Not specified'}
-${data.message ? `\nMessage:\n${data.message}` : ''}
-    `.trim();
-    
-    const mailtoLink = `mailto:connect@brisbaneservers.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    showFormMessage(form, 'Opening email client...', 'success');
-    
-        setTimeout(() => {
-            try {
-                window.location.href = mailtoLink;
-            } catch (error) {
-                console.error('Error opening mailto link:', error);
-                showFormMessage(form, 'Please contact us directly at connect@brisbaneservers.com', 'error');
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+        const originalBtnHtml = submitBtn?.innerHTML ?? '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span> Sending…</span>';
+        }
+
+        showFormMessage(form, 'Sending your enquiry…', 'success');
+
+        const { resolveNavApiBaseUrl } = await import('../lib/client-api');
+        const apiBase = resolveNavApiBaseUrl();
+        const response = await fetch(`${apiBase}/contact/inquiry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                name: data.name?.trim() || undefined,
+                email: data.email.trim(),
+                industry: data.industry?.trim() || undefined,
+                location: data.location?.trim() || undefined,
+                preference: data.preference?.trim() || undefined,
+                message: data.message.trim(),
+                sourcePath: window.location.pathname,
+            }),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (response.ok && payload.success) {
+            if (submitBtn) {
+                submitBtn.classList.add('success');
+                submitBtn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i><span> Enquiry sent</span>';
             }
-        }, 1000);
+            form.querySelectorAll('.form-group').forEach(group => {
+                group.classList.add('success');
+            });
+            showFormMessage(
+                form,
+                payload.message || 'Thanks — your enquiry was sent. We will reply to the email you provided.',
+                'success',
+            );
+            form.reset();
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
+        showFormMessage(
+            form,
+            payload.error || 'Could not send your enquiry. Please try again or email connect@brisbaneservers.com.',
+            'error',
+        );
     } catch (error) {
         console.error('Form submission error:', error);
-        const form = e.target as HTMLFormElement;
         if (form) {
-            showFormMessage(form, 'An error occurred. Please try again or contact us directly.', 'error');
+            showFormMessage(form, 'An error occurred. Please try again or email connect@brisbaneservers.com directly.', 'error');
+            const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 }

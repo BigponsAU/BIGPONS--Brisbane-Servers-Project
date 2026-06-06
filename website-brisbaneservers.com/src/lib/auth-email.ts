@@ -7,6 +7,7 @@ interface AuthEmailPayload {
   subject: string;
   text: string;
   html: string;
+  replyTo?: string;
 }
 
 export interface AuthEmailResult {
@@ -61,7 +62,7 @@ async function sendViaResend(payload: AuthEmailPayload): Promise<void> {
   }
 
   const from = getFromAddress();
-  const replyTo = getReplyToAddress();
+  const replyTo = payload.replyTo?.trim() || getReplyToAddress();
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -86,7 +87,7 @@ async function sendViaResend(payload: AuthEmailPayload): Promise<void> {
 }
 
 export async function sendAuthEmail(payload: AuthEmailPayload): Promise<AuthEmailResult> {
-  const replyTo = getReplyToAddress();
+  const replyTo = payload.replyTo?.trim() || getReplyToAddress();
   const from = getFromAddress();
 
   if (getResendApiKey()) {

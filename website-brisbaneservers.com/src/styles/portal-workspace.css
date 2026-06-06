@@ -305,6 +305,11 @@
     pointer-events: auto;
   }
 
+  #admin-dashboard[style*='display: none'] {
+    content-visibility: hidden;
+    contain: strict;
+  }
+
   /* ============================================
      PORTAL LAYOUT - Sidebar + Main Content
      ============================================ */

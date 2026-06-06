@@ -12,6 +12,23 @@
         history.replaceState({}, '', url.pathname + url.search + url.hash);
       }
     } catch (e) {}
+
+    function blockNativeAuthSubmit(event) {
+      event.preventDefault();
+    }
+
+    function attachAuthFormGuards() {
+      document.querySelectorAll('.login-form[method="post"]').forEach(function (form) {
+        form.setAttribute('action', 'javascript:void(0)');
+        form.addEventListener('submit', blockNativeAuthSubmit);
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachAuthFormGuards);
+    } else {
+      attachAuthFormGuards();
+    }
   })();
 </script>
 

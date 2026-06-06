@@ -65,24 +65,11 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>
   </div>
 
-  <script data-cfasync="false">
-    import { bootAccountPage } from '../../scripts/account-page-loader.ts';
-
-    function readBootConfig() {
-      const root = document.getElementById('admin-portal');
-      const dataset = root?.dataset ?? {};
-      return {
-        publicApiBaseUrl: dataset.publicApiBaseUrl ?? '',
-        accountPath: dataset.accountPath ?? '/account/',
-        pageTitleSignedOut: dataset.pageTitleSignedOut ?? 'Sign in · Account workspace',
-        pageTitleSignedIn: dataset.pageTitleSignedIn ?? 'Workspace · Account workspace',
-        initialVerifyToken: dataset.verifyToken ?? '',
-        initialResetToken: dataset.resetToken ?? '',
-      };
-    }
+  <script>
+    import { bootAccountPageFromDom } from '../../scripts/account-page-loader.ts';
 
     function boot() {
-      bootAccountPage(readBootConfig());
+      bootAccountPageFromDom();
     }
 
     if (document.readyState === 'loading') {

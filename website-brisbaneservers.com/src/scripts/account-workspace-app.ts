@@ -23,6 +23,7 @@ import { closeMobileNav } from './nav-mobile';
 
 const API_PROBE_TIMEOUT_MS = 8000;
 const API_PROBE_OVERALL_MS = 12000;
+const PAGE_LOAD_PROBE_OVERALL_MS = 3500;
 const API_WAKE_ATTEMPTS = 4;
 const LOGIN_TIMEOUT_MS = 45000;
 const OAUTH_STATUS_TIMEOUT_MS = 15000;
@@ -266,7 +267,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
-  async function ensureReachableApiBase(): Promise<void> {
+  async function ensureReachableApiBase(options?: { fast?: boolean }): Promise<void> {
     if (isUsableAbsoluteApiBase(VOICE_API_URL)) {
       return;
     }
@@ -294,7 +295,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     };
 
     const overallTimeout = new Promise<null>((resolve) => {
-      window.setTimeout(() => resolve(null), API_PROBE_OVERALL_MS);
+      window.setTimeout(() => resolve(null), options?.fast ? PAGE_LOAD_PROBE_OVERALL_MS : API_PROBE_OVERALL_MS);
     });
 
     const winner = await Promise.race([
@@ -457,12 +458,13 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     const googleStartHref = `${VOICE_API_URL.replace(/\/+$/, '')}/auth/oauth/google/start`;
     if (isProductionSiteHost()) {
       setGoogleOAuthVisible(true, googleStartHref);
+      return;
     }
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
         const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), OAUTH_STATUS_TIMEOUT_MS);
+        const timeout = window.setTimeout(() => controller.abort(), 5000);
         const response = await workspaceFetch(`${VOICE_API_URL}/auth/oauth/status`, {
           signal: controller.signal,
         });
@@ -477,9 +479,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
           return;
         }
       } catch {
-        /* retry after wake */
+        /* retry once */
       }
-      await wakeApiBeforeAuth();
     }
   }
 
@@ -5997,11 +5998,15 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   syncPortalAccountContext();
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
+  showLogin();
+  if (isProductionSiteHost()) {
+    const googleStartHref = `${VOICE_API_URL.replace(/\/+$/, '')}/auth/oauth/google/start`;
+    setGoogleOAuthVisible(true, googleStartHref);
+  }
   void (async () => {
       const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
-      await ensureReachableApiBase();
-      await wakeApiBeforeAuth();
+      await ensureReachableApiBase({ fast: true });
       handleOAuthReturn();
       await handleVerificationToken();
       if (pendingResetToken) {

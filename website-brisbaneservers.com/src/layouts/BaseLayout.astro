@@ -212,7 +212,13 @@ const skipFontAwesome = pageId === 'account';
   </body>
 </html>
 
-<script data-cfasync="false">
-  import '../scripts/main.ts';
-</script>
+{pageId === 'account' ? (
+  <script>
+    import '../scripts/account-nav.ts';
+  </script>
+) : (
+  <script>
+    import '../scripts/main.ts';
+  </script>
+)}
 
