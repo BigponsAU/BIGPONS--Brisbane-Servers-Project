@@ -744,9 +744,14 @@
   /* Golden split: minor text band (φ⁻²) | major visual (φ⁻¹); sums to 1 */
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
-  /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
-  --hero-min-height: clamp(17rem, 24rem, 30rem);
-  --hero-inner-min-height: clamp(13rem, 19rem, 26rem);
+  /*
+   * Unified hero band — same footprint on home, resources, and all <Hero /> pages.
+   * Content fits within this frame; height does not grow with copy/CTA count.
+   */
+  --hero-band-height: clamp(18rem, 24rem, 28rem);
+  --hero-min-height: var(--hero-band-height);
+  --hero-inner-min-height: var(--hero-band-height);
+  --hero-band-pad-bottom: clamp(1rem, 1.25rem, 1.5rem);
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
   /*
@@ -803,8 +808,9 @@
      * rem-first: large vh min-heights left a tall empty band under the hero visual before the
      * next section (especially with browser zoom). Copy + graphic + scroll CTA set real height.
      */
-    --hero-min-height: clamp(17rem, 26rem, 38rem);
-    --hero-inner-min-height: clamp(13rem, 20rem, 28rem);
+    --hero-band-height: clamp(17rem, 24rem, 30rem);
+    --hero-min-height: var(--hero-band-height);
+    --hero-inner-min-height: var(--hero-band-height);
     --hero-visual-inner-pad-inline: clamp(0.18rem, min(2.75vw, 0.65rem), 0.8rem);
   }
 }

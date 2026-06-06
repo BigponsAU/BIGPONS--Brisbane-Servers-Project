@@ -1196,20 +1196,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   overflow-y: visible;
 }
 
-/* Homepage: left-anchored hero; copy band matches nav / sections (shell gutters + safe-area). */
-.main-home .hero {
+/* All heroes: left-anchored copy band matching nav / section gutters (same as home). */
+.hero {
   text-align: start;
   isolation: isolate;
 }
 
-/* Tighter horizontal padding than global .hero-text-wrapper so copy + CTAs share one lane at all zoom levels */
-.main-home .hero-text-wrapper {
-  padding-top: clamp(var(--space-2xl), var(--space-4xl), var(--space-5xl));
-  padding-bottom: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
-}
-
-/* Golden (φ) column split — rem mins so zoom-in (narrow effective viewport) does not crush columns to 0 */
+/* Golden (φ) column split — fixed band height; copy/visual share one row on desktop */
 .hero-inner {
   width: 100%;
   max-width: var(--site-frame-wide);
@@ -1220,16 +1213,23 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     minmax(min(100%, 18rem), 0.44fr)
     minmax(min(100%, 12rem), 0.56fr);
   align-items: stretch;
-  min-height: var(--hero-inner-min-height, var(--hero-min-height));
+  min-height: var(--hero-band-height, var(--hero-inner-min-height));
+  height: var(--hero-band-height, var(--hero-inner-min-height));
   gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
   justify-items: stretch;
 }
 
 .hero-text-wrapper {
-  align-self: start;
+  align-self: stretch;
   justify-self: start;
   width: 100%;
   max-width: 100%;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+  padding-top: clamp(var(--space-2xl), var(--space-4xl), var(--space-5xl));
+  padding-bottom: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
+  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
 }
 
 .hero-text-content {
@@ -1335,15 +1335,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 .hero-visual {
   justify-self: end;
-  align-self: start;
+  align-self: stretch;
   width: 100%;
   max-width: min(100%, 34rem);
   margin-inline: 0;
   min-width: 0;
   position: relative;
-  aspect-ratio: 4 / 3;
-  max-height: min(28rem, 48dvh);
-  height: auto;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -1390,10 +1388,6 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 /* Inner public routes: same φ copy gutters + scroll affordance + visual weight as home */
-.main-phi-chassis .hero-text-wrapper {
-  padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
-}
-
 .main-phi-chassis .hero-scroll-cta:hover {
   transform: translateY(-2px);
 }
@@ -2392,10 +2386,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
   }
 
-  /* Tall visual row, but never taller than the viewport — avoids vertical cut-off on short screens */
+  /* Stacked hero: keep unified band min-height; rows size to content */
   .hero-inner {
     grid-template-rows: auto auto;
-    min-height: 0;
+    height: auto;
+    min-height: var(--hero-band-height, var(--hero-inner-min-height));
   }
 
   .hero-text-content {
