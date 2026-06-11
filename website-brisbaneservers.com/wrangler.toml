@@ -11,3 +11,7 @@ name = "brisbane-servers"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "ae14cdf70dba4a4cb4ff718b15ebf826"

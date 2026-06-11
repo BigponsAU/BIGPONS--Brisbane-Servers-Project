@@ -17,7 +17,7 @@ export default defineConfig({
   base,
   srcDir: './src',
   output: 'server',
-  adapter: cloudflare({ session: false }),
+  adapter: cloudflare({ imageService: 'compile' }),
   server: {
     port: 3000,
     host: true,
