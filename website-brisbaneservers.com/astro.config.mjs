@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,15 +15,7 @@ export default defineConfig({
   site,
   base,
   srcDir: './src',
-  output: 'server',
-  adapter: cloudflare({
-    imageService: 'compile',
-    routes: {
-      extend: {
-        include: [{ pattern: '/resources' }],
-      },
-    },
-  }),
+  output: 'static',
   server: {
     port: 3000,
     host: true,

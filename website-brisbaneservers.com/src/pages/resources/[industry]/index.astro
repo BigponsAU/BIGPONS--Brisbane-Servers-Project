@@ -1,6 +1,4 @@
 ---
-export const prerender = false;
-
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import Card from '~/components/Card.astro';
@@ -22,6 +20,12 @@ import { valueProposition } from '~/data/value-proposition';
 import { industryHubSeo } from '~/lib/content-seo';
 import { sitePath } from '~/lib/site-path';
 import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
+
+export async function getStaticPaths() {
+  return industries.map((industry) => ({
+    params: { industry: industry.slug },
+  }));
+}
 
 const { industry: industrySlug } = Astro.params;
 const industry = getIndustryBySlug(industrySlug!);

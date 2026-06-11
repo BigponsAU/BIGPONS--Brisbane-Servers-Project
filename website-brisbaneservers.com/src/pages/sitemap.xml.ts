@@ -1,7 +1,4 @@
 import type { APIRoute } from 'astro';
-
-export const prerender = false;
-
 import { buildStaticSitemapEntries } from '../lib/content-registry';
 import { getPublishedResourcesForPage } from '../lib/public-published-resources';
 import { buildCanonicalUrl, toSitemapLastmod } from '../lib/seo';

@@ -1,6 +1,4 @@
 ---
-export const prerender = false;
-
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
@@ -10,8 +8,15 @@ import { getIndustryBySlug, getTopicBySlug } from '~/data/industries';
 import { isIndexableResource } from '~/lib/content-registry';
 import { getPageDescriptor } from '~/lib/page-descriptors';
 import { publishedResourcePageTitle, publishedResourceSeo } from '~/lib/content-seo';
-import { getPublishedResourceById } from '~/lib/public-published-resources';
+import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/public-published-resources';
 import { sitePath } from '~/lib/site-path';
+
+export async function getStaticPaths() {
+  const resources = (await getPublishedResourcesForPage()).filter(isIndexableResource);
+  return resources.map((resource) => ({
+    params: { resourceId: resource.id },
+  }));
+}
 
 const { resourceId } = Astro.params;
 const resource = await getPublishedResourceById(resourceId!);
