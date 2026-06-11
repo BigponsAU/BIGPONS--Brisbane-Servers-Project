@@ -42,6 +42,9 @@ function usesRemotePublicApi(): boolean {
 }
 
 async function loadResourcesLocal(): Promise<Resource[]> {
+  if (import.meta.env.PROD && usesRemotePublicApi()) {
+    return [];
+  }
   const { loadResources } = await import('./resources-api');
   return loadResources();
 }
