@@ -24,10 +24,11 @@ export function getPublicApiBaseUrl(): string {
 }
 
 export function getInternalApiBaseUrl(): string {
+  const fallback = import.meta.env.PROD ? PROD_PUBLIC_API_FALLBACK : API_PATH_PREFIX;
   return normalizeApiBase(
     readRuntimeEnv('INTERNAL_API_BASE_URL')
       ?? readRuntimeEnv('PUBLIC_API_BASE_URL')
-      ?? API_PATH_PREFIX
+      ?? fallback
   );
 }
 

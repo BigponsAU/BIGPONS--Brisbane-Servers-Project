@@ -5,7 +5,7 @@
  * During Astro build, memoizes the full public list so Pages does not hammer
  * Neon/Hyperdrive on every static path (major egress saver).
  */
-import { resolveInternalApiUrl } from './api-config';
+import { getInternalApiBaseUrl, resolveInternalApiUrl } from './api-config';
 import type { Resource } from './resource-types';
 import { isPublicResource } from './resource-types';
 import { loadResources, normalizeTopicSlug } from './resources-api';
@@ -23,7 +23,18 @@ function useLivePublicCatalog(): boolean {
 
 function useGitCorpusForCatalog(): boolean {
   if (useLivePublicCatalog()) return false;
-  return pagesBuildUsesGitCorpus();
+  if (!pagesBuildUsesGitCorpus()) return false;
+  // Hosted builds with a remote API must not read git/pg on Cloudflare Workers (no local corpus).
+  const internalBase = getInternalApiBaseUrl();
+  if (/^https?:\/\//i.test(internalBase)) {
+    return false;
+  }
+  return true;
+}
+
+/** Static prerender phase (marketing build) — memoize API reads. Runtime SSR fetches fresh. */
+function isPrerenderBuildPhase(): boolean {
+  return import.meta.env.PRERENDER === true;
 }
 
 function sortByGeneratedDesc(resources: Resource[]): Resource[] {
@@ -105,11 +116,18 @@ export async function getPublishedResourcesForPage(
 
   const apiBase = resolveInternalApiUrl('/resources/public');
   if (/^https?:\/\//i.test(apiBase)) {
-    const all = await getBuildTimePublicCache();
-    if (filters.industry || filters.topic) {
-      return filterLocal(all, filters);
+    if (isPrerenderBuildPhase()) {
+      const all = await getBuildTimePublicCache();
+      if (filters.industry || filters.topic) {
+        return filterLocal(all, filters);
+      }
+      return all;
     }
-    return all;
+
+    const remote = await fetchAllPublicFromApi();
+    if (remote) {
+      return filterLocal(remote, filters);
+    }
   }
 
   const all = await loadResources();
@@ -125,7 +143,9 @@ export async function getPublishedResourceById(id: string): Promise<Resource | n
 
   const apiBase = resolveInternalApiUrl('/resources/public');
   if (/^https?:\/\//i.test(apiBase)) {
-    const all = await getBuildTimePublicCache();
+    const all = isPrerenderBuildPhase()
+      ? await getBuildTimePublicCache()
+      : ((await fetchAllPublicFromApi()) ?? []);
     const r = all.find((x) => x.id === id);
     return r && isPublicResource(r) ? r : null;
   }
