@@ -15,11 +15,7 @@ import { ProfileManager } from '@voice-framework/storage/profile-manager';
 import { ProfileBuilder } from '@voice-framework/builders/profile-builder';
 import { DocumentProcessor } from '@voice-framework/processors/document-processor';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { getMonorepoRoot, voiceFrameworkStorageDir } from '../lib/monorepo-root';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Initialize framework components (singleton pattern)
 let toneAnalyzer: ToneAnalyzer | null = null;

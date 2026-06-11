@@ -6,7 +6,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import { getRuntimeEnv } from '~/utils/runtime-env';
-import { AUTH_SQLITE_DB_FILE } from '~/lib/storage-paths';
+import { getAuthSqliteDbFile } from '~/lib/storage-paths';
 import type { StoredWebAuthnCredential } from './webauthn-types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,9 +60,9 @@ async function getSqliteDb(): Promise<DatabaseInstance> {
       const initSqlJs = (await import('sql.js')).default;
       const { locateSqlJsFile } = await import('./sql-js-locate');
       const SQL = await initSqlJs({ locateFile: locateSqlJsFile });
-      mkdirSync(path.dirname(AUTH_SQLITE_DB_FILE), { recursive: true });
-      const db = existsSync(AUTH_SQLITE_DB_FILE)
-        ? new SQL.Database(readFileSync(AUTH_SQLITE_DB_FILE))
+      mkdirSync(path.dirname(getAuthSqliteDbFile()), { recursive: true });
+      const db = existsSync(getAuthSqliteDbFile())
+        ? new SQL.Database(readFileSync(getAuthSqliteDbFile()))
         : new SQL.Database();
       db.run(`
         CREATE TABLE IF NOT EXISTS webauthn_credentials (
@@ -87,7 +87,7 @@ async function getSqliteDb(): Promise<DatabaseInstance> {
 }
 
 function persistSqlite(db: DatabaseInstance): void {
-  writeFileSync(AUTH_SQLITE_DB_FILE, Buffer.from(db.export()));
+  writeFileSync(getAuthSqliteDbFile(), Buffer.from(db.export()));
 }
 
 function mapRow(row: {

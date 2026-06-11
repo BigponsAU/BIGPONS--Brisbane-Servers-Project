@@ -34,6 +34,8 @@
     "sync:render-secrets-for-edge": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-render-secrets-for-edge.ps1",
     "setup:edge-production": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-edge-production.ps1",
     "deploy:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-edge-worker.ps1",
+    "sync:edge-worker-secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-secrets-to-edge-worker.ps1",
+    "decommission:render-api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/decommission-render-api.ps1",
     "sync:inference-to-render": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-inference-to-render.ps1",
     "migrate:render-postgres-to-neon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/migrate-render-postgres-to-neon.ps1",
     "decommission:render-postgres": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/decommission-render-postgres.ps1",

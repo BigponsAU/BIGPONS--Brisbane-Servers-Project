@@ -4,7 +4,7 @@
  */
 
 import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
-import { SEMANTIC_INDEX_FILE } from '../storage-paths';
+import { getSemanticIndexFile } from '../storage-paths';
 import type { Resource } from '../resource-types';
 import { createEmbeddingClient } from './embedding-client';
 import { DEFAULT_EMBEDDING_VERSION } from './embedding-version';
@@ -34,7 +34,7 @@ const emptyIndex = (): SemanticIndexFile => ({ version: INDEX_VERSION, chunks: [
 export async function loadIndex(): Promise<SemanticIndexFile> {
   const data = await readCorpusJson<SemanticIndexFile>(
     CORPUS_DOC_KEYS.SEMANTIC_INDEX,
-    SEMANTIC_INDEX_FILE,
+    getSemanticIndexFile(),
     emptyIndex()
   );
   if (!data.chunks || !Array.isArray(data.chunks)) {
@@ -44,7 +44,7 @@ export async function loadIndex(): Promise<SemanticIndexFile> {
 }
 
 async function saveIndex(data: SemanticIndexFile): Promise<void> {
-  await saveCorpusJson(CORPUS_DOC_KEYS.SEMANTIC_INDEX, SEMANTIC_INDEX_FILE, data);
+  await saveCorpusJson(CORPUS_DOC_KEYS.SEMANTIC_INDEX, getSemanticIndexFile(), data);
 }
 
 function cosine(a: number[], b: number[]): number {

@@ -6,6 +6,11 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { pid, platform } from 'node:process';
 import { getSharedPool, usePostgres } from './db/pg-pool';
+import { getRuntimeEnv } from '../utils/runtime-env';
+
+function shouldSkipFileMirror(): boolean {
+  return getRuntimeEnv('CORPUS_SKIP_FILE_MIRROR') === '1';
+}
 
 export const CORPUS_DOC_KEYS = {
   RESOURCES: 'resources',
@@ -16,6 +21,7 @@ export const CORPUS_DOC_KEYS = {
   CONTRIBUTIONS: 'contributions',
   TOKEN_LEDGER: 'token-ledger',
   USAGE_LEDGER: 'usage-ledger',
+  GROWTH_USAGE_LEDGER: 'growth-usage-ledger',
   CASE_STUDY_DRAFTS: 'case-study-drafts',
   PROFILES: 'profiles',
   TEXT_STORAGE: 'text-storage',
@@ -53,6 +59,9 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
 }
 
 async function writeJsonFileAtomic(filePath: string, data: unknown): Promise<void> {
+  if (shouldSkipFileMirror()) {
+    return;
+  }
   const dir = path.dirname(filePath);
   const base = path.basename(filePath);
   const tmp = path.join(dir, `.${base}.${pid}.${Date.now()}.tmp`);

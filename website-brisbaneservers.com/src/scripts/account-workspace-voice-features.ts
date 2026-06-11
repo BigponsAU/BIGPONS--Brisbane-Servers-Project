@@ -262,4 +262,7 @@ export function bindVoiceFeaturePanels(): void {
 
 export function onVoicePanelShown(panelName: string): void {
   if (panelName === 'voice-map') void loadVoiceMap();
+  if (panelName === 'voice-lab') {
+    void import('./portal-markov-tracker').then((m) => m.renderPortalMarkovIntoVoiceLab());
+  }
 }

@@ -1,5 +1,11 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '~/utils/auth';
+import {
+  checkGrowthBudget,
+  recordGrowthUsage,
+  unitsPerMaterialize,
+} from '~/lib/library-growth/growth-usage-budget';
+import { loadLibraryGrowthConfig } from '~/lib/library-growth/config';
 import { materializeGrowthProposal } from '~/lib/library-growth/materialize';
 import {
   loadGrowthProposals,
@@ -78,10 +84,21 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    const growthConfig = await loadLibraryGrowthConfig();
+    const unitEach = unitsPerMaterialize(growthConfig);
+    const budget = await checkGrowthBudget(growthConfig, unitEach);
+    if (!budget.ok) {
+      return new Response(JSON.stringify({ success: false, error: budget.reason }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const { resource, voiceScore, published } = await materializeGrowthProposal(
       proposal,
       authResult.user.email
     );
+    await recordGrowthUsage(unitEach, 'materialize', proposalId);
     const updated = await updateGrowthProposalStatus(proposalId, 'materialized', {
       reviewedBy: authResult.user.email,
       resourceId: resource.id,

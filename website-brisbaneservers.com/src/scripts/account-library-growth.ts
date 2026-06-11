@@ -44,9 +44,28 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
       intervalHours: number;
       maxProposalsPerCycle: number;
       generateCaseStudies: boolean;
+      reviewOnlyPublish?: boolean;
+      autoMaterializePending?: boolean;
+      maxDailyGrowthUnits?: number;
+      maxUnitsPerCycle?: number;
       lastCycleAt?: string | null;
       nextCycleAt?: string | null;
     };
+
+    const estimate = data.estimate as {
+      proposalsWouldCreate?: number;
+      materializeWouldRun?: number;
+      unitsThisCycle?: number;
+      dailyGrowthCap?: number;
+      dailyGrowthUsed?: number;
+      dailyGrowthRemaining?: number;
+      maxUnitsPerCycle?: number;
+      wouldExceedBudget?: boolean;
+      budgetMessage?: string | null;
+      reviewOnlyPublish?: boolean;
+      workersAiNote?: string;
+      workersAi?: { cap: number; used: number; remaining: number };
+    } | undefined;
 
     const enabledEl = document.getElementById('growth-enabled') as HTMLInputElement | null;
     if (enabledEl) enabledEl.checked = cfg.enabled;
@@ -56,6 +75,12 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
     if (maxEl) maxEl.value = String(cfg.maxProposalsPerCycle);
     const caseEl = document.getElementById('growth-case-studies') as HTMLInputElement | null;
     if (caseEl) caseEl.checked = cfg.generateCaseStudies;
+    const autoEl = document.getElementById('growth-auto-materialize') as HTMLInputElement | null;
+    if (autoEl) autoEl.checked = Boolean(cfg.autoMaterializePending);
+    const dailyBudgetEl = document.getElementById('growth-daily-budget') as HTMLInputElement | null;
+    if (dailyBudgetEl) dailyBudgetEl.value = String(cfg.maxDailyGrowthUnits ?? 20);
+    const maxUnitsCycleEl = document.getElementById('growth-max-units-cycle') as HTMLInputElement | null;
+    if (maxUnitsCycleEl) maxUnitsCycleEl.value = String(cfg.maxUnitsPerCycle ?? 5);
 
     const scheduleState = document.getElementById('growth-schedule-state');
     const armed = Boolean(cfg.scheduleArmed);
@@ -73,8 +98,12 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
 
     const armBtn = document.getElementById('growth-arm-schedule') as HTMLButtonElement | null;
     const pauseBtn = document.getElementById('growth-pause-schedule') as HTMLButtonElement | null;
+    const budgetBlocked = Boolean(estimate?.wouldExceedBudget);
     if (armBtn) {
-      armBtn.disabled = !cfg.enabled || cfg.intervalHours <= 0 || armed;
+      armBtn.disabled = !cfg.enabled || cfg.intervalHours <= 0 || armed || budgetBlocked;
+      armBtn.title = budgetBlocked
+        ? (estimate?.budgetMessage ?? 'Next cycle would exceed growth budget')
+        : '';
     }
     if (pauseBtn) {
       pauseBtn.disabled = !armed;
@@ -90,6 +119,28 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
         `Pending proposals: ${data.stats?.pending ?? 0}`,
       ].filter(Boolean);
       meta.textContent = parts.join(' · ');
+    }
+
+    const budgetSummary = document.getElementById('growth-budget-summary');
+    const budgetNote = document.getElementById('growth-budget-note');
+    const budgetPanel = document.getElementById('growth-budget-panel');
+    if (budgetSummary && estimate) {
+      const lines = [
+        `Today: ${estimate.dailyGrowthUsed ?? 0} / ${estimate.dailyGrowthCap ?? 20} growth units used (${estimate.dailyGrowthRemaining ?? 0} left)`,
+        `Next cycle: ~${estimate.proposalsWouldCreate ?? 0} new proposal(s)${estimate.materializeWouldRun ? `, ~${estimate.materializeWouldRun} draft(s) (~${estimate.unitsThisCycle ?? 0} units)` : ''}`,
+        estimate.reviewOnlyPublish !== false ? 'Publish: manual only (drafts until Resources)' : 'Publish: may auto-publish by voice score',
+      ];
+      budgetSummary.textContent = lines.join(' · ');
+      if (budgetPanel) {
+        budgetPanel.classList.toggle('library-growth-budget--warn', budgetBlocked);
+      }
+      if (budgetNote) {
+        const ai = estimate.workersAi;
+        const aiLine = ai
+          ? `Your Workers AI allowance today: ${ai.used}/${ai.cap} (${ai.remaining} left). `
+          : '';
+        budgetNote.textContent = `${aiLine}${estimate.workersAiNote ?? ''}${budgetBlocked && estimate.budgetMessage ? ` ${estimate.budgetMessage}` : ''}`;
+      }
     }
 
     await renderGrowthProposals(ctx, data.pending ?? []);
@@ -139,7 +190,7 @@ async function renderGrowthProposals(
       </header>
       <p>${escapeHtml(p.rationale)}</p>
       <div class="growth-proposal-actions">
-        <button type="button" class="btn btn-primary btn-sm growth-approve">Approve &amp; generate</button>
+        <button type="button" class="btn btn-primary btn-sm growth-approve">Approve &amp; generate draft</button>
         <button type="button" class="btn btn-secondary btn-sm growth-reject">Reject</button>
       </div>
     </article>`
@@ -181,8 +232,8 @@ async function actOnProposal(
     setGrowthStatus(
       action === 'approve'
         ? isCaseStudy
-          ? `Case study materialized${data.published ? ' and published' : ''}. Draft page merges on next static build; promote in case-studies.ts when ready.`
-          : `Materialized${data.published ? ' and published' : ' as draft'}: ${data.resource?.title ?? 'resource'}`
+          ? `Case study draft created${data.published ? ' (published)' : ''}. Review in Resources before going live.`
+          : `Draft created${data.published ? ' (published)' : ''}: ${data.resource?.title ?? 'resource'} — publish from Resources when ready.`
         : 'Proposal rejected.'
     );
     await loadLibraryGrowthPanel(ctx);
@@ -204,6 +255,14 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
       intervalHours: Number((document.getElementById('growth-interval-hours') as HTMLInputElement)?.value ?? 168),
       maxProposalsPerCycle: Number((document.getElementById('growth-max-proposals') as HTMLInputElement)?.value ?? 5),
       generateCaseStudies: (document.getElementById('growth-case-studies') as HTMLInputElement)?.checked ?? true,
+      autoMaterializePending:
+        (document.getElementById('growth-auto-materialize') as HTMLInputElement)?.checked ?? false,
+      maxDailyGrowthUnits: Number(
+        (document.getElementById('growth-daily-budget') as HTMLInputElement)?.value ?? 20
+      ),
+      maxUnitsPerCycle: Number(
+        (document.getElementById('growth-max-units-cycle') as HTMLInputElement)?.value ?? 5
+      ),
     };
     const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'PATCH',
@@ -227,7 +286,7 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
     const data = await res.json();
     setGrowthStatus(
       data.success
-        ? 'Schedule activated. Automatic cycles will run when due; proposals still need your approval.'
+        ? 'Schedule activated. Edge cron checks every 6 hours when a cycle is due.'
         : data.error || 'Could not activate schedule.',
       !data.success
     );
@@ -261,7 +320,20 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
       setGrowthStatus(data.error || 'Cycle failed.', true);
       return;
     }
-    setGrowthStatus(`Cycle created ${data.created} proposal(s), skipped ${data.skipped}.`);
+    const mat = data.autoMaterialize as {
+      materialized?: number;
+      published?: number;
+      budgetBlocked?: boolean;
+      budgetReason?: string;
+      skippedBudget?: number;
+    } | undefined;
+    let matLine = '';
+    if (mat?.budgetBlocked) {
+      matLine = ` Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`;
+    } else if (mat && (mat.materialized ?? 0) > 0) {
+      matLine = ` Generated ${mat.materialized} draft(s)${mat.published ? ` (${mat.published} auto-published)` : ''}.`;
+    }
+    setGrowthStatus(`Cycle created ${data.created} proposal(s), skipped ${data.skipped}.${matLine}`);
     await loadLibraryGrowthPanel(ctx);
   });
 

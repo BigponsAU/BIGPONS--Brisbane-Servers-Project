@@ -8,7 +8,11 @@ import type { Resource } from './resource-types';
 
 export type { Resource, Visibility, ProcessingStatus } from './resource-types';
 export { isPublicResource } from './resource-types';
-export { RESOURCES_FILE, SEMANTIC_INDEX_FILE, SQLITE_DB_FILE } from './storage-paths';
+export {
+  getResourcesFile,
+  getSemanticIndexFile,
+  getSqliteDbFile,
+} from './storage-paths';
 
 /**
  * Ensure backing store exists (empty array / DB). Idempotent.

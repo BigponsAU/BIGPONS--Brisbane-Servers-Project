@@ -29,6 +29,7 @@ describe('Hybrid API contract coverage', () => {
       '/api/voice/analyze',
       '/api/voice-map/principles',
       '/api/voice-map/corpus',
+      '/api/voice-map/semantic',
       '/api/admin/bootstrap-voice-corpus',
       '/api/community/by-topic',
       '/api/community/contributions',

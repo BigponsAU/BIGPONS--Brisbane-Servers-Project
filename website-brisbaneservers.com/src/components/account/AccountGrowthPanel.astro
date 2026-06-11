@@ -12,7 +12,7 @@ import SectionConstellationLayer from '../SectionConstellationLayer.astro';
         <SectionIntro
           eyebrow="Growing library"
           title="Library growth"
-          byline="Automates materials only — topic guides, resources, and case study copy. Voice profiles for specific industries or case studies are created manually under Voice profiles (default site voice is used here). Save settings, activate the schedule when ready, and approve each proposal before content is generated."
+          byline="Plans topic gaps from analytics, then generates voice-aligned draft guides. Nothing goes live until you publish from Resources. Check the budget estimate before activating the schedule."
           titleId="library-growth-heading"
         />
 
@@ -35,6 +35,23 @@ import SectionConstellationLayer from '../SectionConstellationLayer.astro';
               <input type="checkbox" id="growth-case-studies" checked />
               Include case-study proposals
             </label>
+            <label class="library-growth-toggle">
+              <input type="checkbox" id="growth-auto-materialize" />
+              Auto-generate draft resources after each cycle
+            </label>
+            <label>
+              Daily growth budget (units)
+              <input type="number" id="growth-daily-budget" min="1" max="100" value="20" />
+            </label>
+            <label>
+              Max materialize per cycle
+              <input type="number" id="growth-max-units-cycle" min="1" max="20" value="5" />
+            </label>
+          </div>
+          <div id="growth-budget-panel" class="library-growth-budget" role="status" aria-live="polite">
+            <p class="library-growth-budget-title">Budget &amp; next cycle estimate</p>
+            <p id="growth-budget-summary" class="library-growth-meta">Loading estimate…</p>
+            <p id="growth-budget-note" class="library-growth-budget-note"></p>
           </div>
           <div class="library-growth-actions">
             <button type="button" id="growth-save-config" class="btn btn-secondary btn-sm">Save settings</button>

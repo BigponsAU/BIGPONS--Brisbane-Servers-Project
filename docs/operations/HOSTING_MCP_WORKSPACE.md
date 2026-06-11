@@ -5,12 +5,12 @@
 | Platform | Role | MCP in Cursor | Setup script |
 |----------|------|---------------|--------------|
 | **Cloudflare** | Static site (Pages), DNS, inbound email routing | `cloudflare-api`, `cloudflare-docs` | `npm run configure:cloudflare-mcp` |
-| **Render** | **Node API only** (`brisbane-servers-api`) | `render` | `npm run configure:render-mcp` |
+| **Render** | **Retired** (API on Cloudflare Worker) | `render` (optional legacy) | — |
 | **Neon** | **Postgres** (users, sessions, corpus) | *none* — dashboard + env on Render | `npm run configure:neon-database` |
 | **Resend** | Outbound auth email | *none* — `RESEND_API_KEY` on Render | `configure-render-auth.ps1` |
 | **Google Cloud** | Sign-in with Google (OAuth client) | `google-cloud-bigquery` optional (analytics only) | Google Console + Render env |
 
-**Render is not removed** — only **Render Postgres** is retired. Neon replaces the database; Render still runs the API.
+**Render API is retired** (2026-06). All `/api/*` runs on the **Cloudflare Worker** at `api.brisbaneservers.com`. Neon remains the database via Hyperdrive.
 
 ---
 

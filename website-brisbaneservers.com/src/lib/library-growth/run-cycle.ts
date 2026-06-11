@@ -5,6 +5,7 @@ import {
 } from './config';
 import { planGrowthProposals } from './planner';
 import { loadGrowthProposals, saveGrowthProposals } from './proposals-store';
+import { autoMaterializePendingProposals, type AutoMaterializeResult } from './auto-materialize';
 import type { GrowthProposal } from './types';
 
 export interface GrowthCycleResult {
@@ -118,4 +119,22 @@ export async function runDueLibraryGrowthCycle(): Promise<GrowthCycleResult> {
   }
 
   return runLibraryGrowthCycle();
+}
+
+export type AutonomousGrowthResult = GrowthCycleResult & {
+  autoMaterialize: AutoMaterializeResult;
+};
+
+/** Due planning cycle + optional auto-generate (edge cron / secured HTTP cron). */
+export async function runAutonomousDueCycle(): Promise<AutonomousGrowthResult> {
+  const cycleResult = await runDueLibraryGrowthCycle();
+  const autoMaterialize = await autoMaterializePendingProposals();
+  return { ...cycleResult, autoMaterialize };
+}
+
+/** Manual admin cycle + optional auto-generate. */
+export async function runAutonomousGrowthCycle(): Promise<AutonomousGrowthResult> {
+  const cycleResult = await runLibraryGrowthCycle();
+  const autoMaterialize = await autoMaterializePendingProposals();
+  return { ...cycleResult, autoMaterialize };
 }

@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import type { Resource } from '../resource-types';
-import { SQLITE_DB_FILE } from '../storage-paths';
+import { getSqliteDbFile } from '../storage-paths';
 import type { ResourceRepository } from './resource-repository';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,10 +28,10 @@ export class SqliteResourceRepository implements ResourceRepository {
     const SQL = await initSqlJs({
       locateFile: locateSqlJsFile
     });
-    mkdirSync(path.dirname(SQLITE_DB_FILE), { recursive: true });
+    mkdirSync(path.dirname(getSqliteDbFile()), { recursive: true });
     let db: InstanceType<typeof SQL.Database>;
-    if (existsSync(SQLITE_DB_FILE)) {
-      const buf = readFileSync(SQLITE_DB_FILE);
+    if (existsSync(getSqliteDbFile())) {
+      const buf = readFileSync(getSqliteDbFile());
       db = new SQL.Database(buf);
     } else {
       db = new SQL.Database();
@@ -48,7 +48,7 @@ export class SqliteResourceRepository implements ResourceRepository {
   private persist(): void {
     const data = this.db.export();
     const buffer = Buffer.from(data);
-    writeFileSync(SQLITE_DB_FILE, buffer);
+    writeFileSync(getSqliteDbFile(), buffer);
   }
 
   async loadAll(): Promise<Resource[]> {

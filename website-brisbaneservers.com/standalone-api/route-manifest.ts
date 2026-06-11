@@ -20,6 +20,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/voice/analyze', loadModule: () => import('../src/pages/_api/voice/analyze') },
   { path: '/api/voice-map/principles', loadModule: () => import('../src/pages/_api/voice-map/principles') },
   { path: '/api/voice-map/corpus', loadModule: () => import('../src/pages/_api/voice-map/corpus') },
+  { path: '/api/voice-map/semantic', loadModule: () => import('../src/pages/_api/voice-map/semantic') },
   { path: '/api/admin/bootstrap-voice-corpus', loadModule: () => import('../src/pages/_api/admin/bootstrap-voice-corpus') },
 
   { path: '/api/resources', loadModule: () => import('../src/pages/_api/resources/index') },

@@ -1,14 +1,27 @@
 /**
  * Canonical filesystem paths for local Node-backed storage.
- * Not durable on ephemeral/serverless file systems; use an external database in production.
+ * Lazy getters — safe on Cloudflare Workers (no module-init path.join).
  */
 
 import * as path from 'path';
-import { getMonorepoRoot } from './monorepo-root';
+import { voiceFrameworkStorageDir } from './monorepo-root';
 
-const storageDir = path.join(getMonorepoRoot(), 'voice-framework', 'storage');
+function storageDir(): string {
+  return voiceFrameworkStorageDir();
+}
 
-export const RESOURCES_FILE = path.join(storageDir, 'resources.json');
-export const SEMANTIC_INDEX_FILE = path.join(storageDir, 'semantic-index.json');
-export const SQLITE_DB_FILE = path.join(storageDir, 'resources.db');
-export const AUTH_SQLITE_DB_FILE = path.join(storageDir, 'auth.db');
+export function getResourcesFile(): string {
+  return path.join(storageDir(), 'resources.json');
+}
+
+export function getSemanticIndexFile(): string {
+  return path.join(storageDir(), 'semantic-index.json');
+}
+
+export function getSqliteDbFile(): string {
+  return path.join(storageDir(), 'resources.db');
+}
+
+export function getAuthSqliteDbFile(): string {
+  return path.join(storageDir(), 'auth.db');
+}

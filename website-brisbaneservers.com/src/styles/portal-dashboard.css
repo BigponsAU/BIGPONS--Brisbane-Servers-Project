@@ -490,6 +490,31 @@
   color: var(--portal-text-secondary, #475569);
 }
 
+.account-workspace-shell .library-growth-budget {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.account-workspace-shell .library-growth-budget--warn {
+  border-color: rgba(180, 83, 9, 0.35);
+  background: rgba(254, 243, 199, 0.35);
+}
+
+.account-workspace-shell .library-growth-budget-title {
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.account-workspace-shell .library-growth-budget-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
 .account-workspace-shell .library-growth-meta {
   font-size: var(--text-sm);
   color: var(--text-secondary);

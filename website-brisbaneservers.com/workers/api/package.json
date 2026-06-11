@@ -8,6 +8,8 @@
     "tail": "wrangler tail"
   },
   "dependencies": {
+    "astro": "^5.18.2",
+    "pg": "^8.13.1",
     "postgres": "^3.4.5"
   },
   "devDependencies": {

@@ -1,12 +1,12 @@
 # End product — Brisbane Servers unified platform
 
-**Vision:** One cohesive site + account portal where Brisbane businesses get fast auth, voice-guided content, and AI-assisted resources — with edge latency for user-facing paths and Render for heavy voice-framework workloads until fully migrated.
+**Vision:** One cohesive site + account portal where Brisbane businesses get fast auth, voice-guided content, and AI-assisted resources — all on Cloudflare edge with Neon Postgres.
 
 **Development line:** [DEVELOPMENT_LINE.md](DEVELOPMENT_LINE.md) · **Ops:** [PRODUCTION_GO_LIVE_STATUS.md](../operations/PRODUCTION_GO_LIVE_STATUS.md)
 
 ---
 
-## Unified architecture (target state)
+## Unified architecture (production)
 
 ```text
 brisbaneservers.com (Cloudflare Pages)
@@ -15,77 +15,59 @@ brisbaneservers.com (Cloudflare Pages)
     │
     └─ /account (portal)
            Workspace: resources, profiles, voice lab, voice map
-           Admin (bigpons@): ops, corpus reindex, library growth
+           Admin: library growth, moderation, site review, ops
 
-api.brisbaneservers.com (Cloudflare Worker — LIVE)
-    ├─ INSTANT: health, auth/*, contact/inquiry
-    ├─ Hyperdrive → Neon (users, sessions, auth tokens)
-    └─ PROXY → Render API (voice, generate, OAuth, passkey, cron)
+api.brisbaneservers.com (Cloudflare Worker — full API)
+    ├─ Auth, contact, health (native edge)
+    ├─ All portal routes (voice, generate, admin, OAuth, cron)
+    ├─ Hyperdrive → Neon
+    ├─ Workers AI binding (inference)
+    └─ Cron: library growth every 6h (when schedule armed)
 
-Render API (warm path / background)
-    ├─ Voice-framework disk, library growth, semantic index
-    ├─ Workers AI inference (when CF token on Render)
-    └─ OAuth / passkey callbacks
-
-Neon Postgres — single source of truth for auth + corpus metadata
-Resend — auth + contact email (mail.brisbaneservers.com)
+Neon Postgres — users, sessions, corpus
+Resend — auth + contact (mail.brisbaneservers.com)
 ```
+
+**Render:** retired (API suspended).
 
 ---
 
-## Product pillars (completion status)
+## Product pillars
 
 | Pillar | User outcome | Status |
 |--------|--------------|--------|
-| **Fast auth** | Sign in / register in seconds | **Live** on edge |
-| **Email verify** | Register → verify → login | **Live** on edge (verify + resend) |
-| **Account portal** | Workspace + admin switcher | **Repo** — needs Pages deploy |
-| **Brisbane voice** | Default profile + corpus map | **Data live** on Neon — **UI** needs Pages deploy |
-| **Free AI generate** | Daily-capped Workers AI | **Repo** — CF token on Render |
-| **Instant contact** | No 3-min enquiry wait | **Live** on edge (direct Resend) |
-| **Billing** | PayID → Stripe | **Backlog** (admin ops panel stub) |
+| **Fast auth** | Sign in / register in seconds | **Live** edge |
+| **Google OAuth** | Sign in with Google | **Live** (callback on `api.brisbaneservers.com`) |
+| **Account portal** | Workspace + admin switcher | **Live** |
+| **Brisbane voice** | Profile + corpus map | **Live** |
+| **Free AI generate** | Daily-capped Workers AI | **Live** edge binding |
+| **Library growth** | Site adds its own resources | **Live** — arm schedule + optional auto-generate |
+| **Instant contact** | No cold-start wait | **Live** edge |
+| **Billing** | PayID → Stripe | **Backlog** v1.1 |
 
 ---
 
-## Remaining engineering to “finished product”
+## Library growth (website grows itself)
 
-### Ship (git → Pages + Render)
+1. **Admin** → Library growth → enable schedule → **Activate schedule**
+2. Optional: **Auto-generate resources after each cycle** (no manual approve)
+3. **Edge cron** (`0 */6 * * *`) runs due cycles on the worker
+4. Plans topic gaps → generates voice-aligned guides → publishes when voice score passes threshold
+5. Optional: `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on worker rebuilds static HTML after publish
 
-All portal, voice-map, inference, and worker code is in the repo workspace. **Push to `main`** triggers:
-
-- Cloudflare Pages → `/account` voice map, admin UI, wake UX
-- Render → new API routes (`/api/voice-map/*`, `/api/usage/me`, inference)
-
-### Automate after push
-
-```powershell
-cd website-brisbaneservers.com
-npm run sync:render-secrets-for-edge      # once per machine
-npm run sync:inference-to-render          # Workers AI on Render
-npm run bootstrap:voice-corpus            # prod corpus + Brisbane profile
-npm run deploy:edge-worker                # after worker code changes
-npm run verify:production-auth:edge
-npm run verify:production
-```
-
-### Phase 2 migrations (post-ship)
-
-1. OAuth + passkey on edge (or keep Render proxy — works today)
-2. `POST /api/resources/generate` on edge with Workers AI binding
-3. PayID manual grant + Stripe subscription
-4. Retire Render cold path for non-cron traffic
+Manual: **Run cycle now** anytime. Secured HTTP: `POST /api/cron/library-growth` + `CRON_SECRET`.
 
 ---
 
-## Definition of done
+## Definition of done (v1)
 
-- [x] `api.brisbaneservers.com` on Worker with Hyperdrive auth
-- [x] Full auth loop on edge (register, verify, resend, login, me, logout)
-- [x] Contact on edge
-- [ ] Portal voice map + Brisbane profile on production Pages
-- [x] Corpus indexed on production Neon (16 resources, 48 chunks)
-- [ ] Workers AI generate live on `/account` Resources
-- [ ] Single `verify:production` green after Pages deploy
-- [ ] Billing path documented and implemented
+- [x] Full API on Cloudflare Worker (Render retired)
+- [x] Auth + OAuth + secrets synced on worker
+- [x] Portal voice map / lab / admin on Pages
+- [x] Workers AI on edge
+- [x] Library growth cron on edge + auto-materialize option
+- [x] Legacy parity: voice-map semantic route, Markov flow in Voice lab
+- [ ] Billing (PayID / Stripe) — v1.1
+- [ ] 3D topology canvas (optional; 2D map ships today)
 
-When the unchecked items are green, the product is **feature-complete v1**; billing and legacy voice-framework parity are v1.1+.
+**Feature-complete v1** = all checked except billing and optional 3D.

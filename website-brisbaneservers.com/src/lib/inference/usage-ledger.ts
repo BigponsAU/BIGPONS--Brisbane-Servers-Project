@@ -7,7 +7,9 @@ import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { AuthRole } from '../../utils/auth';
 
-export const USAGE_LEDGER_FILE = path.join(voiceFrameworkStorageDir(), 'usage-ledger.json');
+export function getUsageLedgerFile(): string {
+  return path.join(voiceFrameworkStorageDir(), 'usage-ledger.json');
+}
 
 export type UsageReason = 'inference_generate' | 'inference_improve';
 
@@ -36,14 +38,14 @@ export function unitsForGenerate(contentLength: number): number {
 export async function loadUsageLedger(): Promise<UsageLedgerEntry[]> {
   const entries = await readCorpusJson<UsageLedgerEntry[]>(
     CORPUS_DOC_KEYS.USAGE_LEDGER,
-    USAGE_LEDGER_FILE,
+    getUsageLedgerFile(),
     []
   );
   return Array.isArray(entries) ? entries : [];
 }
 
 export async function saveUsageLedger(entries: UsageLedgerEntry[]): Promise<void> {
-  await saveCorpusJson(CORPUS_DOC_KEYS.USAGE_LEDGER, USAGE_LEDGER_FILE, entries);
+  await saveCorpusJson(CORPUS_DOC_KEYS.USAGE_LEDGER, getUsageLedgerFile(), entries);
 }
 
 function utcDayKey(iso: string): string {

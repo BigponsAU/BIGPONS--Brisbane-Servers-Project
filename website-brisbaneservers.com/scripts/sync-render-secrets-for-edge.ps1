@@ -26,7 +26,11 @@ $keys = @(
   'ADMIN_EMAIL',
   'ADMIN_PASSWORD',
   'AUTH_EMAIL_FROM',
-  'JWT_SECRET'
+  'JWT_SECRET',
+  'GOOGLE_OAUTH_CLIENT_ID',
+  'GOOGLE_OAUTH_CLIENT_SECRET',
+  'GOOGLE_OAUTH_REDIRECT_URI',
+  'CRON_SECRET'
 )
 
 Write-Host 'Syncing Render secrets to Windows user environment...' -ForegroundColor Cyan

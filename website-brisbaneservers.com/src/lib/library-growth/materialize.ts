@@ -100,9 +100,10 @@ export async function materializeGrowthProposal(
     loadPipelineConfig(),
     loadLibraryGrowthConfig(),
   ]);
+  const reviewOnly = growthConfig.reviewOnlyPublish !== false;
   const publishThreshold =
     growthConfig.autoPublishMinScore ?? pipeline.autoPublishThreshold;
-  const shouldPublish = voiceScore >= publishThreshold;
+  const shouldPublish = !reviewOnly && voiceScore >= publishThreshold;
 
   let resource: Resource;
 

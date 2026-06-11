@@ -12,8 +12,9 @@
 | **Inference** | Workers AI client + daily caps + template fallback | **Done** |
 | **Inference** | Wired into `POST /api/resources/generate` | **Done** |
 | **Inference** | `GET /api/usage/me` daily meter | **Done** |
-| Edge | Workers contact queue + Render proxy | **Live** on `api.brisbaneservers.com` |
-| Edge | `/api/auth/wake` + `/api/health/render` | **Done** in repo |
+| Edge | Full API on Worker (Render **retired**) | **Live** on `api.brisbaneservers.com` |
+| Edge | Workers AI binding (`AI`) | **Live** — no Render REST token |
+| Edge | `/api/auth/wake` instant (no cold start) | **Live** |
 | Edge | `npm run configure:edge-worker` | **Done** — run to deploy |
 
 ## Free inference (no Grok)
@@ -36,7 +37,14 @@ Set `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` on Render. Default model: `
 
 | Phase | Item |
 |-------|------|
-| 1b | Auth on Worker — **live** (`login`, `register`, `me`, `logout` + Hyperdrive) — see [EDGE_AUTH_PHASE_1B.md](EDGE_AUTH_PHASE_1B.md) |
-| Edge | Workers AI binding on edge worker (optional; REST works from Render now) |
 | 3 | Stripe subscription past daily cap |
 | 3 | PayID manual top-up grant flow |
+| 7 | Optional 3D topology canvas (2D voice map ships) |
+
+## Library growth cron (edge)
+
+| Item | Status |
+|------|--------|
+| Worker `scheduled` → `runAutonomousDueCycle` | **Live** — `0 */6 * * *` |
+| Auto-generate toggle (`autoMaterializePending`) | **Live** — admin Library growth panel |
+| Pages rebuild hook | Set `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on worker |

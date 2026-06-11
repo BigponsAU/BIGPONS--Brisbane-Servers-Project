@@ -29,8 +29,22 @@ export async function loadLibraryGrowthConfig(): Promise<LibraryGrowthConfig> {
         ? Math.min(raw.maxProposalsPerCycle, 20)
         : defaultLibraryGrowthConfig.maxProposalsPerCycle,
     generateCaseStudies: raw.generateCaseStudies !== false,
+    reviewOnlyPublish: raw.reviewOnlyPublish !== false,
     autoPublishMinScore:
       typeof raw.autoPublishMinScore === 'number' ? raw.autoPublishMinScore : null,
+    autoMaterializePending: Boolean(raw.autoMaterializePending),
+    maxDailyGrowthUnits:
+      typeof raw.maxDailyGrowthUnits === 'number' && raw.maxDailyGrowthUnits > 0
+        ? Math.min(raw.maxDailyGrowthUnits, 100)
+        : defaultLibraryGrowthConfig.maxDailyGrowthUnits,
+    maxUnitsPerCycle:
+      typeof raw.maxUnitsPerCycle === 'number' && raw.maxUnitsPerCycle > 0
+        ? Math.min(raw.maxUnitsPerCycle, 20)
+        : defaultLibraryGrowthConfig.maxUnitsPerCycle,
+    unitsPerMaterialize:
+      typeof raw.unitsPerMaterialize === 'number' && raw.unitsPerMaterialize > 0
+        ? Math.min(raw.unitsPerMaterialize, 10)
+        : defaultLibraryGrowthConfig.unitsPerMaterialize,
     lastCycleAt: raw.lastCycleAt ?? null,
     nextCycleAt: raw.nextCycleAt ?? null,
   };

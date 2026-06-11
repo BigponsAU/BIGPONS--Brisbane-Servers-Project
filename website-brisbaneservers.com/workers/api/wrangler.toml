@@ -13,19 +13,20 @@ AUTH_EMAIL_REPLY_TO = "connect@brisbaneservers.com"
 INFERENCE_PROVIDER = "workers-ai"
 WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 
-# Set in Cloudflare dashboard / wrangler secret:
-# RESEND_API_KEY, RENDER_API_ORIGIN (https://brisbane-servers-api.onrender.com)
-# ADMIN_EMAIL, ADMIN_PASSWORD (bootstrap super-admin)
-# Phase 1b: npm run configure:hyperdrive (Neon pooled URL -> Hyperdrive binding)
+[ai]
+binding = "AI"
+
+# Library growth: checks due cycles every 6h (requires schedule armed in /account admin).
+[triggers]
+crons = ["0 */6 * * *"]
 
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "10f7ed61ff194130946a299a4aaf38e1"
-# Replace after: npm run configure:hyperdrive
-# localConnectionString = "postgresql://..."  # wrangler dev only (.dev.vars)
 
-# Queues optional — contact falls back to direct Resend when CONTACT_QUEUE unbound.
-# Uncomment after: npx wrangler queues create contact-inquiry-queue
+# Secrets (wrangler secret put): RESEND_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+# Optional: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, CRON_SECRET, AUTH_EMAIL_FROM
 
-[env.production]
-vars = { PUBLIC_SITE_URL = "https://brisbaneservers.com" }
+[alias]
+"@voice-framework" = "../../../voice-framework"
+"~" = "../../src"

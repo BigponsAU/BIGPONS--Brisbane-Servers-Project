@@ -21,7 +21,17 @@ export interface WorkersAICompleteResult {
   provider: 'workers-ai';
 }
 
+interface EdgeWorkersAiBinding {
+  run(model: string, input: Record<string, unknown>): Promise<{ response?: string }>;
+}
+
+function getEdgeAiBinding(): EdgeWorkersAiBinding | undefined {
+  return (globalThis as typeof globalThis & { __WORKERS_AI_BINDING__?: EdgeWorkersAiBinding })
+    .__WORKERS_AI_BINDING__;
+}
+
 export function isWorkersAIConfigured(): boolean {
+  if (getEdgeAiBinding()) return true;
   return Boolean(
     getRuntimeEnv('CLOUDFLARE_ACCOUNT_ID')?.trim() && getRuntimeEnv('CLOUDFLARE_API_TOKEN')?.trim()
   );
@@ -38,13 +48,30 @@ export function getInferenceProvider(): 'workers-ai' | 'template' {
 export async function completeWithWorkersAI(
   params: WorkersAICompleteParams
 ): Promise<WorkersAICompleteResult> {
+  const model = getRuntimeEnv('WORKERS_AI_MODEL')?.trim() || WORKERS_AI_MODEL;
+  const edgeAi = getEdgeAiBinding();
+
+  if (edgeAi) {
+    const result = (await edgeAi.run(model, {
+      messages: [
+        { role: 'system', content: params.system },
+        { role: 'user', content: params.user },
+      ],
+      max_tokens: params.maxTokens ?? 1800,
+    })) as { response?: string };
+
+    const text = (result.response ?? '').trim();
+    if (!text) {
+      throw new Error('Workers AI returned empty response');
+    }
+    return { text, modelId: model, provider: 'workers-ai' };
+  }
+
   const accountId = getRuntimeEnv('CLOUDFLARE_ACCOUNT_ID')?.trim();
   const apiToken = getRuntimeEnv('CLOUDFLARE_API_TOKEN')?.trim();
   if (!accountId || !apiToken) {
     throw new Error('WORKERS_AI_NOT_CONFIGURED');
   }
-
-  const model = getRuntimeEnv('WORKERS_AI_MODEL')?.trim() || WORKERS_AI_MODEL;
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${encodeURIComponent(model)}`;
 
   const res = await fetch(url, {

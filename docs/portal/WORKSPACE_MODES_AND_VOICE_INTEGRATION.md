@@ -12,10 +12,10 @@
 | `voice-framework/dashboard/routes/topology-routes.ts` | 3D principle topology | **Voice map** panel → `GET /api/voice-map/principles` |
 | `voice-framework/storage/semantic-index` + embeddings | Vector corpus | **Voice map** (semantic view) → `GET /api/voice-map/semantic` |
 | `voice-framework/dashboard/public/topology3d.js` | Three.js 3D canvas | **2D SVG map** in portal (no separate host; 3D optional later) |
-| `voice-framework/dashboard/public/markov-chain-tracker.js` | Markov / debug analytics | **Not ported yet** — backlog under Voice lab |
+| `voice-framework/dashboard/public/markov-chain-tracker.js` | Markov / debug analytics | **Voice lab** — client portal flow summary (`portal-markov-tracker.ts`) |
 | Same dashboard | Library, documents upload, A/B tests | Partially covered by Resources, Profiles, Library growth |
 
-**No Docker/Render required** for integrated features — they run on the same standalone API as `/api/resources/*` (today: Render; target: Cloudflare Workers + Neon Hyperdrive).
+**No Docker/Render required** — all features run on `api.brisbaneservers.com` (Cloudflare Worker + Neon Hyperdrive).
 
 ---
 
@@ -67,7 +67,7 @@ Ops copy lives in **Admin console → Ops & billing** panel.
 |--------|------|------|
 | POST | `/api/voice/analyze` | editor+ |
 | GET | `/api/voice-map/principles` | editor+ |
-| GET | `/api/voice-map/semantic` | editor+ |
+| GET | `/api/voice-map/semantic` | editor+ (registered in route manifest) |
 
 Registered in `standalone-api/route-manifest.ts`.
 

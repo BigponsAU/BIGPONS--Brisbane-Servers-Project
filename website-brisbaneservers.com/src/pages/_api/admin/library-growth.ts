@@ -7,7 +7,8 @@ import {
 } from '~/lib/library-growth/config';
 import type { LibraryGrowthConfig } from '~/lib/library-growth/types';
 import { loadGrowthProposals } from '~/lib/library-growth/proposals-store';
-import { runLibraryGrowthCycle } from '~/lib/library-growth/run-cycle';
+import { estimateGrowthCycle } from '~/lib/library-growth/estimate-cycle';
+import { runAutonomousGrowthCycle } from '~/lib/library-growth/run-cycle';
 
 /**
  * Library growth automation — config and status.
@@ -21,9 +22,13 @@ export const GET: APIRoute = async ({ request }) => {
     return jsonError(authResult.error, authResult.code === 'FORBIDDEN' ? 403 : 401);
   }
 
-  const [config, proposals] = await Promise.all([
+  const [config, proposals, estimate] = await Promise.all([
     loadLibraryGrowthConfig(),
     loadGrowthProposals(),
+    estimateGrowthCycle(undefined, {
+      adminUserId: authResult.user.id,
+      adminRole: authResult.user.role,
+    }),
   ]);
 
   const pending = proposals.filter((p) => p.status === 'pending');
@@ -31,6 +36,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   return jsonOk({
     config,
+    estimate,
     stats: {
       pending: pending.length,
       materialized: materialized.length,
@@ -72,6 +78,26 @@ export const PATCH: APIRoute = async ({ request }) => {
         : typeof body.autoPublishMinScore === 'number'
           ? body.autoPublishMinScore
           : current.autoPublishMinScore,
+    reviewOnlyPublish:
+      typeof body.reviewOnlyPublish === 'boolean'
+        ? body.reviewOnlyPublish
+        : current.reviewOnlyPublish,
+    autoMaterializePending:
+      typeof body.autoMaterializePending === 'boolean'
+        ? body.autoMaterializePending
+        : current.autoMaterializePending,
+    maxDailyGrowthUnits:
+      typeof body.maxDailyGrowthUnits === 'number'
+        ? Math.min(Math.max(1, body.maxDailyGrowthUnits), 100)
+        : current.maxDailyGrowthUnits,
+    maxUnitsPerCycle:
+      typeof body.maxUnitsPerCycle === 'number'
+        ? Math.min(Math.max(1, body.maxUnitsPerCycle), 20)
+        : current.maxUnitsPerCycle,
+    unitsPerMaterialize:
+      typeof body.unitsPerMaterialize === 'number'
+        ? Math.min(Math.max(1, body.unitsPerMaterialize), 10)
+        : current.unitsPerMaterialize,
     lastCycleAt: current.lastCycleAt,
     nextCycleAt: current.nextCycleAt,
   };
@@ -113,6 +139,17 @@ export const POST: APIRoute = async ({ request }) => {
     if (current.intervalHours <= 0) {
       return jsonError('Set cycle interval (hours) above 0 before activating the schedule.', 400);
     }
+    const armEstimate = await estimateGrowthCycle(current, {
+      adminUserId: authResult.user.id,
+      adminRole: authResult.user.role,
+    });
+    if (armEstimate.wouldExceedBudget) {
+      return jsonError(
+        armEstimate.budgetMessage ??
+          'Next cycle would exceed the growth budget. Adjust caps or wait for daily reset.',
+        400
+      );
+    }
     const armed: LibraryGrowthConfig = {
       ...current,
       scheduleArmed: true,
@@ -142,8 +179,20 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const result = await runLibraryGrowthCycle();
-    return jsonOk({ success: true, ...result });
+    const config = await loadLibraryGrowthConfig();
+    const estimate = await estimateGrowthCycle(config, {
+      adminUserId: authResult.user.id,
+      adminRole: authResult.user.role,
+    });
+    if (estimate.wouldExceedBudget && config.autoMaterializePending) {
+      return jsonError(
+        estimate.budgetMessage ??
+          'This cycle would exceed the growth budget. Disable auto-generate drafts or raise caps.',
+        400
+      );
+    }
+    const result = await runAutonomousGrowthCycle();
+    return jsonOk({ success: true, estimate, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Growth cycle failed';
     return jsonError(message, 500);

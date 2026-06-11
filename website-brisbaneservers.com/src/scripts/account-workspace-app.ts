@@ -26,6 +26,7 @@ import {
   type WorkspaceNavMode,
 } from '../data/account-workspace';
 import { onVoicePanelShown } from './account-workspace-voice-features';
+import { trackPortalPanel } from './portal-markov-tracker';
 
 const WORKSPACE_MODE_STORAGE_KEY = 'bs-workspace-nav-mode';
 const ADMIN_PANELS = new Set(['library-growth', 'moderation', 'site-review', 'admin-ops']);
@@ -1256,6 +1257,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       console.log('[Portal] Navigating to panel:', panelName);
     }
 
+    trackPortalPanel(panelName);
     ensureNavModeForPanel(panelName);
     
     // Hide all panels with fade out

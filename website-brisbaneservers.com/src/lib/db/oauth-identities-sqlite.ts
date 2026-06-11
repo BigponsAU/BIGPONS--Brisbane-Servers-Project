@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { AUTH_SQLITE_DB_FILE } from '~/lib/storage-paths';
+import { getAuthSqliteDbFile } from '~/lib/storage-paths';
 import type { OAuthProvider, StoredOAuthIdentity } from './oauth-identities';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +14,7 @@ type DatabaseInstance = InstanceType<
 let dbPromise: Promise<DatabaseInstance> | null = null;
 
 function persistDb(db: DatabaseInstance): void {
-  writeFileSync(AUTH_SQLITE_DB_FILE, Buffer.from(db.export()));
+  writeFileSync(getAuthSqliteDbFile(), Buffer.from(db.export()));
 }
 
 async function getDb(): Promise<DatabaseInstance> {
@@ -23,9 +23,9 @@ async function getDb(): Promise<DatabaseInstance> {
       const initSqlJs = (await import('sql.js')).default;
       const { locateSqlJsFile } = await import('./sql-js-locate');
       const SQL = await initSqlJs({ locateFile: locateSqlJsFile });
-      mkdirSync(path.dirname(AUTH_SQLITE_DB_FILE), { recursive: true });
-      const db = existsSync(AUTH_SQLITE_DB_FILE)
-        ? new SQL.Database(readFileSync(AUTH_SQLITE_DB_FILE))
+      mkdirSync(path.dirname(getAuthSqliteDbFile()), { recursive: true });
+      const db = existsSync(getAuthSqliteDbFile())
+        ? new SQL.Database(readFileSync(getAuthSqliteDbFile()))
         : new SQL.Database();
       db.run(`
         CREATE TABLE IF NOT EXISTS user_oauth_identities (

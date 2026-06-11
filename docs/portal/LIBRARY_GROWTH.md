@@ -39,15 +39,16 @@ flowchart LR
 
 1. **Plan** — Compare `industries` topics vs published resources; boost priority when contributions are pending.
 2. **Queue** — Store proposals in `voice-framework/storage/growth-proposals.json`.
-3. **Approve** — Admin clicks **Approve & generate** → draft (or auto-publish if voice score ≥ threshold).
-4. **Schedule** — Optional `intervalHours`. **Automatic cycles never run from config alone** — an admin must click **Activate schedule** in the account workspace (`scheduleArmed`). **Pause schedule** disarms; **Run cycle now** is always manual. Production options:
+3. **Approve** — Admin clicks **Approve & generate draft** → voice-aligned **draft** in `resources.json`. **Publish** from the Resources panel when ready (`reviewOnlyPublish` defaults to `true`; auto-publish only if explicitly disabled and voice score ≥ threshold).
+4. **Schedule** — Optional `intervalHours`. Admin must click **Activate schedule** (`scheduleArmed`). **Auto-generate draft resources** materializes pending proposals as drafts after each cycle (still manual publish). The panel shows a **budget estimate** before arming or running a cycle. Production options:
 
 | Method | When to use |
 |--------|-------------|
 | **Account workspace** | Admin → Library growth → **Run cycle now** |
-| **Cron HTTP** | `POST /api/cron/library-growth` with `Authorization: Bearer $CRON_SECRET` (Render cron, GitHub Actions) |
-| **In-process** | `LIBRARY_GROWTH_SCHEDULER=1` on the standalone API process (15-minute due check) |
-| **CLI** | `npx tsx scripts/library-growth-cycle.ts --due` on the API host |
+| **Cloudflare Worker cron** | Every 6h on edge when schedule armed (default production) |
+| **Cron HTTP** | `POST /api/cron/library-growth` with `Authorization: Bearer $CRON_SECRET` |
+| **GitHub Actions** | `.github/workflows/library-growth-cron.yml` (optional backup) |
+| **CLI** | `npx tsx scripts/library-growth-cycle.ts --due` |
 
 ```bash
 cd website-brisbaneservers.com
@@ -58,7 +59,7 @@ npx tsx scripts/library-growth-cycle.ts --due
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/api/admin/library-growth` | Config + pending preview |
+| GET | `/api/admin/library-growth` | Config + **cycle estimate** + pending preview |
 | PATCH | `/api/admin/library-growth` | Update schedule/settings |
 | POST | `/api/admin/library-growth` | Run cycle now (no body), or `{ "action": "arm" \| "pause" }` |
 | GET | `/api/admin/growth-proposals?status=pending` | Full proposal list |
@@ -79,7 +80,16 @@ File: `voice-framework/storage/library-growth-config.json`
 | `intervalHours` | Hours between cycles (`0` = manual only) |
 | `maxProposalsPerCycle` | Cap per run (1–20) |
 | `generateCaseStudies` | Alternate proposal types |
-| `autoPublishMinScore` | `null` = use pipeline `autoPublishThreshold` |
+| `reviewOnlyPublish` | `true` (default) — growth never auto-publishes; publish from Resources |
+| `autoPublishMinScore` | Only when `reviewOnlyPublish` is `false`; `null` = pipeline threshold |
+| `autoMaterializePending` | After each cycle, generate drafts from pending queue (budget-capped) |
+| `maxDailyGrowthUnits` | Site-wide daily cap for materialize + index ops (default 20) |
+| `maxUnitsPerCycle` | Max proposals materialized per cycle (default 5) |
+| `unitsPerMaterialize` | Growth units charged per materialize (default 1) |
+
+Growth budget is separate from **Workers AI** daily caps (`usage-ledger.json`). Growth uses voice **templates** (no Workers AI neurons). The admin panel shows both estimates when loading Library growth.
+
+File: `voice-framework/storage/growth-usage-ledger.json` — daily growth unit usage.
 
 ### Case study drafts
 
@@ -100,7 +110,7 @@ Phase 2: semantic vector similarity via `/api/semantic/search`.
 - **Author roles** — non-admin propose-only queue (reuse contributions pattern)
 - **Semantic vector de-duplication** before materialize
 - **Build-time fetch** of case-study drafts from the API for Cloudflare-only builds (no committed JSON)
-- **Batch publish caps** and admin digest per cycle
+- Admin digest email per cycle
 
 ## Cloudflare vs semantic / vectors
 

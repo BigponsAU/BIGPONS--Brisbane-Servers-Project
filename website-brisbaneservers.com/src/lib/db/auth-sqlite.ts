@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { AUTH_SQLITE_DB_FILE } from '../storage-paths';
+import { getAuthSqliteDbFile } from '../storage-paths';
 import type { AuthRole, AuthUser } from '../../utils/auth';
 import type { StoredAuthToken } from './auth-types';
 import type { StoredSession } from './sessions';
@@ -32,7 +32,7 @@ function readJsonArray<T>(filePath: string): T[] {
 
 function persistDb(db: DatabaseInstance): void {
   const data = db.export();
-  writeFileSync(AUTH_SQLITE_DB_FILE, Buffer.from(data));
+  writeFileSync(getAuthSqliteDbFile(), Buffer.from(data));
 }
 
 function rowToAuthUser(row: { user_id: string; email: string; role: string; email_verified_at?: string | null }): AuthUser {
@@ -51,9 +51,9 @@ async function initializeDb(): Promise<DatabaseInstance> {
     locateFile: locateSqlJsFile
   });
 
-  mkdirSync(path.dirname(AUTH_SQLITE_DB_FILE), { recursive: true });
-  const db = existsSync(AUTH_SQLITE_DB_FILE)
-    ? new SQL.Database(readFileSync(AUTH_SQLITE_DB_FILE))
+  mkdirSync(path.dirname(getAuthSqliteDbFile()), { recursive: true });
+  const db = existsSync(getAuthSqliteDbFile())
+    ? new SQL.Database(readFileSync(getAuthSqliteDbFile()))
     : new SQL.Database();
 
   db.run(`

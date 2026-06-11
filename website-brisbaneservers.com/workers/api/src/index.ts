@@ -8,13 +8,12 @@ import { handleResendVerification } from './auth/resend-verification';
 import { handleVerifyEmail } from './auth/verify-email';
 import {
   corsHeaders,
-  handleAuthWake,
   handleContactInquiry,
-  handleRenderHealth,
   json,
-  proxyToRender,
   sendContactViaResend,
 } from './handlers';
+import { bindWorkerRuntime } from './runtime-bridge';
+import { dispatchStandaloneApi } from './standalone-dispatch';
 
 const EDGE_AUTH_PATHS = new Set([
   '/api/auth/login',
@@ -31,6 +30,8 @@ function edgeAuthEnabled(env: WorkerEnv): boolean {
 
 export default {
   async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
+    bindWorkerRuntime(env);
+
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
     const apiPath = path.startsWith('/api') ? path : `/api${path}`;
@@ -46,6 +47,7 @@ export default {
           status: 'ok',
           edge: 'cloudflare-worker',
           origin: 'edge',
+          render: false,
           timestamp: new Date().toISOString(),
         },
         200,
@@ -53,12 +55,17 @@ export default {
       );
     }
 
-    if (apiPath === '/api/health/render' && request.method === 'GET') {
-      return handleRenderHealth(request, env);
-    }
-
     if (apiPath === '/api/auth/wake' && request.method === 'GET') {
-      return handleAuthWake(request, env, ctx);
+      return json(
+        {
+          success: true,
+          status: 'ready',
+          edge: 'cloudflare-worker',
+          message: 'API runs on Cloudflare edge (Render retired).',
+        },
+        200,
+        corsHeaders(request.headers.get('origin'))
+      );
     }
 
     if (edgeAuthEnabled(env) && EDGE_AUTH_PATHS.has(apiPath)) {
@@ -76,12 +83,26 @@ export default {
       return handleContactInquiry(request, env);
     }
 
-    const proxied = new URL(request.url);
-    proxied.pathname = apiPath;
-    return proxyToRender(request, env, proxied);
+    return dispatchStandaloneApi(request);
+  },
+
+  async scheduled(_controller: ScheduledController, env: WorkerEnv, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(
+      (async () => {
+        bindWorkerRuntime(env);
+        try {
+          const { runAutonomousDueCycle } = await import('../../../src/lib/library-growth/run-cycle');
+          const result = await runAutonomousDueCycle();
+          console.log('[scheduled] library-growth', JSON.stringify(result));
+        } catch (error) {
+          console.error('[scheduled] library-growth failed', error);
+        }
+      })()
+    );
   },
 
   async queue(batch: MessageBatch<ContactPayload>, env: WorkerEnv): Promise<void> {
+    bindWorkerRuntime(env);
     for (const msg of batch.messages) {
       try {
         await sendContactViaResend(env, msg.body);

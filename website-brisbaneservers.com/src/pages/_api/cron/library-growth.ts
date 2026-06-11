@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { runDueLibraryGrowthCycle } from '~/lib/library-growth/run-cycle';
+import { runAutonomousDueCycle } from '~/lib/library-growth/run-cycle';
 
 /**
  * Secured cron endpoint for hosted API (Render cron, GitHub Actions, Uptime Robot).
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const result = await runDueLibraryGrowthCycle();
+    const result = await runAutonomousDueCycle();
     return new Response(JSON.stringify({ success: true, ...result }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

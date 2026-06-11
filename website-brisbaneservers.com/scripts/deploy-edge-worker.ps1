@@ -14,12 +14,8 @@ function Import-UserEnv([string[]]$Names) {
 
 Import-UserEnv @(
   'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN', 'RESEND_API_KEY',
-  'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'RENDER_API_ORIGIN'
+  'ADMIN_EMAIL', 'ADMIN_PASSWORD', 'JWT_SECRET'
 )
-
-if (-not $env:RENDER_API_ORIGIN) {
-  $env:RENDER_API_ORIGIN = 'https://brisbane-servers-api.onrender.com'
-}
 
 Push-Location $WorkerDir
 try {
