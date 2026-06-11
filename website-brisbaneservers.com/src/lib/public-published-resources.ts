@@ -24,12 +24,9 @@ function useLivePublicCatalog(): boolean {
 }
 
 function useGitCorpusForCatalog(): boolean {
-  if (useLivePublicCatalog()) return false;
   if (!pagesBuildUsesGitCorpus()) return false;
-  const internalBase = getInternalApiBaseUrl();
-  if (/^https?:\/\//i.test(internalBase)) {
-    return false;
-  }
+  const runtimeSsr = import.meta.env.SSR && import.meta.env.PRERENDER !== true;
+  if (useLivePublicCatalog() && runtimeSsr) return false;
   return true;
 }
 
@@ -42,7 +39,7 @@ function usesRemotePublicApi(): boolean {
 }
 
 async function loadResourcesLocal(): Promise<Resource[]> {
-  if (import.meta.env.PROD && usesRemotePublicApi()) {
+  if (import.meta.env.PROD && usesRemotePublicApi() && !useGitCorpusForCatalog()) {
     return [];
   }
   const { loadResources } = await import('./resources-api');
