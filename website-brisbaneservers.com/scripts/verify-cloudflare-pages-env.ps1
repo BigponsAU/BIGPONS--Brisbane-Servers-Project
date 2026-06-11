@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Stop'
 
 $expectedApis = @(
-  'https://brisbane-servers-api.onrender.com/api',
+  'https://api.brisbaneservers.com/api',
   'https://api.brisbaneservers.com/api'
 )
 

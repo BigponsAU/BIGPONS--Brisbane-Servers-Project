@@ -21,7 +21,7 @@ export function buildHostingEnvChecklist(): HostingEnvItem[] {
       key: 'DATABASE_URL',
       required: true,
       configured: has('DATABASE_URL'),
-      notes: 'Postgres for auth, corpus, passkeys (Render/Neon).',
+      notes: 'Postgres for auth, corpus, passkeys (Neon via Worker Hyperdrive).',
       setOn: 'api',
     },
     {
@@ -114,7 +114,7 @@ export function formatHostingEnvChecklistEmail(): string {
     '',
     `Generated: ${new Date().toISOString()}`,
     '',
-    'Required (API host — Render dashboard → brisbane-servers-api → Environment):',
+    'Required (API host — Cloudflare Worker brisbane-servers-api-edge secrets / Hyperdrive):',
     ...items
       .filter((i) => i.required)
       .map((i) => `  [${i.configured ? 'OK' : 'MISSING'}] ${i.key} — ${i.notes}`),

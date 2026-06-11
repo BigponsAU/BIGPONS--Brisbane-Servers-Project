@@ -331,7 +331,7 @@ function checkHostedApiForStaticDeploy(): ValidationResult {
       name: 'Hosted API (static deploy CI)',
       passed: false,
       message:
-        'PUBLIC_API_BASE_URL looks misconfigured (api1). Use https://brisbane-servers-api.onrender.com/api or https://api.brisbaneservers.com/api.'
+        'PUBLIC_API_BASE_URL looks misconfigured (api1). Use https://api.brisbaneservers.com/api.'
     };
   }
 

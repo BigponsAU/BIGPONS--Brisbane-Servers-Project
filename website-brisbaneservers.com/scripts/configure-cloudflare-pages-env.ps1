@@ -2,10 +2,11 @@
 # Requires CLOUDFLARE_API_TOKEN with Account: Cloudflare Pages Edit.
 #
 # Run from repo root:
-#   $env:CLOUDFLARE_API_TOKEN = '...'
-#   .\website-brisbaneservers.com\scripts\configure-cloudflare-pages-env.ps1
-#
-# Or after saving token via configure-cloudflare-mcp.ps1 (also runs this script).
+#   .\website-brisbaneservers.com\scripts\configure-cloudflare-pages-env.ps1 -SkipDeploy
+
+param(
+  [switch]$SkipDeploy
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,10 +16,11 @@ $apiUrl = 'https://api.brisbaneservers.com/api'
 $siteUrl = 'https://brisbaneservers.com'
 
 $requiredEnv = [ordered]@{
-  PUBLIC_SITE_URL       = $siteUrl
-  PUBLIC_SITE_BASE      = '/'
-  PUBLIC_API_BASE_URL   = $apiUrl
-  INTERNAL_API_BASE_URL = $apiUrl
+  PUBLIC_SITE_URL            = $siteUrl
+  PUBLIC_SITE_BASE           = '/'
+  PUBLIC_API_BASE_URL        = $apiUrl
+  INTERNAL_API_BASE_URL      = $apiUrl
+  PAGES_BUILD_USE_GIT_CORPUS = '1'
 }
 
 $token = $env:CLOUDFLARE_API_TOKEN
@@ -93,16 +95,20 @@ if (-not $patch.success) {
 
 Write-Host "Cloudflare Pages production env updated." -ForegroundColor Green
 
-Write-Host "Creating production deployment (rebuild with new env) ..." -ForegroundColor Cyan
-$deployUri = "https://api.cloudflare.com/client/v4/accounts/$accountId/pages/projects/$projectName/deployments"
-$deploy = Invoke-CfApi -Method Post -Uri $deployUri -Body @{ branch = 'main' }
-if ($deploy.success) {
-  $deploymentId = $deploy.result.id
-  Write-Host "Deployment queued: $deploymentId" -ForegroundColor Green
-  Write-Host "Dashboard: https://dash.cloudflare.com/?to=/:account/pages/view/$projectName/$deploymentId" -ForegroundColor DarkGray
+if (-not $SkipDeploy) {
+  Write-Host "Creating production deployment (rebuild with new env) ..." -ForegroundColor Cyan
+  $deployUri = "https://api.cloudflare.com/client/v4/accounts/$accountId/pages/projects/$projectName/deployments"
+  $deploy = Invoke-CfApi -Method Post -Uri $deployUri -Body @{ branch = 'main' }
+  if ($deploy.success) {
+    $deploymentId = $deploy.result.id
+    Write-Host "Deployment queued: $deploymentId" -ForegroundColor Green
+    Write-Host "Dashboard: https://dash.cloudflare.com/?to=/:account/pages/view/$projectName/$deploymentId" -ForegroundColor DarkGray
+  } else {
+    Write-Host "Env saved; deployment trigger failed (push to main or retry in dashboard)." -ForegroundColor Yellow
+    Write-Host ($deploy.errors | ConvertTo-Json -Compress) -ForegroundColor DarkGray
+  }
 } else {
-  Write-Host "Env saved; deployment trigger failed (push to main or retry in dashboard)." -ForegroundColor Yellow
-  Write-Host ($deploy.errors | ConvertTo-Json -Compress) -ForegroundColor DarkGray
+  Write-Host "SkipDeploy: env saved without triggering Pages build (saves Neon egress)." -ForegroundColor Yellow
 }
 
 Write-Host ""

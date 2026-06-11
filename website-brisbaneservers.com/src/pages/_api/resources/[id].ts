@@ -12,6 +12,10 @@ import {
   type Resource
 } from '../../../lib/resources-api';
 import { canAccessResource } from '../../../lib/resource-access';
+import {
+  scheduleStaticSiteRebuild,
+  shouldRebuildForResourceChange,
+} from '../../../lib/deploy-rebuild';
 
 /**
  * Get a specific resource
@@ -204,11 +208,16 @@ export const PUT: APIRoute = async ({ params, request }) => {
       };
     }
 
+    const updated = resources[idx];
     await saveResources(resources);
+
+    if (shouldRebuildForResourceChange(existing, updated)) {
+      scheduleStaticSiteRebuild(`resource-${updated.status}-${updated.id}`);
+    }
 
     return new Response(
       JSON.stringify({
-        resource: resources[idx],
+        resource: updated,
         success: true
       }),
       {

@@ -1,11 +1,20 @@
 /**
  * Public / prerender: load published resources via HTTP when the API is up,
  * else fall back to the same repository backing `GET /api/resources/public`.
+ *
+ * During Astro build, memoizes the full public list so Pages does not hammer
+ * Neon/Hyperdrive on every static path (major egress saver).
  */
 import { resolveInternalApiUrl } from './api-config';
 import type { Resource } from './resource-types';
 import { isPublicResource } from './resource-types';
 import { loadResources, normalizeTopicSlug } from './resources-api';
+import { readRuntimeEnv } from '../utils/runtime-env';
+
+/** When "1", Astro build reads voice-framework/storage/resources.json — no API/Neon egress. */
+function pagesBuildUsesGitCorpus(): boolean {
+  return readRuntimeEnv('PAGES_BUILD_USE_GIT_CORPUS') === '1';
+}
 
 function sortByGeneratedDesc(resources: Resource[]): Resource[] {
   return [...resources].sort(
@@ -33,30 +42,64 @@ export type PublishedListFilters = {
   topic?: string;
 };
 
+let buildTimePublicCache: Resource[] | null = null;
+let buildTimePublicCachePromise: Promise<Resource[]> | null = null;
+
+async function fetchAllPublicFromApi(): Promise<Resource[] | null> {
+  const apiBase = resolveInternalApiUrl('/resources/public');
+  if (!/^https?:\/\//i.test(apiBase)) {
+    return null;
+  }
+
+  const url = new URL(apiBase);
+  try {
+    const res = await fetch(url.href, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { resources?: Resource[] };
+    return sortByGeneratedDesc(data.resources ?? []);
+  } catch {
+    return null;
+  }
+}
+
+/** One HTTP fetch per Astro build when prerendering from the live API. */
+async function getBuildTimePublicCache(): Promise<Resource[]> {
+  if (buildTimePublicCache) {
+    return buildTimePublicCache;
+  }
+  if (!buildTimePublicCachePromise) {
+    buildTimePublicCachePromise = (async () => {
+      const remote = await fetchAllPublicFromApi();
+      if (remote) {
+        buildTimePublicCache = remote;
+        return remote;
+      }
+      const all = await loadResources();
+      buildTimePublicCache = filterLocal(all, {});
+      return buildTimePublicCache;
+    })();
+  }
+  return buildTimePublicCachePromise;
+}
+
 /**
  * Prefer remote API (unified dev / Node adapter); on failure use `loadResources()` + `isPublicResource`.
  */
 export async function getPublishedResourcesForPage(
   filters: PublishedListFilters = {},
 ): Promise<Resource[]> {
-  const apiBase = resolveInternalApiUrl('/resources/public');
-  if (!/^https?:\/\//i.test(apiBase)) {
+  if (pagesBuildUsesGitCorpus()) {
     const all = await loadResources();
     return filterLocal(all, filters);
   }
 
-  const url = new URL(apiBase);
-  if (filters.industry) url.searchParams.set('industry', filters.industry);
-  if (filters.topic) url.searchParams.set('topic', filters.topic);
-
-  try {
-    const res = await fetch(url.href, { headers: { Accept: 'application/json' } });
-    if (res.ok) {
-      const data = (await res.json()) as { resources?: Resource[] };
-      return sortByGeneratedDesc(data.resources ?? []);
+  const apiBase = resolveInternalApiUrl('/resources/public');
+  if (/^https?:\/\//i.test(apiBase)) {
+    const all = await getBuildTimePublicCache();
+    if (filters.industry || filters.topic) {
+      return filterLocal(all, filters);
     }
-  } catch {
-    /* local fallback */
+    return all;
   }
 
   const all = await loadResources();
@@ -64,27 +107,17 @@ export async function getPublishedResourcesForPage(
 }
 
 export async function getPublishedResourceById(id: string): Promise<Resource | null> {
-  const apiBase = resolveInternalApiUrl('/resources/public');
-  if (!/^https?:\/\//i.test(apiBase)) {
+  if (pagesBuildUsesGitCorpus()) {
     const all = await loadResources();
     const r = all.find((x) => x.id === id);
-    if (!r || !isPublicResource(r)) return null;
-    return r;
+    return r && isPublicResource(r) ? r : null;
   }
 
-  const url = new URL(apiBase);
-  url.searchParams.set('id', id);
-
-  try {
-    const res = await fetch(url.href, { headers: { Accept: 'application/json' } });
-    if (res.ok) {
-      const data = (await res.json()) as { resource?: Resource };
-      const r = data.resource;
-      if (r && isPublicResource(r)) return r;
-      return null;
-    }
-  } catch {
-    /* local fallback */
+  const apiBase = resolveInternalApiUrl('/resources/public');
+  if (/^https?:\/\//i.test(apiBase)) {
+    const all = await getBuildTimePublicCache();
+    const r = all.find((x) => x.id === id);
+    return r && isPublicResource(r) ? r : null;
   }
 
   const all = await loadResources();

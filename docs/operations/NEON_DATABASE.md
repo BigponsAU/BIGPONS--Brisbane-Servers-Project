@@ -1,6 +1,6 @@
 # Neon Postgres — production database (required)
 
-**Neon is the only supported production Postgres.** Render hosts the API; Neon stores all durable data.
+**Neon is the only supported production Postgres.** The Cloudflare Worker reaches Neon via **Hyperdrive**; Neon stores all durable data.
 
 Use **[Neon](https://neon.tech)** for long-term free Postgres. **Do not use Render free Postgres** — it expires after 30 days and is removed from [`render.yaml`](../../render.yaml).
 
@@ -22,20 +22,19 @@ One `DATABASE_URL` stores:
    `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require`  
    Use the pooler URL for Render/serverless — not the direct (non-pooler) host.
 
-### 2. Set on Render API
+### 2. Connect via Hyperdrive (production)
+
+Hyperdrive config **`brisbane-servers-neon`** on account BIGPONS points at your Neon **pooled** URL.
+
+Update origin in Cloudflare dashboard → **Hyperdrive**, or run:
 
 ```powershell
 cd website-brisbaneservers.com
-npm run configure:neon-database
+npm run configure:neon-database   # legacy script may still set Render if present
+npm run sync:edge-worker-secrets  # after DATABASE_URL in user env
 ```
 
-Or manually in **brisbane-servers-api** → **Environment**:
-
-| Variable | Value |
-|----------|--------|
-| `DATABASE_URL` | Neon **pooled** connection string |
-
-Save → redeploy.
+For local / one-off scripts, set `DATABASE_URL` to the same pooled connection string.
 
 ### 3. Bootstrap runs automatically
 
@@ -107,6 +106,21 @@ DATABASE_URL=postgresql://...@ep-xxx.neon.tech/neondb?sslmode=require
 ```
 
 Without `DATABASE_URL`, corpus uses `voice-framework/storage/*.json` only.
+
+---
+
+## Egress budget (free tier: 5 GB/month)
+
+| Action | Neon egress |
+|--------|-------------|
+| Pages build with `PAGES_BUILD_USE_GIT_CORPUS=1` | **None** — reads `voice-framework/storage/resources.json` in git |
+| Pages build without git corpus | **High** — was 40+ API fetches per build (now 1 with build cache) |
+| `npm run export:corpus-for-build` | **One** read of `/api/resources/public` |
+| Portal publish / API | Small writes + reads |
+
+When egress is low: set `PAGES_BUILD_USE_GIT_CORPUS=1` on Cloudflare Pages, run `npm run export:corpus-for-build`, commit `resources.json`, then push.
+
+Check usage: [console.neon.tech](https://console.neon.tech) → project → **Usage**.
 
 ---
 

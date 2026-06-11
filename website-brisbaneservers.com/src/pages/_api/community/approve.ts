@@ -9,6 +9,7 @@ import {
   updateContributionStatus
 } from '../../../lib/contributions';
 import { addLedgerEntry } from '../../../lib/token-ledger';
+import { scheduleStaticSiteRebuild } from '../../../lib/deploy-rebuild';
 
 /**
  * Approve a contribution and optionally adjust tokens.
@@ -84,6 +85,7 @@ export const POST: APIRoute = async ({ request }) => {
         visibility: 'public'
       };
       await saveResources(resources);
+      scheduleStaticSiteRebuild(`community-approve-${updated.resourceId}`);
     }
 
     if (typeof tokenDelta === 'number' && tokenDelta !== 0) {
