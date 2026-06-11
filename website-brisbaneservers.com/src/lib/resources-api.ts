@@ -5,9 +5,11 @@
 
 import { getResourceRepository } from './repositories/index';
 import type { Resource } from './resource-types';
+import { normalizeTopicSlug } from './resource-slug';
 
 export type { Resource, Visibility, ProcessingStatus } from './resource-types';
 export { isPublicResource } from './resource-types';
+export { normalizeTopicSlug } from './resource-slug';
 export {
   getResourcesFile,
   getSemanticIndexFile,
@@ -29,16 +31,6 @@ export async function loadResources(): Promise<Resource[]> {
 export async function saveResources(resources: Resource[]): Promise<void> {
   const repo = await getResourceRepository();
   await repo.saveAll(resources);
-}
-
-/**
- * Normalize topic name to slug format for consistency
- */
-export function normalizeTopicSlug(topic: string): string {
-  return topic
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 /**

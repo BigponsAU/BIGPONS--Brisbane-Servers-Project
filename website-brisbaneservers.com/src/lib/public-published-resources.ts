@@ -4,11 +4,13 @@
  *
  * During Astro build, memoizes the full public list so Pages does not hammer
  * Neon/Hyperdrive on every static path (major egress saver).
+ *
+ * Cloudflare Pages SSR must not import pg/repositories — uses API fetch only.
  */
 import { getInternalApiBaseUrl, resolveInternalApiUrl } from './api-config';
 import type { Resource } from './resource-types';
 import { isPublicResource } from './resource-types';
-import { loadResources, normalizeTopicSlug } from './resources-api';
+import { normalizeTopicSlug } from './resource-slug';
 import { readRuntimeEnv } from '../utils/runtime-env';
 
 /** When "1", Astro build reads voice-framework/storage/resources.json — no API/Neon egress. */
@@ -24,7 +26,6 @@ function useLivePublicCatalog(): boolean {
 function useGitCorpusForCatalog(): boolean {
   if (useLivePublicCatalog()) return false;
   if (!pagesBuildUsesGitCorpus()) return false;
-  // Hosted builds with a remote API must not read git/pg on Cloudflare Workers (no local corpus).
   const internalBase = getInternalApiBaseUrl();
   if (/^https?:\/\//i.test(internalBase)) {
     return false;
@@ -32,9 +33,17 @@ function useGitCorpusForCatalog(): boolean {
   return true;
 }
 
-/** Static prerender phase (marketing build) — memoize API reads. Runtime SSR fetches fresh. */
 function isPrerenderBuildPhase(): boolean {
   return import.meta.env.PRERENDER === true;
+}
+
+function usesRemotePublicApi(): boolean {
+  return /^https?:\/\//i.test(resolveInternalApiUrl('/resources/public'));
+}
+
+async function loadResourcesLocal(): Promise<Resource[]> {
+  const { loadResources } = await import('./resources-api');
+  return loadResources();
 }
 
 function sortByGeneratedDesc(resources: Resource[]): Resource[] {
@@ -72,9 +81,8 @@ async function fetchAllPublicFromApi(): Promise<Resource[] | null> {
     return null;
   }
 
-  const url = new URL(apiBase);
   try {
-    const res = await fetch(url.href, { headers: { Accept: 'application/json' } });
+    const res = await fetch(apiBase, { headers: { Accept: 'application/json' } });
     if (!res.ok) return null;
     const data = (await res.json()) as { resources?: Resource[] };
     return sortByGeneratedDesc(data.resources ?? []);
@@ -83,7 +91,6 @@ async function fetchAllPublicFromApi(): Promise<Resource[] | null> {
   }
 }
 
-/** One HTTP fetch per Astro build when prerendering from the live API. */
 async function getBuildTimePublicCache(): Promise<Resource[]> {
   if (buildTimePublicCache) {
     return buildTimePublicCache;
@@ -95,7 +102,7 @@ async function getBuildTimePublicCache(): Promise<Resource[]> {
         buildTimePublicCache = remote;
         return remote;
       }
-      const all = await loadResources();
+      const all = await loadResourcesLocal();
       buildTimePublicCache = filterLocal(all, {});
       return buildTimePublicCache;
     })();
@@ -103,46 +110,42 @@ async function getBuildTimePublicCache(): Promise<Resource[]> {
   return buildTimePublicCachePromise;
 }
 
-/**
- * Prefer remote API (unified dev / Node adapter); on failure use `loadResources()` + `isPublicResource`.
- */
 export async function getPublishedResourcesForPage(
   filters: PublishedListFilters = {},
 ): Promise<Resource[]> {
   if (useGitCorpusForCatalog()) {
-    const all = await loadResources();
+    const all = await loadResourcesLocal();
     return filterLocal(all, filters);
   }
 
-  const apiBase = resolveInternalApiUrl('/resources/public');
-  if (/^https?:\/\//i.test(apiBase)) {
+  if (usesRemotePublicApi()) {
     if (isPrerenderBuildPhase()) {
       const all = await getBuildTimePublicCache();
-      if (filters.industry || filters.topic) {
-        return filterLocal(all, filters);
-      }
-      return all;
+      return filterLocal(all, filters);
     }
 
     const remote = await fetchAllPublicFromApi();
     if (remote) {
       return filterLocal(remote, filters);
     }
+
+    if (import.meta.env.PROD) {
+      return [];
+    }
   }
 
-  const all = await loadResources();
+  const all = await loadResourcesLocal();
   return filterLocal(all, filters);
 }
 
 export async function getPublishedResourceById(id: string): Promise<Resource | null> {
   if (useGitCorpusForCatalog()) {
-    const all = await loadResources();
+    const all = await loadResourcesLocal();
     const r = all.find((x) => x.id === id);
     return r && isPublicResource(r) ? r : null;
   }
 
-  const apiBase = resolveInternalApiUrl('/resources/public');
-  if (/^https?:\/\//i.test(apiBase)) {
+  if (usesRemotePublicApi()) {
     const all = isPrerenderBuildPhase()
       ? await getBuildTimePublicCache()
       : ((await fetchAllPublicFromApi()) ?? []);
@@ -150,7 +153,7 @@ export async function getPublishedResourceById(id: string): Promise<Resource | n
     return r && isPublicResource(r) ? r : null;
   }
 
-  const all = await loadResources();
+  const all = await loadResourcesLocal();
   const r = all.find((x) => x.id === id);
   if (!r || !isPublicResource(r)) return null;
   return r;

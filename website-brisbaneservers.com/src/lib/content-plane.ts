@@ -16,7 +16,7 @@ import {
 import { filterResourcesForUser } from './resource-access';
 import type { Resource } from './resource-types';
 import { isPublicResource } from './resource-types';
-import { normalizeTopicSlug } from './resources-api';
+import { normalizeTopicSlug } from './resource-slug';
 
 export type ContentPlane = 'portal' | 'public' | 'indexable';
 
