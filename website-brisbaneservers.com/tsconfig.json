@@ -1,1 +1,12 @@
-{"extends":"astro/tsconfigs/strict","compilerOptions":{"baseUrl":".","paths":{"~/*":["src/*"],"@voice-framework":["../voice-framework"],"@voice-framework/*":["../voice-framework/*"]}}}
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "@voice-framework": ["../voice-framework"],
+      "@voice-framework/*": ["../voice-framework/*"]
+    }
+  },
+  "exclude": ["workers/**", "dist/**", "node_modules/**"]
+}

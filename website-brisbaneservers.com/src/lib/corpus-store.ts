@@ -15,6 +15,7 @@ export const CORPUS_DOC_KEYS = {
   PIPELINE_CONFIG: 'pipeline-config',
   CONTRIBUTIONS: 'contributions',
   TOKEN_LEDGER: 'token-ledger',
+  USAGE_LEDGER: 'usage-ledger',
   CASE_STUDY_DRAFTS: 'case-study-drafts',
   PROFILES: 'profiles',
   TEXT_STORAGE: 'text-storage',

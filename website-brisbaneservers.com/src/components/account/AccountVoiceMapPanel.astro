@@ -1,0 +1,41 @@
+---
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import { accountWorkspace, BRISBANE_PROFILE_NAME } from '../../data/account-workspace';
+---
+
+<div id="voice-map-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Voice map" style="display: none;">
+  <div class="admin-content">
+    <section class="admin-section" aria-labelledby="voice-map-heading">
+      <SectionConstellationLayer variant="strategy" semanticKey="account-voice-map" tier="whisper" placement="top-left" />
+      <div class="section-header">
+        <div>
+          <h2 id="voice-map-heading">{accountWorkspace.voiceMapLabel}</h2>
+          <p class="section-subtitle">
+            Corpus indexed from published resources, guides, articles, and case studies. The
+            <strong>{BRISBANE_PROFILE_NAME}</strong> profile hub connects every account to this site voice.
+          </p>
+        </div>
+        <div class="section-header-actions voice-map-toolbar">
+          <select id="voice-map-view" class="form-select" aria-label="Map layer">
+            <option value="corpus-resources">Resources (by industry)</option>
+            <option value="corpus-chunks">Semantic chunks</option>
+            <option value="principles">Principles</option>
+          </select>
+          <button type="button" id="voice-map-refresh-btn" class="btn btn-secondary btn-sm">Refresh</button>
+          <button type="button" id="voice-map-bootstrap-btn" class="btn btn-primary btn-sm" data-min-role="admin">
+            Reindex corpus
+          </button>
+        </div>
+      </div>
+
+      <div id="voice-map-legend" class="voice-map-legend" aria-live="polite"></div>
+
+      <div class="voice-map-stage card">
+        <svg id="voice-map-svg" class="voice-map-svg" viewBox="0 0 800 480" role="img" aria-label="Voice topology map">
+          <text x="400" y="240" text-anchor="middle" class="voice-map-placeholder">Loading voice map…</text>
+        </svg>
+        <p id="voice-map-meta" class="voice-map-meta" aria-live="polite"></p>
+      </div>
+    </section>
+  </div>
+</div>

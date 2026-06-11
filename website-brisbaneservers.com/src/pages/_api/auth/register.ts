@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { hashPassword } from '../../../utils/auth';
 import { createUser, findUserByEmail } from '../../../lib/db/users';
 import { sendVerificationEmail } from '../../../lib/auth-flows';
+import { getVoiceFramework } from '../../../utils/voice-framework';
+import { ensureBrisbaneProfile, findBrisbaneProfileMeta } from '../../../lib/brisbane-profile';
 import { authRateLimitResponse } from '../../../lib/auth-rate-limit';
 import { isValidEmail } from '../../../utils/error-handling';
 import { logAuthEvent } from '../../../lib/auth-audit';
@@ -73,6 +75,16 @@ export const POST: APIRoute = async ({ request }) => {
 
     const passwordHash = hashPassword(password);
     const stored = await createUser(trimmed, passwordHash, 'client');
+
+    try {
+      const { profileManager, profileBuilder } = await getVoiceFramework();
+      if (!findBrisbaneProfileMeta(profileManager.getAllProfiles())) {
+        await ensureBrisbaneProfile(profileManager, profileBuilder);
+      }
+    } catch (profileErr) {
+      console.warn('[auth/register] Brisbane profile bootstrap skipped:', profileErr);
+    }
+
     let delivery;
     try {
       delivery = await sendVerificationEmail(request, { id: stored.id, email: stored.email });

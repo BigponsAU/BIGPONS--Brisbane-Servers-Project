@@ -23,6 +23,10 @@ import { accountWorkspace } from '../../data/account-workspace';
     </div>
   </div>
   <div class="header-right">
+    <div id="header-workspace-mode-switcher" class="header-workspace-mode-switcher" data-min-role="admin" hidden aria-hidden="true">
+      <button type="button" id="header-workspace-mode-creator" class="workspace-mode-btn workspace-mode-btn--compact is-active" data-workspace-mode="creator" aria-pressed="true">Workspace</button>
+      <button type="button" id="header-workspace-mode-admin" class="workspace-mode-btn workspace-mode-btn--compact" data-workspace-mode="admin" aria-pressed="false">Admin</button>
+    </div>
     <button id="header-info-trigger" class="btn btn-secondary btn-sm" onclick="toggleInfoCard()" aria-label="Toggle information card">
       <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>

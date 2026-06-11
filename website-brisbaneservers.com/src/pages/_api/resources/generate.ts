@@ -16,6 +16,7 @@ import {
   generateResourceCatalogDescription,
   resolveResourceVoiceProfile
 } from '../../../lib/resource-voice-profile';
+import { generateResourceBody } from '../../../lib/inference/resource-generate';
 
 /**
  * Generate a new resource
@@ -42,7 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { industry, topic, title, options, profileId } = body;
+    const { industry, topic, title, options, profileId, userBrief } = body;
     
     if (!industry || !topic) {
       return new Response(
@@ -88,20 +89,40 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
     
-    const generatedContent = textGenerator.generateText(seedText, {
-      length: options?.length || 'long',
-      includeExamples: options?.includeExamples !== false,
-      includeStructure: true,
-      style: 'descriptive'
+    const generated = await generateResourceBody({
+      seedText,
+      industry,
+      topic,
+      title: resourceTitle,
+      userBrief: typeof userBrief === 'string' ? userBrief.trim() : undefined,
+      userId: authResult.user.id,
+      userRole: authResult.user.role,
+      resolved,
+      textGenerator,
+      extrapolator,
+      voiceMatcher,
+      options,
     });
 
-    const extrapolatedContent = extrapolator.extrapolate(generatedContent, {
-      expansionLevel: 'moderate',
-      addExamples: true,
-      addDetails: true
-    });
+    const extrapolatedContent = generated.content;
+    const voiceValidation = {
+      score: generated.voiceScore,
+      isValid: generated.voiceValid,
+      issues: [] as string[],
+      strengths: [] as string[],
+    };
+    if (generated.inferenceMode === 'template') {
+      const full = voiceMatcher.validateVoice(extrapolatedContent);
+      voiceValidation.score = full.score ?? generated.voiceScore;
+      voiceValidation.isValid = full.isValid ?? generated.voiceValid;
+      voiceValidation.issues = full.issues ?? [];
+      voiceValidation.strengths = full.strengths ?? [];
+    }
 
-    const voiceValidation = voiceMatcher.validateVoice(extrapolatedContent);
+    const inferencePayload = {
+      mode: generated.inferenceMode,
+      modelId: generated.modelId ?? null,
+    };
 
     const description = generateResourceCatalogDescription({
       voiceProfile: resolved.profile,
@@ -157,6 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
             profileId: resolved.voiceProfileId ?? null
           },
           rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+          inference: inferencePayload,
           voiceValidation: {
             score: voiceValidation.score || 0,
             isValid: voiceValidation.isValid || false,
@@ -216,6 +238,7 @@ export const POST: APIRoute = async ({ request }) => {
             profileId: resolved.voiceProfileId ?? null
           },
           rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+          inference: inferencePayload,
           voiceValidation: {
           score: voiceValidation.score || 0,
           isValid: voiceValidation.isValid || false,

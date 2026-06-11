@@ -20,11 +20,22 @@ import {
   isUsableAbsoluteApiBase,
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
+import {
+  accountWorkspace,
+  workspaceModeDefaultPanel,
+  type WorkspaceNavMode,
+} from '../data/account-workspace';
+import { onVoicePanelShown } from './account-workspace-voice-features';
+
+const WORKSPACE_MODE_STORAGE_KEY = 'bs-workspace-nav-mode';
+const ADMIN_PANELS = new Set(['library-growth', 'moderation', 'site-review', 'admin-ops']);
 
 const API_PROBE_TIMEOUT_MS = 8000;
+const API_RENDER_HEALTH_TIMEOUT_MS = 90000;
+const API_WAKE_TIMEOUT_MS = 5000;
 const API_PROBE_OVERALL_MS = 12000;
 const PAGE_LOAD_PROBE_OVERALL_MS = 3500;
-const API_WAKE_ATTEMPTS = 4;
+const API_WAKE_ATTEMPTS = 6;
 const LOGIN_TIMEOUT_MS = 45000;
 const OAUTH_STATUS_TIMEOUT_MS = 15000;
 
@@ -38,6 +49,7 @@ export interface AccountWorkspaceBootConfig {
 }
 
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
+  let workspaceSessionUser: { role?: string; email?: string } | null = null;
   const {
     publicApiBaseUrl,
     accountPath,
@@ -267,6 +279,47 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
+  /** Edge worker serves /health instantly when api.brisbaneservers.com is on Workers. */
+  async function isEdgeAuthApi(baseUrl: string): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), API_WAKE_TIMEOUT_MS);
+      const response = await workspaceFetch(`${baseUrl.replace(/\/+$/, '')}/health`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      window.clearTimeout(timeout);
+      if (!response.ok) return false;
+      const data = await response.json().catch(() => null);
+      return Boolean(data?.edge === 'cloudflare-worker' && data?.origin === 'edge');
+    } catch {
+      return false;
+    }
+  }
+
+  /** Edge /health is instant; legacy Render needs health/render or plain health. */
+  async function isApiReadyForAuth(baseUrl: string): Promise<boolean> {
+    if (await isEdgeAuthApi(baseUrl)) {
+      return true;
+    }
+    const base = baseUrl.replace(/\/+$/, '');
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), API_RENDER_HEALTH_TIMEOUT_MS);
+      const response = await workspaceFetch(`${base}/health/render`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      window.clearTimeout(timeout);
+      if (response.status === 404) {
+        return isApiBaseHealthy(baseUrl);
+      }
+      return response.ok;
+    } catch {
+      return isApiBaseHealthy(baseUrl);
+    }
+  }
+
   async function ensureReachableApiBase(options?: { fast?: boolean }): Promise<void> {
     if (isUsableAbsoluteApiBase(VOICE_API_URL)) {
       return;
@@ -425,8 +478,19 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   async function wakeApiBeforeAuth(): Promise<void> {
     await ensureReachableApiBase();
+    try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), API_WAKE_TIMEOUT_MS);
+      await workspaceFetch(`${VOICE_API_URL.replace(/\/+$/, '')}/auth/wake`, {
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      window.clearTimeout(timeout);
+    } catch {
+      /* edge wake is best-effort */
+    }
     for (let attempt = 0; attempt < API_WAKE_ATTEMPTS; attempt += 1) {
-      if (await isApiBaseHealthy(VOICE_API_URL)) {
+      if (await isApiReadyForAuth(VOICE_API_URL)) {
         return;
       }
       if (attempt < API_WAKE_ATTEMPTS - 1) {
@@ -1020,6 +1084,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   // Show dashboard
   function showDashboard(user: any): void {
+    workspaceSessionUser = user;
     ensureWorkspaceExtensions();
 
     if (import.meta.env.MODE === 'development') {
@@ -1097,9 +1162,92 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     document.querySelectorAll<HTMLElement>('[data-min-role]').forEach((el) => {
       const minRole = el.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin';
       const allowed = hasWorkspaceCapability(user, minRole);
-      el.style.display = allowed ? '' : 'none';
+      if (el.id === 'workspace-mode-switcher') {
+        el.hidden = !allowed;
+      } else {
+        el.style.display = allowed ? '' : 'none';
+      }
       el.setAttribute('aria-hidden', allowed ? 'false' : 'true');
     });
+    document.querySelectorAll<HTMLElement>('[data-require-role="super-admin"]').forEach((el) => {
+      const isSuper = user?.role === 'super-admin';
+      el.style.display = isSuper ? '' : 'none';
+      el.setAttribute('aria-hidden', isSuper ? 'false' : 'true');
+    });
+    initWorkspaceModeSwitcher(user);
+  }
+
+  function getWorkspaceNavMode(): WorkspaceNavMode {
+    const stored = localStorage.getItem(WORKSPACE_MODE_STORAGE_KEY);
+    return stored === 'admin' ? 'admin' : 'creator';
+  }
+
+  function panelNavMode(panelName: string): WorkspaceNavMode {
+    return ADMIN_PANELS.has(panelName) ? 'admin' : 'creator';
+  }
+
+  function setWorkspaceNavMode(mode: WorkspaceNavMode, navigate = true): void {
+    localStorage.setItem(WORKSPACE_MODE_STORAGE_KEY, mode);
+    const tracks = document.getElementById('sidebar-nav-tracks');
+    if (tracks) {
+      tracks.dataset.workspaceMode = mode;
+    }
+    const subtitle = document.getElementById('sidebar-mode-subtitle');
+    if (subtitle) {
+      subtitle.textContent =
+        mode === 'admin' ? accountWorkspace.adminModeDescription : accountWorkspace.creatorModeDescription;
+    }
+    document.querySelectorAll<HTMLElement>('.workspace-mode-btn').forEach((btn) => {
+      const active = btn.dataset.workspaceMode === mode;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (navigate) {
+      navigateToPanel(workspaceModeDefaultPanel[mode]);
+    }
+  }
+
+  function initWorkspaceModeSwitcher(user: { role?: string }): void {
+    if (!hasWorkspaceCapability(user, 'admin')) return;
+    const switcher = document.getElementById('workspace-mode-switcher');
+    if (switcher) {
+      switcher.hidden = false;
+      switcher.setAttribute('aria-hidden', 'false');
+    }
+    setWorkspaceNavMode(getWorkspaceNavMode(), false);
+    if (switcher?.dataset.bound === '1') return;
+    if (switcher) switcher.dataset.bound = '1';
+    const bindMode = (mode: WorkspaceNavMode) => () => setWorkspaceNavMode(mode);
+    document.getElementById('workspace-mode-creator')?.addEventListener('click', bindMode('creator'));
+    document.getElementById('workspace-mode-admin')?.addEventListener('click', bindMode('admin'));
+    document.getElementById('header-workspace-mode-creator')?.addEventListener('click', bindMode('creator'));
+    document.getElementById('header-workspace-mode-admin')?.addEventListener('click', bindMode('admin'));
+    const headerSwitcher = document.getElementById('header-workspace-mode-switcher');
+    if (headerSwitcher) {
+      headerSwitcher.hidden = false;
+      headerSwitcher.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function ensureNavModeForPanel(panelName: string): void {
+    const required = panelNavMode(panelName);
+    if (getWorkspaceNavMode() !== required && hasWorkspaceCapability(workspaceSessionUser ?? { role: 'client' }, 'admin')) {
+      localStorage.setItem(WORKSPACE_MODE_STORAGE_KEY, required);
+      const tracks = document.getElementById('sidebar-nav-tracks');
+      if (tracks) tracks.dataset.workspaceMode = required;
+      const subtitle = document.getElementById('sidebar-mode-subtitle');
+      if (subtitle) {
+        subtitle.textContent =
+          required === 'admin'
+            ? accountWorkspace.adminModeDescription
+            : accountWorkspace.creatorModeDescription;
+      }
+      document.querySelectorAll<HTMLElement>('.workspace-mode-btn').forEach((btn) => {
+        const active = btn.dataset.workspaceMode === required;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
   }
 
   // Navigate to panel with smooth transitions
@@ -1107,6 +1255,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Navigating to panel:', panelName);
     }
+
+    ensureNavModeForPanel(panelName);
     
     // Hide all panels with fade out
     document.querySelectorAll('.portal-panel').forEach((panel: Element) => {
@@ -1203,7 +1353,10 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     } else if (panelName === 'site-review') {
       window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
       window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
+    } else if (panelName === 'admin-ops') {
+      void loadAdminOpsSummary();
     }
+    onVoicePanelShown(panelName);
   };
 
   // Sidebar toggle
@@ -4367,6 +4520,30 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     } catch (e) {
       configEl.innerHTML = '<p>Could not load suggestions.</p>';
       listEl.innerHTML = '';
+    }
+  }
+
+  async function loadAdminOpsSummary(): Promise<void> {
+    const el = document.getElementById('admin-ops-usage-summary');
+    if (!el) return;
+    try {
+      const [usageRes, tokenRes] = await Promise.all([
+        workspaceFetch(`${VOICE_API_URL}/usage/me`),
+        workspaceFetch(`${VOICE_API_URL}/tokens/me`),
+      ]);
+      const usage = usageRes.ok ? await usageRes.json() : null;
+      const tokens = tokenRes.ok ? await tokenRes.json() : null;
+      const daily = usage?.daily;
+      const provider = usage?.provider ?? 'template';
+      const parts = [
+        daily
+          ? `AI today: ${daily.used}/${daily.cap} units (${daily.remaining} left) · provider: ${provider}`
+          : 'AI usage: unavailable',
+        tokens?.balance != null ? `Contribution tokens: ${tokens.balance}` : '',
+      ].filter(Boolean);
+      el.textContent = parts.join(' · ');
+    } catch {
+      el.textContent = 'Could not load usage summary.';
     }
   }
 

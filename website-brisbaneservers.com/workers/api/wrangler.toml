@@ -1,0 +1,31 @@
+name = "brisbane-servers-api-edge"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "92d738484386c6b613628bbeafebe2f9"
+workers_dev = true
+
+routes = [{ pattern = "api.brisbaneservers.com/*", zone_name = "brisbaneservers.com" }]
+
+[vars]
+PUBLIC_SITE_URL = "https://brisbaneservers.com"
+AUTH_EMAIL_REPLY_TO = "connect@brisbaneservers.com"
+INFERENCE_PROVIDER = "workers-ai"
+WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+
+# Set in Cloudflare dashboard / wrangler secret:
+# RESEND_API_KEY, RENDER_API_ORIGIN (https://brisbane-servers-api.onrender.com)
+# ADMIN_EMAIL, ADMIN_PASSWORD (bootstrap super-admin)
+# Phase 1b: npm run configure:hyperdrive (Neon pooled URL -> Hyperdrive binding)
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "10f7ed61ff194130946a299a4aaf38e1"
+# Replace after: npm run configure:hyperdrive
+# localConnectionString = "postgresql://..."  # wrangler dev only (.dev.vars)
+
+# Queues optional — contact falls back to direct Resend when CONTACT_QUEUE unbound.
+# Uncomment after: npx wrangler queues create contact-inquiry-queue
+
+[env.production]
+vars = { PUBLIC_SITE_URL = "https://brisbaneservers.com" }

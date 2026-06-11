@@ -1,10 +1,23 @@
 # brisbaneservers.com — go-live status
 
-Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
+Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:** [DEVELOPMENT_LINE.md](../development/DEVELOPMENT_LINE.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-05 (auth wake-up + Google OAuth UI deployed)
+**Last synced:** 2026-06-06 (portal voice map, Brisbane profile, Workers AI inference, edge worker scaffold)
 
 ---
+
+## Recent changes (2026-06-06)
+
+- **Account portal:** Workspace ↔ Admin slide switcher (sidebar + header) for `bigpons@` and other admins.
+- **Voice map:** Corpus/chunks/principles views; Brisbane hub node; **Reindex corpus** admin action.
+- **Brisbane profile:** Site default voice from published resources/guides/case studies; all accounts inherit via default profile.
+- **Free inference:** Cloudflare Workers AI (Llama 3.1 8B) + daily caps + template fallback — see [INFERENCE_WORKERS_AI.md](INFERENCE_WORKERS_AI.md), [EDGE_API_STATUS.md](EDGE_API_STATUS.md).
+- **Edge worker scaffold:** `workers/api/` — instant contact queue + health; Render proxy for other routes (deploy pending).
+- **Setup script:** `npm run configure:inference-workers-ai` — sets Workers AI env on Render.
+- **Phase 1b edge auth (live):** `api.brisbaneservers.com` → Worker + Hyperdrive. Full auth on edge: login, register, verify-email, resend, me, logout. E2E: `npm run verify:production-auth:edge` (8/8 pass).
+- **Voice corpus (prod Neon):** `bootstrap:voice-corpus` — 16 resources, 48 semantic chunks, Brisbane profile.
+- **End product tracker:** [END_PRODUCT.md](../development/END_PRODUCT.md). Setup: `sync:render-secrets-for-edge`, `deploy:edge-worker`, `setup:edge-production`.
+- **Pending ship:** Push repo → Pages (portal voice map UI) + Render (voice-map APIs, inference). Then `npm run configure:inference-workers-ai` for Workers AI token on Render.
 
 ## Recent changes (2026-06-05, CSP)
 

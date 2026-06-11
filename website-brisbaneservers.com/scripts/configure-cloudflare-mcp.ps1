@@ -3,6 +3,7 @@
 #
 # Token needs (custom token at dash.cloudflare.com):
 #   Account: Cloudflare Pages Edit, Email Routing Addresses Edit, Account Resources Read
+#   Account: Workers Scripts Edit, Workers Routes Edit, Hyperdrive Edit (edge API deploy)
 #   Zone brisbaneservers.com: Email Routing Rules Edit, DNS Edit, Zone Read
 
 param(

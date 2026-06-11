@@ -3,8 +3,13 @@ import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import { loadResources, type Resource } from '../../../lib/resources-api';
 import { resourcesForSiteVoiceCorpus } from '../../../lib/resource-voice-profile';
+import {
+  BRISBANE_PROFILE_NAME,
+  ensureBrisbaneProfile,
+  findBrisbaneProfileMeta,
+} from '../../../lib/brisbane-profile';
 
-const BIGPONS_NAME = 'BIGPONS (Brisbane Servers)';
+const LEGACY_BIGPONS_NAME = 'BIGPONS (Brisbane Servers)';
 const BIGPONS_TAG = 'bigpons-default';
 const LEGACY_BIFPONS_TAG = 'bifpons-site-corpus';
 
@@ -29,14 +34,7 @@ function pickCorpus(resources: Resource[], body: CreateBaseProfileBody): Resourc
 }
 
 function findExistingBigpons(existingProfiles: { name: string; tags?: string[]; id: string }[]) {
-  return existingProfiles.find(
-    (p) =>
-      p.tags?.includes(BIGPONS_TAG) ||
-      p.tags?.includes(LEGACY_BIFPONS_TAG) ||
-      p.name === BIGPONS_NAME ||
-      p.name === 'BIFPONS' ||
-      p.name === 'Brisbane Servers Base Profile'
-  );
+  return findBrisbaneProfileMeta(existingProfiles as import('@voice-framework/storage/profile-manager').ProfileMetadata[]);
 }
 
 /**
@@ -97,6 +95,22 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { profileBuilder, profileManager } = await getVoiceFramework();
 
+    if (!body.industry && (!body.resourceIds || body.resourceIds.length === 0)) {
+      const result = await ensureBrisbaneProfile(profileManager, profileBuilder, resources);
+      return new Response(
+        JSON.stringify({
+          profile: result.profile,
+          success: true,
+          message: `Brisbane profile ${result.created ? 'created' : 'updated'} from ${result.corpusCount} voice sources`,
+          combinedSourcesCount: result.corpusCount,
+          corpusResourceIds: result.corpusResourceIds,
+          isDefault: true,
+          profileName: BRISBANE_PROFILE_NAME,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const starterCount = combined.filter((r) => r.isStarterBlock).length;
     const publishedCount = combined.length - starterCount;
     const corpusIds = combined.map((r) => r.id).slice(0, 200);
@@ -109,7 +123,7 @@ export const POST: APIRoute = async ({ request }) => {
         : '';
 
     const profile = await profileBuilder.buildFromSamples(allContent, {
-      name: BIGPONS_NAME,
+      name: BRISBANE_PROFILE_NAME,
       description: `BIGPONS site voice from ${combined.length} public resource sources (${starterCount} starters, ${publishedCount} published). ${industryNote}${idsNote}`,
       sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`
     });
@@ -124,7 +138,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (existingBigpons) {
       await profileManager.updateProfile(existingBigpons.id, profile, {
-        name: BIGPONS_NAME,
+        name: BRISBANE_PROFILE_NAME,
         description: `BIGPONS — rebuilt from ${combined.length} public website resources (${starterCount} starters, ${publishedCount} published).`,
         sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`,
         tags: [BIGPONS_TAG, LEGACY_BIFPONS_TAG, 'brisbane-servers', 'site-corpus', 'default-candidate'],
@@ -134,7 +148,7 @@ export const POST: APIRoute = async ({ request }) => {
       profileMetadata = profileManager.getAllProfiles().find((p) => p.id === existingBigpons.id) ?? existingBigpons;
     } else {
       profileMetadata = await profileManager.createProfile(profile, {
-        name: BIGPONS_NAME,
+        name: BRISBANE_PROFILE_NAME,
         description: `BIGPONS — site voice from ${combined.length} public website resources (${starterCount} starters, ${publishedCount} published).`,
         sourceDocument: `bigpons-corpus:v=3;${industryNote}${idsNote}count=${combined.length}`,
         version: '1.0.0',
@@ -152,7 +166,7 @@ export const POST: APIRoute = async ({ request }) => {
       JSON.stringify({
         profile: profileMetadata,
         success: true,
-        message: `BIGPONS profile ${wasUpdate ? 'updated' : 'created'} from ${combined.length} voice sources`,
+        message: `Brisbane profile ${wasUpdate ? 'updated' : 'created'} from ${combined.length} voice sources`,
         starterBlocksCount: starterCount,
         publishedResourcesCount: publishedCount,
         combinedSourcesCount: combined.length,

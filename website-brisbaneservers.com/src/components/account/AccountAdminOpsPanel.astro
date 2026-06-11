@@ -1,0 +1,64 @@
+---
+import { accountWorkspace } from '../../data/account-workspace';
+---
+
+<div id="admin-ops-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Admin operations" style="display: none;">
+  <div class="admin-content">
+    <section class="admin-section" aria-labelledby="admin-ops-heading">
+      <div class="section-header">
+        <div>
+          <h2 id="admin-ops-heading">{accountWorkspace.adminOpsLabel}</h2>
+          <p class="section-subtitle">
+            AI usage caps, credit top-ups, and platform ops. Stripe subscriptions ship after portal stabilisation; daily limits apply first.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-ops-grid">
+        <div class="card admin-ops-card">
+          <h3 class="card-title">Daily AI usage</h3>
+          <p id="admin-ops-usage-summary" class="section-subtitle">Sign in to load usage meter.</p>
+          <p class="form-hint">
+            Free tier: capped generations per day. SuperGrok / Cloudflare AI Gateway calls are metered before inference runs.
+          </p>
+        </div>
+
+        <div class="card admin-ops-card" data-min-role="admin">
+          <h3 class="card-title">Top up (PayID)</h3>
+          <p class="section-subtitle">
+            After daily cap: request extra units via PayID to the business ABN account. Reference format:
+            <code>BS-{`{userId}`}-TOPUP</code>. Admin grants units after payment clears.
+          </p>
+          <p class="form-hint">Stripe subscription checkout — planned post-portal fix (hybrid billing).</p>
+        </div>
+
+        <div class="card admin-ops-card" data-min-role="admin">
+          <h3 class="card-title">Enable Workers AI</h3>
+          <ol class="section-subtitle" style="margin-left: 1.25rem;">
+            <li>Cloudflare dashboard → copy Account ID</li>
+            <li>API token with Workers AI permission</li>
+            <li>Render env: <code>CLOUDFLARE_ACCOUNT_ID</code>, <code>CLOUDFLARE_API_TOKEN</code>, <code>INFERENCE_PROVIDER=workers-ai</code></li>
+            <li>Redeploy API · test Generate in Resources panel</li>
+          </ol>
+        </div>
+
+        <div class="card admin-ops-card" data-require-role="super-admin">
+          <h3 class="card-title">Free AI — Cloudflare Workers AI</h3>
+          <p class="section-subtitle">
+            No Grok subscription needed. ~10k neurons/day free on Cloudflare Workers AI (Llama 3.1 8B).
+            Set <code>CLOUDFLARE_ACCOUNT_ID</code> + <code>CLOUDFLARE_API_TOKEN</code> on the API host.
+            See <code>docs/operations/INFERENCE_WORKERS_AI.md</code>.
+          </p>
+          <p class="form-hint">When unset, generation uses the template engine (always free).</p>
+        </div>
+
+        <div class="card admin-ops-card" data-require-role="super-admin">
+          <h3 class="card-title">Legacy voice-framework dashboard</h3>
+          <p class="section-subtitle">
+            Docker dashboard on Render (port 3001) is deprecated. Voice lab, voice map, and admin panels here replace it — no cold-start host required.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
