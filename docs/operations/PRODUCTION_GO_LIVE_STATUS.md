@@ -10,7 +10,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:
 
 - **Content planes:** `content-plane.ts` — portal (auth+drafts) vs public vs indexable SEO; drafts never upload to main site.
 - **Publish → SEO only:** `publish-public-surfaces.ts` — cache purge for affected paths on publish; no full-site deploy hook by default.
-- **Pages hybrid:** Marketing prerendered; `/resources/**` + `/sitemap.xml` live SSR from API (`PUBLIC_RESOURCES_LIVE=1`).
+- **Pages hybrid:** Marketing + `/resources/**` use **static git corpus** build again (SSR hit 500 on Pages until SESSION/KV wiring is finished). API publish-plane + cache purge is on the API worker (redeploy pending Workers token).
 - **Verify:** `npm test` 36/36; `npm run verify:production` PASS before deploy.
 
 ## Recent changes (2026-06-06)
