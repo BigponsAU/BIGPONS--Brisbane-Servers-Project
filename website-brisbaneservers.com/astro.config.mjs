@@ -17,7 +17,14 @@ export default defineConfig({
   base,
   srcDir: './src',
   output: 'server',
-  adapter: cloudflare({ imageService: 'compile' }),
+  adapter: cloudflare({
+    imageService: 'compile',
+    routes: {
+      extend: {
+        include: [{ pattern: '/resources' }],
+      },
+    },
+  }),
   server: {
     port: 3000,
     host: true,
