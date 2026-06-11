@@ -13,7 +13,7 @@ import {
 } from '../../../lib/resources-api';
 import { canAccessResource } from '../../../lib/resource-access';
 import {
-  scheduleStaticSiteRebuild,
+  schedulePublicSurfaceUpdate,
   shouldRebuildForResourceChange,
 } from '../../../lib/deploy-rebuild';
 
@@ -212,7 +212,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     await saveResources(resources);
 
     if (shouldRebuildForResourceChange(existing, updated)) {
-      scheduleStaticSiteRebuild(`resource-${updated.status}-${updated.id}`);
+      schedulePublicSurfaceUpdate(existing, updated, `resource-${updated.status}-${updated.id}`);
     }
 
     return new Response(

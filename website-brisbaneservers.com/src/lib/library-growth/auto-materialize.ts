@@ -1,4 +1,4 @@
-import { scheduleStaticSiteRebuild } from '../deploy-rebuild';
+import { schedulePublicSurfaceUpdate } from '../deploy-rebuild';
 import { loadLibraryGrowthConfig } from './config';
 import {
   checkGrowthBudget,
@@ -65,7 +65,7 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
     return result;
   }
 
-  let rebuildScheduled = false;
+  let surfaceUpdates = 0;
 
   for (const proposal of pending) {
     const slot = await checkGrowthBudget(config, unitEach);
@@ -89,7 +89,9 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
       result.materialized += 1;
       if (published) {
         result.published += 1;
-        rebuildScheduled = true;
+        const before = { ...resource, status: 'draft' as const };
+        schedulePublicSurfaceUpdate(before, resource, `library-growth-${proposal.id}`);
+        surfaceUpdates += 1;
       }
     } catch (error) {
       result.failed += 1;
@@ -98,8 +100,8 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
     }
   }
 
-  if (rebuildScheduled) {
-    await scheduleStaticSiteRebuild('library-growth-auto-publish');
+  if (surfaceUpdates > 0) {
+    console.info(`[library-growth] Scheduled ${surfaceUpdates} public surface update(s)`);
   }
 
   return result;

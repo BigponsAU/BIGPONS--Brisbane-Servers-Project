@@ -2,8 +2,8 @@ import type { APIRoute } from 'astro';
 import {
   loadResources,
   normalizeTopicSlug,
-  isPublicResource
 } from '../../../lib/resources-api';
+import { resolveContent } from '../../../lib/content-plane';
 
 /**
  * Get public resources (published only, no auth required)
@@ -18,12 +18,11 @@ export const GET: APIRoute = async ({ request }) => {
     
     let resources = await loadResources();
 
-    // Filter only resources that are safe for public exposure
-    resources = resources.filter(isPublicResource);
+    resources = resolveContent(resources, { plane: 'public' });
 
     // Filter by ID if provided (returns single resource)
     if (id) {
-      const resource = resources.find(r => r.id === id && isPublicResource(r));
+      const resource = resources.find((r) => r.id === id);
       if (!resource) {
         return new Response(
           JSON.stringify({

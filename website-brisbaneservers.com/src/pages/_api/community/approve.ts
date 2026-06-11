@@ -9,7 +9,7 @@ import {
   updateContributionStatus
 } from '../../../lib/contributions';
 import { addLedgerEntry } from '../../../lib/token-ledger';
-import { scheduleStaticSiteRebuild } from '../../../lib/deploy-rebuild';
+import { schedulePublicSurfaceUpdate } from '../../../lib/deploy-rebuild';
 
 /**
  * Approve a contribution and optionally adjust tokens.
@@ -79,13 +79,14 @@ export const POST: APIRoute = async ({ request }) => {
     const resourceIdx = resources.findIndex((r) => r.id === updated.resourceId);
     if (resourceIdx !== -1) {
       const res = resources[resourceIdx];
+      const before = { ...res };
       resources[resourceIdx] = {
         ...res,
         status: 'published',
         visibility: 'public'
       };
       await saveResources(resources);
-      scheduleStaticSiteRebuild(`community-approve-${updated.resourceId}`);
+      schedulePublicSurfaceUpdate(before, resources[resourceIdx], `community-approve-${updated.resourceId}`);
     }
 
     if (typeof tokenDelta === 'number' && tokenDelta !== 0) {

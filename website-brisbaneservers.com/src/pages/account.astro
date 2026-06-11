@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import AccountWorkspacePage from '../components/account/AccountWorkspacePage.astro';
 
 const initialVerifyToken = Astro.url.searchParams.get('verify') ?? '';

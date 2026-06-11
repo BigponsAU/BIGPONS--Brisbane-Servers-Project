@@ -21,6 +21,7 @@ $requiredEnv = [ordered]@{
   PUBLIC_API_BASE_URL        = $apiUrl
   INTERNAL_API_BASE_URL      = $apiUrl
   PAGES_BUILD_USE_GIT_CORPUS = '1'
+  PUBLIC_RESOURCES_LIVE        = '1'
 }
 
 $token = $env:CLOUDFLARE_API_TOKEN

@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
@@ -15,23 +17,6 @@ import { topicGuidePageTitle, topicGuideSeo } from '~/lib/content-seo';
 import { sitePath } from '~/lib/site-path';
 import { getPublishedResourcesForPage } from '~/lib/public-published-resources';
 import '~/styles/topic-guide.css';
-
-export async function getStaticPaths() {
-  const paths: Array<{ params: { industry: string; topic: string } }> = [];
-
-  industries.forEach((industry) => {
-    industry.topics.forEach((topic) => {
-      paths.push({
-        params: {
-          industry: industry.slug,
-          topic: topic.slug,
-        },
-      });
-    });
-  });
-
-  return paths;
-}
 
 const { industry: industrySlug, topic: topicSlug } = Astro.params;
 const industry = getIndustryBySlug(industrySlug!);

@@ -11,7 +11,7 @@ import {
   loadGrowthProposals,
   updateGrowthProposalStatus,
 } from '~/lib/library-growth/proposals-store';
-import { scheduleStaticSiteRebuild } from '~/lib/deploy-rebuild';
+import { schedulePublicSurfaceUpdate } from '~/lib/deploy-rebuild';
 
 /**
  * Growth proposal queue — approve materializes into the resource library.
@@ -106,7 +106,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (published) {
-      scheduleStaticSiteRebuild('growth-proposal-published');
+      const before = { ...resource, status: 'draft' as const };
+      schedulePublicSurfaceUpdate(before, resource, `growth-proposal-${proposalId}`);
     }
 
     return new Response(

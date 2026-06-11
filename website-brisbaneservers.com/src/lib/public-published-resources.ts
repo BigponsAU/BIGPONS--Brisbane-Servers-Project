@@ -16,6 +16,16 @@ function pagesBuildUsesGitCorpus(): boolean {
   return readRuntimeEnv('PAGES_BUILD_USE_GIT_CORPUS') === '1';
 }
 
+/** Live catalog from API at request time (publish = instant SEO). Overrides git corpus on SSR. */
+function useLivePublicCatalog(): boolean {
+  return readRuntimeEnv('PUBLIC_RESOURCES_LIVE') === '1';
+}
+
+function useGitCorpusForCatalog(): boolean {
+  if (useLivePublicCatalog()) return false;
+  return pagesBuildUsesGitCorpus();
+}
+
 function sortByGeneratedDesc(resources: Resource[]): Resource[] {
   return [...resources].sort(
     (a, b) => new Date(b.generatedAt || 0).getTime() - new Date(a.generatedAt || 0).getTime(),
@@ -88,7 +98,7 @@ async function getBuildTimePublicCache(): Promise<Resource[]> {
 export async function getPublishedResourcesForPage(
   filters: PublishedListFilters = {},
 ): Promise<Resource[]> {
-  if (pagesBuildUsesGitCorpus()) {
+  if (useGitCorpusForCatalog()) {
     const all = await loadResources();
     return filterLocal(all, filters);
   }
@@ -107,7 +117,7 @@ export async function getPublishedResourcesForPage(
 }
 
 export async function getPublishedResourceById(id: string): Promise<Resource | null> {
-  if (pagesBuildUsesGitCorpus()) {
+  if (useGitCorpusForCatalog()) {
     const all = await loadResources();
     const r = all.find((x) => x.id === id);
     return r && isPublicResource(r) ? r : null;

@@ -38,6 +38,7 @@ export function bindWorkerRuntime(env: WorkerEnv): void {
     'CLOUDFLARE_PAGES_DEPLOY_HOOK_URL',
     'CLOUDFLARE_ACCOUNT_ID',
     'CLOUDFLARE_API_TOKEN',
+    'CLOUDFLARE_ZONE_ID',
   ] as const;
 
   for (const key of secretKeys) {

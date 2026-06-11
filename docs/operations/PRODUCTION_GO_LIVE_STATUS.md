@@ -2,9 +2,16 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:** [DEVELOPMENT_LINE.md](../development/DEVELOPMENT_LINE.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-06 (portal voice map, Brisbane profile, Workers AI inference, edge worker scaffold)
+**Last synced:** 2026-06-12 (content planes, live SSR resources, publish cache purge)
 
 ---
+
+## Recent changes (2026-06-12)
+
+- **Content planes:** `content-plane.ts` — portal (auth+drafts) vs public vs indexable SEO; drafts never upload to main site.
+- **Publish → SEO only:** `publish-public-surfaces.ts` — cache purge for affected paths on publish; no full-site deploy hook by default.
+- **Pages hybrid:** Marketing prerendered; `/resources/**` + `/sitemap.xml` live SSR from API (`PUBLIC_RESOURCES_LIVE=1`).
+- **Verify:** `npm test` 36/36; `npm run verify:production` PASS before deploy.
 
 ## Recent changes (2026-06-06)
 
@@ -92,7 +99,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:
 | `RESEND_API_KEY` | **Done** |
 | `AUTH_EMAIL_FROM` | **Done** — `Brisbane Servers <support@mail.brisbaneservers.com>` |
 | Google OAuth env vars | **Done** — client ID, secret, redirect on Render |
-| `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Pending** |
+| `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Done** — user env + worker secret (`api-publish-rebuild` hook); publish triggers Pages rebuild |
 | Push + `npm run seed:admin` or `POST /api/cron/provision-admin` | **Re-run** — credential email should deliver after `AUTH_EMAIL_FROM` fix |
 
 ---

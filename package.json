@@ -23,6 +23,8 @@
     "verify:hosting-mcp": "cd website-brisbaneservers.com && npm run verify:hosting-mcp",
     "verify:production": "cd website-brisbaneservers.com && npm run verify:production",
     "verify:production-auth": "cd website-brisbaneservers.com && npm run verify:production-auth",
+    "sync:edge-worker-secrets": "cd website-brisbaneservers.com && npm run sync:edge-worker-secrets",
+    "deploy:edge-worker": "cd website-brisbaneservers.com && npm run deploy:edge-worker",
     "seed:resources": "npx tsx scripts/seed-resources.ts",
     "mark:starter-blocks": "npx tsx scripts/mark-starter-blocks.ts",
     "create-base-profile": "npx tsx scripts/create-base-profile.ts",
