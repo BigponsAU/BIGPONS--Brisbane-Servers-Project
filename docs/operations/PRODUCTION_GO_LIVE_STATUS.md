@@ -2,16 +2,33 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:** [DEVELOPMENT_LINE.md](../development/DEVELOPMENT_LINE.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-12 (content planes, live SSR resources, publish cache purge)
+**Last synced:** 2026-06-12 (backlog complete — root mail, admin users, static SEO pipeline)
 
 ---
 
+## Recent changes (2026-06-12, backlog complete)
+
+- **`AUTH_EMAIL_FROM`:** `Brisbane Servers <support@brisbaneservers.com>` (root Resend verified; `mail.brisbaneservers.com` DNS kept).
+- **Admin users panel:** `/account/` Admin console → **Users** — table, filter, CSV export, auth audit.
+- **Static SEO pipeline (SSR closed):** `output: static` + publish CDN purge + Pages deploy hook + `verify:publish-pipeline`. SSR `/resources/**` on Pages deferred (prod 500); static path is canonical.
+- **Resend root DNS:** `resend._domainkey`, `send` MX/SPF on apex; mail subdomain unchanged.
+
+## Recent changes (2026-06-12, evening)
+
+- **Resend root domain:** `brisbaneservers.com` verified in Resend. Cloudflare DNS: `resend._domainkey` (TXT), `send` (MX + SPF). **`mail.brisbaneservers.com` unchanged** — still verified.
+- **Admin users panel:** `/account/` Admin console → **Users** — table, filter, CSV export, auth audit log (`GET /api/admin/users`, `/api/admin/auth-audit`).
+
 ## Recent changes (2026-06-12)
 
-- **Content planes:** `content-plane.ts` — portal (auth+drafts) vs public vs indexable SEO; drafts never upload to main site.
-- **Publish → SEO only:** `publish-public-surfaces.ts` — cache purge for affected paths on publish; no full-site deploy hook by default.
-- **Pages hybrid:** Marketing + `/resources/**` use **static git corpus** build again (SSR hit 500 on Pages until SESSION/KV wiring is finished). API publish-plane + cache purge is on the API worker (redeploy pending Workers token).
-- **Verify:** `npm test` 36/36; `npm run verify:production` PASS before deploy.
+- **Publish automation:** `publish-public-surfaces.ts` purges CDN + triggers Pages deploy hook; prebuild `sync-public-build-assets.ts` exports corpus (`PAGES_BUILD_EXPORT_ON_BUILD=1`) and regenerates `search-index.json`.
+- **Indexable item pages:** `isIndexableResource` indexes published starter corpus (≥200 words); static build now emits `/resources/item/{id}` (16+ pages).
+- **Edge DB:** `pg-pool.ts` Hyperdrive adapter — all `pg` callers work on Workers (not only corpus reads).
+- **Edge worker:** redeployed (wrangler v4); secrets synced; OAuth/token fallback in `deploy-edge-worker.ps1`.
+- **Pages env:** `PAGES_BUILD_EXPORT_ON_BUILD=1` set via `configure-cloudflare-pages-env.ps1`.
+- **Verify (live):** `npm test` 39/39; `verify:production` 3/3; post-build 8/8.
+- **Mail (live):** Resend root + `mail.brisbaneservers.com` verified; `AUTH_EMAIL_FROM=support@brisbaneservers.com` on worker. Signups = outbound API (no webhook).
+- **Token:** run `npm run verify:cloudflare-token-perms` — add **Zone → Workers Routes → Edit** if routes check fails.
+- **MCP:** only `cloudflare-api` (OAuth); removed `cloudflare-api-token` duplicate.
 
 ## Recent changes (2026-06-06)
 
@@ -69,7 +86,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:
 | **Phase 1** — API (Render) | **Live** — health OK on `*.onrender.com` |
 | **Phase 2** — Pages (Cloudflare) | **Live** — `https://brisbaneservers.com` |
 | **Phase 3** — `/account` on domain | **Live** — auth email from `support@mail.brisbaneservers.com`; signup UX fixes pushed |
-| **Phase 4–6** | **Pending** — root Resend domain (`support@brisbaneservers.com`), Google OAuth env, deploy hook, cron, sign-off |
+| **Phase 4–6** | **Mostly complete** — root From live, deploy hook + static SEO verified; Google OAuth env, cron sign-off |
 
 ---
 
@@ -97,7 +114,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Development line:
 | Persistent disk `voice-storage` | **Blueprint: Starter + 1GB** — [STORAGE_AND_VECTORS.md](STORAGE_AND_VECTORS.md) |
 | Library growth APIs + bootstrap | **Pushed** — `prestart:api` seeds corpus if empty |
 | `RESEND_API_KEY` | **Done** |
-| `AUTH_EMAIL_FROM` | **Done** — `Brisbane Servers <support@mail.brisbaneservers.com>` |
+| `AUTH_EMAIL_FROM` | **Done** — `Brisbane Servers <support@brisbaneservers.com>` |
 | Google OAuth env vars | **Done** — client ID, secret, redirect on Render |
 | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Done** — user env + worker secret (`api-publish-rebuild` hook); publish triggers Pages rebuild |
 | Push + `npm run seed:admin` or `POST /api/cron/provision-admin` | **Re-run** — credential email should deliver after `AUTH_EMAIL_FROM` fix |

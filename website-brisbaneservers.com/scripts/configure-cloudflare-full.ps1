@@ -1,4 +1,4 @@
-# Dual Cloudflare setup: API token (scripts + cloudflare-api-token MCP) + OAuth (cloudflare-api MCP).
+# Cloudflare setup: API token (npm/wrangler scripts) + OAuth (cloudflare-api MCP in Cursor only).
 # Run: npm run configure:cloudflare-full
 #
 # Create token: https://dash.cloudflare.com/profile/api-tokens
@@ -14,9 +14,9 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = $PSScriptRoot
 
 Write-Host ""
-Write-Host "Cloudflare dual auth (API token + OAuth)" -ForegroundColor Cyan
-Write-Host "  API token -> npm scripts + cloudflare-api-token MCP" -ForegroundColor DarkGray
-Write-Host "  OAuth       -> cloudflare-api MCP in Cursor chat" -ForegroundColor DarkGray
+Write-Host "Cloudflare auth (two channels, not duplicates)" -ForegroundColor Cyan
+Write-Host "  API token -> npm scripts + wrangler only (Windows user env)" -ForegroundColor DarkGray
+Write-Host "  OAuth     -> cloudflare-api MCP in Cursor (ignore cloudflare-api-token)" -ForegroundColor DarkGray
 Write-Host ""
 
 if (-not $SkipToken) {
@@ -43,7 +43,6 @@ Write-Host ""
 Write-Host "Finish in Cursor:" -ForegroundColor Yellow
 Write-Host "  1. Developer: Reload Window" -ForegroundColor DarkGray
 Write-Host "  2. Settings -> Tools and MCP:" -ForegroundColor DarkGray
-Write-Host "       cloudflare-api-token = green (if token saved)" -ForegroundColor DarkGray
-Write-Host "       cloudflare-api        = green (after OAuth completes)" -ForegroundColor DarkGray
+Write-Host "       cloudflare-api = green (OAuth). Disable/remove cloudflare-api-token if present." -ForegroundColor DarkGray
 Write-Host "  3. npm run verify:cloudflare-pages-env" -ForegroundColor DarkGray
 Write-Host ""

@@ -9,7 +9,7 @@ export async function sendAuthEmail(
   const apiKey = env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error('AUTH_EMAIL_NOT_CONFIGURED');
 
-  const from = env.AUTH_EMAIL_FROM ?? 'Brisbane Servers <support@mail.brisbaneservers.com>';
+  const from = env.AUTH_EMAIL_FROM ?? 'Brisbane Servers <support@brisbaneservers.com>';
   const replyTo = env.AUTH_EMAIL_REPLY_TO ?? 'connect@brisbaneservers.com';
 
   const res = await fetch('https://api.resend.com/emails', {

@@ -1,8 +1,8 @@
 /**
- * On publish/unpublish: refresh public SEO surfaces only — no full-site deploy by default.
+ * On publish/unpublish: refresh public SEO surfaces (static Pages build).
  *
- * Resource HTML is served live (SSR) from the public API read model. This module purges
- * CDN cache for affected paths and optionally falls back to a full Pages deploy hook.
+ * Purges CDN cache for affected paths, then triggers the Pages deploy hook so prebuild
+ * exports corpus + regenerates search-index (one Neon read per deploy, not per page view).
  */
 import {
   getAffectedPublicPaths,
@@ -109,7 +109,12 @@ export async function updatePublicSurfacesOnPublish(
     result.errors.push(`Cache purge: ${purge.error}`);
   }
 
-  if (process.env.USE_FULL_SITE_DEPLOY_HOOK === '1') {
+  const hookConfigured = Boolean(process.env.CLOUDFLARE_PAGES_DEPLOY_HOOK_URL?.trim());
+  const shouldDeploy =
+    process.env.SKIP_PAGES_DEPLOY_ON_PUBLISH !== '1' &&
+    (hookConfigured || process.env.USE_FULL_SITE_DEPLOY_HOOK === '1');
+
+  if (shouldDeploy) {
     const deploy = await triggerFullSiteDeploy(reason);
     if (deploy.ok) {
       result.fullDeployTriggered = true;

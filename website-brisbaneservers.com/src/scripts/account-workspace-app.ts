@@ -29,7 +29,7 @@ import { onVoicePanelShown } from './account-workspace-voice-features';
 import { trackPortalPanel } from './portal-markov-tracker';
 
 const WORKSPACE_MODE_STORAGE_KEY = 'bs-workspace-nav-mode';
-const ADMIN_PANELS = new Set(['library-growth', 'moderation', 'site-review', 'admin-ops']);
+const ADMIN_PANELS = new Set(['library-growth', 'moderation', 'site-review', 'admin-users', 'admin-ops']);
 
 const API_PROBE_TIMEOUT_MS = 8000;
 const API_RENDER_HEALTH_TIMEOUT_MS = 90000;
@@ -1355,6 +1355,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     } else if (panelName === 'site-review') {
       window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
       window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
+    } else if (panelName === 'admin-users') {
+      void loadAdminUsersPanel();
     } else if (panelName === 'admin-ops') {
       void loadAdminOpsSummary();
     }
@@ -4563,11 +4565,146 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const vecTotal = vectorsData?.total ?? '—';
       const vecResource = vectorsData?.byKind?.resource ?? '—';
       const vecContrib = vectorsData?.byKind?.contribution ?? '—';
-      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Vectors (resource / contribution):</strong> ${vecResource} / ${vecContrib} (total ${vecTotal})</p>`;
+      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Vectors (resource / contribution):</strong> ${vecResource} / ${vecContrib} (total ${vecTotal})</p><p class="form-hint"><button type="button" class="btn btn-secondary btn-sm admin-users-nav-link">Admin console → Users</button></p>`;
+      container.querySelector('.admin-users-nav-link')?.addEventListener('click', () => {
+        setWorkspaceNavMode('admin');
+        (window as any).navigateToPanel('admin-users');
+      });
     } catch {
       container.innerHTML = '<p>Could not load users/vectors summary.</p>';
     }
   }
+
+  let adminUsersCache: any[] = [];
+
+  function formatAdminDate(iso: string | null | undefined): string {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    } catch {
+      return iso;
+    }
+  }
+
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderAdminUsersTable(users: any[], filter = ''): void {
+    const tbody = document.getElementById('admin-users-tbody');
+    const summary = document.getElementById('admin-users-summary');
+    if (!tbody) return;
+    const q = filter.trim().toLowerCase();
+    const filtered = q
+      ? users.filter((u) =>
+          String(u.email ?? '').toLowerCase().includes(q) ||
+          String(u.role ?? '').toLowerCase().includes(q)
+        )
+      : users;
+    if (summary) {
+      summary.textContent = q
+        ? `${filtered.length} of ${users.length} users (filtered)`
+        : `${users.length} registered user${users.length === 1 ? '' : 's'}`;
+    }
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4">No users match this filter.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered
+      .map((u) => {
+        const verified = u.emailVerified ? 'Yes' : 'No';
+        const verifiedClass = u.emailVerified ? 'admin-users-verified' : 'admin-users-unverified';
+        return `<tr>
+          <td>${escapeHtml(String(u.email ?? ''))}</td>
+          <td><span class="admin-users-role">${escapeHtml(String(u.role ?? ''))}</span></td>
+          <td><span class="${verifiedClass}">${verified}</span></td>
+          <td>${escapeHtml(formatAdminDate(u.createdAt))}</td>
+        </tr>`;
+      })
+      .join('');
+  }
+
+  function renderAdminAuthAudit(events: any[]): void {
+    const tbody = document.getElementById('admin-auth-audit-tbody');
+    if (!tbody) return;
+    if (!events.length) {
+      tbody.innerHTML = '<tr><td colspan="4">No auth events recorded yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = events
+      .map((e) => `<tr>
+        <td>${escapeHtml(formatAdminDate(e.createdAt))}</td>
+        <td><code>${escapeHtml(String(e.eventType ?? ''))}</code></td>
+        <td>${escapeHtml(String(e.email ?? '—'))}</td>
+        <td class="admin-users-id">${escapeHtml(String(e.userId ?? '—'))}</td>
+      </tr>`)
+      .join('');
+  }
+
+  function exportAdminUsersCsv(users: any[]): void {
+    const header = ['email', 'role', 'emailVerified', 'createdAt', 'id'];
+    const rows = users.map((u) =>
+      header.map((key) => {
+        const val = key === 'emailVerified' ? (u.emailVerified ? 'true' : 'false') : String(u[key] ?? '');
+        return `"${val.replace(/"/g, '""')}"`;
+      }).join(',')
+    );
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `brisbane-servers-users-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function loadAdminUsersPanel(): Promise<void> {
+    const tbody = document.getElementById('admin-users-tbody');
+    const auditTbody = document.getElementById('admin-auth-audit-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
+    if (auditTbody) auditTbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
+    try {
+      const [usersRes, auditRes] = await Promise.all([
+        workspaceFetch(`${VOICE_API_URL}/admin/users`),
+        workspaceFetch(`${VOICE_API_URL}/admin/auth-audit?limit=100`),
+      ]);
+      if (!usersRes.ok) {
+        const err = usersRes.status === 403 ? 'Admin role required.' : `Could not load users (${usersRes.status}).`;
+        tbody.innerHTML = `<tr><td colspan="4">${escapeHtml(err)}</td></tr>`;
+        return;
+      }
+      const usersData = await usersRes.json();
+      adminUsersCache = Array.isArray(usersData.users) ? usersData.users : [];
+      const searchEl = document.getElementById('admin-users-search') as HTMLInputElement | null;
+      renderAdminUsersTable(adminUsersCache, searchEl?.value ?? '');
+
+      if (auditRes.ok) {
+        const auditData = await auditRes.json();
+        renderAdminAuthAudit(Array.isArray(auditData.events) ? auditData.events : []);
+      } else if (auditTbody) {
+        auditTbody.innerHTML = '<tr><td colspan="4">Could not load auth audit.</td></tr>';
+      }
+    } catch {
+      tbody.innerHTML = '<tr><td colspan="4">Failed to load users.</td></tr>';
+    }
+  }
+
+  document.getElementById('admin-users-search')?.addEventListener('input', (e) => {
+    const value = (e.target as HTMLInputElement).value;
+    renderAdminUsersTable(adminUsersCache, value);
+  });
+  document.getElementById('admin-users-refresh-btn')?.addEventListener('click', () => {
+    void loadAdminUsersPanel();
+  });
+  document.getElementById('admin-users-export-btn')?.addEventListener('click', () => {
+    if (adminUsersCache.length) exportAdminUsersCsv(adminUsersCache);
+  });
 
   // Update analytics display
   function updateAnalyticsDisplay(resources: any[]): void {

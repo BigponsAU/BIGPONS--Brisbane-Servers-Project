@@ -114,7 +114,7 @@ if (-not $SkipEmail) {
   }
 }
 
-$enableTokenMcp = Join-Path $PSScriptRoot 'enable-cloudflare-token-mcp.ps1'
-if (Test-Path $enableTokenMcp) {
-  & $enableTokenMcp
+$removeTokenMcp = Join-Path $PSScriptRoot 'remove-cloudflare-token-mcp.ps1'
+if (Test-Path $removeTokenMcp) {
+  & $removeTokenMcp
 }

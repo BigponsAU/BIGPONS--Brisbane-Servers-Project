@@ -18,6 +18,7 @@ export type WorkspacePanelId =
   | 'library-growth'
   | 'moderation'
   | 'site-review'
+  | 'admin-users'
   | 'admin-ops';
 
 export interface WorkspaceNavItem {
@@ -47,6 +48,8 @@ export const accountWorkspace = {
   voiceLabDescription: 'Analyze tone, patterns, and voice match (from voice-framework workspace)',
   voiceMapLabel: 'Voice map',
   voiceMapDescription: 'Semantic vectors and principles — profile topology visualisation',
+  adminUsersLabel: 'Users',
+  adminUsersDescription: 'Registered accounts and auth audit',
   adminOpsLabel: 'Ops & billing',
   adminOpsDescription: 'Usage caps, AI credits, hosting status (super-admin)',
 } as const;
@@ -132,6 +135,14 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
     minRole: 'admin',
     mode: 'admin',
     title: 'Site review — public pages and corrections',
+  },
+  {
+    panel: 'admin-users',
+    label: accountWorkspace.adminUsersLabel,
+    description: accountWorkspace.adminUsersDescription,
+    minRole: 'admin',
+    mode: 'admin',
+    title: 'Users — registered accounts, verification status, auth audit',
   },
   {
     panel: 'admin-ops',

@@ -40,7 +40,7 @@ export async function sendContactViaResend(env: Env, payload: ContactPayload): P
   const apiKey = env.RESEND_API_KEY?.trim();
   if (!apiKey) throw new Error('RESEND_API_KEY not configured');
 
-  const from = env.AUTH_EMAIL_FROM ?? 'Brisbane Servers <support@mail.brisbaneservers.com>';
+  const from = env.AUTH_EMAIL_FROM ?? 'Brisbane Servers <support@brisbaneservers.com>';
   const replyTo = payload.email;
   const subjectParts = ['Website enquiry'];
   if (payload.industry) subjectParts.push(payload.industry);

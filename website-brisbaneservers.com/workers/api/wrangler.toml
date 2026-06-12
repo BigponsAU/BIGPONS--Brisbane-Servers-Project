@@ -5,7 +5,9 @@ compatibility_flags = ["nodejs_compat"]
 account_id = "92d738484386c6b613628bbeafebe2f9"
 workers_dev = true
 
-routes = [{ pattern = "api.brisbaneservers.com/*", zone_name = "brisbaneservers.com" }]
+# Route api.brisbaneservers.com/* → this worker is managed in Cloudflare (not wrangler.toml).
+# Wrangler route sync needs Zone Workers Routes Edit on the API token; omitting avoids deploy noise.
+# Verified live: pattern api.brisbaneservers.com/* → brisbane-servers-api-edge
 
 [vars]
 PUBLIC_SITE_URL = "https://brisbaneservers.com"

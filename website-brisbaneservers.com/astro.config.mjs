@@ -15,6 +15,8 @@ export default defineConfig({
   site,
   base,
   srcDir: './src',
+  // Production SEO: static HTML + publish-public-surfaces.ts (CDN purge + Pages deploy hook).
+  // SSR for /resources/** deferred — Pages SESSION KV caused prod 500; static path is canonical.
   output: 'static',
   server: {
     port: 3000,

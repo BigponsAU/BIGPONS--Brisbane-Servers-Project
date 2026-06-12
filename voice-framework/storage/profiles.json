@@ -4,91 +4,59 @@
     {
       "profile": {
         "version": "1.0.0",
-        "voiceName": "BIGPONS (Brisbane Servers)",
-        "sourceDocument": "generated",
+        "voiceName": "Brisbane",
+        "sourceDocument": "brisbane-corpus:v=1;count=16;starters=16;caseStudies=0",
         "characteristics": {
           "tone": {
             "formality": "professional",
-            "precision": "very_high",
             "technicality": "moderate",
             "accessibility": "moderate",
+            "precision": "very_high",
             "comprehensiveness": "high"
           },
-          "voiceMarkers": {
-            "closingPhrases": [
-              "your industry 4",
-              "small-scale implementation 5",
-              "manufacturing & production",
-              "real business problems",
-              "the technology itself"
-            ],
-            "openingPhrases": [
-              "Client Management Systems",
-              "## Overview Client",
-              "This resource provides",
-              "## Key Benefits"
-            ],
-            "emphasisPhrases": [
-              "critical",
-              "key"
-            ],
-            "connectingPhrases": []
-          },
-          "domainKnowledge": {
-            "designConcepts": [],
-            "technicalConcepts": [
-              "system",
-              "component",
-              "data",
-              "process"
-            ],
-            "mathematicalConcepts": [
-              "ratio"
-            ]
-          },
-          "semanticDensity": {
-            "abstraction": "low",
-            "specificity": "very_high",
-            "informationPerSentence": "high",
-            "technicalTermsPerParagraph": "moderate"
-          },
           "linguisticPatterns": {
+            "sentenceStructure": {
+              "averageLength": "medium_to_long",
+              "complexity": "high",
+              "preference": "declarative_statements",
+              "coordination": "minimal_coordination"
+            },
             "vocabulary": {
               "technicalTerms": [
-                "management",
+                "systems",
                 "implementation",
                 "processes",
                 "consider",
                 "compliance",
+                "management",
                 "overview",
                 "professional",
                 "services",
                 "commerce",
-                "integration",
-                "document",
                 "analytics",
                 "workflows",
-                "medical",
-                "practices",
+                "integration",
                 "resource",
                 "provides",
                 "guidance",
                 "tailored",
-                "context"
+                "context",
+                "current",
+                "understand"
               ],
               "descriptiveTerms": [
                 "solutions",
-                "technology",
                 "business",
-                "systems",
+                "technology",
                 "businesses",
                 "industry",
                 "specific",
-                "management",
+                "systems",
                 "implementation",
                 "processes",
                 "consider",
                 "compliance",
+                "management",
                 "overview",
                 "professional",
                 "services"
@@ -98,15 +66,8 @@
                 "forms"
               ]
             },
-            "sentenceStructure": {
-              "complexity": "high",
-              "preference": "declarative_statements",
-              "coordination": "minimal_coordination",
-              "averageLength": "medium_to_long"
-            },
             "numericalPrecision": {
-              "units": [],
-              "formatting": "integer",
+              "specificValues": true,
               "commonValues": [
                 1,
                 2,
@@ -115,47 +76,88 @@
                 5,
                 6
               ],
-              "specificValues": true
+              "formatting": "integer",
+              "units": []
             }
           },
           "structuralPatterns": {
-            "contentFlow": {
-              "conclusions": false,
-              "detailsAfter": true,
-              "overviewFirst": true,
-              "examplesProvided": true
-            },
             "organization": {
-              "lists": "very_frequent",
-              "sections": true,
+              "hierarchical": false,
+              "sections": false,
               "subsections": false,
-              "bulletPoints": "very_frequent",
-              "hierarchical": true
+              "lists": "rare",
+              "bulletPoints": "rare"
+            },
+            "contentFlow": {
+              "overviewFirst": true,
+              "detailsAfter": true,
+              "examplesProvided": true,
+              "conclusions": false
             }
+          },
+          "domainKnowledge": {
+            "mathematicalConcepts": [
+              "ratio"
+            ],
+            "designConcepts": [],
+            "technicalConcepts": [
+              "system",
+              "component",
+              "data",
+              "process"
+            ]
+          },
+          "voiceMarkers": {
+            "openingPhrases": [
+              "Client Management Systems",
+              "## Overview Client",
+              "This resource provides",
+              "## Key Benefits",
+              "**Assess Current Processes**:"
+            ],
+            "connectingPhrases": [],
+            "emphasisPhrases": [
+              "critical",
+              "key"
+            ],
+            "closingPhrases": [
+              "your industry 4",
+              "small-scale implementation 5",
+              "manufacturing & production",
+              "real business problems",
+              "the technology itself"
+            ]
+          },
+          "semanticDensity": {
+            "informationPerSentence": "high",
+            "technicalTermsPerParagraph": "moderate",
+            "specificity": "very_high",
+            "abstraction": "low"
           }
         },
         "extrapolationGuidelines": {
-          "extendConcepts": true,
-          "useDomainTerms": false,
-          "addSpecificValues": true,
           "maintainPrecision": true,
-          "preserveStructure": true,
-          "maintainRelationships": true
+          "useDomainTerms": false,
+          "preserveStructure": false,
+          "extendConcepts": true,
+          "maintainRelationships": true,
+          "addSpecificValues": true
         }
       },
       "metadata": {
         "id": "profile_1777170477821_6894gji22",
-        "name": "BIGPONS (Brisbane Servers)",
+        "name": "Brisbane",
         "tags": [
+          "brisbane-user-default",
           "bigpons-default",
           "brisbane-servers",
-          "bifpons-site-corpus"
+          "site-corpus",
+          "user-default"
         ],
         "version": "1.0.0",
         "createdAt": "2026-04-26T02:27:57.821Z",
         "isDefault": true,
-        "updatedAt": "2026-04-26T05:24:28.767Z",
-        "description": "Default Brisbane Servers voice profile compiled from current starter and published resources.",
+        "updatedAt": "2026-06-10T14:43:56.083Z",
         "corpusLastBuiltAt": "2026-04-26T05:24:28.767Z",
         "corpusResourceIds": [
           "professional-services-client-management-systems-1769301663783",
@@ -176,10 +178,11 @@
           "manufacturing-overview-1769301663783"
         ],
         "corpusIndexedCount": 16,
-        "corpusResourceCount": 16
+        "corpusResourceCount": 16,
+        "sourceDocument": "brisbane-corpus:v=1;count=16;starters=16;caseStudies=0"
       }
     }
   ],
-  "lastUpdated": "2026-04-26T05:24:28.767Z",
+  "lastUpdated": "2026-06-10T14:43:56.084Z",
   "defaultProfileId": "profile_1777170477821_6894gji22"
 }

@@ -103,7 +103,7 @@ export function shouldUpdatePublicSurfaces(before: Resource, after: Resource): b
 
 /** Paths on the marketing site that reflect a published resource change. */
 export function getAffectedPublicPaths(before: Resource, after: Resource): string[] {
-  const paths = new Set<string>(['/resources', '/sitemap.xml']);
+  const paths = new Set<string>(['/resources', '/sitemap.xml', '/search-index.json']);
 
   const addHubPaths = (resource: Resource) => {
     if (!resource.industry) return;

@@ -238,13 +238,6 @@ header .nav-mega__link.active {
 .hero-visual,
 .main-home .hero-visual,
 .main-phi-chassis .hero-visual {
-  /* Fill the full right-column “box” (no tiny top-right panel) */
-  aspect-ratio: unset !important;
-  max-height: none !important;
-  max-width: none !important;
-  align-self: stretch !important;
-  justify-self: stretch !important;
-  height: 100% !important;
   overflow: hidden !important;
   /*
    * Blend the constellation into the hero band:
@@ -300,9 +293,8 @@ header .nav-mega__link.active {
   .hero-visual,
   .main-home .hero-visual,
   .main-phi-chassis .hero-visual {
-    justify-self: stretch !important;
-    max-width: none !important;
-    max-height: none !important;
+    justify-self: center;
+    max-width: min(100%, 44rem);
   }
 }
 

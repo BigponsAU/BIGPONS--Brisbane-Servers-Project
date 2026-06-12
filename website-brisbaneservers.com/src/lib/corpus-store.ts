@@ -90,7 +90,7 @@ async function loadFromPostgres<T>(key: CorpusDocKey): Promise<T | null> {
   const pool = getSharedPool();
   const { rows } = await pool.query<{ payload: T }>(
     'SELECT payload FROM corpus_documents WHERE doc_key = $1',
-    [key]
+    [key],
   );
   return rows[0]?.payload ?? null;
 }
@@ -102,7 +102,7 @@ async function saveToPostgres(key: CorpusDocKey, data: unknown): Promise<void> {
     `INSERT INTO corpus_documents (doc_key, payload, updated_at)
      VALUES ($1, $2::jsonb, NOW())
      ON CONFLICT (doc_key) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
-    [key, JSON.stringify(data)]
+    [key, JSON.stringify(data)],
   );
 }
 
@@ -112,7 +112,7 @@ async function saveToPostgres(key: CorpusDocKey, data: unknown): Promise<void> {
 export async function readCorpusJson<T>(
   key: CorpusDocKey,
   filePath: string,
-  defaultValue: T
+  defaultValue: T,
 ): Promise<T> {
   if (usePostgres()) {
     const fromPg = await loadFromPostgres<T>(key);
@@ -137,7 +137,7 @@ export async function readCorpusJson<T>(
 export async function saveCorpusJson<T>(
   key: CorpusDocKey,
   filePath: string,
-  data: T
+  data: T,
 ): Promise<void> {
   if (usePostgres()) {
     await saveToPostgres(key, data);
@@ -163,7 +163,7 @@ export async function exportCorpusToFile(key: CorpusDocKey, filePath: string): P
 }
 
 export async function migrateAllCorpusFilesFromDisk(
-  entries: Array<{ key: CorpusDocKey; filePath: string }>
+  entries: Array<{ key: CorpusDocKey; filePath: string }>,
 ): Promise<number> {
   if (!usePostgres()) return 0;
   let migrated = 0;

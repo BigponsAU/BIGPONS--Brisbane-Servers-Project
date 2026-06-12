@@ -11,7 +11,7 @@ export const siteMailboxes = {
   corrections: 'connect@brisbaneservers.com',
   /** Brand / operator (BIGPONS) */
   bigpons: 'bigpons@brisbaneservers.com',
-  /** Account verification, password reset, system mail (SMTP AUTH_EMAIL_FROM) */
+  /** Outbound auth mail (Resend verified root domain; mail. subdomain also verified) */
   support: 'support@brisbaneservers.com',
   /** Optional no-reply for bulk/automated only */
   noreply: 'noreply@brisbaneservers.com'

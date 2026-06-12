@@ -1399,7 +1399,7 @@ nav {
 
 .hero {
     padding: 0;
-    padding-bottom: var(--hero-band-pad-bottom, clamp(1rem, 1.25rem, 1.5rem));
+    padding-bottom: clamp(1.25rem, 1.75rem, 2.25rem);
     /* Start-aligned: φ hero is copy-left / visual-right; centering collapses hierarchy at wide viewports */
     text-align: start;
     background: var(--original-bg-gradient);
@@ -1440,8 +1440,15 @@ nav {
     mix-blend-mode: multiply;
 }
 
-/* Hero layout: grid + band height live in site-framework.css */
+/* Hero layout: grid places text + visual in φ columns (no hollow flex gap) */
 .hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
+    /* Keep the right visual filling the hero column height */
+    align-items: stretch;
+    flex: 0 1 auto;
+    width: 100%;
+    min-height: 0;
     position: relative;
     z-index: 10;
     box-sizing: border-box;
@@ -1456,14 +1463,21 @@ nav {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
+    /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
     overflow: hidden;
-    align-self: stretch;
+    align-self: start;
     justify-self: end;
-    height: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: min(28rem, 48dvh);
+    max-width: min(100%, 34rem);
+    height: auto;
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
+    /*
+     * Radial mask caused a hard vertical seam beside copy + “cut” bands at zoom; blend is from section gradients.
+     */
     -webkit-mask-image: none;
     mask-image: none;
 }
@@ -1477,9 +1491,9 @@ nav {
 @media (max-width: 768px) {
     .hero-inner {
         grid-template-columns: 1fr;
+        /* Content-sized rows: large minmax() floors disconnected copy from the visual at zoom-in */
         grid-template-rows: auto auto;
-        height: auto;
-        min-height: var(--hero-band-height, var(--hero-inner-min-height));
+        min-height: 0;
     }
 }
 
@@ -1487,10 +1501,17 @@ nav {
     position: relative;
     z-index: 10;
     min-width: 0;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
+    height: fit-content;
+    align-self: start;
+    padding: var(--space-5xl) clamp(var(--space-lg), calc(var(--space-2xl) * var(--phi-inv)), var(--space-3xl));
+    box-sizing: border-box;
 }
 
 @supports (container-type: inline-size) {

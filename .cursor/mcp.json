@@ -1,35 +1,29 @@
 {
-  "mcpServers": {
-    "cloudflare-api": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote@latest",
-        "https://mcp.cloudflare.com/mcp"
-      ]
-    },
-    "cloudflare-docs": {
-      "url": "https://docs.mcp.cloudflare.com/mcp"
-    },
-    "render": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote@latest",
-        "https://mcp.render.com/mcp",
-        "--header",
-        "Authorization:${RENDER_AUTH_HEADER}"
-      ]
-    },
-    "google-cloud-bigquery": {
-      "url": "https://bigquery.googleapis.com/mcp",
-      "auth": {
-        "CLIENT_ID": "${env:GOOGLE_OAUTH_CLIENT_ID}",
-        "CLIENT_SECRET": "${env:GOOGLE_OAUTH_CLIENT_SECRET}",
-        "scopes": [
-          "https://www.googleapis.com/auth/bigquery"
-        ]
-      }
-    }
-  }
+    "mcpServers":  {
+                       "cloudflare-api":  {
+                                              "command":  "npx",
+                                              "args":  [
+                                                           "-y",
+                                                           "mcp-remote@latest",
+                                                           "https://mcp.cloudflare.com/mcp",
+                                                           "3334",
+                                                           "--auth-timeout",
+                                                           "300",
+                                                           "--debug"
+                                                       ]
+                                          },
+                       "cloudflare-docs":  {
+                                               "url":  "https://docs.mcp.cloudflare.com/mcp"
+                                           },
+                       "render":  {
+                                      "command":  "powershell",
+                                      "args":  [
+                                                   "-NoProfile",
+                                                   "-ExecutionPolicy",
+                                                   "Bypass",
+                                                   "-File",
+                                                   "${workspaceFolder}/website-brisbaneservers.com/scripts/mcp-render.ps1"
+                                               ]
+                                  }
+                   }
 }

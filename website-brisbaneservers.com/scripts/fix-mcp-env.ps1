@@ -19,8 +19,9 @@ foreach ($n in @('CLOUDFLARE_API_TOKEN', 'RENDER_API_KEY', 'RENDER_AUTH_HEADER')
 
 Write-Host ""
 Write-Host "=== Cloudflare MCP (Cursor) ===" -ForegroundColor Cyan
-Write-Host "  API token is for npm scripts only (Pages env, email routing)." -ForegroundColor DarkGray
-Write-Host "  Cursor cloudflare-api must use OAuth (not the API token)." -ForegroundColor DarkGray
+Write-Host "  ONE MCP server: cloudflare-api (OAuth login in browser)." -ForegroundColor DarkGray
+Write-Host "  CLOUDFLARE_API_TOKEN = npm/wrangler scripts ONLY (not MCP)." -ForegroundColor DarkGray
+Write-Host "  Remove/disable cloudflare-api-token if it shows red (duplicate, broken)." -ForegroundColor DarkGray
 
 $mcpAuth = Join-Path $env:USERPROFILE '.mcp-auth'
 $oauthTokens = Join-Path $mcpAuth 'mcp-remote-0.1.37\6244cf5467a6f706b7b55d5e88d4e4c4_tokens.json'

@@ -23,13 +23,36 @@
 
 ## MCP servers (this project)
 
-| Server | Use for |
-|--------|---------|
-| `cloudflare-api` | Pages env, DNS, Worker domains, Email Routing |
-| `cloudflare-docs` | Cloudflare documentation |
-| `render` | **Legacy only** — old service logs; API no longer used |
+| Server | Auth | Use for |
+|--------|------|---------|
+| **`cloudflare-api`** | **OAuth** (browser login) | Cursor agent: DNS, Pages, Workers, Email Routing |
+| `cloudflare-docs` | none | Cloudflare documentation |
+| `render` | API key | Legacy logs only |
 
-One-shot: **`npm run configure:cloudflare-mcp`** (API token) · OAuth: **`npm run connect:cloudflare-mcp-oauth`**
+**Do not use `cloudflare-api-token`** — it duplicates OAuth and errors when `CLOUDFLARE_AUTH_HEADER` is stale.
+
+| Channel | What | Where |
+|---------|------|--------|
+| **OAuth MCP** | Cursor chat / agent | `cloudflare-api` in Settings → MCP (green) |
+| **API token** | `npm run deploy:edge-worker`, Pages env scripts | Windows user env `CLOUDFLARE_API_TOKEN` |
+
+Setup: **`npm run configure:cloudflare-mcp`** (saves token) + **`npm run connect:cloudflare-mcp-oauth`** (MCP OAuth). Then **Reload Window**.
+
+Check token gaps: **`npm run verify:cloudflare-token-perms`**
+
+### Signup email (no webhook)
+
+Account verification uses **outbound Resend API** from the edge worker (`POST /api/auth/register` → email). **No Resend webhook** is required for signups.
+
+| Item | Value |
+|------|--------|
+| Resend verified domains | `brisbaneservers.com` ✓ and `mail.brisbaneservers.com` ✓ (keep both DNS) |
+| `AUTH_EMAIL_FROM` | `Brisbane Servers <support@brisbaneservers.com>` |
+| Inbound mail | Cloudflare Email Routing → your inbox (separate from Resend) |
+
+### Publish rebuild (not signups)
+
+`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on the **worker** triggers a Pages build after publish (static SEO refresh). Sync: `npm run sync:edge-worker-secrets`.
 
 ---
 

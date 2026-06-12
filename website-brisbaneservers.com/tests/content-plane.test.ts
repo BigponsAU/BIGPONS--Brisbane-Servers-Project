@@ -49,6 +49,7 @@ describe('content-plane', () => {
     expect(paths).toContain('/resources/healthcare');
     expect(paths).toContain('/resources/healthcare/compliance');
     expect(paths).toContain('/sitemap.xml');
+    expect(paths).toContain('/search-index.json');
   });
 
   it('public plane excludes drafts', () => {
