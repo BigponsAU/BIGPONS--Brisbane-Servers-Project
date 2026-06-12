@@ -1,6 +1,5 @@
 ---
-import { navItemIsActive, navigation, type NavItem } from '../data/navigation';
-import { inquiryNavHref } from '../lib/inquiry-nav-href';
+import { navItemIsActive, type NavItem } from '../data/navigation';
 import { sitePath } from '../lib/site-path';
 
 interface Props {
@@ -9,7 +8,6 @@ interface Props {
 }
 
 const { navItems, currentPath } = Astro.props;
-const inquireHref = inquiryNavHref(currentPath, sitePath);
 
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;
@@ -21,7 +19,7 @@ function isActive(href: string): boolean {
 const topLevelItems = navItems.filter(
   (item) => !item.groups?.length && !item.children?.length && item.href !== '/account',
 );
-const accountItem = navigation.find((item) => item.href === '/account');
+const accountItem = navItems.find((item) => item.href === '/account');
 const featureItems = navItems.filter((item) => item.groups?.length || item.children?.length);
 ---
 
@@ -110,7 +108,7 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
 
   {
     accountItem && (
-      <div class="mobile-menu__footer">
+      <div class="mobile-menu__footer mobile-menu__footer--dual">
         <a
           href={sitePath(accountItem.href)}
           class:list={['mobile-menu__account', isActive(accountItem.href) && 'is-active']}
@@ -119,7 +117,16 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
         >
           {accountItem.label}
         </a>
-        <a href={inquireHref} class="mobile-menu__inquire" role="menuitem">
+        <a
+          href={
+            currentPath === '/account' || currentPath.startsWith('/account/')
+              ? sitePath('/#inquiry-section')
+              : sitePath(`${currentPath === '/' ? '/' : currentPath.replace(/\/$/, '')}#inquiry-section`)
+          }
+          class="mobile-menu__inquire"
+          data-nav-inquire="true"
+          role="menuitem"
+        >
           Inquire
         </a>
       </div>

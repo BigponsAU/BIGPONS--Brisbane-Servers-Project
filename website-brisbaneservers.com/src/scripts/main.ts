@@ -32,7 +32,10 @@ function initializeNavDismissOnScrollAndNavigation(): void {
         const link = (e.target as HTMLElement).closest('.nav-menu a[href], .nav-mega__link[href]');
         if (!link) return;
         const href = link.getAttribute('href') ?? '';
-        if (href.startsWith('#')) return;
+        if (href.startsWith('#')) {
+            closeDesktopNavDropdowns();
+            return;
+        }
         dismissOpenNav();
     });
 
@@ -126,13 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize dropdown menus with keyboard support
     initializeDropdownMenus();
 
-    document.addEventListener('pointerdown', (e: PointerEvent) => {
-        if (window.innerWidth < 1024) return;
-        const target = e.target as HTMLElement;
-        if (target.closest('.nav-dropdown')) return;
-        closeDesktopNavDropdowns();
-    });
-
     window.addEventListener('resize', () => {
         document.querySelectorAll('.nav-dropdown.is-open .nav-dropdown-menu').forEach((menu) => {
             clampDropdownToViewport(menu as HTMLElement);
@@ -169,6 +165,19 @@ function scheduleAccountLinkHydration(): void {
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====
 function initializeDropdownMenus(): void {
     const dropdownToggles = document.querySelectorAll('.nav-dropdown-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+
+    navMenu?.addEventListener('mouseleave', () => {
+        closeDesktopNavDropdowns();
+    });
+
+    document.addEventListener('pointerdown', (e: PointerEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.nav-dropdown') || target.closest('.nav-account-cta') || target.closest('.nav-inquire-cta')) {
+            return;
+        }
+        closeDesktopNavDropdowns();
+    });
     
     dropdownToggles.forEach((toggle) => {
         const toggleElement = toggle as HTMLElement;
@@ -177,19 +186,10 @@ function initializeDropdownMenus(): void {
         
         if (!dropdown || !parent) return;
         
-        // Mouse events — single open panel at a time
-        toggleElement.addEventListener('mouseenter', () => {
+        // Mouse events — exclusive: only one mega menu open at a time
+        parent.addEventListener('mouseenter', () => {
+            closeDesktopNavDropdowns(parent);
             openDropdown(toggleElement, dropdown);
-        });
-
-        parent.addEventListener('mouseleave', (e: MouseEvent) => {
-            const related = e.relatedTarget as Node | null;
-            if (related && parent.contains(related)) return;
-            closeDropdown(toggleElement, dropdown);
-        });
-
-        toggleElement.addEventListener('click', () => {
-            closeAllDropdownsExcept(null);
         });
         
         // Keyboard events
@@ -295,20 +295,9 @@ function clampDropdownToViewport(dropdown: HTMLElement): void {
     }
 }
 
-function closeAllDropdownsExcept(exceptParent?: HTMLElement | null): void {
-    document.querySelectorAll('.nav-dropdown.is-open').forEach((node) => {
-        if (exceptParent && node === exceptParent) return;
-        const toggle = node.querySelector('.nav-dropdown-toggle') as HTMLElement | null;
-        const menu = toggle?.nextElementSibling as HTMLElement | null;
-        if (toggle && menu) {
-            closeDropdown(toggle, menu);
-        }
-    });
-}
-
 function openDropdown(toggle: HTMLElement, dropdown: HTMLElement): void {
     const parent = toggle.closest('.nav-dropdown') as HTMLElement;
-    closeAllDropdownsExcept(parent);
+    closeDesktopNavDropdowns(parent);
     toggle.setAttribute('aria-expanded', 'true');
     parent?.classList.add('is-open');
     requestAnimationFrame(() => {

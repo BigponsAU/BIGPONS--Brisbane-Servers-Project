@@ -76,27 +76,26 @@ button.btn.btn-primary {
   header .nav-menu a.nav-inquire-cta,
   header .nav-menu a.nav-inquire-cta:hover,
   header .nav-menu a.nav-inquire-cta:focus-visible {
-    background: rgba(8, 27, 54, 0.58) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
     background-image: none !important;
-    color: #fff !important;
-    -webkit-text-fill-color: #fff !important;
-    border: 1px solid rgba(255, 255, 255, 0.32) !important;
+    color: rgba(255, 255, 255, 0.96) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.38) !important;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.16),
-      0 2px 12px rgba(8, 27, 54, 0.3) !important;
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 0 1px rgba(var(--primary-color-rgb), 0.18),
+      0 4px 16px -6px rgba(10, 116, 218, 0.35) !important;
     text-decoration: none !important;
   }
 
   header .nav-menu a.nav-inquire-cta:hover,
   header .nav-menu a.nav-inquire-cta:focus-visible {
-    border-color: rgba(139, 92, 246, 0.72) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      0 0 0 1px rgba(139, 92, 246, 0.32),
-      0 8px 22px rgba(139, 92, 246, 0.28) !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.58) !important;
   }
 
-  header .nav-menu a.nav-inquire-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+  header .nav-menu a.nav-inquire-cta :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal),
+  header .nav-menu a.nav-inquire-cta:is(:hover, :focus-visible) :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
     color: #fff !important;
     -webkit-text-fill-color: #fff !important;
   }
@@ -167,7 +166,7 @@ header .nav-menu a:not(:hover):not(.active):not(.nav-account-cta):not(.nav-inqui
 /* Gradient nav pills (hover + current page): white labels — not dark ink */
 header .nav-menu a:not(.nav-account-cta):not(.nav-inquire-cta):is(:hover, .active),
 header .nav-dropdown-toggle:is(:hover, .active),
-header .nav-dropdown:is(:hover, .is-open) > .nav-dropdown-toggle {
+header .nav-dropdown:is(:hover, :focus-within, .is-open) > .nav-dropdown-toggle {
   background: var(--brand-gradient-chroma) !important;
   background-image: var(--brand-gradient-chroma) !important;
   background-color: #8b5cf6 !important;
@@ -179,7 +178,7 @@ header .nav-dropdown:is(:hover, .is-open) > .nav-dropdown-toggle {
 
 header .nav-menu a:not(.nav-account-cta):not(.nav-inquire-cta):is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
 header .nav-dropdown-toggle:is(:hover, .active) :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child),
-header .nav-dropdown:is(:hover, .is-open) > .nav-dropdown-toggle :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child) {
+header .nav-dropdown:is(:hover, :focus-within, .is-open) > .nav-dropdown-toggle :is(.semantic-text, .semantic-normal, .semantic-medium, .semantic-high, .semantic-parent, .semantic-child) {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
 }
@@ -288,27 +287,6 @@ header .nav-mega__link.active {
   mask-composite: intersect;
 }
 
-@supports not (mask-composite: intersect) {
-  .hero-visual,
-  .main-home .hero-visual,
-  .main-phi-chassis .hero-visual {
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.5) 8%,
-      #000 18%,
-      #000 100%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.5) 8%,
-      #000 18%,
-      #000 100%
-    );
-  }
-}
-
 .hero-visual .sierpinski-satellite {
   inset: clamp(0.6rem, 1.4vw, 1.15rem) !important;
   /* Slightly zoomed out inside the same frame — less visual noise, same boundary */
@@ -321,11 +299,9 @@ header .nav-mega__link.active {
   .hero-visual,
   .main-home .hero-visual,
   .main-phi-chassis .hero-visual {
-    justify-self: center !important;
-    align-self: start !important;
-    height: auto !important;
-    max-width: min(100%, 44rem) !important;
-    min-height: clamp(14rem, 36dvh, 24rem) !important;
+    justify-self: stretch !important;
+    max-width: none !important;
+    max-height: none !important;
   }
 }
 

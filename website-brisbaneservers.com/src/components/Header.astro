@@ -1,6 +1,5 @@
 ---
-import { navigation, navDropdownToggleIsActive } from '../data/navigation';
-import { inquiryNavHref } from '../lib/inquiry-nav-href';
+import { navigation, navItemIsActive } from '../data/navigation';
 import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
 import MobileNavMenu from './MobileNavMenu.astro';
@@ -15,12 +14,8 @@ interface Props {
 const { currentPath = '' } = Astro.props;
 
 const navItems = navigation.filter(
-  (item) =>
-    !(item.href === '/' && currentPath === '/') &&
-    item.href !== '/account',
+  (item) => !(item.href === '/' && currentPath === '/'),
 );
-
-const inquireHref = inquiryNavHref(currentPath, sitePath);
 
 function isActive(href: string): boolean {
   const pathOnly = href.split('#')[0] || href;
@@ -31,6 +26,15 @@ function isActive(href: string): boolean {
 
 function dropdownSlug(label: string): string {
   return label.toLowerCase().replace(/\s+/g, '-');
+}
+
+/** Scroll to on-page inquiry form when present; otherwise home contact band. */
+function inquireHref(currentPath: string): string {
+  if (currentPath === '/account' || currentPath.startsWith('/account/')) {
+    return sitePath('/#inquiry-section');
+  }
+  const base = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
+  return sitePath(`${base}#inquiry-section`);
 }
 ---
 
@@ -51,7 +55,7 @@ function dropdownSlug(label: string): string {
       {
         navItems.map((item, index) => {
           const hasPanel = Boolean(item.groups?.length || item.children?.length);
-          const active = navDropdownToggleIsActive(item, currentPath);
+          const active = navItemIsActive(item, currentPath);
           const slug = dropdownSlug(item.label);
           const menuId = `dropdown-menu-${index}`;
           const toggleId = `dropdown-toggle-${index}`;
@@ -107,18 +111,13 @@ function dropdownSlug(label: string): string {
           );
         })
       }
-      <li class="nav-menu__cta" role="none">
+      <li role="none" class="nav-cta-item">
         <a
-          href={sitePath('/account')}
-          class="nav-account-cta"
-          data-account-link="true"
+          href={inquireHref(currentPath)}
+          class="nav-inquire-cta"
           role="menuitem"
+          data-nav-inquire="true"
         >
-          <SemanticText text="Sign in" semanticLevel="normal" />
-        </a>
-      </li>
-      <li class="nav-menu__cta" role="none">
-        <a href={inquireHref} class="nav-inquire-cta" role="menuitem">
           <SemanticText text="Inquire" semanticLevel="normal" />
         </a>
       </li>
