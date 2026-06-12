@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initializeNavDismissOnScrollAndNavigation();
+    initializeInquireNavLinks();
     
     // Initialize dropdown menus with keyboard support
     initializeDropdownMenus();
@@ -160,6 +161,38 @@ function scheduleAccountLinkHydration(): void {
     } else {
         setTimeout(run, 1200);
     }
+}
+
+function initializeInquireNavLinks(): void {
+    document.querySelectorAll('[data-nav-inquire="true"]').forEach((node) => {
+        node.addEventListener('click', (event) => {
+            const link = event.currentTarget as HTMLAnchorElement;
+            const href = link.getAttribute('href') ?? '';
+            const hashIndex = href.indexOf('#');
+            if (hashIndex < 0) return;
+
+            const hash = href.slice(hashIndex);
+            const target = document.querySelector(hash) as HTMLElement | null;
+            if (!target) return;
+
+            const pathOnly = href.slice(0, hashIndex) || window.location.pathname;
+            const onSamePage =
+                pathOnly === window.location.pathname ||
+                (pathOnly === '/' && (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')));
+
+            if (!onSamePage) return;
+
+            event.preventDefault();
+            closeDesktopNavDropdowns();
+            closeMobileNav();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            window.history.pushState(null, '', hash);
+            const focusTarget = target.matches('form, input, textarea, select')
+                ? target
+                : (target.querySelector('input, textarea, select') as HTMLElement | null);
+            focusTarget?.focus({ preventScroll: true });
+        });
+    });
 }
 
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====

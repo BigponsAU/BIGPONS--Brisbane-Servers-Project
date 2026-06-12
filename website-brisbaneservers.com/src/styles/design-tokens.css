@@ -745,8 +745,8 @@
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
   /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
-  --hero-min-height: clamp(17rem, 24rem, 30rem);
-  --hero-inner-min-height: clamp(13rem, 19rem, 26rem);
+  --hero-min-height: clamp(18rem, 26rem, 34rem);
+  --hero-inner-min-height: clamp(18rem, 26rem, 34rem);
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
   /*

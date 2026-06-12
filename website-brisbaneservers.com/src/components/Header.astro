@@ -6,6 +6,7 @@ import MobileNavMenu from './MobileNavMenu.astro';
 import NavMegaMenu from './NavMegaMenu.astro';
 import NavSimpleMenu from './NavSimpleMenu.astro';
 import SemanticText from './SemanticText.astro';
+import { inquiryNavHref } from '../lib/inquiry-nav';
 
 interface Props {
   currentPath?: string;
@@ -28,14 +29,7 @@ function dropdownSlug(label: string): string {
   return label.toLowerCase().replace(/\s+/g, '-');
 }
 
-/** Scroll to on-page inquiry form when present; otherwise home contact band. */
-function inquireHref(currentPath: string): string {
-  if (currentPath === '/account' || currentPath.startsWith('/account/')) {
-    return sitePath('/#inquiry-section');
-  }
-  const base = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
-  return sitePath(`${base}#inquiry-section`);
-}
+const inquireHref = inquiryNavHref(currentPath, sitePath);
 ---
 
 <header data-state-aware="true" class="header-state-aware" role="banner">
@@ -113,7 +107,7 @@ function inquireHref(currentPath: string): string {
       }
       <li role="none" class="nav-cta-item">
         <a
-          href={inquireHref(currentPath)}
+          href={inquireHref}
           class="nav-inquire-cta"
           role="menuitem"
           data-nav-inquire="true"

@@ -13,32 +13,15 @@
 
 <div class="sierpinski-satellite" aria-hidden="true">
   <svg class="satellite-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-    <!-- Static fallback (replaced when client script runs) -->
-    <g class="connections-layer" aria-hidden="true">
-      <line x1="400" y1="300" x2="520" y2="220" stroke="rgba(139, 92, 246, 0.35)" stroke-width="1.5" />
-      <line x1="400" y1="300" x2="310" y2="380" stroke="rgba(139, 92, 246, 0.35)" stroke-width="1.5" />
-      <line x1="400" y1="300" x2="480" y2="390" stroke="rgba(139, 92, 246, 0.35)" stroke-width="1.5" />
-      <line x1="520" y1="220" x2="560" y2="310" stroke="rgba(139, 92, 246, 0.28)" stroke-width="1.25" />
-      <line x1="310" y1="380" x2="350" y2="210" stroke="rgba(139, 92, 246, 0.28)" stroke-width="1.25" />
-    </g>
-    <g class="nodes-layer" aria-hidden="true">
-      <circle cx="400" cy="300" r="22" fill="#ffffff" opacity="0.92" />
-      <circle cx="400" cy="300" r="18" fill="#3b82f6" opacity="0.95" />
-      <circle cx="520" cy="220" r="17" fill="#ffffff" opacity="0.9" />
-      <circle cx="520" cy="220" r="14" fill="#3b82f6" opacity="0.88" />
-      <circle cx="310" cy="380" r="15" fill="#ffffff" opacity="0.9" />
-      <circle cx="310" cy="380" r="12" fill="#3b82f6" opacity="0.88" />
-      <circle cx="480" cy="390" r="14" fill="#ffffff" opacity="0.88" />
-      <circle cx="480" cy="390" r="11" fill="#3b82f6" opacity="0.88" />
-      <circle cx="350" cy="210" r="12" fill="#ffffff" opacity="0.85" />
-      <circle cx="350" cy="210" r="9" fill="#3b82f6" opacity="0.82" />
-      <circle cx="560" cy="310" r="11" fill="#ffffff" opacity="0.85" />
-      <circle cx="560" cy="310" r="8" fill="#3b82f6" opacity="0.82" />
-    </g>
+    <!-- Connection Lines Layer (drawn first, behind nodes) -->
+    <g class="connections-layer"></g>
+    
+    <!-- Nodes Layer (drawn on top) -->
+    <g class="nodes-layer"></g>
   </svg>
 </div>
 
-<script>
+<script is:inline data-cfasync="false">
   const SATELLITE_INIT_ATTR = 'data-sierpinski-initialized';
 
   /**
@@ -149,8 +132,7 @@
       // Connect if within phi-based relationship distance
       const connectionRadius = 150 * Math.pow(phi, -Math.abs(node.level - targetNode.level));
       
-      const levelDelta = Math.abs(node.level - targetNode.level);
-      if (distance < connectionRadius && (i + currentIndex + levelDelta) % 3 !== 0) {
+      if (distance < connectionRadius && Math.random() > 0.52) {
         connections.push(targetNode);
       }
     });
@@ -268,7 +250,10 @@
   // Initialize on page load with error handling
   function initSatellite(container) {
     try {
-      scheduleSatelliteRender(container);
+      // Wait a bit to ensure DOM is ready
+      setTimeout(() => {
+        scheduleSatelliteRender(container);
+      }, 100);
     } catch (error) {
       console.error('[SierpinskiSatellite] Error generating satellite array:', error);
     }

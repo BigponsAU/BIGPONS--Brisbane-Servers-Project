@@ -1081,26 +1081,24 @@ nav {
     z-index: 1003;
 }
 
-/* Inquire — glass outline pill (distinct from filled Sign in gradient). */
+/* Inquire — bright sky outline (distinct from filled Sign in gradient). */
 .nav-menu a.nav-inquire-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
     padding: 0.42rem 1.05rem;
     border-radius: 999px;
     font-size: var(--text-sm);
     font-weight: var(--font-weight-semibold);
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.96);
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #fff;
+    background: linear-gradient(180deg, rgba(10, 116, 218, 0.34) 0%, rgba(10, 116, 218, 0.2) 100%);
+    border: 1.5px solid rgba(147, 210, 255, 0.92);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 0 0 1px rgba(var(--primary-color-rgb), 0.18),
-        0 4px 16px -6px rgba(10, 116, 218, 0.35);
-    backdrop-filter: blur(10px) saturate(1.15);
-    -webkit-backdrop-filter: blur(10px) saturate(1.15);
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 0 0 1px rgba(10, 116, 218, 0.35),
+        0 6px 18px -6px rgba(56, 189, 248, 0.55);
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -1109,21 +1107,21 @@ nav {
     width: 0.35rem;
     height: 0.35rem;
     border-radius: 50%;
-    background: rgba(236, 72, 153, 0.95);
-    box-shadow: 0 0 0.45rem rgba(236, 72, 153, 0.65);
+    background: #7dd3fc;
+    box-shadow: 0 0 0.55rem rgba(125, 211, 252, 0.95);
     flex-shrink: 0;
 }
 
 .nav-menu a.nav-inquire-cta:hover,
 .nav-menu a.nav-inquire-cta:focus-visible {
     color: #fff;
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.58);
+    background: linear-gradient(180deg, rgba(14, 165, 233, 0.48) 0%, rgba(10, 116, 218, 0.32) 100%);
+    border-color: #fff;
     transform: translateY(-1px);
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.28),
-        0 0 0 1px rgba(var(--primary-color-rgb), 0.28),
-        0 8px 22px -8px rgba(10, 116, 218, 0.45);
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 0 0 1px rgba(56, 189, 248, 0.45),
+        0 10px 24px -8px rgba(56, 189, 248, 0.65);
 }
 
 .nav-menu a.nav-inquire-cta:focus-visible {
@@ -1407,6 +1405,8 @@ nav {
     background: var(--original-bg-gradient);
     position: relative;
     overflow: clip;
+    overflow-x: clip;
+    overflow-y: visible;
     isolation: isolate;
     z-index: 1;
     min-height: var(--hero-min-height);
@@ -2003,9 +2003,14 @@ section.hero .hero-subtitle .semantic-child,
 .inquiry-section {
     padding: var(--space-4xl) 0;
     position: relative;
+    scroll-margin-top: calc(var(--site-header-clearance) + var(--space-lg));
     /* Neutral band — form card provides contrast (see brand-chroma.css) */
     background: linear-gradient(180deg, #f1f5f9 0%, #e8eef6 48%, #f4f6fa 100%);
     background-color: #eef2f7;
+}
+
+.inquiry-form[id$='-form'] {
+    scroll-margin-top: calc(var(--site-header-clearance) + var(--space-lg));
 }
 
 /* Golden Ratio Positioning for Inquiry Form */
