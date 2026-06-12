@@ -28,7 +28,7 @@
 
 .site-shell--header-in-flow .hero.hero--guide-lead {
   margin-bottom: 0;
-  padding-bottom: var(--hero-band-pad-bottom, clamp(1rem, 1.25rem, 1.5rem));
+  padding-bottom: clamp(2rem, 4vw, 3rem);
   box-shadow: none;
 }
 

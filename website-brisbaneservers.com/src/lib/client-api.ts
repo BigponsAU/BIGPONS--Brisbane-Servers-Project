@@ -26,11 +26,8 @@ export function clearLegacyAuthTokenStorage(): void {
 
 const SESSION_STORAGE_KEY = 'bsAccountSession';
 
-import { CANONICAL_API_BASE_URL } from './canonical-hosts';
-
-/** Primary production API (Cloudflare Worker). */
-export const PRODUCTION_API_URL = CANONICAL_API_BASE_URL;
-export const PRODUCTION_API_CUSTOM_DOMAIN = CANONICAL_API_BASE_URL;
+export const PRODUCTION_API_URL = 'https://brisbane-servers-api.onrender.com/api';
+export const PRODUCTION_API_CUSTOM_DOMAIN = 'https://api.brisbaneservers.com/api';
 
 export function isUsableAbsoluteApiBase(value: string): boolean {
   if (!/^https?:\/\//i.test(value)) return false;
@@ -128,7 +125,7 @@ export async function hasActiveSession(apiBaseUrl: string): Promise<boolean> {
   }
 }
 
-const PRODUCTION_API_FALLBACKS = [PRODUCTION_API_URL] as const;
+const PRODUCTION_API_FALLBACKS = [PRODUCTION_API_CUSTOM_DOMAIN, PRODUCTION_API_URL] as const;
 
 /** Resolve API base for header nav + account page (matches workspace failover). */
 export function resolveNavApiBaseUrl(): string {

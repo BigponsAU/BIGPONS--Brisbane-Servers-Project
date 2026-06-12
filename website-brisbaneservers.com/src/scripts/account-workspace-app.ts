@@ -20,23 +20,11 @@ import {
   isUsableAbsoluteApiBase,
 } from '../lib/client-api';
 import { closeMobileNav } from './nav-mobile';
-import {
-  accountWorkspace,
-  workspaceModeDefaultPanel,
-  type WorkspaceNavMode,
-} from '../data/account-workspace';
-import { onVoicePanelShown } from './account-workspace-voice-features';
-import { trackPortalPanel } from './portal-markov-tracker';
-
-const WORKSPACE_MODE_STORAGE_KEY = 'bs-workspace-nav-mode';
-const ADMIN_PANELS = new Set(['library-growth', 'moderation', 'site-review', 'admin-users', 'admin-ops']);
 
 const API_PROBE_TIMEOUT_MS = 8000;
-const API_RENDER_HEALTH_TIMEOUT_MS = 90000;
-const API_WAKE_TIMEOUT_MS = 5000;
 const API_PROBE_OVERALL_MS = 12000;
 const PAGE_LOAD_PROBE_OVERALL_MS = 3500;
-const API_WAKE_ATTEMPTS = 6;
+const API_WAKE_ATTEMPTS = 4;
 const LOGIN_TIMEOUT_MS = 45000;
 const OAUTH_STATUS_TIMEOUT_MS = 15000;
 
@@ -50,7 +38,6 @@ export interface AccountWorkspaceBootConfig {
 }
 
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
-  let workspaceSessionUser: { role?: string; email?: string } | null = null;
   const {
     publicApiBaseUrl,
     accountPath,
@@ -280,47 +267,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
-  /** Edge worker serves /health instantly when api.brisbaneservers.com is on Workers. */
-  async function isEdgeAuthApi(baseUrl: string): Promise<boolean> {
-    try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), API_WAKE_TIMEOUT_MS);
-      const response = await workspaceFetch(`${baseUrl.replace(/\/+$/, '')}/health`, {
-        headers: { Accept: 'application/json' },
-        signal: controller.signal,
-      });
-      window.clearTimeout(timeout);
-      if (!response.ok) return false;
-      const data = await response.json().catch(() => null);
-      return Boolean(data?.edge === 'cloudflare-worker' && data?.origin === 'edge');
-    } catch {
-      return false;
-    }
-  }
-
-  /** Edge /health is instant; legacy Render needs health/render or plain health. */
-  async function isApiReadyForAuth(baseUrl: string): Promise<boolean> {
-    if (await isEdgeAuthApi(baseUrl)) {
-      return true;
-    }
-    const base = baseUrl.replace(/\/+$/, '');
-    try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), API_RENDER_HEALTH_TIMEOUT_MS);
-      const response = await workspaceFetch(`${base}/health/render`, {
-        headers: { Accept: 'application/json' },
-        signal: controller.signal,
-      });
-      window.clearTimeout(timeout);
-      if (response.status === 404) {
-        return isApiBaseHealthy(baseUrl);
-      }
-      return response.ok;
-    } catch {
-      return isApiBaseHealthy(baseUrl);
-    }
-  }
-
   async function ensureReachableApiBase(options?: { fast?: boolean }): Promise<void> {
     if (isUsableAbsoluteApiBase(VOICE_API_URL)) {
       return;
@@ -479,19 +425,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   async function wakeApiBeforeAuth(): Promise<void> {
     await ensureReachableApiBase();
-    try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), API_WAKE_TIMEOUT_MS);
-      await workspaceFetch(`${VOICE_API_URL.replace(/\/+$/, '')}/auth/wake`, {
-        headers: { Accept: 'application/json' },
-        signal: controller.signal,
-      });
-      window.clearTimeout(timeout);
-    } catch {
-      /* edge wake is best-effort */
-    }
     for (let attempt = 0; attempt < API_WAKE_ATTEMPTS; attempt += 1) {
-      if (await isApiReadyForAuth(VOICE_API_URL)) {
+      if (await isApiBaseHealthy(VOICE_API_URL)) {
         return;
       }
       if (attempt < API_WAKE_ATTEMPTS - 1) {
@@ -1085,7 +1020,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 
   // Show dashboard
   function showDashboard(user: any): void {
-    workspaceSessionUser = user;
     ensureWorkspaceExtensions();
 
     if (import.meta.env.MODE === 'development') {
@@ -1163,92 +1097,9 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     document.querySelectorAll<HTMLElement>('[data-min-role]').forEach((el) => {
       const minRole = el.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin';
       const allowed = hasWorkspaceCapability(user, minRole);
-      if (el.id === 'workspace-mode-switcher') {
-        el.hidden = !allowed;
-      } else {
-        el.style.display = allowed ? '' : 'none';
-      }
+      el.style.display = allowed ? '' : 'none';
       el.setAttribute('aria-hidden', allowed ? 'false' : 'true');
     });
-    document.querySelectorAll<HTMLElement>('[data-require-role="super-admin"]').forEach((el) => {
-      const isSuper = user?.role === 'super-admin';
-      el.style.display = isSuper ? '' : 'none';
-      el.setAttribute('aria-hidden', isSuper ? 'false' : 'true');
-    });
-    initWorkspaceModeSwitcher(user);
-  }
-
-  function getWorkspaceNavMode(): WorkspaceNavMode {
-    const stored = localStorage.getItem(WORKSPACE_MODE_STORAGE_KEY);
-    return stored === 'admin' ? 'admin' : 'creator';
-  }
-
-  function panelNavMode(panelName: string): WorkspaceNavMode {
-    return ADMIN_PANELS.has(panelName) ? 'admin' : 'creator';
-  }
-
-  function setWorkspaceNavMode(mode: WorkspaceNavMode, navigate = true): void {
-    localStorage.setItem(WORKSPACE_MODE_STORAGE_KEY, mode);
-    const tracks = document.getElementById('sidebar-nav-tracks');
-    if (tracks) {
-      tracks.dataset.workspaceMode = mode;
-    }
-    const subtitle = document.getElementById('sidebar-mode-subtitle');
-    if (subtitle) {
-      subtitle.textContent =
-        mode === 'admin' ? accountWorkspace.adminModeDescription : accountWorkspace.creatorModeDescription;
-    }
-    document.querySelectorAll<HTMLElement>('.workspace-mode-btn').forEach((btn) => {
-      const active = btn.dataset.workspaceMode === mode;
-      btn.classList.toggle('is-active', active);
-      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-    if (navigate) {
-      navigateToPanel(workspaceModeDefaultPanel[mode]);
-    }
-  }
-
-  function initWorkspaceModeSwitcher(user: { role?: string }): void {
-    if (!hasWorkspaceCapability(user, 'admin')) return;
-    const switcher = document.getElementById('workspace-mode-switcher');
-    if (switcher) {
-      switcher.hidden = false;
-      switcher.setAttribute('aria-hidden', 'false');
-    }
-    setWorkspaceNavMode(getWorkspaceNavMode(), false);
-    if (switcher?.dataset.bound === '1') return;
-    if (switcher) switcher.dataset.bound = '1';
-    const bindMode = (mode: WorkspaceNavMode) => () => setWorkspaceNavMode(mode);
-    document.getElementById('workspace-mode-creator')?.addEventListener('click', bindMode('creator'));
-    document.getElementById('workspace-mode-admin')?.addEventListener('click', bindMode('admin'));
-    document.getElementById('header-workspace-mode-creator')?.addEventListener('click', bindMode('creator'));
-    document.getElementById('header-workspace-mode-admin')?.addEventListener('click', bindMode('admin'));
-    const headerSwitcher = document.getElementById('header-workspace-mode-switcher');
-    if (headerSwitcher) {
-      headerSwitcher.hidden = false;
-      headerSwitcher.setAttribute('aria-hidden', 'false');
-    }
-  }
-
-  function ensureNavModeForPanel(panelName: string): void {
-    const required = panelNavMode(panelName);
-    if (getWorkspaceNavMode() !== required && hasWorkspaceCapability(workspaceSessionUser ?? { role: 'client' }, 'admin')) {
-      localStorage.setItem(WORKSPACE_MODE_STORAGE_KEY, required);
-      const tracks = document.getElementById('sidebar-nav-tracks');
-      if (tracks) tracks.dataset.workspaceMode = required;
-      const subtitle = document.getElementById('sidebar-mode-subtitle');
-      if (subtitle) {
-        subtitle.textContent =
-          required === 'admin'
-            ? accountWorkspace.adminModeDescription
-            : accountWorkspace.creatorModeDescription;
-      }
-      document.querySelectorAll<HTMLElement>('.workspace-mode-btn').forEach((btn) => {
-        const active = btn.dataset.workspaceMode === required;
-        btn.classList.toggle('is-active', active);
-        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
-    }
   }
 
   // Navigate to panel with smooth transitions
@@ -1256,9 +1107,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Navigating to panel:', panelName);
     }
-
-    trackPortalPanel(panelName);
-    ensureNavModeForPanel(panelName);
     
     // Hide all panels with fade out
     document.querySelectorAll('.portal-panel').forEach((panel: Element) => {
@@ -1355,12 +1203,7 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     } else if (panelName === 'site-review') {
       window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
       window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
-    } else if (panelName === 'admin-users') {
-      void loadAdminUsersPanel();
-    } else if (panelName === 'admin-ops') {
-      void loadAdminOpsSummary();
     }
-    onVoicePanelShown(panelName);
   };
 
   // Sidebar toggle
@@ -4527,30 +4370,6 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
     }
   }
 
-  async function loadAdminOpsSummary(): Promise<void> {
-    const el = document.getElementById('admin-ops-usage-summary');
-    if (!el) return;
-    try {
-      const [usageRes, tokenRes] = await Promise.all([
-        workspaceFetch(`${VOICE_API_URL}/usage/me`),
-        workspaceFetch(`${VOICE_API_URL}/tokens/me`),
-      ]);
-      const usage = usageRes.ok ? await usageRes.json() : null;
-      const tokens = tokenRes.ok ? await tokenRes.json() : null;
-      const daily = usage?.daily;
-      const provider = usage?.provider ?? 'template';
-      const parts = [
-        daily
-          ? `AI today: ${daily.used}/${daily.cap} units (${daily.remaining} left) · provider: ${provider}`
-          : 'AI usage: unavailable',
-        tokens?.balance != null ? `Contribution tokens: ${tokens.balance}` : '',
-      ].filter(Boolean);
-      el.textContent = parts.join(' · ');
-    } catch {
-      el.textContent = 'Could not load usage summary.';
-    }
-  }
-
   async function loadAdminMeta(): Promise<void> {
     const container = document.getElementById('analytics-users-vectors');
     if (!container) return;
@@ -4565,146 +4384,11 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
       const vecTotal = vectorsData?.total ?? '—';
       const vecResource = vectorsData?.byKind?.resource ?? '—';
       const vecContrib = vectorsData?.byKind?.contribution ?? '—';
-      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Vectors (resource / contribution):</strong> ${vecResource} / ${vecContrib} (total ${vecTotal})</p><p class="form-hint"><button type="button" class="btn btn-secondary btn-sm admin-users-nav-link">Admin console → Users</button></p>`;
-      container.querySelector('.admin-users-nav-link')?.addEventListener('click', () => {
-        setWorkspaceNavMode('admin');
-        (window as any).navigateToPanel('admin-users');
-      });
+      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Vectors (resource / contribution):</strong> ${vecResource} / ${vecContrib} (total ${vecTotal})</p>`;
     } catch {
       container.innerHTML = '<p>Could not load users/vectors summary.</p>';
     }
   }
-
-  let adminUsersCache: any[] = [];
-
-  function formatAdminDate(iso: string | null | undefined): string {
-    if (!iso) return '—';
-    try {
-      return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-    } catch {
-      return iso;
-    }
-  }
-
-  function escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function renderAdminUsersTable(users: any[], filter = ''): void {
-    const tbody = document.getElementById('admin-users-tbody');
-    const summary = document.getElementById('admin-users-summary');
-    if (!tbody) return;
-    const q = filter.trim().toLowerCase();
-    const filtered = q
-      ? users.filter((u) =>
-          String(u.email ?? '').toLowerCase().includes(q) ||
-          String(u.role ?? '').toLowerCase().includes(q)
-        )
-      : users;
-    if (summary) {
-      summary.textContent = q
-        ? `${filtered.length} of ${users.length} users (filtered)`
-        : `${users.length} registered user${users.length === 1 ? '' : 's'}`;
-    }
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4">No users match this filter.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = filtered
-      .map((u) => {
-        const verified = u.emailVerified ? 'Yes' : 'No';
-        const verifiedClass = u.emailVerified ? 'admin-users-verified' : 'admin-users-unverified';
-        return `<tr>
-          <td>${escapeHtml(String(u.email ?? ''))}</td>
-          <td><span class="admin-users-role">${escapeHtml(String(u.role ?? ''))}</span></td>
-          <td><span class="${verifiedClass}">${verified}</span></td>
-          <td>${escapeHtml(formatAdminDate(u.createdAt))}</td>
-        </tr>`;
-      })
-      .join('');
-  }
-
-  function renderAdminAuthAudit(events: any[]): void {
-    const tbody = document.getElementById('admin-auth-audit-tbody');
-    if (!tbody) return;
-    if (!events.length) {
-      tbody.innerHTML = '<tr><td colspan="4">No auth events recorded yet.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = events
-      .map((e) => `<tr>
-        <td>${escapeHtml(formatAdminDate(e.createdAt))}</td>
-        <td><code>${escapeHtml(String(e.eventType ?? ''))}</code></td>
-        <td>${escapeHtml(String(e.email ?? '—'))}</td>
-        <td class="admin-users-id">${escapeHtml(String(e.userId ?? '—'))}</td>
-      </tr>`)
-      .join('');
-  }
-
-  function exportAdminUsersCsv(users: any[]): void {
-    const header = ['email', 'role', 'emailVerified', 'createdAt', 'id'];
-    const rows = users.map((u) =>
-      header.map((key) => {
-        const val = key === 'emailVerified' ? (u.emailVerified ? 'true' : 'false') : String(u[key] ?? '');
-        return `"${val.replace(/"/g, '""')}"`;
-      }).join(',')
-    );
-    const csv = [header.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `brisbane-servers-users-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function loadAdminUsersPanel(): Promise<void> {
-    const tbody = document.getElementById('admin-users-tbody');
-    const auditTbody = document.getElementById('admin-auth-audit-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
-    if (auditTbody) auditTbody.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
-    try {
-      const [usersRes, auditRes] = await Promise.all([
-        workspaceFetch(`${VOICE_API_URL}/admin/users`),
-        workspaceFetch(`${VOICE_API_URL}/admin/auth-audit?limit=100`),
-      ]);
-      if (!usersRes.ok) {
-        const err = usersRes.status === 403 ? 'Admin role required.' : `Could not load users (${usersRes.status}).`;
-        tbody.innerHTML = `<tr><td colspan="4">${escapeHtml(err)}</td></tr>`;
-        return;
-      }
-      const usersData = await usersRes.json();
-      adminUsersCache = Array.isArray(usersData.users) ? usersData.users : [];
-      const searchEl = document.getElementById('admin-users-search') as HTMLInputElement | null;
-      renderAdminUsersTable(adminUsersCache, searchEl?.value ?? '');
-
-      if (auditRes.ok) {
-        const auditData = await auditRes.json();
-        renderAdminAuthAudit(Array.isArray(auditData.events) ? auditData.events : []);
-      } else if (auditTbody) {
-        auditTbody.innerHTML = '<tr><td colspan="4">Could not load auth audit.</td></tr>';
-      }
-    } catch {
-      tbody.innerHTML = '<tr><td colspan="4">Failed to load users.</td></tr>';
-    }
-  }
-
-  document.getElementById('admin-users-search')?.addEventListener('input', (e) => {
-    const value = (e.target as HTMLInputElement).value;
-    renderAdminUsersTable(adminUsersCache, value);
-  });
-  document.getElementById('admin-users-refresh-btn')?.addEventListener('click', () => {
-    void loadAdminUsersPanel();
-  });
-  document.getElementById('admin-users-export-btn')?.addEventListener('click', () => {
-    if (adminUsersCache.length) exportAdminUsersCsv(adminUsersCache);
-  });
 
   // Update analytics display
   function updateAnalyticsDisplay(resources: any[]): void {

@@ -1463,15 +1463,21 @@ nav {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
+    /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
     overflow: hidden;
-    align-self: stretch;
-    justify-self: stretch;
-    width: 100%;
-    height: 100%;
+    align-self: start;
+    justify-self: end;
+    aspect-ratio: 4 / 3;
+    max-height: min(28rem, 48dvh);
+    max-width: min(100%, 34rem);
+    height: auto;
     padding-block: 0;
     padding-inline: var(--hero-visual-inner-pad-inline);
+    /*
+     * Radial mask caused a hard vertical seam beside copy + “cut” bands at zoom; blend is from section gradients.
+     */
     -webkit-mask-image: none;
     mask-image: none;
 }

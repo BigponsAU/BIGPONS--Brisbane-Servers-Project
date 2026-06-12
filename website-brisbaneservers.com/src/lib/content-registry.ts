@@ -34,24 +34,9 @@ const STATIC_MARKETING_PATHS = [
   '/case-studies',
 ] as const;
 
-function publishedWordCount(resource: Resource): number {
-  if (typeof resource.metadata?.wordCount === 'number') {
-    return resource.metadata.wordCount;
-  }
-  return (resource.content ?? '').split(/\s+/).filter(Boolean).length;
-}
-
-/**
- * Resources eligible for prerendered `/resources/item/{id}` pages and sitemap.
- * Starter corpus blocks are indexable when published with enough body text; hub
- * "featured" listings still use `isSubstantiveApiResource`.
- */
+/** Resources eligible for prerendered detail pages and sitemap inclusion. */
 export function isIndexableResource(resource: Resource): boolean {
-  if (!isPublicResource(resource)) return false;
-  if (resource.isStarterBlock === true || resource.visibility === 'starter') {
-    return publishedWordCount(resource) >= 200;
-  }
-  return isSubstantiveApiResource(resource);
+  return isPublicResource(resource) && isSubstantiveApiResource(resource);
 }
 
 export function getStaticMarketingPaths(): string[] {

@@ -13,7 +13,7 @@ export const CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
   "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.brisbaneservers.com https://*.cloudflare.com https://cloudflareinsights.com https://*.cloudflareinsights.com wss:",
+  "connect-src 'self' https://api.brisbaneservers.com https://brisbane-servers-api.onrender.com https://*.cloudflare.com https://cloudflareinsights.com https://*.cloudflareinsights.com wss:",
   "frame-src 'self' https://accounts.google.com https://challenges.cloudflare.com",
   'upgrade-insecure-requests',
 ].join('; ');

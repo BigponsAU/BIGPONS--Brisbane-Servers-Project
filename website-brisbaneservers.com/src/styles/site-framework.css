@@ -1221,7 +1221,6 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     minmax(min(100%, 12rem), 0.56fr);
   align-items: stretch;
   min-height: var(--hero-inner-min-height, var(--hero-min-height));
-  height: var(--hero-inner-min-height, var(--hero-min-height));
   gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
   justify-items: stretch;
 }
@@ -1335,14 +1334,16 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .hero-visual {
-  justify-self: stretch;
-  align-self: stretch;
+  justify-self: end;
+  align-self: start;
   width: 100%;
-  max-width: none;
+  max-width: min(100%, 34rem);
   margin-inline: 0;
   min-width: 0;
   position: relative;
-  height: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: min(28rem, 48dvh);
+  height: auto;
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -2351,8 +2352,6 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   .hero-inner,
   .home-proof-grid {
     grid-template-columns: 1fr;
-    height: auto;
-    min-height: var(--hero-inner-min-height, var(--hero-min-height));
     /* Do not set grid-template-rows here — global.css (768px) owns the stacked visual row rhythm */
   }
 
