@@ -1221,6 +1221,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     minmax(min(100%, 12rem), 0.56fr);
   align-items: stretch;
   min-height: max(var(--hero-inner-min-height, var(--hero-min-height)), min-content);
+  padding-top: calc(var(--site-header-clearance) + var(--space-sm));
   gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
   justify-items: stretch;
 }
@@ -1333,18 +1334,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   box-shadow: 0 0 0.8rem rgba(255, 255, 255, 0.3);
 }
 
+.main-home .hero-visual,
 .hero-visual {
   justify-self: end;
-  align-self: start;
+  align-self: stretch;
   width: 100%;
-  max-width: min(100%, 34rem);
+  max-width: min(100%, 38rem);
   margin-inline: 0;
   min-width: 0;
   position: relative;
   aspect-ratio: 4 / 3;
-  max-height: min(28rem, 48dvh);
+  max-height: min(30rem, 56dvh);
   height: auto;
-  min-height: 0;
+  min-height: clamp(16rem, 24vw, 30rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;

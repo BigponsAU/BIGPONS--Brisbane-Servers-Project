@@ -2,6 +2,7 @@
 // Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
 import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
+import { resolveInquiryScrollTarget } from '../lib/inquiry-nav';
 
 function isAccountUtilityPage(): boolean {
   return document.body?.dataset.pageId === 'account';
@@ -164,6 +165,15 @@ function scheduleAccountLinkHydration(): void {
 }
 
 function initializeInquireNavLinks(): void {
+    const scrollToInquiry = (sectionId: string, behavior: ScrollBehavior = 'smooth'): boolean => {
+        const scrollTarget = resolveInquiryScrollTarget(sectionId);
+        if (!scrollTarget) return false;
+        closeDesktopNavDropdowns();
+        closeMobileNav();
+        scrollTarget.scrollIntoView({ behavior, block: 'start' });
+        return true;
+    };
+
     document.querySelectorAll('[data-nav-inquire="true"]').forEach((node) => {
         node.addEventListener('click', (event) => {
             const link = event.currentTarget as HTMLAnchorElement;
@@ -172,27 +182,29 @@ function initializeInquireNavLinks(): void {
             if (hashIndex < 0) return;
 
             const hash = href.slice(hashIndex);
-            const target = document.querySelector(hash) as HTMLElement | null;
-            if (!target) return;
+            const sectionId = hash.slice(1);
+            if (!sectionId) return;
 
             const pathOnly = href.slice(0, hashIndex) || window.location.pathname;
             const onSamePage =
                 pathOnly === window.location.pathname ||
-                (pathOnly === '/' && (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')));
+                (pathOnly === '/' &&
+                    (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')));
 
             if (!onSamePage) return;
 
             event.preventDefault();
-            closeDesktopNavDropdowns();
-            closeMobileNav();
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!scrollToInquiry(sectionId)) return;
             window.history.pushState(null, '', hash);
-            const focusTarget = target.matches('form, input, textarea, select')
-                ? target
-                : (target.querySelector('input, textarea, select') as HTMLElement | null);
-            focusTarget?.focus({ preventScroll: true });
         });
     });
+
+    const initialHash = window.location.hash.slice(1);
+    if (initialHash && (initialHash === 'inquiry-section' || initialHash === 'consultation')) {
+        requestAnimationFrame(() => {
+            scrollToInquiry(initialHash, 'auto');
+        });
+    }
 }
 
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====

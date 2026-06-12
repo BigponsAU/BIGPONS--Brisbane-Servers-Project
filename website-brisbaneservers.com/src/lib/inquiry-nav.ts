@@ -1,4 +1,4 @@
-/** Map public routes to their on-page inquiry section / form anchor ids. */
+/** Map public routes to their on-page inquiry section anchor ids. */
 const INQUIRY_SECTION_BY_PATH: Record<string, string> = {
   '/services': 'consultation',
 };
@@ -10,18 +10,25 @@ export function inquirySectionId(pathname: string): string {
   return INQUIRY_SECTION_BY_PATH[normalized] ?? DEFAULT_INQUIRY_SECTION;
 }
 
-/** Hash target for the visible form card (not the page footer). */
-export function inquiryFormHash(pathname: string): string {
-  return `${inquirySectionId(pathname)}-form`;
-}
-
 export function inquiryNavHref(pathname: string, sitePath: (path: string) => string): string {
   if (pathname === '/account' || pathname.startsWith('/account/')) {
-    return sitePath(`/#${DEFAULT_INQUIRY_SECTION}-form`);
+    return sitePath(`/#${DEFAULT_INQUIRY_SECTION}`);
   }
 
   const normalized = pathname.replace(/\/$/, '') || '/';
-  const hash = inquiryFormHash(normalized);
+  const sectionId = inquirySectionId(normalized);
   const base = normalized === '/' ? '/' : normalized;
-  return sitePath(`${base}#${hash}`);
+  return sitePath(`${base}#${sectionId}`);
+}
+
+/** Prefer the form heading for scroll/focus — falls back to the section root. */
+export function resolveInquiryScrollTarget(sectionId: string): HTMLElement | null {
+  if (typeof document === 'undefined') return null;
+  const section = document.getElementById(sectionId);
+  if (!section) return null;
+  return (
+    (section.querySelector('.inquiry-form-title') as HTMLElement | null) ??
+    (section.querySelector('.inquiry-form') as HTMLElement | null) ??
+    section
+  );
 }
