@@ -238,6 +238,13 @@ header .nav-mega__link.active {
 .hero-visual,
 .main-home .hero-visual,
 .main-phi-chassis .hero-visual {
+  /* Fill the full right-column band (not a small top-right panel) */
+  aspect-ratio: unset !important;
+  max-height: none !important;
+  max-width: none !important;
+  align-self: stretch !important;
+  justify-self: stretch !important;
+  height: 100% !important;
   overflow: hidden !important;
   /*
    * Blend the constellation into the hero band:
@@ -281,6 +288,27 @@ header .nav-mega__link.active {
   mask-composite: intersect;
 }
 
+@supports not (mask-composite: intersect) {
+  .hero-visual,
+  .main-home .hero-visual,
+  .main-phi-chassis .hero-visual {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.5) 8%,
+      #000 18%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.5) 8%,
+      #000 18%,
+      #000 100%
+    );
+  }
+}
+
 .hero-visual .sierpinski-satellite {
   inset: clamp(0.6rem, 1.4vw, 1.15rem) !important;
   /* Slightly zoomed out inside the same frame — less visual noise, same boundary */
@@ -293,8 +321,11 @@ header .nav-mega__link.active {
   .hero-visual,
   .main-home .hero-visual,
   .main-phi-chassis .hero-visual {
-    justify-self: center;
-    max-width: min(100%, 44rem);
+    justify-self: center !important;
+    align-self: start !important;
+    height: auto !important;
+    max-width: min(100%, 44rem) !important;
+    min-height: clamp(14rem, 36dvh, 24rem) !important;
   }
 }
 
