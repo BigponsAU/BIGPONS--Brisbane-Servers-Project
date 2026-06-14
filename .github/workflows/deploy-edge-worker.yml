@@ -1,0 +1,40 @@
+name: Deploy edge worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website-brisbaneservers.com/workers/api/**'
+      - 'website-brisbaneservers.com/src/lib/oauth/**'
+      - 'website-brisbaneservers.com/src/utils/http-cookies.ts'
+      - 'website-brisbaneservers.com/standalone-api/**'
+      - 'website-brisbaneservers.com/src/pages/_api/**'
+      - '.github/workflows/deploy-edge-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: website-brisbaneservers.com/workers/api/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: website-brisbaneservers.com/workers/api
+        run: npm ci
+
+      - name: Deploy brisbane-servers-api-edge
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 92d738484386c6b613628bbeafebe2f9
+          workingDirectory: website-brisbaneservers.com/workers/api
+          command: deploy
