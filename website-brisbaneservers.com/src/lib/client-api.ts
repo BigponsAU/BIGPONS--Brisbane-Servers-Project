@@ -3,7 +3,7 @@
  * - Never store auth tokens in localStorage (XSS persistence risk).
  * - Prefer HttpOnly cookies when API is on *.brisbaneservers.com (same-site family).
  * - sessionStorage fallback only for cross-origin API hosts (e.g. Render) where HttpOnly cookies cannot be shared with the Pages origin.
- * - Invalid sessions cleared on failed /auth/me (see account-workspace-app).
+ * - Invalid sessions cleared on failed /auth/me (see account-auth).
  */
 
 let inMemorySessionToken: string | null = null;
@@ -125,7 +125,7 @@ export async function hasActiveSession(apiBaseUrl: string): Promise<boolean> {
   }
 }
 
-const PRODUCTION_API_FALLBACKS = [PRODUCTION_API_CUSTOM_DOMAIN, PRODUCTION_API_URL] as const;
+const PRODUCTION_API_FALLBACKS = [PRODUCTION_API_CUSTOM_DOMAIN] as const;
 
 /** Resolve API base for header nav + account page (matches workspace failover). */
 export function resolveNavApiBaseUrl(): string {

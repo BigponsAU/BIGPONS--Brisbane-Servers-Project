@@ -450,7 +450,8 @@ function checkBundledClientScripts(): VerificationResult {
 
     const jsAssets = readdirSync(assetsDir).filter((name) => name.endsWith('.js'));
     const hasMain = jsAssets.some((name) => name.includes('BaseLayout'));
-    const hasAccount = jsAssets.some((name) => name.includes('account-workspace-app'));
+    const hasAccount = jsAssets.some((name) => name.includes('account-auth') || name.includes('AccountWorkspacePage'));
+    const hasDashboard = jsAssets.some((name) => name.includes('account-workspace-app'));
 
     if (!hasMain) {
       return {
@@ -463,8 +464,8 @@ function checkBundledClientScripts(): VerificationResult {
     return {
       name: 'Bundled Client Scripts',
       passed: true,
-      message: hasAccount
-        ? `Client bundles present (${jsAssets.length} JS assets, including account workspace)`
+      message: hasAccount && hasDashboard
+        ? `Client bundles present (${jsAssets.length} JS assets; auth + lazy dashboard split)`
         : `Client bundles present (${jsAssets.length} JS assets)`,
     };
   } catch (error) {

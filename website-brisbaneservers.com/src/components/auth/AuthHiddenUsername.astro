@@ -1,0 +1,24 @@
+---
+/**
+ * Hidden username field for password-only forms (WCAG / Chrome autocomplete guidance).
+ * Pair with a visible email field in the same form when possible instead of using this alone.
+ */
+interface Props {
+  id?: string;
+  value?: string;
+}
+
+const { id, value = '' } = Astro.props;
+---
+
+<input
+  type="text"
+  id={id}
+  name="username"
+  autocomplete="username"
+  tabindex="-1"
+  aria-hidden="true"
+  class="sr-only"
+  value={value}
+  readonly
+/>

@@ -1,5 +1,12 @@
 ---
 /** Sign-in / register — no page-level hero; card titles are the only headings. */
+import { resolvePublicApiUrl } from '../../lib/api-config';
+import AuthHiddenUsername from '../auth/AuthHiddenUsername.astro';
+
+const publicApiBase = resolvePublicApiUrl('').replace(/\/+$/, '');
+const googleOAuthHref = `${publicApiBase}/auth/oauth/google/start`;
+/** Always render the control; API /auth/oauth/status can hide it in dev if unconfigured. */
+const showGoogleOAuth = true;
 ---
 
 <script is:inline data-cfasync="false">
@@ -24,6 +31,13 @@
       role="status"
       aria-live="polite"
     ></div>
+
+    <noscript>
+      <p class="auth-status-banner" role="alert">
+        Sign-in and account workspace require JavaScript. Enable JavaScript in your browser, or contact
+        support@brisbaneservers.com for help.
+      </p>
+    </noscript>
 
     <div class="login-grid">
       <div class="login-card">
@@ -82,19 +96,22 @@
         <div class="login-oauth-stack" id="login-oauth-stack">
           <p
             class="login-oauth-divider oauth-divider"
-            style="display: none; margin: var(--space-md) 0 var(--space-sm); text-align: center; color: var(--portal-text-tertiary); font-size: var(--text-sm);"
+            style={showGoogleOAuth ? 'margin: var(--space-md) 0 var(--space-sm); text-align: center; color: var(--portal-text-tertiary); font-size: var(--text-sm);' : 'display: none; margin: var(--space-md) 0 var(--space-sm); text-align: center; color: var(--portal-text-tertiary); font-size: var(--text-sm);'}
           >
             or
           </p>
           <a
             class="btn btn-secondary btn-block oauth-google-btn"
-            href="#"
-            style="display: none; text-align: center; text-decoration: none;"
+            href={googleOAuthHref}
+            style={showGoogleOAuth ? 'text-align: center; text-decoration: none;' : 'display: none; text-align: center; text-decoration: none;'}
             data-oauth-label="Continue with Google"
           >
             Continue with Google
           </a>
-          <p class="login-note login-oauth-note" style="display: none; margin-top: var(--space-sm);">
+          <p
+            class="login-note login-oauth-note"
+            style={showGoogleOAuth ? 'margin-top: var(--space-sm);' : 'display: none; margin-top: var(--space-sm);'}
+          >
             Google sign-in creates your account on first use — no separate sign-up step.
           </p>
         </div>
@@ -104,6 +121,7 @@
         <span id="login-submit-hint" class="sr-only">Submit your credentials to access your account workspace</span>
         <form id="reset-password-form" class="login-form auth-help-form" action="javascript:void(0)" aria-label="Reset password form" style="display: none;">
           <h3>Set a new password</h3>
+          <AuthHiddenUsername />
           <div class="form-group">
             <label for="reset-password">New password</label>
             <div class="password-input-wrap">

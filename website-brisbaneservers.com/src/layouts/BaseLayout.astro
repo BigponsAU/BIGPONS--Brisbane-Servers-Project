@@ -159,6 +159,7 @@ const skipFontAwesome = pageId === 'account';
               var toggle = stuckDropdowns[d].querySelector('.nav-dropdown-toggle');
               if (toggle) toggle.setAttribute('aria-expanded', 'false');
             }
+            var infoCard = document.getElementById('info-card');
             if (infoCard) {
               infoCard.classList.remove('active', 'railed');
               infoCard.setAttribute('aria-hidden', 'true');

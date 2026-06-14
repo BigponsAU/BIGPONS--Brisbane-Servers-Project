@@ -1,23 +1,61 @@
 /**
- * Loads the account workspace app in a separate chunk so sign-in HTML/CSS can paint first.
+ * Boots the lightweight auth chunk on /account (sign-in only).
+ * Dashboard panels load lazily after successful authentication.
  */
-import type { AccountWorkspaceBootConfig } from './account-workspace-app';
+import { bootAccountAuth, type AccountWorkspaceBootConfig } from './account-auth';
 
 export type { AccountWorkspaceBootConfig };
 
-let bootPromise: Promise<void> | null = null;
+let booted = false;
 
-function startBoot(config: AccountWorkspaceBootConfig): Promise<void> {
-  if (!bootPromise) {
-    bootPromise = import('./account-workspace-app.ts').then(({ bootAccountWorkspace }) => {
-      bootAccountWorkspace(config);
-    });
+function showBootFailure(message: string): void {
+  const banner = document.getElementById('auth-status-banner');
+  if (banner) {
+    banner.textContent = message;
+    banner.style.display = 'block';
+    banner.setAttribute('role', 'alert');
   }
-  return bootPromise;
+  const loginError = document.getElementById('login-error');
+  if (loginError) {
+    loginError.textContent = message;
+    loginError.classList.add('show');
+  }
+}
+
+function attachPreBootFormGuard(config: AccountWorkspaceBootConfig): void {
+  const loginForm = document.getElementById('login-form');
+  if (!loginForm || loginForm.dataset.preBootGuard === 'true') return;
+  loginForm.dataset.preBootGuard = 'true';
+
+  loginForm.addEventListener('submit', (event) => {
+    if ((window as Window & { __portalBridge?: unknown }).__portalBridge) return;
+    event.preventDefault();
+    showBootFailure(
+      'Sign-in is still loading. Wait a moment and try again. If this persists, refresh the page.',
+    );
+    try {
+      startBoot(config);
+    } catch {
+      /* startBoot surfaces its own message */
+    }
+  });
+}
+
+function startBoot(config: AccountWorkspaceBootConfig): void {
+  if (booted) return;
+  booted = true;
+  try {
+    bootAccountAuth(config);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    showBootFailure(`Could not start the account workspace (${detail}). Refresh and try again.`);
+    booted = false;
+  }
 }
 
 export function bootAccountPage(config: AccountWorkspaceBootConfig): void {
-  void startBoot(config);
+  attachPreBootFormGuard(config);
+  startBoot(config);
 }
 
 /** Reads boot config from `#admin-portal` dataset (account page markup). */
@@ -35,11 +73,5 @@ export function readAccountBootConfigFromDom(): AccountWorkspaceBootConfig {
 }
 
 export function bootAccountPageFromDom(): void {
-  const config = readAccountBootConfigFromDom();
-  const start = (): void => bootAccountPage(config);
-  if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(() => requestAnimationFrame(start));
-  } else {
-    setTimeout(start, 0);
-  }
+  bootAccountPage(readAccountBootConfigFromDom());
 }
