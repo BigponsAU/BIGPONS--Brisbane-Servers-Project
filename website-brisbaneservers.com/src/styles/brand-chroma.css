@@ -244,8 +244,8 @@ header .nav-mega__link.active {
   justify-self: stretch !important;
   height: 100% !important;
   min-height: 0 !important;
-  width: 100% !important;
-  margin-inline-end: 0 !important;
+  width: calc(100% + var(--hero-visual-bleed-end)) !important;
+  margin-inline-end: calc(-1 * var(--hero-visual-bleed-end)) !important;
   overflow: hidden !important;
   z-index: 4 !important;
   pointer-events: none;
@@ -256,7 +256,7 @@ header .nav-mega__link.active {
 .hero .hero-visual .sierpinski-satellite {
   inset: 0 !important;
   z-index: 1 !important;
-  transform: scale(var(--hero-satellite-scale));
+  transform: scale(var(--hero-satellite-scale)) translateX(var(--hero-satellite-translate-x));
   transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
   opacity: var(--hero-satellite-opacity);
   -webkit-mask-image: none !important;
@@ -264,7 +264,7 @@ header .nav-mega__link.active {
   overflow: visible !important;
 }
 
-/* Soft blend at visual column edges (overlay — avoids mask-composite on SVG) */
+/* Feather top/bottom/left seam into hero background (not mask-composite on SVG) */
 .hero .hero-visual::after {
   content: '';
   position: absolute;
@@ -272,8 +272,10 @@ header .nav-mega__link.active {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(to right, rgba(8, 12, 24, 0.42) 0%, transparent 18%),
-    linear-gradient(to left, transparent 62%, rgba(8, 12, 24, 0.18) 82%, transparent 100%);
+    linear-gradient(to right, rgba(8, 12, 24, 0.32) 0%, transparent 12%),
+    linear-gradient(to left, transparent 90%, rgba(8, 12, 24, 0.1) 97%, transparent 100%),
+    linear-gradient(to bottom, rgba(8, 12, 24, 0.22) 0%, transparent 9%),
+    linear-gradient(to top, rgba(8, 12, 24, 0.22) 0%, transparent 9%);
 }
 
 @media (max-width: 70rem) {

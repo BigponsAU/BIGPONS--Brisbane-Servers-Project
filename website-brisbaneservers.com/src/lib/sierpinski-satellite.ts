@@ -107,7 +107,7 @@ function nodeMarkup(node: SatelliteNode, iconClass: string, nodeIndex: number): 
   ].join('');
 }
 
-function computeViewBox(nodes: SatelliteNode[], padding = 54): string {
+function computeViewBox(nodes: SatelliteNode[], padding = 28): string {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
