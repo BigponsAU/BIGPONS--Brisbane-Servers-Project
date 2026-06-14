@@ -661,6 +661,25 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   forcePortalCleanup();
   const rt = initPortalRuntime(config);
 
+  const win = window as Window & {
+    __accountSessionToken?: string;
+    __accountInlineOAuth?: { user: unknown; token?: string | null };
+    __accountInlineLoggedIn?: { user: unknown; token?: string | null };
+  };
+  if (win.__accountSessionToken) {
+    applyLoginSession(win.__accountSessionToken);
+  }
+
+  const inlineSession = win.__accountInlineOAuth || win.__accountInlineLoggedIn;
+  const preAuthed = Boolean(inlineSession?.user);
+  if (preAuthed && inlineSession) {
+    if (inlineSession.token) {
+      applyLoginSession(inlineSession.token);
+    } else {
+      rt.sessionActive = true;
+    }
+  }
+
   if (window.location.pathname.replace(/\/+$/, '') === '/portal') {
     window.location.replace(rt.accountPath);
   }
@@ -676,7 +695,11 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   bindAuthForms();
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
-  showLogin();
+  if (preAuthed && inlineSession?.user) {
+    void showDashboard(inlineSession.user);
+  } else {
+    showLogin();
+  }
 
   if (isProductionSiteHost()) {
     const googleStartHref = `${rt.voiceApiUrl.replace(/\/+$/, '')}/auth/oauth/google/start`;
