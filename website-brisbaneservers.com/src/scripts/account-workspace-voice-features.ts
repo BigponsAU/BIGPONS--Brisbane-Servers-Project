@@ -1,6 +1,7 @@
 /**
  * Voice lab + voice map client handlers for /account panels.
  */
+import { workspaceFetch } from '../lib/client-api';
 
 type MapNode = {
   id: string;
@@ -29,19 +30,14 @@ function getApiBase(): string {
   return (bridge?.apiBaseUrl ?? '').replace(/\/+$/, '');
 }
 
-function getAuthToken(): string | null {
-  const bridge = (window as unknown as { __portalBridge?: { getAuthToken?: () => string | null } }).__portalBridge;
-  return bridge?.getAuthToken?.() ?? null;
-}
-
 async function workspaceJsonFetch(path: string, init?: RequestInit): Promise<Response> {
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...(init?.headers as Record<string, string> | undefined),
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  return fetch(`${getApiBase()}${path}`, { ...init, headers, credentials: 'include' });
+  return workspaceFetch(`${getApiBase()}${path}`, {
+    ...init,
+    headers: {
+      Accept: 'application/json',
+      ...(init?.headers as Record<string, string> | undefined),
+    },
+  });
 }
 
 function nodeColor(node: MapNode): string {

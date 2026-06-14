@@ -167,7 +167,8 @@ export async function completeGoogleOAuth(
       id: storedUser.id,
       email: storedUser.email,
       role: storedUser.role,
-      emailVerified: true
+      emailVerified: true,
+      workspaceEnabled: Boolean(storedUser.workspaceEnabled),
     };
     const token = crypto.randomBytes(32).toString('hex');
     await createSession(user, token);

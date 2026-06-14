@@ -4,57 +4,6 @@ import { industries } from '../../data/industries';
               <div id="resources-panel" class="portal-panel" role="main" aria-label="Resources management" style="display: none;">
                 <div class="admin-content">
 
-        <!-- Phi-Trailing Tartan Railing Information Card -->
-        <div id="info-card" class="info-card" role="dialog" aria-labelledby="info-card-title" aria-hidden="true">
-          <!-- Rail Guide (visible only when railed) -->
-          <div class="info-card-rail" id="info-card-rail">
-            <div class="rail-line rail-line-primary"></div>
-            <div class="rail-line rail-line-secondary"></div>
-            <div class="rail-line rail-line-tertiary"></div>
-            <div class="rail-indicator"></div>
-          </div>
-          
-          <!-- Tartan Overlay (covers content initially) -->
-          <div class="info-card-tartan-overlay" id="info-card-tartan-overlay"></div>
-          
-          <!-- Card Content -->
-          <div class="info-card-content">
-            <div class="info-card-header">
-              <h2 id="info-card-title">Information Guide</h2>
-              <button class="info-card-close" onclick="toggleInfoCard()" aria-label="Close information card">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            <div class="info-card-body">
-              <div class="info-section">
-                <h3>Resource Management</h3>
-                <p>Use the tree view to navigate resources by industry and topic. Click on any resource to view details in the workspace panel.</p>
-              </div>
-              <div class="info-section">
-                <h3>Voice Profiles</h3>
-                <p>Manage voice profiles for content generation. Archive unused profiles and analyze duplicates using the neural library tools.</p>
-              </div>
-              <div class="info-section">
-                <h3>Quick Actions</h3>
-                <p>Generate new resources, upload existing files, or refine content using the voice framework integration.</p>
-              </div>
-            </div>
-            <div class="info-card-footer">
-              <button class="btn btn-primary btn-sm" onclick="toggleInfoCard()">Got it</button>
-            </div>
-          </div>
-          
-          <!-- Phi Path Trailing Elements -->
-          <div class="info-card-trail">
-            <div class="trail-element trail-element-1"></div>
-            <div class="trail-element trail-element-2"></div>
-            <div class="trail-element trail-element-3"></div>
-          </div>
-        </div>
-
                   <!-- Resources Panel Content -->
           <section class="admin-section" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
             <div class="section-header">

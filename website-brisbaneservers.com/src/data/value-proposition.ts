@@ -153,7 +153,7 @@ export const valueProposition = {
         eyebrow: 'Next step',
         title: 'Get started',
         byline:
-          'Create an account to contribute from any topic page. Browsing stays open; sign in when you want to save work or track tokens.',
+          'Sign in once at your account page (Google or email), then contribute from any industry topic. Browsing stays open without an account.',
       },
     },
   },

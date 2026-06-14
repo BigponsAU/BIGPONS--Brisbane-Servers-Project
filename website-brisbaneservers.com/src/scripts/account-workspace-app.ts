@@ -17,6 +17,7 @@ import {
   tryGetPortalRuntime,
   applySessionToken,
   clearSessionToken,
+  handleWorkspaceSessionExpired,
   syncAccountPageTitle,
   setMessage,
   showAuthBanner,
@@ -112,11 +113,17 @@ export function bootAccountWorkspaceDashboard(): void {
     }
     document.getElementById('login-screen')!.style.display = 'none';
     const basicHome = document.getElementById('account-basic-home');
-    if (basicHome) basicHome.style.display = 'none';
+    if (basicHome) {
+      basicHome.style.display = 'none';
+      basicHome.classList.remove('is-visible');
+    }
+    const authBoot = document.getElementById('account-auth-boot');
+    if (authBoot) authBoot.hidden = true;
     const dashboardEl = document.getElementById('admin-dashboard');
     if (dashboardEl) {
       dashboardEl.style.display = 'block';
     }
+    document.body.classList.add('account-workspace-dashboard-active');
 
     const greeting = document.getElementById('workspace-greeting');
     if (greeting) {
@@ -199,18 +206,31 @@ export function bootAccountWorkspaceDashboard(): void {
   }
 
   // Navigate to panel with smooth transitions
+  let panelNavGeneration = 0;
+
   (window as any).navigateToPanel = function(panelName: string): void {
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Navigating to panel:', panelName);
     }
+
+    const targetPanel = document.getElementById(`${panelName}-panel`) as HTMLElement | null;
+    if (targetPanel?.classList.contains('active')) {
+      return;
+    }
+
+    const generation = ++panelNavGeneration;
     
     // Hide all panels with fade out
     document.querySelectorAll('.portal-panel').forEach((panel: Element) => {
       const panelEl = panel as HTMLElement;
+      if (panelEl === targetPanel) {
+        return;
+      }
       if (panelEl.classList.contains('active')) {
         panelEl.style.opacity = '0';
         panelEl.style.transform = 'translateY(10px)';
         setTimeout(() => {
+          if (generation !== panelNavGeneration) return;
           panelEl.classList.remove('active');
           panelEl.style.display = 'none';
           panelEl.style.opacity = '';
@@ -223,7 +243,7 @@ export function bootAccountWorkspaceDashboard(): void {
     });
 
     // Show selected panel with fade in
-    const panel = document.getElementById(`${panelName}-panel`);
+    const panel = targetPanel;
     if (panel) {
       const minRole = panel.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin' | undefined;
       if (minRole && workspaceUser && !hasWorkspaceCapability(workspaceUser, minRole)) {
@@ -240,6 +260,7 @@ export function bootAccountWorkspaceDashboard(): void {
       
       // Trigger animation
       setTimeout(() => {
+        if (generation !== panelNavGeneration) return;
         panel.classList.add('active');
         panel.style.opacity = '1';
         panel.style.transform = 'translateY(0)';
@@ -407,7 +428,7 @@ export function bootAccountWorkspaceDashboard(): void {
           return loadDashboardData(retryCount + 1);
         }
         if (sessionActive) {
-          setDashboardStatsError('Could not load workspace data right now. Try refreshing the page.');
+          await handleWorkspaceSessionExpired();
           return;
         }
         clearSessionToken();
@@ -525,8 +546,20 @@ export function bootAccountWorkspaceDashboard(): void {
         }
       });
 
+      if (response.status === 401) {
+        await handleWorkspaceSessionExpired();
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to load starter blocks');
+        let errorMessage = 'Failed to load starter blocks';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -623,9 +656,10 @@ export function bootAccountWorkspaceDashboard(): void {
 
     } catch (error) {
       console.error('[Portal] Error loading starter blocks:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       grid.innerHTML = `
         <div class="starter-blocks-loading" style="color: var(--portal-error);">
-          <p>Error loading starter blocks</p>
+          <p>Error loading starter blocks${message ? `: ${escapeHtml(message)}` : ''}</p>
           <button class="btn btn-secondary btn-sm" onclick="loadStarterBlocks()" style="margin-top: var(--space-md);">Retry</button>
         </div>
       `;
@@ -965,6 +999,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
       console.log('[Portal] Response status:', response.status, response.statusText);
 
+      if (response.status === 401) {
+        await handleWorkspaceSessionExpired();
+        return;
+      }
+
       if (!response.ok) {
         let errorMessage = `Failed to load resources (${response.status})`;
         try {
@@ -975,8 +1014,8 @@ export function bootAccountWorkspaceDashboard(): void {
           const text = await response.text();
           console.error('[Portal] Response text:', text);
         }
-        
-        listDiv.innerHTML = `
+
+        const errorHtml = `
           <div class="loading-message" style="color: var(--error-color, #dc3545);">
             <p><strong>Error loading resources:</strong> ${escapeHtml(errorMessage)}</p>
             <p style="margin-top: var(--space-md); font-size: var(--text-sm);">
@@ -985,6 +1024,16 @@ export function bootAccountWorkspaceDashboard(): void {
             <button class="btn btn-secondary" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
           </div>
         `;
+        
+        if (listDiv) listDiv.innerHTML = errorHtml;
+        if (treeContainer) {
+          treeContainer.innerHTML = `
+            <div class="tree-loading" style="color: var(--error-color, #dc3545);">
+              <p><strong>Error loading tree:</strong> ${escapeHtml(errorMessage)}</p>
+              <button class="btn btn-secondary btn-sm" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+            </div>
+          `;
+        }
         return;
       }
 
@@ -4744,7 +4793,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
   // Toggle Information Card
   (window as any).toggleInfoCard = function() {
-    const card = document.getElementById('info-card');
+    const card = document.getElementById('info-card') as HTMLElement | null;
     if (!card) return;
     
     const isActive = card.classList.contains('active');
@@ -4754,16 +4803,20 @@ export function bootAccountWorkspaceDashboard(): void {
       card.classList.remove('active');
       card.classList.remove('railed');
       card.setAttribute('aria-hidden', 'true');
+      card.style.pointerEvents = 'none';
       // Ensure body is scrollable
       document.body.style.overflow = '';
     } else {
       // Open card
       card.classList.add('active');
       card.setAttribute('aria-hidden', 'false');
+      card.style.pointerEvents = 'all';
       
       // Add "railed" state after animation completes (when card reaches center)
       setTimeout(() => {
-        card.classList.add('railed');
+        if (card.classList.contains('active')) {
+          card.classList.add('railed');
+        }
       }, 800); // Match transition duration
     }
   };

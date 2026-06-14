@@ -27,6 +27,7 @@ import {
   isProductionSiteHost,
   publishPortalBridge,
   LOGIN_TIMEOUT_MS,
+  handleWorkspaceSessionExpired,
 } from './account-workspace-runtime';
 
 export type { AccountWorkspaceBootConfig };
@@ -216,12 +217,25 @@ function showResetPasswordForm(): void {
   showAuthBanner('Choose a new password for your account.');
 }
 
+function hideAuthBoot(): void {
+  const boot = document.getElementById('account-auth-boot');
+  if (boot) {
+    boot.hidden = true;
+    boot.setAttribute('aria-busy', 'false');
+  }
+}
+
 function showLogin(resetNav = true): void {
+  hideAuthBoot();
   const rt = getPortalRuntime();
+  document.body.classList.remove('account-workspace-dashboard-active');
   document.getElementById('login-screen')!.style.display = 'flex';
   document.getElementById('admin-dashboard')!.style.display = 'none';
   const basicHome = document.getElementById('account-basic-home');
-  if (basicHome) basicHome.style.display = 'none';
+  if (basicHome) {
+    basicHome.style.display = 'none';
+    basicHome.classList.remove('is-visible');
+  }
   prefillLoginEmail();
   updateRememberedSessionHint();
   resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
@@ -233,24 +247,74 @@ function showLogin(resetNav = true): void {
 }
 
 function showBasicAccountHome(user: { email?: string }): void {
+  hideAuthBoot();
   const rt = getPortalRuntime();
+  document.body.classList.remove('account-workspace-dashboard-active');
   document.getElementById('login-screen')!.style.display = 'none';
   document.getElementById('admin-dashboard')!.style.display = 'none';
   const basicHome = document.getElementById('account-basic-home');
-  if (basicHome) basicHome.style.display = 'block';
+  if (basicHome) {
+    basicHome.style.display = 'flex';
+    basicHome.classList.add('is-visible');
+  }
 
   const greeting = document.getElementById('account-basic-greeting');
-  const emailEl = document.getElementById('account-basic-email');
+  const emailInput = document.getElementById('account-basic-email-input') as HTMLInputElement | null;
   if (greeting) {
-    greeting.textContent = user?.email ? `Welcome, ${user.email}` : 'Welcome';
+    greeting.textContent = user?.email ? `Welcome, ${user.email}` : 'Welcome back';
   }
-  if (emailEl && user?.email) {
-    emailEl.textContent = user.email;
+  if (emailInput && user?.email) {
+    emailInput.value = user.email;
   }
+
+  const tokensEl = document.getElementById('account-basic-tokens') as HTMLInputElement | null;
+  const contribEl = document.getElementById('account-basic-contributions') as HTMLInputElement | null;
+  if (tokensEl) tokensEl.value = 'Loading…';
+  if (contribEl) contribEl.value = 'Loading…';
 
   rt.sessionActive = true;
   setAccountNavSignedIn(true);
   syncAccountPageTitle(true);
+  void loadBasicContributorSummary();
+}
+
+async function loadBasicContributorSummary(): Promise<void> {
+  const tokensEl = document.getElementById('account-basic-tokens') as HTMLInputElement | null;
+  const contribEl = document.getElementById('account-basic-contributions') as HTMLInputElement | null;
+  if (!tokensEl && !contribEl) return;
+
+  const rt = getPortalRuntime();
+  try {
+    const [tokensRes, contribRes] = await Promise.all([
+      workspaceFetch(`${rt.voiceApiUrl}/tokens/me`),
+      workspaceFetch(`${rt.voiceApiUrl}/community/my-contributions`),
+    ]);
+
+    let balance = '—';
+    if (tokensRes.ok) {
+      const tokenData = await tokensRes.json();
+      if (tokenData.success) balance = String(tokenData.balance ?? 0);
+    }
+
+    let contributionLine = 'No contributions submitted yet.';
+    if (contribRes.ok) {
+      const contribData = await contribRes.json();
+      const items = Array.isArray(contribData.contributions) ? contribData.contributions : [];
+      if (items.length) {
+        const pending = items.filter((c: { status?: string }) => c.status === 'pending').length;
+        contributionLine = `${items.length} submission${items.length === 1 ? '' : 's'}${pending ? ` (${pending} pending review)` : ''}`;
+      }
+    }
+
+    if (tokensEl) tokensEl.value = balance;
+    if (contribEl) contribEl.value = contributionLine;
+  } catch {
+    if (tokensEl) tokensEl.value = '—';
+    if (contribEl) {
+      contribEl.value =
+        'Could not load activity — you can still browse Resources and submit from any topic page.';
+    }
+  }
 }
 
 async function ensureDashboardLoaded(): Promise<void> {
@@ -702,6 +766,11 @@ function bindAuthForms(): void {
       const response = await workspaceFetch(`${rt.voiceApiUrl}/auth/revoke-all`, { method: 'POST' });
       const data = await response.json();
       if (!response.ok) {
+        if (response.status === 401) {
+          await handleWorkspaceSessionExpired('Your session expired before all sessions could be revoked. Please sign in again.');
+          if (statusEl) statusEl.textContent = '';
+          return;
+        }
         throw new Error(data.error || 'Unable to revoke sessions.');
       }
       if (statusEl) {
@@ -768,8 +837,6 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   const pendingOAuth = hasPendingOAuthReturn();
   if (preAuthed && inlineSession?.user) {
     void showDashboard(inlineSession.user);
-  } else if (!pendingOAuth) {
-    showLogin(false);
   }
 
   if (isProductionSiteHost()) {
@@ -813,6 +880,10 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
         authStatusBanner.style.display = 'none';
       }
       resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
+      const boot = document.getElementById('account-auth-boot');
+      if (boot && !boot.hidden && !rt.sessionActive && !hasInlineAuthed() && !hasPendingOAuthReturn()) {
+        showLogin(false);
+      }
     }
   })();
 }

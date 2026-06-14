@@ -2,9 +2,11 @@
 import MarketingPageBands from '../MarketingPageBands.astro';
 import AccountWorkspaceSidebar from './AccountWorkspaceSidebar.astro';
 import AccountWorkspaceHeader from './AccountWorkspaceHeader.astro';
+import AccountWorkspaceInfoCard from './AccountWorkspaceInfoCard.astro';
 ---
 
 <div id="admin-dashboard" class="admin-dashboard account-workspace-app" style="display: none;">
+  <AccountWorkspaceInfoCard />
   <div class="portal-layout">
     <AccountWorkspaceSidebar />
     <div class="portal-main">

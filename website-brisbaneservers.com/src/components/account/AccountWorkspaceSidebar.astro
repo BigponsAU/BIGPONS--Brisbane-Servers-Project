@@ -1,11 +1,32 @@
 ---
 import { accountWorkspace, workspaceNavItems } from '../../data/account-workspace';
+import { sitePath } from '../../lib/site-path';
+import logo from '../../logo.png';
+import SemanticText from '../SemanticText.astro';
 
 const creatorItems = workspaceNavItems.filter((item) => item.mode === 'creator');
 const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
 ---
 
 <aside id="portal-sidebar" class="portal-sidebar" role="navigation" aria-label="Account workspace navigation">
+  <div class="sidebar-site-brand">
+    <a href={sitePath('/')} class="sidebar-site-brand-link" aria-label="Brisbane Servers - Home">
+      <img
+        src={logo.src}
+        alt=""
+        width={logo.width}
+        height={logo.height}
+        class="sidebar-site-brand-logo"
+      />
+      <span class="sidebar-site-brand-text">
+        <SemanticText text="Brisbane Servers" semanticLevel="high" preserveCase />
+      </span>
+      <span class="sidebar-site-brand-tagline">
+        <SemanticText text="Access to truth in technology" semanticLevel="normal" />
+      </span>
+    </a>
+  </div>
+
   <div class="sidebar-header">
     <div class="sidebar-header-content">
       <h2 class="sidebar-logo">{accountWorkspace.productName}</h2>

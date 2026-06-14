@@ -104,15 +104,62 @@ export function clearPersistedSession(): void {
   }
 }
 
-export function workspaceFetch(input: string, init: RequestInit = {}): Promise<Response> {
+/** Drop cross-origin bearer leftovers when the API uses HttpOnly cookies on *.brisbaneservers.com. */
+export function clearStaleBearerForCookieAuth(apiBaseUrl: string): void {
+  if (!usesHttpOnlyCookieAuth(apiBaseUrl)) return;
+  clearPersistedSession();
+}
+
+/** Resolve `/api/...` or `https://api.example.com/api/...` to an API base for auth-mode checks. */
+export function resolveFetchApiBase(input: string): string {
+  try {
+    const base =
+      typeof window !== 'undefined' ? window.location.href : 'https://localhost/';
+    const url = new URL(input, base);
+    const apiIndex = url.pathname.indexOf('/api');
+    if (apiIndex >= 0) {
+      return `${url.origin}${url.pathname.slice(0, apiIndex + 4)}`.replace(/\/+$/, '');
+    }
+    return url.origin.replace(/\/+$/, '');
+  } catch {
+    return '';
+  }
+}
+
+function shouldAttachBearerToken(input: string, headers: Headers): boolean {
+  if (headers.has('Authorization')) return false;
+  if (!inMemorySessionToken) return false;
+  const apiBase = resolveFetchApiBase(input);
+  if (!apiBase) return true;
+  return usesSessionStorageAuth(apiBase);
+}
+
+function runWorkspaceFetch(input: string, init: RequestInit, attachBearer: boolean): Promise<Response> {
   const headers = new Headers(init.headers);
-  if (inMemorySessionToken && !headers.has('Authorization')) {
+  if (attachBearer && inMemorySessionToken) {
     headers.set('Authorization', `Bearer ${inMemorySessionToken}`);
   }
   return fetch(input, {
     ...init,
     credentials: 'include',
     headers,
+  });
+}
+
+export function workspaceFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  const attachBearer = shouldAttachBearerToken(input, headers);
+  return runWorkspaceFetch(input, init, attachBearer).then(async (response) => {
+    if (response.status !== 401 || !attachBearer || !inMemorySessionToken) {
+      return response;
+    }
+    const apiBase = resolveFetchApiBase(input);
+    if (!apiBase || !usesHttpOnlyCookieAuth(apiBase)) {
+      return response;
+    }
+    // Stale tab-scoped bearer was sent ahead of a valid HttpOnly cookie — retry cookie-only.
+    clearPersistedSession();
+    return runWorkspaceFetch(input, init, false);
   });
 }
 

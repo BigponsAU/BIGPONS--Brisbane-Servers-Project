@@ -1,22 +1,83 @@
 ---
 import { resolvePublicSitePath } from '../../lib/api-config';
+import ContributeHowItWorks from '../ContributeHowItWorks.astro';
 
+const resourcesPath = resolvePublicSitePath('/resources/');
 const contributePath = resolvePublicSitePath('/contribute/');
+const inquirePath = resolvePublicSitePath('/#inquiry-section');
 ---
 
-<div id="account-basic-home" class="account-basic-home" style="display: none;" aria-label="Your account">
-  <div class="container account-basic-home__inner">
-    <section class="account-basic-home__card">
-      <h1 id="account-basic-greeting" class="account-basic-home__title">Welcome</h1>
-      <p class="account-basic-home__lead">
-        You are signed in. Full workspace tools (resources, voice profiles, and content management) are enabled
-        by invitation — contact us if you need access.
-      </p>
-      <p id="account-basic-email" class="account-basic-home__email"></p>
-      <div class="account-basic-home__actions">
-        <a href={contributePath} class="btn btn-primary">Contribute to the library</a>
-        <button type="button" id="account-basic-logout-btn" class="btn btn-secondary">Sign out</button>
+<div
+  id="account-basic-home"
+  class="account-basic-home login-screen login-screen--classic"
+  style="display: none;"
+  aria-label="Your account"
+>
+  <div class="container login-container">
+    <div class="login-grid account-basic-home__grid">
+      <div class="login-card account-basic-home__card">
+        <h2 id="account-basic-greeting" class="login-card__title">Welcome back</h2>
+        <p class="login-subtitle">
+          You have a <strong>contributor account</strong>. Browse industry guides and submit field context on topic
+          pages — the community form unlocks automatically when you are signed in.
+        </p>
+        <p class="login-note account-basic-home__note">
+          Full workspace tools (resource editor, voice profiles) are enabled by invitation. Use
+          <strong>Request workspace access</strong> below if you need them.
+        </p>
+
+        <div class="login-form account-basic-home__session" aria-label="Your contributor session">
+          <div class="form-group">
+            <label for="account-basic-email-input">Signed in as</label>
+            <input
+              type="email"
+              id="account-basic-email-input"
+              class="account-basic-home__readonly"
+              readonly
+              tabindex="-1"
+              aria-readonly="true"
+            />
+          </div>
+
+          <div id="account-basic-summary" class="account-basic-summary" aria-live="polite">
+            <div class="form-group">
+              <label for="account-basic-tokens">Token balance</label>
+              <input
+                type="text"
+                id="account-basic-tokens"
+                class="account-basic-home__readonly"
+                readonly
+                value="Loading…"
+                tabindex="-1"
+                aria-readonly="true"
+              />
+            </div>
+            <div class="form-group">
+              <label for="account-basic-contributions">Your contributions</label>
+              <input
+                type="text"
+                id="account-basic-contributions"
+                class="account-basic-home__readonly"
+                readonly
+                value="Loading…"
+                tabindex="-1"
+                aria-readonly="true"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="login-form account-basic-home__actions" aria-label="Contributor actions">
+          <a href={resourcesPath} class="btn btn-primary btn-block">Browse resources to contribute</a>
+          <a href={contributePath} class="btn btn-secondary btn-block">About the programme</a>
+          <a href={inquirePath} class="btn btn-secondary btn-block">Request workspace access</a>
+          <button type="button" id="account-basic-logout-btn" class="btn btn-secondary btn-block">Sign out</button>
+        </div>
       </div>
-    </section>
+
+      <div class="login-card login-card--secondary account-basic-home__guide-card">
+        <ContributeHowItWorks variant="compact" />
+      </div>
+    </div>
   </div>
 </div>

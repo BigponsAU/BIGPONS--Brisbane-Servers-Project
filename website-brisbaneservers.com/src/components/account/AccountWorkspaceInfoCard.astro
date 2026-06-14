@@ -1,0 +1,52 @@
+<!-- Workspace info overlay — lives outside portal panels so it works from any view -->
+<div id="info-card" class="info-card" role="dialog" aria-labelledby="info-card-title" aria-hidden="true">
+  <div class="info-card-rail" id="info-card-rail">
+    <div class="rail-line rail-line-primary"></div>
+    <div class="rail-line rail-line-secondary"></div>
+    <div class="rail-line rail-line-tertiary"></div>
+    <div class="rail-indicator"></div>
+  </div>
+
+  <div class="info-card-tartan-overlay" id="info-card-tartan-overlay"></div>
+
+  <div class="info-card-content">
+    <div class="info-card-header">
+      <h2 id="info-card-title">Information Guide</h2>
+      <button class="info-card-close" onclick="toggleInfoCard()" aria-label="Close information card">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="info-card-body">
+      <div class="info-section">
+        <h3>Workspace modes</h3>
+        <p>
+          Use Workspace for resources, voice profiles, and analytics. Admins can switch to Admin console for
+          library growth, moderation, and user management.
+        </p>
+      </div>
+      <div class="info-section">
+        <h3>Resource management</h3>
+        <p>
+          Use the tree view to navigate resources by industry and topic. Click any resource to open it in the
+          workspace panel.
+        </p>
+      </div>
+      <div class="info-section">
+        <h3>Quick actions</h3>
+        <p>Generate new resources, upload files, or refine content using the voice framework integration.</p>
+      </div>
+    </div>
+    <div class="info-card-footer">
+      <button class="btn btn-primary btn-sm" onclick="toggleInfoCard()">Got it</button>
+    </div>
+  </div>
+
+  <div class="info-card-trail">
+    <div class="trail-element trail-element-1"></div>
+    <div class="trail-element trail-element-2"></div>
+    <div class="trail-element trail-element-3"></div>
+  </div>
+</div>

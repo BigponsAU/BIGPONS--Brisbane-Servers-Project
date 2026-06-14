@@ -1,0 +1,85 @@
+---
+import SiteLink from './SiteLink.astro';
+import { resolvePublicSitePath } from '../lib/api-config';
+
+interface Props {
+  /** `full` — contribute page; `compact` — account contributor home */
+  variant?: 'full' | 'compact';
+}
+
+const { variant = 'full' } = Astro.props;
+
+const resourcesPath = resolvePublicSitePath('/resources/');
+const accountPath = resolvePublicSitePath('/account/');
+const contributePath = resolvePublicSitePath('/contribute/');
+
+const steps = [
+  {
+    title: 'Sign in once',
+    body: `Use <a href="${accountPath}">your account page</a> (Google, email, or passkey). One sign-in covers every topic.`,
+  },
+  {
+    title: 'Open a guide',
+    body: `Go to <a href="${resourcesPath}">Resources</a>, pick an industry and topic.`,
+  },
+  {
+    title: 'Submit field context',
+    body: 'Scroll to <strong>Community perspectives</strong> on the guide and use the form — it unlocks automatically when you are signed in.',
+  },
+  {
+    title: 'Track progress',
+    body: `View token balance and submissions on <a href="${accountPath}">your account page</a>. No second login on <a href="${contributePath}">this programme page</a>.`,
+  },
+];
+---
+
+<div
+  class:list={['contribute-how-it-works', variant === 'compact' && 'contribute-how-it-works--compact']}
+  aria-labelledby={variant === 'compact' ? 'account-contribute-how-heading' : 'contribute-how-heading'}
+>
+  {variant === 'full' ? (
+    <h2 id="contribute-how-heading" class="contribute-how-it-works__title">How to contribute</h2>
+  ) : (
+    <h2 id="account-contribute-how-heading" class="contribute-how-it-works__title">How contribution works</h2>
+  )}
+
+  <ol class="contribute-how-it-works__steps">
+    {steps.map((step, index) => (
+      <li class="contribute-how-it-works__step">
+        <span class="contribute-how-it-works__step-num" aria-hidden="true">{index + 1}</span>
+        <div>
+          <h3 class="contribute-how-it-works__step-title">{step.title}</h3>
+          <p class="contribute-how-it-works__step-body" set:html={step.body} />
+        </div>
+      </li>
+    ))}
+  </ol>
+
+  {variant === 'full' && (
+    <aside class="contribute-how-it-works__purpose" aria-labelledby="contribute-page-purpose-heading">
+      <h3 id="contribute-page-purpose-heading" class="contribute-how-it-works__purpose-title">
+        What this page is for
+      </h3>
+      <p>
+        <strong>/contribute</strong> explains the community programme — why we review submissions, how tokens work,
+        and what readers see on topic pages. It is <em>not</em> where you paste your contribution; that always happens
+        on the relevant industry guide.
+      </p>
+      <p>
+        The sign-in forms below are only for people who discover the programme here first and do not yet have an
+        account. They create the same contributor account as{' '}
+        <SiteLink href={accountPath}>/account</SiteLink>. If you already signed in with Google or email, you will see a
+        confirmation instead of the forms — go straight to Resources and submit from any topic.
+      </p>
+      <p class="contribute-how-it-works__purpose-note">
+        Full workspace tools (resource editor, voice profiles, admin console) are separate and enabled by invitation.
+      </p>
+    </aside>
+  )}
+
+  {variant === 'compact' && (
+    <p class="contribute-how-it-works__compact-note">
+      Read more about the programme on <a href={contributePath}>Contribute</a> — you do not need to sign in again there.
+    </p>
+  )}
+</div>

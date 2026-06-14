@@ -3,9 +3,9 @@ import {
   workspaceFetch,
   clearLegacyAuthTokenStorage,
   getInMemorySessionToken,
-  setInMemorySessionToken,
   persistSessionToken,
   clearPersistedSession,
+  clearStaleBearerForCookieAuth,
   usesHttpOnlyCookieAuth,
   PRODUCTION_API_CUSTOM_DOMAIN,
   isUsableAbsoluteApiBase,
@@ -45,9 +45,11 @@ let portalRuntime: PortalRuntime | null = null;
 
 export function initPortalRuntime(config: AccountWorkspaceBootConfig): PortalRuntime {
   clearLegacyAuthTokenStorage();
+  const voiceApiUrl = (config.publicApiBaseUrl || '').replace(/\/+$/, '');
+  clearStaleBearerForCookieAuth(voiceApiUrl);
   portalRuntime = {
     config,
-    voiceApiUrl: (config.publicApiBaseUrl || '').replace(/\/+$/, ''),
+    voiceApiUrl,
     sessionActive: false,
     pendingResetToken: config.initialResetToken || null,
     accountPath: config.accountPath,
@@ -73,10 +75,8 @@ export function tryGetPortalRuntime(): PortalRuntime | null {
 export function applyLoginSession(token: string | null | undefined): void {
   const rt = getPortalRuntime();
   if (usesHttpOnlyCookieAuth(rt.voiceApiUrl)) {
-    // HttpOnly cookie is primary; keep tab-scoped bearer as fallback for credentialed fetch edge cases.
-    if (token?.trim()) {
-      setInMemorySessionToken(token.trim());
-    }
+    // HttpOnly cookie is authoritative — never send a stale bearer that overrides it server-side.
+    clearStaleBearerForCookieAuth(rt.voiceApiUrl);
     rt.sessionActive = true;
     return;
   }
@@ -99,7 +99,31 @@ export function applySessionToken(token: string | null | undefined): void {
 
 export function clearSessionToken(): void {
   clearPersistedSession();
-  getPortalRuntime().sessionActive = false;
+  const rt = tryGetPortalRuntime();
+  if (rt) rt.sessionActive = false;
+}
+
+export function hasWorkspaceSession(): boolean {
+  return Boolean(tryGetPortalRuntime()?.sessionActive);
+}
+
+/** Central handler when API rejects the session — avoids raw "Invalid or expired token" all over the UI. */
+export async function handleWorkspaceSessionExpired(message?: string): Promise<void> {
+  const rt = tryGetPortalRuntime();
+  clearPersistedSession();
+  if (rt) rt.sessionActive = false;
+
+  try {
+    if (rt?.voiceApiUrl && usesHttpOnlyCookieAuth(rt.voiceApiUrl)) {
+      await workspaceFetch(`${rt.voiceApiUrl}/auth/logout`, { method: 'POST' });
+    }
+  } catch {
+    /* best-effort */
+  }
+
+  const bridge = (window as Window & { __portalBridge?: Record<string, unknown> }).__portalBridge;
+  bridge?.showLogin?.();
+  showAuthBanner(message ?? 'Your session expired. Please sign in again.', 'warning');
 }
 
 export function syncAccountPageTitle(signedIn: boolean): void {
@@ -172,6 +196,7 @@ export function isProductionSiteHost(): boolean {
 export async function ensureReachableApiBase(options?: { fast?: boolean }): Promise<void> {
   const rt = getPortalRuntime();
   if (isUsableAbsoluteApiBase(rt.voiceApiUrl)) {
+    clearStaleBearerForCookieAuth(rt.voiceApiUrl);
     return;
   }
 
@@ -207,9 +232,11 @@ export async function ensureReachableApiBase(options?: { fast?: boolean }): Prom
 
   if (winner && rt.voiceApiUrl !== winner) {
     rt.voiceApiUrl = winner;
+    clearStaleBearerForCookieAuth(winner);
     syncPortalBridgeApiUrl();
   } else if (!winner && isProdSite && !/^https?:\/\//i.test(rt.voiceApiUrl)) {
     rt.voiceApiUrl = PRODUCTION_API_CUSTOM_DOMAIN;
+    clearStaleBearerForCookieAuth(rt.voiceApiUrl);
     syncPortalBridgeApiUrl();
   }
 }
@@ -232,7 +259,8 @@ export function syncPortalAccountContext(): void {
   const bridge = (window as Window & { __portalBridge?: Record<string, unknown> }).__portalBridge;
   (window as Window & { __portalAccountCtx?: Record<string, unknown> }).__portalAccountCtx = {
     apiBaseUrl: rt.voiceApiUrl,
-    getAuthToken: () => getInMemorySessionToken() ?? (rt.sessionActive ? 'session' : null),
+    getAuthToken: () => getInMemorySessionToken(),
+    hasWorkspaceSession: () => hasWorkspaceSession(),
     setAuthToken: (token: string | null) => {
       if (!token) {
         clearSessionToken();
@@ -262,7 +290,8 @@ export function publishPortalBridge(partial: Record<string, unknown>): void {
     ...existing,
     ...partial,
     apiBaseUrl: getPortalRuntime().voiceApiUrl,
-    getAuthToken: () => getInMemorySessionToken() ?? (getPortalRuntime().sessionActive ? 'session' : null),
+    getAuthToken: () => getInMemorySessionToken(),
+    hasWorkspaceSession: () => hasWorkspaceSession(),
     setAuthToken: (token: string | null) => {
       if (!token) {
         clearSessionToken();

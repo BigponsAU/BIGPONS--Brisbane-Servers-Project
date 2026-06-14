@@ -1,6 +1,7 @@
 /**
  * Account workspace — library growth panel (admin).
  */
+import { workspaceFetch } from '../lib/client-api';
 import type { PortalAccountContext } from './portal-account-extensions';
 
 function formatProposalKind(kind: string): string {
@@ -22,14 +23,15 @@ function setGrowthStatus(message: string, isError = false): void {
   el.style.color = isError ? 'var(--portal-error-dark, #991b1b)' : '';
 }
 
+function hasSession(ctx: PortalAccountContext): boolean {
+  return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
+}
+
 export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise<void> {
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
 
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`);
     const data = await res.json();
     if (!res.ok || !data.success) {
       setGrowthStatus(data.error || 'Could not load growth settings.', true);
@@ -166,10 +168,7 @@ async function renderGrowthProposals(
 
   let items = cached;
   if (!items.length) {
-    const token = ctx.getAuthToken();
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/growth-proposals?status=pending`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/growth-proposals?status=pending`);
     const data = await res.json();
     items = Array.isArray(data.proposals) ? data.proposals : [];
   }
@@ -210,16 +209,14 @@ async function actOnProposal(
   proposalId: string,
   action: 'approve' | 'reject'
 ): Promise<void> {
-  const token = ctx.getAuthToken();
-  if (!token) return;
+  if (!hasSession(ctx)) return;
   setGrowthStatus(action === 'approve' ? 'Generating resource…' : 'Rejecting…');
 
   try {
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/growth-proposals`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/growth-proposals`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ proposalId, action }),
     });
@@ -248,8 +245,7 @@ async function actOnProposal(
 
 export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   document.getElementById('growth-save-config')?.addEventListener('click', async () => {
-    const token = ctx.getAuthToken();
-    if (!token) return;
+    if (!hasSession(ctx)) return;
     const body = {
       enabled: (document.getElementById('growth-enabled') as HTMLInputElement)?.checked ?? false,
       intervalHours: Number((document.getElementById('growth-interval-hours') as HTMLInputElement)?.value ?? 168),
@@ -264,9 +260,9 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
         (document.getElementById('growth-max-units-cycle') as HTMLInputElement)?.value ?? 5
       ),
     };
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -275,12 +271,11 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-arm-schedule')?.addEventListener('click', async () => {
-    const token = ctx.getAuthToken();
-    if (!token) return;
+    if (!hasSession(ctx)) return;
     setGrowthStatus('Activating schedule…');
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'arm' }),
     });
     const data = await res.json();
@@ -294,12 +289,11 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-pause-schedule')?.addEventListener('click', async () => {
-    const token = ctx.getAuthToken();
-    if (!token) return;
+    if (!hasSession(ctx)) return;
     setGrowthStatus('Pausing schedule…');
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'pause' }),
     });
     const data = await res.json();
@@ -308,12 +302,10 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-run-cycle')?.addEventListener('click', async () => {
-    const token = ctx.getAuthToken();
-    if (!token) return;
+    if (!hasSession(ctx)) return;
     setGrowthStatus('Running growth cycle…');
-    const res = await fetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     if (!res.ok || !data.success) {

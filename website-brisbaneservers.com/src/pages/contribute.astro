@@ -9,12 +9,18 @@ import SectionIntro from '~/components/SectionIntro.astro';
 import SectionConstellationLayer from '~/components/SectionConstellationLayer.astro';
 import MarketingPageBands from '~/components/MarketingPageBands.astro';
 import SiteLink from '~/components/SiteLink.astro';
+import ContributeHowItWorks from '~/components/ContributeHowItWorks.astro';
+import ContributeGetStartedAuth from '~/components/ContributeGetStartedAuth.astro';
 import { valueProposition } from '~/data/value-proposition';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '~/lib/api-config';
+import '../styles/contribute-page.css';
+import '../styles/portal-dashboard.css';
 
 const currentPath = '/contribute';
 const publicApiBaseUrl = resolvePublicApiUrl('');
 const accountPath = resolvePublicSitePath('/account/');
+const resourcesPath = resolvePublicSitePath('/resources/');
+const googleOAuthHref = `${publicApiBaseUrl.replace(/\/+$/, '')}/auth/oauth/google/start`;
 const { sections } = valueProposition.contribute;
 ---
 
@@ -32,8 +38,8 @@ const { sections } = valueProposition.contribute;
     eyebrow="BIGPONS · Community programme"
     title="Contribute to industry resources"
     subtitle="Add field-tested context to our industry hubs. Submissions are reviewed, scored against our voice profile, and published with clear attribution to strengthen decision support across the ecosystem."
-    scrollTargetId="#contribute-get-started"
-    scrollLabel="Get started below"
+    scrollTargetId="#contribute-how-it-works"
+    scrollLabel="How to contribute"
   />
 
   <MarketingPageBands class="marketing-page-bands--constellation-spine">
@@ -128,110 +134,62 @@ const { sections } = valueProposition.contribute;
     </section>
 
     <section
+      id="contribute-how-it-works"
+      class="section section-tartan-accent section-home-band--primary-light"
+    >
+      <SectionConstellationLayer variant="partnership" semanticKey="contribute-how" tier="whisper" placement="top-left" />
+      <div class="container">
+        <ContributeHowItWorks variant="full" />
+      </div>
+    </section>
+
+    <section
       id="contribute-get-started"
-      class="section section-tartan-accent section-home-band--primary-light contribute-cta"
+      class="section section-tartan-accent section-home-band--surface contribute-cta account-workspace-shell contribute-auth-shell"
     >
       <SectionConstellationLayer variant="partnership" semanticKey="contribute-cta" tier="whisper" placement="bottom-right" />
       <div class="container">
         <SectionIntro
-          eyebrow={sections.getStarted.eyebrow}
-          title={sections.getStarted.title}
-          byline={sections.getStarted.byline}
+          eyebrow="New contributors"
+          title="Create your contributor account"
+          byline="Only needed if you do not already have an account. Same login as /account — after this, submit from topic guides under Resources, not on this page."
         />
-        <div class="auth-cards" style="margin-top: var(--space-2xl);">
-          <div class="auth-card">
-            <h3>Register</h3>
-            <form id="register-form" class="auth-form" method="post" action="#" aria-label="Create account form">
-              <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
-              <label
-                ><span>Password (min 8 characters)</span><input
-                  type="password"
-                  name="password"
-                  required
-                  minlength="8"
-                  autocomplete="new-password"
-                /></label
-              >
-              <button type="submit" class="btn btn-primary btn-block">Create account</button>
-              <p id="register-status" class="auth-status" aria-live="polite"></p>
-            </form>
-          </div>
-          <div class="auth-card">
-            <h3>Log in</h3>
-            <form id="login-form" class="auth-form" method="post" action="#" aria-label="Sign in form">
-              <label><span>Email</span><input type="email" name="email" required autocomplete="email" /></label>
-              <label><span>Password</span><input type="password" name="password" required autocomplete="current-password" /></label>
-              <button type="submit" class="btn btn-secondary btn-block">Log in</button>
-              <p id="login-status" class="auth-status" aria-live="polite"></p>
-            </form>
-          </div>
-        </div>
-        <p class="contribute-portal-link">
-          Already have an account? <a href={accountPath}>Open your account workspace</a>
-        </p>
+
+        <ContributeGetStartedAuth
+          accountPath={accountPath}
+          resourcesPath={resourcesPath}
+          googleOAuthHref={googleOAuthHref}
+        />
+        <div
+          id="contribute-boot"
+          hidden
+          data-api-base-url={publicApiBaseUrl}
+          data-account-path={accountPath}
+          data-resources-path={resourcesPath}
+          data-google-oauth-href={googleOAuthHref}
+        ></div>
       </div>
     </section>
   </MarketingPageBands>
 </SiteShell>
 
-<script define:vars={{ apiBaseUrl: publicApiBaseUrl, accountPath }}>
-  const registerForm = document.getElementById('register-form') as HTMLFormElement;
-  const loginForm = document.getElementById('login-form') as HTMLFormElement;
-  const registerStatus = document.getElementById('register-status');
-  const loginStatus = document.getElementById('login-status');
+<script>
+  import { bootContributePage } from '../scripts/contribute-page.ts';
 
-  function setStatus(el: HTMLElement | null, msg: string, isError = false) {
-    if (!el) return;
-    el.textContent = msg;
-    el.style.color = isError ? 'var(--error-color, #c00)' : 'var(--text-secondary)';
+  function bootContributeFromDom(): void {
+    const root = document.getElementById('contribute-boot');
+    const dataset = root?.dataset ?? {};
+    bootContributePage({
+      apiBaseUrl: (dataset.apiBaseUrl ?? '').replace(/\/+$/, ''),
+      accountPath: dataset.accountPath ?? '/account/',
+      resourcesPath: dataset.resourcesPath ?? '/resources/',
+      googleOAuthHref: dataset.googleOauthHref ?? '',
+    });
   }
 
-  registerForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(registerForm);
-    const email = fd.get('email') as string;
-    const password = fd.get('password') as string;
-    setStatus(registerStatus, 'Creating account…');
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setStatus(registerStatus, data.error || 'Registration failed', true);
-        return;
-      }
-      setStatus(registerStatus, 'Account created. Redirecting to workspace…');
-      window.location.href = accountPath;
-    } catch {
-      setStatus(registerStatus, 'Network error. Try again.', true);
-    }
-  });
-
-  loginForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(loginForm);
-    const email = fd.get('email') as string;
-    const password = fd.get('password') as string;
-    setStatus(loginStatus, 'Signing in…');
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setStatus(loginStatus, data.error || 'Login failed', true);
-        return;
-      }
-      setStatus(loginStatus, 'Signed in. Redirecting…');
-      window.location.href = accountPath;
-    } catch {
-      setStatus(loginStatus, 'Network error. Try again.', true);
-    }
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootContributeFromDom, { once: true });
+  } else {
+    bootContributeFromDom();
+  }
 </script>

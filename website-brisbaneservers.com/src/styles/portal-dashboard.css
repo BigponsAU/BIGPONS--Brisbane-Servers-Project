@@ -666,7 +666,7 @@ body[data-page-id='account'] {
     height: auto !important;
     transform: none !important;
     display: flex !important;
-    z-index: 20 !important;
+    z-index: 30 !important;
   }
 
   .site-shell--marketing.account-workspace-shell .portal-main {
@@ -795,45 +795,85 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   line-height: 1.5;
 }
 
-/* Signed-in clients without workspace access */
-.account-workspace-shell .account-basic-home {
-  width: 100%;
-  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter);
-}
-
-.account-workspace-shell .account-basic-home__inner {
-  max-width: var(--site-frame-wide);
-  margin-inline: auto;
-}
-
-.account-workspace-shell .account-basic-home__card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--site-panel-radius);
-  padding: var(--space-xl);
-  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
-}
-
-.account-workspace-shell .account-basic-home__title {
-  margin: 0 0 var(--space-sm);
-  font-size: var(--text-2xl);
-}
-
-.account-workspace-shell .account-basic-home__lead {
-  margin: 0 0 var(--space-md);
-  color: var(--text-secondary);
-  line-height: 1.55;
-}
-
-.account-workspace-shell .account-basic-home__email {
-  margin: 0 0 var(--space-lg);
-  font-weight: var(--font-weight-medium);
-}
-
-.account-workspace-shell .account-basic-home__actions {
+.account-workspace-shell .account-auth-boot {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter);
+  background:
+    radial-gradient(circle at 18% 22%, rgba(var(--portal-primary-rgb, 10, 116, 218), 0.07) 0%, transparent 48%),
+    linear-gradient(165deg, var(--portal-bg-accent, #eef4fc) 0%, var(--portal-surface, #f8f9fa) 100%);
+}
+
+.account-workspace-shell .account-auth-boot[hidden] {
+  display: none;
+}
+
+.account-workspace-shell .account-auth-boot__text {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Signed-in clients without workspace access — same login-screen / form rhythm as sign-in */
+.account-workspace-shell .account-basic-home.login-screen {
+  display: none;
+  flex-direction: column;
+}
+
+.account-workspace-shell .account-basic-home.login-screen.is-visible {
+  display: flex;
+}
+
+.account-workspace-shell .account-basic-home__grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: clamp(var(--space-lg), 3vw, var(--space-2xl));
+}
+
+.account-workspace-shell .account-basic-home__note {
+  margin: 0 0 var(--space-md);
+}
+
+.account-workspace-shell .account-basic-home__session,
+.account-workspace-shell .account-basic-home__actions {
+  margin-top: var(--space-lg);
+}
+
+.account-workspace-shell .account-basic-home__readonly {
+  cursor: default;
+  color: var(--text-primary);
+  background: var(--surface-subtle);
+}
+
+.account-workspace-shell .account-basic-home__readonly:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.account-workspace-shell .account-basic-summary .form-group {
+  margin: 0;
+}
+
+.account-workspace-shell .account-basic-home__guide-card .contribute-how-it-works--compact {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.account-workspace-shell .account-basic-home__guide-card .contribute-how-it-works--compact .contribute-how-it-works__title {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-md);
+}
+
+@media (min-width: 56rem) {
+  .account-workspace-shell .account-basic-home__grid {
+    grid-template-columns: minmax(0, 22rem) minmax(0, 22rem);
+    justify-content: center;
+    max-width: 48rem;
+    margin-inline: auto;
+  }
 }
 
 /* Workspace / Admin mode switcher — show one sidebar track at a time */
@@ -908,4 +948,60 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 
 .admin-users-search {
   min-width: min(100%, 14rem);
+}
+
+/* Signed-in workspace: site brand in sidebar, not overlapping the fixed header */
+.sidebar-site-brand {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-elevated);
+  flex-shrink: 0;
+}
+
+.sidebar-site-brand-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-site-brand-link:hover {
+  color: var(--text-primary);
+}
+
+.sidebar-site-brand-logo {
+  width: 2rem;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-site-brand-text {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.sidebar-site-brand-tagline {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+body[data-page-id='account'].account-workspace-dashboard-active header {
+  z-index: 10;
+}
+
+body[data-page-id='account'].account-workspace-dashboard-active header .nav-brand img,
+body[data-page-id='account'].account-workspace-dashboard-active header .nav-brand-text,
+body[data-page-id='account'].account-workspace-dashboard-active header .nav-tagline {
+  display: none;
+}
+
+body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
+  z-index: 30;
 }

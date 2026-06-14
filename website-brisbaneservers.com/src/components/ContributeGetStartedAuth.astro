@@ -1,0 +1,119 @@
+---
+import { resolvePublicSitePath } from '../lib/api-config';
+
+interface Props {
+  accountPath: string;
+  resourcesPath: string;
+  googleOAuthHref: string;
+}
+
+const { accountPath, resourcesPath, googleOAuthHref } = Astro.props;
+---
+
+<div id="contribute-auth-pending" class="contribute-auth-pending" aria-live="polite">
+  <p>Checking your session…</p>
+</div>
+
+<div id="contribute-auth-signed-in" class="contribute-auth-signed-in login-grid contribute-auth-grid" hidden>
+  <div class="login-card contribute-auth-signed-in__card">
+    <h2 class="login-card__title">You are signed in</h2>
+    <p class="login-subtitle contribute-auth-signed-in__lead">
+      Signed in as <strong id="contribute-signed-in-email"></strong>. You do not need to register or log in again on
+      this page.
+    </p>
+    <p class="login-note contribute-auth-signed-in__hint">
+      Open any industry guide under Resources, scroll to <em>Community perspectives</em>, and submit there. Return to
+      <a href={accountPath}>your account</a> to see tokens and submission history.
+    </p>
+    <div class="login-form contribute-auth-signed-in__actions">
+      <a id="contribute-go-resources" href={resourcesPath} class="btn btn-primary btn-block">Browse resources to contribute</a>
+      <a id="contribute-go-account" href={accountPath} class="btn btn-secondary btn-block">Your account</a>
+    </div>
+  </div>
+</div>
+
+<div id="contribute-auth-signed-out" hidden>
+  <p class="contribute-auth-purpose">
+    For visitors who discover the programme here before creating an account. Google and email sign-in use the same
+    session as <a href={accountPath}>/account</a> and topic pages.
+  </p>
+
+  <div class="login-grid contribute-auth-grid">
+    <div class="login-card login-card--secondary contribute-auth-google-card">
+      <h2 class="login-card__title">Continue with Google</h2>
+      <p class="login-subtitle">Fastest way to contribute — creates your account on first use.</p>
+      <a
+        id="contribute-google-oauth"
+        href={googleOAuthHref}
+        class="btn btn-primary btn-block oauth-google-btn"
+        data-oauth-label="Continue with Google"
+      >
+        Continue with Google
+      </a>
+    </div>
+
+    <div class="login-card">
+      <h2 class="login-card__title">Create account</h2>
+      <p class="login-subtitle">Email and password — same account as /account.</p>
+      <form id="register-form" class="login-form" method="post" action="#" aria-label="Create account form">
+        <div class="form-group">
+          <label for="contribute-register-email">Email</label>
+          <input
+            type="email"
+            id="contribute-register-email"
+            name="email"
+            required
+            autocomplete="email"
+          />
+        </div>
+        <div class="form-group">
+          <label for="contribute-register-password">Password (min 8 characters)</label>
+          <input
+            type="password"
+            id="contribute-register-password"
+            name="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        <p id="register-status" class="auth-status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="login-card">
+      <h2 class="login-card__title">Sign in</h2>
+      <p class="login-subtitle">Already registered? Sign in with email and password.</p>
+      <form id="login-form" class="login-form" method="post" action="#" aria-label="Sign in form">
+        <div class="form-group">
+          <label for="contribute-login-email">Email</label>
+          <input
+            type="email"
+            id="contribute-login-email"
+            name="email"
+            required
+            autocomplete="email"
+          />
+        </div>
+        <div class="form-group">
+          <label for="contribute-login-password">Password</label>
+          <input
+            type="password"
+            id="contribute-login-password"
+            name="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+        <p id="login-status" class="auth-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <p class="contribute-portal-link">
+  Prefer passkeys or the full account layout? Use <a href={accountPath}>/account</a> — same login, no need to register
+  again here.
+  </p>
+</div>

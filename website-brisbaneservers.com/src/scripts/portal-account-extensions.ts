@@ -7,6 +7,7 @@ import { workspaceFetch } from '../lib/client-api';
 export interface PortalAccountContext {
   apiBaseUrl: string;
   getAuthToken: () => string | null;
+  hasWorkspaceSession?: () => boolean;
   setAuthToken: (token: string | null) => void;
   showDashboard: (user: { email?: string; role?: string }) => void;
   showLogin: () => void;
@@ -24,7 +25,7 @@ function escapeHtml(value: string): string {
 }
 
 function hasSession(ctx: PortalAccountContext): boolean {
-  return Boolean(ctx.getAuthToken());
+  return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
 }
 
 export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promise<void> {
@@ -167,7 +168,7 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
       throw new Error(verifyData.error || 'Passkey sign-in failed');
     }
 
-    ctx.setAuthToken(verifyData.token || 'session');
+    ctx.setAuthToken(verifyData.token ?? null);
     ctx.showDashboard(verifyData.user);
   } catch (error) {
     if (errorDiv) {

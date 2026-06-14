@@ -54,6 +54,9 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     data-reset-token={initialResetToken}
   >
     <AccountSignIn />
+    <div id="account-auth-boot" class="account-auth-boot" aria-live="polite" aria-busy="true">
+      <p class="account-auth-boot__text">Checking your session…</p>
+    </div>
     <AccountBasicHome />
     <AccountWorkspaceShell>
       <AccountOverviewPanel />
