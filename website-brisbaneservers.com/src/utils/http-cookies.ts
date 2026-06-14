@@ -69,3 +69,55 @@ export function authTokenClearCookie(request: Request): string {
   if (secure || sameSite === 'None') parts.push('Secure');
   return parts.join('; ');
 }
+
+const OAUTH_STATE_COOKIE = 'oauth_state';
+const OAUTH_STATE_MAX_AGE = 600;
+
+/** Cookie-backed OAuth state (Workers have no shared in-memory store between requests). */
+export function oauthStateSetCookie(state: string, request: Request): string {
+  const secure = useSecureCookie(request);
+  const sameSite = authCookieSameSite(request);
+  const domain = authCookieDomain(request);
+  const parts = [
+    `${OAUTH_STATE_COOKIE}=${encodeURIComponent(state)}`,
+    'HttpOnly',
+    `SameSite=${sameSite}`,
+    'Path=/api/auth/oauth',
+    `Max-Age=${OAUTH_STATE_MAX_AGE}`,
+  ];
+  if (domain) parts.push(`Domain=${domain}`);
+  if (secure || sameSite === 'None') parts.push('Secure');
+  return parts.join('; ');
+}
+
+export function oauthStateClearCookie(request: Request): string {
+  const secure = useSecureCookie(request);
+  const sameSite = authCookieSameSite(request);
+  const domain = authCookieDomain(request);
+  const parts = [
+    `${OAUTH_STATE_COOKIE}=`,
+    'HttpOnly',
+    `SameSite=${sameSite}`,
+    'Path=/api/auth/oauth',
+    'Max-Age=0',
+  ];
+  if (domain) parts.push(`Domain=${domain}`);
+  if (secure || sameSite === 'None') parts.push('Secure');
+  return parts.join('; ');
+}
+
+export function readOAuthStateCookie(request: Request): string | null {
+  const cookieHeader = request.headers.get('cookie');
+  if (!cookieHeader) return null;
+  for (const part of cookieHeader.split(';')) {
+    const [key, ...rest] = part.trim().split('=');
+    if (key === OAUTH_STATE_COOKIE && rest.length) {
+      try {
+        return decodeURIComponent(rest.join('='));
+      } catch {
+        return rest.join('=');
+      }
+    }
+  }
+  return null;
+}

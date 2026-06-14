@@ -245,15 +245,11 @@ function consumeOAuthSessionFromHash(): void {
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   const token = hashParams.get('session');
   if (!token) return;
-  if (usesHttpOnlyCookieAuth(rt.voiceApiUrl)) {
-    window.history.replaceState({}, '', rt.accountPath + window.location.search);
-    return;
-  }
   applyLoginSession(token);
   window.history.replaceState({}, '', rt.accountPath + window.location.search);
 }
 
-function handleOAuthReturn(): void {
+async function handleOAuthReturn(): Promise<void> {
   const rt = getPortalRuntime();
   consumeOAuthSessionFromHash();
   const params = new URLSearchParams(window.location.search);
@@ -261,7 +257,8 @@ function handleOAuthReturn(): void {
   const oauthError = params.get('oauth_error');
   if (oauthSuccess) {
     window.history.replaceState({}, '', rt.accountPath);
-    void verifyToken().then(() => updateRememberedSessionHint());
+    await verifyToken();
+    updateRememberedSessionHint();
     return;
   }
   if (oauthError) {
@@ -329,6 +326,8 @@ async function verifyToken(): Promise<void> {
 
 async function checkAuth(): Promise<void> {
   const rt = getPortalRuntime();
+  if (rt.sessionActive) return;
+
   if (usesSessionStorageAuth(rt.voiceApiUrl)) {
     restorePersistedSessionToken(rt.voiceApiUrl);
   }
@@ -338,11 +337,13 @@ async function checkAuth(): Promise<void> {
     return;
   }
   const active = await hasActiveSession(rt.voiceApiUrl);
+  if (rt.sessionActive) return;
   if (active) {
     rt.sessionActive = true;
     await verifyToken();
     return;
   }
+  if (rt.sessionActive) return;
   rt.sessionActive = false;
   showLogin();
 }
@@ -669,7 +670,6 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   bindAuthForms();
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
-  showLogin();
 
   if (isProductionSiteHost()) {
     const googleStartHref = `${rt.voiceApiUrl.replace(/\/+$/, '')}/auth/oauth/google/start`;
@@ -680,18 +680,23 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
     const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
       await ensureReachableApiBase({ fast: true });
-      handleOAuthReturn();
+      await handleOAuthReturn();
       await handleVerificationToken();
       if (rt.pendingResetToken) {
         showResetPasswordForm();
       }
-      await Promise.all([checkAuth(), loadOAuthProviders()]);
+      if (!rt.sessionActive) {
+        await checkAuth();
+      }
+      await loadOAuthProviders();
       if (window.location.hash === '#create-account' && !rt.sessionActive) {
         document.getElementById('create-account-section')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         (document.getElementById('register-email') as HTMLInputElement | null)?.focus();
       }
     } catch {
-      showLogin();
+      if (!rt.sessionActive) {
+        showLogin();
+      }
       showAuthBanner('Could not reach the sign-in service. Try again in a moment.', 'warning');
     } finally {
       if (authStatusBanner && !authStatusBanner.textContent?.trim()) {

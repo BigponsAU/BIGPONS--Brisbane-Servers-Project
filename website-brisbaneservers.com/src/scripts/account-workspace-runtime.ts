@@ -3,6 +3,7 @@ import {
   workspaceFetch,
   clearLegacyAuthTokenStorage,
   getInMemorySessionToken,
+  setInMemorySessionToken,
   persistSessionToken,
   clearPersistedSession,
   usesHttpOnlyCookieAuth,
@@ -72,7 +73,10 @@ export function tryGetPortalRuntime(): PortalRuntime | null {
 export function applyLoginSession(token: string | null | undefined): void {
   const rt = getPortalRuntime();
   if (usesHttpOnlyCookieAuth(rt.voiceApiUrl)) {
-    persistSessionToken(null, rt.voiceApiUrl);
+    // HttpOnly cookie is primary; keep tab-scoped bearer as fallback for credentialed fetch edge cases.
+    if (token?.trim()) {
+      setInMemorySessionToken(token.trim());
+    }
     rt.sessionActive = true;
     return;
   }

@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { createSessionToken, type AuthUser } from '~/utils/auth';
+import { type AuthUser } from '~/utils/auth';
 import { createSession } from '~/lib/db/sessions';
 import { findUserByEmail, createUser, markUserEmailVerified, type StoredUser } from '~/lib/db/users';
 import { findOAuthIdentity, saveOAuthIdentity } from '~/lib/db/oauth-identities';
@@ -7,7 +7,7 @@ import { logAuthEvent } from '~/lib/auth-audit';
 import { getRuntimeEnv } from '~/utils/runtime-env';
 import { saveChallenge, consumeChallenge } from '~/lib/webauthn/challenges';
 import { resolvePublicSitePath } from '~/lib/api-config';
-import { authTokenSetCookie } from '~/utils/http-cookies';
+import { authTokenSetCookie, oauthStateSetCookie, oauthStateClearCookie, readOAuthStateCookie } from '~/utils/http-cookies';
 
 const SESSION_MAX_AGE = 24 * 60 * 60;
 
@@ -56,7 +56,13 @@ export function startGoogleOAuth(request: Request): Response {
     prompt: 'select_account'
   });
 
-  return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`, 302);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+      'Set-Cookie': oauthStateSetCookie(state, request),
+    },
+  });
 }
 
 interface GoogleTokenResponse {
@@ -143,8 +149,12 @@ export async function completeGoogleOAuth(
   code: string,
   state: string
 ): Promise<Response> {
+  const cookieState = readOAuthStateCookie(request);
   const stored = consumeChallenge(state);
-  if (!stored?.challenge || stored.challenge !== state) {
+  const stateValid =
+    (cookieState && cookieState === state) ||
+    (stored?.challenge && stored.challenge === state);
+  if (!stateValid) {
     return Response.redirect(`${getAccountReturnUrl()}?oauth_error=invalid_state`, 302);
   }
 
@@ -158,7 +168,7 @@ export async function completeGoogleOAuth(
       role: storedUser.role,
       emailVerified: true
     };
-    const token = createSessionToken(user);
+    const token = crypto.randomBytes(32).toString('hex');
     await createSession(user, token);
     await logAuthEvent({
       userId: user.id,
@@ -168,23 +178,12 @@ export async function completeGoogleOAuth(
 
     const returnUrl = new URL(getAccountReturnUrl());
     returnUrl.searchParams.set('oauth', 'success');
-    try {
-      const apiHost = new URL(request.url).hostname;
-      const isBrisbaneApi =
-        apiHost === 'brisbaneservers.com' || apiHost.endsWith('.brisbaneservers.com');
-      if (!isBrisbaneApi) {
-        returnUrl.hash = `session=${encodeURIComponent(token)}`;
-      }
-    } catch {
-      returnUrl.hash = `session=${encodeURIComponent(token)}`;
-    }
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: returnUrl.toString(),
-        'Set-Cookie': authTokenSetCookie(token, SESSION_MAX_AGE, request)
-      }
-    });
+    returnUrl.hash = `session=${encodeURIComponent(token)}`;
+    const headers = new Headers();
+    headers.set('Location', returnUrl.toString());
+    headers.append('Set-Cookie', authTokenSetCookie(token, SESSION_MAX_AGE, request));
+    headers.append('Set-Cookie', oauthStateClearCookie(request));
+    return new Response(null, { status: 302, headers });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'oauth_failed';
     await logAuthEvent({ eventType: 'auth.oauth.google.failed', eventMeta: { message } });
