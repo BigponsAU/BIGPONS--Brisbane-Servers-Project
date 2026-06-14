@@ -794,3 +794,118 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   color: var(--text-secondary);
   line-height: 1.5;
 }
+
+/* Signed-in clients without workspace access */
+.account-workspace-shell .account-basic-home {
+  width: 100%;
+  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter);
+}
+
+.account-workspace-shell .account-basic-home__inner {
+  max-width: var(--site-frame-wide);
+  margin-inline: auto;
+}
+
+.account-workspace-shell .account-basic-home__card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  padding: var(--space-xl);
+  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
+}
+
+.account-workspace-shell .account-basic-home__title {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-2xl);
+}
+
+.account-workspace-shell .account-basic-home__lead {
+  margin: 0 0 var(--space-md);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.account-workspace-shell .account-basic-home__email {
+  margin: 0 0 var(--space-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.account-workspace-shell .account-basic-home__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+/* Workspace / Admin mode switcher — show one sidebar track at a time */
+.workspace-mode-switcher,
+.header-workspace-mode-switcher {
+  display: inline-flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  border-radius: 999px;
+  background: rgba(var(--portal-primary-rgb, 10, 116, 218), 0.08);
+}
+
+.workspace-mode-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.workspace-mode-btn.is-active {
+  background: var(--surface-elevated);
+  border-color: var(--border);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(8, 27, 54, 0.08);
+}
+
+.workspace-mode-btn--compact {
+  padding: 0.25rem 0.65rem;
+  font-size: var(--text-xs);
+}
+
+.account-workspace-shell #workspace-mode-switcher {
+  margin: 0 var(--space-md) var(--space-md);
+}
+
+.sidebar-nav-tracks[data-workspace-mode='creator'] .sidebar-nav-track--admin,
+.sidebar-nav-tracks[data-workspace-mode='admin'] .sidebar-nav-track--creator {
+  display: none;
+}
+
+/* Admin console mode — slightly wider main column, less cramped panels */
+.account-workspace-root--admin-console .portal-layout {
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+}
+
+.account-workspace-root--admin-console .portal-panels .admin-content {
+  max-width: none;
+}
+
+.account-workspace-root--admin-console .admin-users-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-users-workspace-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.admin-users-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.admin-users-search {
+  min-width: min(100%, 14rem);
+}

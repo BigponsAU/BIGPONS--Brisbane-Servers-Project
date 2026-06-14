@@ -84,6 +84,9 @@ async function ensureSchema(pool: Pool): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_auth_tokens_token_hash ON auth_tokens(token_hash);
         CREATE INDEX IF NOT EXISTS idx_auth_audit_log_created_at ON auth_audit_log(created_at);
       `);
+      await pool.query(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS workspace_enabled BOOLEAN NOT NULL DEFAULT false
+      `).catch(() => undefined);
 
       const { rows } = await pool.query<{ count: string }>('SELECT COUNT(*)::text AS count FROM users');
       const n = Number(rows[0]?.count ?? 0);
@@ -176,8 +179,9 @@ export async function listUsersFromDb(): Promise<StoredUser[]> {
     created_at: string;
     email_verified_at: string | null;
     updated_at: string | null;
+    workspace_enabled: boolean | null;
   }>(
-    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at FROM users ORDER BY created_at ASC`
+    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled FROM users ORDER BY created_at ASC`
   );
   return rows.map((row) => ({
     id: row.id,
@@ -186,7 +190,8 @@ export async function listUsersFromDb(): Promise<StoredUser[]> {
     role: row.role as AuthRole,
     createdAt: row.created_at,
     emailVerifiedAt: row.email_verified_at,
-    updatedAt: row.updated_at ?? undefined
+    updatedAt: row.updated_at ?? undefined,
+    workspaceEnabled: Boolean(row.workspace_enabled),
   }));
 }
 
@@ -201,8 +206,9 @@ export async function findUserByEmailInDb(email: string): Promise<StoredUser | n
     created_at: string;
     email_verified_at: string | null;
     updated_at: string | null;
+    workspace_enabled: boolean | null;
   }>(
-    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
      FROM users WHERE email = $1 LIMIT 1`,
     [email.trim().toLowerCase()]
   );
@@ -215,7 +221,8 @@ export async function findUserByEmailInDb(email: string): Promise<StoredUser | n
     role: row.role as AuthRole,
     createdAt: row.created_at,
     emailVerifiedAt: row.email_verified_at,
-    updatedAt: row.updated_at ?? undefined
+    updatedAt: row.updated_at ?? undefined,
+    workspaceEnabled: Boolean(row.workspace_enabled),
   };
 }
 
@@ -230,8 +237,9 @@ export async function findUserByIdInDb(id: string): Promise<StoredUser | null> {
     created_at: string;
     email_verified_at: string | null;
     updated_at: string | null;
+    workspace_enabled: boolean | null;
   }>(
-    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    `SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
      FROM users WHERE id = $1 LIMIT 1`,
     [id]
   );
@@ -244,7 +252,8 @@ export async function findUserByIdInDb(id: string): Promise<StoredUser | null> {
     role: row.role as AuthRole,
     createdAt: row.created_at,
     emailVerifiedAt: row.email_verified_at,
-    updatedAt: row.updated_at ?? undefined
+    updatedAt: row.updated_at ?? undefined,
+    workspaceEnabled: Boolean(row.workspace_enabled),
   };
 }
 
@@ -293,6 +302,16 @@ export async function updateUserRoleInDb(userId: string, role: AuthRole): Promis
     role,
     new Date().toISOString(),
     userId
+  ]);
+}
+
+export async function updateUserWorkspaceEnabledInDb(userId: string, workspaceEnabled: boolean): Promise<void> {
+  const pool = await getPool();
+  await ensureSchema(pool);
+  await pool.query(`UPDATE users SET workspace_enabled = $1, updated_at = $2 WHERE id = $3`, [
+    workspaceEnabled,
+    new Date().toISOString(),
+    userId,
   ]);
 }
 

@@ -86,6 +86,7 @@ export async function handleLogin(request: Request, env: WorkerEnv): Promise<Res
         email: stored.email,
         role: stored.role,
         emailVerified: true,
+        workspaceEnabled: Boolean(stored.workspaceEnabled),
       };
       const token = createOpaqueToken();
       const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString();

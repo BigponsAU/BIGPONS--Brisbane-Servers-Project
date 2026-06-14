@@ -156,8 +156,8 @@ function setAccountLinkLabel(anchor: HTMLAnchorElement, label: string, ariaLabel
 }
 
 export function setAccountNavSignedIn(signedIn: boolean): void {
-  const label = signedIn ? 'Workspace' : 'Sign in';
-  const ariaLabel = signedIn ? 'Open your account workspace' : 'Sign in to your account';
+  const label = signedIn ? 'Account' : 'Sign in';
+  const ariaLabel = signedIn ? 'Open your account' : 'Sign in to your account';
   document.querySelectorAll('[data-account-link="true"]').forEach((link) => {
     setAccountLinkLabel(link as HTMLAnchorElement, label, ariaLabel);
     link.classList.toggle('nav-account-cta--signed-in', signedIn);

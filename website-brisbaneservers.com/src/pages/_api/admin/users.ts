@@ -21,7 +21,8 @@ export const GET: APIRoute = async ({ request }) => {
       email: u.email,
       role: u.role,
       createdAt: u.createdAt,
-      emailVerified: isUserEmailVerified(u)
+      emailVerified: isUserEmailVerified(u),
+      workspaceEnabled: Boolean(u.workspaceEnabled),
     }));
     return new Response(
       JSON.stringify({ users: safe, count: safe.length, success: true }),

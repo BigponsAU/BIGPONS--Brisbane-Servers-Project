@@ -17,6 +17,7 @@ export interface StoredUser {
   createdAt: string;
   emailVerifiedAt?: string | null;
   updatedAt?: string;
+  workspaceEnabled?: boolean;
 }
 
 export async function loadUsers(): Promise<StoredUser[]> {

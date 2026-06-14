@@ -104,6 +104,12 @@ async function initializeDb(): Promise<DatabaseInstance> {
     CREATE INDEX IF NOT EXISTS idx_auth_audit_log_created_at ON auth_audit_log(created_at);
   `);
 
+  try {
+    db.run('ALTER TABLE users ADD COLUMN workspace_enabled INTEGER NOT NULL DEFAULT 0');
+  } catch {
+    /* column exists */
+  }
+
   const countResult = db.exec('SELECT COUNT(*) AS count FROM users');
   const existingUsers = Number(countResult?.[0]?.values?.[0]?.[0] ?? 0);
   if (existingUsers === 0) {
@@ -183,25 +189,29 @@ async function getDb(): Promise<DatabaseInstance> {
   return dbPromise;
 }
 
+function mapStoredUserRow(row: Record<string, unknown>): StoredUser {
+  return {
+    id: String(row.id),
+    email: String(row.email),
+    passwordHash: String(row.password_hash),
+    role: String(row.role) as AuthRole,
+    createdAt: String(row.created_at),
+    emailVerifiedAt: row.email_verified_at ? String(row.email_verified_at) : null,
+    updatedAt: row.updated_at ? String(row.updated_at) : undefined,
+    workspaceEnabled: Number(row.workspace_enabled ?? 0) === 1,
+  };
+}
+
 export async function listUsersFromDb(): Promise<StoredUser[]> {
   const db = await getDb();
   const stmt = db.prepare(`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
     FROM users
     ORDER BY created_at ASC
   `);
   const users: StoredUser[] = [];
   while (stmt.step()) {
-    const row = stmt.getAsObject() as Record<string, unknown>;
-    users.push({
-      id: String(row.id),
-      email: String(row.email),
-      passwordHash: String(row.password_hash),
-      role: String(row.role) as AuthRole,
-      createdAt: String(row.created_at),
-      emailVerifiedAt: row.email_verified_at ? String(row.email_verified_at) : null,
-      updatedAt: row.updated_at ? String(row.updated_at) : undefined
-    });
+    users.push(mapStoredUserRow(stmt.getAsObject() as Record<string, unknown>));
   }
   stmt.free();
   return users;
@@ -210,23 +220,13 @@ export async function listUsersFromDb(): Promise<StoredUser[]> {
 export async function findUserByEmailInDb(email: string): Promise<StoredUser | null> {
   const db = await getDb();
   const stmt = db.prepare(`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
     FROM users
     WHERE email = ?
     LIMIT 1
   `);
   stmt.bind([email.trim().toLowerCase()]);
-  const user = stmt.step()
-    ? ({
-        id: String(stmt.getAsObject().id),
-        email: String(stmt.getAsObject().email),
-        passwordHash: String(stmt.getAsObject().password_hash),
-        role: String(stmt.getAsObject().role) as AuthRole,
-        createdAt: String(stmt.getAsObject().created_at),
-        emailVerifiedAt: stmt.getAsObject().email_verified_at ? String(stmt.getAsObject().email_verified_at) : null,
-        updatedAt: stmt.getAsObject().updated_at ? String(stmt.getAsObject().updated_at) : undefined
-      } as StoredUser)
-    : null;
+  const user = stmt.step() ? mapStoredUserRow(stmt.getAsObject() as Record<string, unknown>) : null;
   stmt.free();
   return user;
 }
@@ -234,23 +234,13 @@ export async function findUserByEmailInDb(email: string): Promise<StoredUser | n
 export async function findUserByIdInDb(id: string): Promise<StoredUser | null> {
   const db = await getDb();
   const stmt = db.prepare(`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
     FROM users
     WHERE id = ?
     LIMIT 1
   `);
   stmt.bind([id]);
-  const user = stmt.step()
-    ? ({
-        id: String(stmt.getAsObject().id),
-        email: String(stmt.getAsObject().email),
-        passwordHash: String(stmt.getAsObject().password_hash),
-        role: String(stmt.getAsObject().role) as AuthRole,
-        createdAt: String(stmt.getAsObject().created_at),
-        emailVerifiedAt: stmt.getAsObject().email_verified_at ? String(stmt.getAsObject().email_verified_at) : null,
-        updatedAt: stmt.getAsObject().updated_at ? String(stmt.getAsObject().updated_at) : undefined
-      } as StoredUser)
-    : null;
+  const user = stmt.step() ? mapStoredUserRow(stmt.getAsObject() as Record<string, unknown>) : null;
   stmt.free();
   return user;
 }
@@ -289,6 +279,16 @@ export async function updateUserRoleInDb(userId: string, role: AuthRole): Promis
     role,
     new Date().toISOString(),
     userId
+  ]);
+  persistDb(db);
+}
+
+export async function updateUserWorkspaceEnabledInDb(userId: string, workspaceEnabled: boolean): Promise<void> {
+  const db = await getDb();
+  db.run('UPDATE users SET workspace_enabled = ?, updated_at = ? WHERE id = ?', [
+    workspaceEnabled ? 1 : 0,
+    new Date().toISOString(),
+    userId,
   ]);
   persistDb(db);
 }

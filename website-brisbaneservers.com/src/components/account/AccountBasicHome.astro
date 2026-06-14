@@ -1,0 +1,22 @@
+---
+import { resolvePublicSitePath } from '../../lib/api-config';
+
+const contributePath = resolvePublicSitePath('/contribute/');
+---
+
+<div id="account-basic-home" class="account-basic-home" style="display: none;" aria-label="Your account">
+  <div class="container account-basic-home__inner">
+    <section class="account-basic-home__card">
+      <h1 id="account-basic-greeting" class="account-basic-home__title">Welcome</h1>
+      <p class="account-basic-home__lead">
+        You are signed in. Full workspace tools (resources, voice profiles, and content management) are enabled
+        by invitation — contact us if you need access.
+      </p>
+      <p id="account-basic-email" class="account-basic-home__email"></p>
+      <div class="account-basic-home__actions">
+        <a href={contributePath} class="btn btn-primary">Contribute to the library</a>
+        <button type="button" id="account-basic-logout-btn" class="btn btn-secondary">Sign out</button>
+      </div>
+    </section>
+  </div>
+</div>

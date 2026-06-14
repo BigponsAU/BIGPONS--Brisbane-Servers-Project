@@ -17,7 +17,11 @@ export async function handleMe(request: Request, env: WorkerEnv): Promise<Respon
 
   const stored = await withSql(env.HYPERDRIVE, (sql) => findUserById(sql, authResult.user.id)).catch(() => null);
   const user = stored
-    ? { ...authResult.user, emailVerified: isUserEmailVerified(stored) }
+    ? {
+        ...authResult.user,
+        emailVerified: isUserEmailVerified(stored),
+        workspaceEnabled: Boolean(stored.workspaceEnabled),
+      }
     : authResult.user;
 
   return json({ user, success: true, edge: true }, 200, cors);

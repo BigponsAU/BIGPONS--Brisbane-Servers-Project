@@ -66,6 +66,7 @@ const showGoogleOAuth = true;
                 data-password-toggle-target="password"
                 aria-label="Show password"
                 aria-pressed="false"
+                onclick="window.bsTogglePassword&&window.bsTogglePassword('password',this);return false;"
               >
                 Show
               </button>
@@ -127,6 +128,7 @@ const showGoogleOAuth = true;
                 data-password-toggle-target="reset-password"
                 aria-label="Show password"
                 aria-pressed="false"
+                onclick="window.bsTogglePassword&&window.bsTogglePassword('reset-password',this);return false;"
               >
                 Show
               </button>
@@ -176,6 +178,7 @@ const showGoogleOAuth = true;
                 data-password-toggle-target="register-password"
                 aria-label="Show password"
                 aria-pressed="false"
+                onclick="window.bsTogglePassword&&window.bsTogglePassword('register-password',this);return false;"
               >
                 Show
               </button>

@@ -1,6 +1,7 @@
 ---
 import SiteShell from '../../layouts/SiteShell.astro';
 import AccountSignIn from './AccountSignIn.astro';
+import AccountBasicHome from './AccountBasicHome.astro';
 import AccountWorkspaceShell from './AccountWorkspaceShell.astro';
 import AccountOverviewPanel from './AccountOverviewPanel.astro';
 import AccountResourcesPanel from './AccountResourcesPanel.astro';
@@ -9,6 +10,7 @@ import AccountAnalyticsPanel from './AccountAnalyticsPanel.astro';
 import AccountGrowthPanel from './AccountGrowthPanel.astro';
 import AccountModerationPanel from './AccountModerationPanel.astro';
 import AccountSiteReviewPanel from './AccountSiteReviewPanel.astro';
+import AccountAdminUsersPanel from './AccountAdminUsersPanel.astro';
 import AccountResourceModals from './AccountResourceModals.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '../../lib/api-config';
@@ -52,6 +54,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     data-reset-token={initialResetToken}
   >
     <AccountSignIn />
+    <AccountBasicHome />
     <AccountWorkspaceShell>
       <AccountOverviewPanel />
       <AccountResourcesPanel />
@@ -60,6 +63,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       <AccountGrowthPanel />
       <AccountModerationPanel />
       <AccountSiteReviewPanel />
+      <AccountAdminUsersPanel />
     </AccountWorkspaceShell>
     <AccountResourceModals />
     <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>

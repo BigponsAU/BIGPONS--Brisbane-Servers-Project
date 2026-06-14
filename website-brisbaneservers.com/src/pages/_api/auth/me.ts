@@ -24,7 +24,11 @@ export const GET: APIRoute = async ({ request }) => {
   
   const stored = await findUserById(authResult.user.id).catch(() => null);
   const user = stored
-    ? { ...authResult.user, emailVerified: isUserEmailVerified(stored) }
+    ? {
+        ...authResult.user,
+        emailVerified: isUserEmailVerified(stored),
+        workspaceEnabled: Boolean(stored.workspaceEnabled),
+      }
     : authResult.user;
 
   return new Response(

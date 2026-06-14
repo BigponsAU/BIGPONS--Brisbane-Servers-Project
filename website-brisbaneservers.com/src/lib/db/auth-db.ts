@@ -55,6 +55,13 @@ export async function updateUserRoleInDb(userId: string, role: AuthRole) {
   return (await import('./auth-sqlite')).updateUserRoleInDb(userId, role);
 }
 
+export async function updateUserWorkspaceEnabledInDb(userId: string, workspaceEnabled: boolean) {
+  if (requireAuthBackend() === 'postgres') {
+    return (await import('./auth-pg')).updateUserWorkspaceEnabledInDb(userId, workspaceEnabled);
+  }
+  return (await import('./auth-sqlite')).updateUserWorkspaceEnabledInDb(userId, workspaceEnabled);
+}
+
 export async function deleteUserInDb(userId: string) {
   if (requireAuthBackend() === 'postgres') return (await import('./auth-pg')).deleteUserInDb(userId);
   return (await import('./auth-sqlite')).deleteUserInDb(userId);

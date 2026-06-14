@@ -9,6 +9,7 @@ import {
   getInMemorySessionToken,
   setAccountNavSignedIn,
 } from '../lib/client-api';
+import { initWorkspaceModeSwitcher } from './account-workspace-mode';
 import { closeMobileNav } from './nav-mobile';
 import {
   type AccountWorkspaceBootConfig,
@@ -97,8 +98,12 @@ export function bootAccountWorkspaceDashboard(): void {
     bridge?.showLogin?.();
   }
 
+  let workspaceUser: { role?: string } | null = null;
+
   // Show dashboard
   function showDashboard(user: any): void {
+    workspaceUser = user;
+    (window as Window & { __workspaceSessionUser?: { role?: string } }).__workspaceSessionUser = user;
     syncRuntimeFromLocals();
     ensureWorkspaceExtensions();
 
@@ -106,6 +111,8 @@ export function bootAccountWorkspaceDashboard(): void {
       console.log('[Portal] Showing dashboard for user:', user);
     }
     document.getElementById('login-screen')!.style.display = 'none';
+    const basicHome = document.getElementById('account-basic-home');
+    if (basicHome) basicHome.style.display = 'none';
     const dashboardEl = document.getElementById('admin-dashboard');
     if (dashboardEl) {
       dashboardEl.style.display = 'block';
@@ -175,13 +182,20 @@ export function bootAccountWorkspaceDashboard(): void {
     return current >= roleRank[minRole];
   }
 
-  function applyRoleAccess(user: { role?: string; emailVerified?: boolean }): void {
+  function applyRoleAccess(user: { role?: string; emailVerified?: boolean; workspaceEnabled?: boolean }): void {
     document.querySelectorAll<HTMLElement>('[data-min-role]').forEach((el) => {
       const minRole = el.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin';
       const allowed = hasWorkspaceCapability(user, minRole);
-      el.style.display = allowed ? '' : 'none';
-      el.setAttribute('aria-hidden', allowed ? 'false' : 'true');
+      if (allowed) {
+        el.style.removeProperty('display');
+        el.removeAttribute('hidden');
+        el.setAttribute('aria-hidden', 'false');
+      } else {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
     });
+    initWorkspaceModeSwitcher(user);
   }
 
   // Navigate to panel with smooth transitions
@@ -211,6 +225,14 @@ export function bootAccountWorkspaceDashboard(): void {
     // Show selected panel with fade in
     const panel = document.getElementById(`${panelName}-panel`);
     if (panel) {
+      const minRole = panel.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin' | undefined;
+      if (minRole && workspaceUser && !hasWorkspaceCapability(workspaceUser, minRole)) {
+        if (import.meta.env.MODE === 'development') {
+          console.warn('[Portal] Access denied for panel:', panelName);
+        }
+        navigateToPanel('dashboard');
+        return;
+      }
       panel.style.display = 'block';
       panel.style.opacity = '0';
       panel.style.transform = 'translateY(10px)';
@@ -285,6 +307,8 @@ export function bootAccountWorkspaceDashboard(): void {
     } else if (panelName === 'site-review') {
       window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
       window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
+    } else if (panelName === 'admin-users') {
+      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(VOICE_API_URL));
     }
   };
 

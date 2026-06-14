@@ -5,6 +5,7 @@ export interface AuthUser {
   email: string;
   role: AuthRole;
   emailVerified?: boolean;
+  workspaceEnabled?: boolean;
 }
 
 export interface StoredUser {
@@ -15,6 +16,7 @@ export interface StoredUser {
   createdAt: string;
   emailVerifiedAt?: string | null;
   updatedAt?: string;
+  workspaceEnabled?: boolean;
 }
 
 export type AuthTokenType = 'email-verify' | 'password-reset';

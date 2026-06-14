@@ -94,7 +94,8 @@ export const POST: APIRoute = async ({ request }) => {
       id: stored.id,
       email: stored.email,
       role: stored.role,
-      emailVerified: true
+      emailVerified: true,
+      workspaceEnabled: Boolean(stored.workspaceEnabled),
     };
     const token = createSessionToken(user);
     await createSession(user, token);

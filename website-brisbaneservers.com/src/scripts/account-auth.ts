@@ -8,6 +8,7 @@ import {
   usesSessionStorageAuth,
   getInMemorySessionToken,
 } from '../lib/client-api';
+import { hasWorkspaceAccess } from '../lib/workspace-access';
 import { closeMobileNav } from './nav-mobile';
 import {
   type AccountWorkspaceBootConfig,
@@ -121,23 +122,32 @@ async function loadOAuthProviders(): Promise<void> {
 }
 
 function setupPasswordVisibilityToggles(): void {
+  const setState = (input: HTMLInputElement, toggle: HTMLButtonElement, show: boolean): void => {
+    input.type = show ? 'text' : 'password';
+    toggle.textContent = show ? 'Hide' : 'Show';
+    toggle.setAttribute('aria-label', `${show ? 'Hide' : 'Show'} password`);
+    toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+  };
+
+  (window as Window & { bsTogglePassword?: (inputId: string, btn: HTMLButtonElement) => void }).bsTogglePassword = (
+    inputId: string,
+    btn: HTMLButtonElement,
+  ): void => {
+    const input = document.getElementById(inputId) as HTMLInputElement | null;
+    if (!input) return;
+    setState(input, btn, input.type === 'password');
+    input.focus({ preventScroll: true });
+  };
+
   document.querySelectorAll<HTMLButtonElement>('[data-password-toggle-target]').forEach((toggle) => {
     const inputId = toggle.dataset.passwordToggleTarget;
     if (!inputId) return;
     const input = document.getElementById(inputId) as HTMLInputElement | null;
     if (!input) return;
 
-    const setState = (show: boolean): void => {
-      input.type = show ? 'text' : 'password';
-      toggle.textContent = show ? 'Hide' : 'Show';
-      toggle.setAttribute('aria-label', `${show ? 'Hide' : 'Show'} password`);
-      toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
-    };
-
-    setState(false);
+    setState(input, toggle, false);
     toggle.addEventListener('click', () => {
-      const shouldShow = input.type === 'password';
-      setState(shouldShow);
+      setState(input, toggle, input.type === 'password');
       input.focus({ preventScroll: true });
     });
   });
@@ -206,18 +216,41 @@ function showResetPasswordForm(): void {
   showAuthBanner('Choose a new password for your account.');
 }
 
-function showLogin(): void {
+function showLogin(resetNav = true): void {
   const rt = getPortalRuntime();
   document.getElementById('login-screen')!.style.display = 'flex';
   document.getElementById('admin-dashboard')!.style.display = 'none';
+  const basicHome = document.getElementById('account-basic-home');
+  if (basicHome) basicHome.style.display = 'none';
   prefillLoginEmail();
   updateRememberedSessionHint();
   resetLoginSubmitButton(document.getElementById('login-submit-btn') as HTMLButtonElement | null);
-  setAccountNavSignedIn(false);
+  if (resetNav) setAccountNavSignedIn(false);
   syncAccountPageTitle(false);
   if (rt.pendingResetToken) {
     showResetPasswordForm();
   }
+}
+
+function showBasicAccountHome(user: { email?: string }): void {
+  const rt = getPortalRuntime();
+  document.getElementById('login-screen')!.style.display = 'none';
+  document.getElementById('admin-dashboard')!.style.display = 'none';
+  const basicHome = document.getElementById('account-basic-home');
+  if (basicHome) basicHome.style.display = 'block';
+
+  const greeting = document.getElementById('account-basic-greeting');
+  const emailEl = document.getElementById('account-basic-email');
+  if (greeting) {
+    greeting.textContent = user?.email ? `Welcome, ${user.email}` : 'Welcome';
+  }
+  if (emailEl && user?.email) {
+    emailEl.textContent = user.email;
+  }
+
+  rt.sessionActive = true;
+  setAccountNavSignedIn(true);
+  syncAccountPageTitle(true);
 }
 
 async function ensureDashboardLoaded(): Promise<void> {
@@ -230,6 +263,11 @@ async function ensureDashboardLoaded(): Promise<void> {
 }
 
 async function showDashboard(user: unknown): Promise<void> {
+  const typed = user as { role?: string; workspaceEnabled?: boolean; email?: string };
+  if (!hasWorkspaceAccess(typed)) {
+    showBasicAccountHome(typed);
+    return;
+  }
   await ensureDashboardLoaded();
   const rt = getPortalRuntime();
   if (rt.showDashboardImpl) {
@@ -681,6 +719,7 @@ function bindAuthForms(): void {
 
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('sidebar-logout-btn')?.addEventListener('click', handleLogout);
+  document.getElementById('account-basic-logout-btn')?.addEventListener('click', handleLogout);
 
   (window as Window & { __accountAuthFormsBound?: boolean }).__accountAuthFormsBound = true;
 }
@@ -730,7 +769,7 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   if (preAuthed && inlineSession?.user) {
     void showDashboard(inlineSession.user);
   } else if (!pendingOAuth) {
-    showLogin();
+    showLogin(false);
   }
 
   if (isProductionSiteHost()) {

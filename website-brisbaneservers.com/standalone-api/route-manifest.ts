@@ -45,6 +45,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
 
   { path: '/api/analytics/suggestions', loadModule: () => import('../src/pages/_api/analytics/suggestions') },
   { path: '/api/admin/users', loadModule: () => import('../src/pages/_api/admin/users') },
+  { path: '/api/admin/users/:id', loadModule: () => import('../src/pages/_api/admin/users/[id]') },
   { path: '/api/admin/auth-audit', loadModule: () => import('../src/pages/_api/admin/auth-audit') },
   { path: '/api/admin/pipeline-config', loadModule: () => import('../src/pages/_api/admin/pipeline-config') },
   { path: '/api/admin/reindex-resource', loadModule: () => import('../src/pages/_api/admin/reindex-resource') },

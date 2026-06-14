@@ -80,6 +80,9 @@ async function ensureSchema(sql: Sql): Promise<void> {
       await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_auth_tokens_token_hash ON auth_tokens(token_hash)`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS workspace_enabled BOOLEAN NOT NULL DEFAULT false`.catch(
+        () => undefined,
+      );
     })();
   }
   await schemaReady;
@@ -88,7 +91,7 @@ async function ensureSchema(sql: Sql): Promise<void> {
 export async function findUserByEmail(sql: Sql, email: string): Promise<StoredUser | null> {
   await ensureSchema(sql);
   const rows = await sql`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
     FROM users WHERE email = ${email.trim().toLowerCase()} LIMIT 1
   `;
   const row = rows[0] as UserRow | undefined;
@@ -99,7 +102,7 @@ export async function findUserByEmail(sql: Sql, email: string): Promise<StoredUs
 export async function findUserById(sql: Sql, id: string): Promise<StoredUser | null> {
   await ensureSchema(sql);
   const rows = await sql`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
     FROM users WHERE id = ${id} LIMIT 1
   `;
   const row = rows[0] as UserRow | undefined;
@@ -268,6 +271,7 @@ type UserRow = {
   created_at: string;
   email_verified_at: string | null;
   updated_at: string | null;
+  workspace_enabled: boolean | null;
 };
 
 function mapUserRow(row: UserRow): StoredUser {
@@ -279,5 +283,14 @@ function mapUserRow(row: UserRow): StoredUser {
     createdAt: String(row.created_at),
     emailVerifiedAt: row.email_verified_at,
     updatedAt: row.updated_at ?? undefined,
+    workspaceEnabled: Boolean(row.workspace_enabled),
   };
+}
+
+export async function updateUserWorkspaceEnabled(sql: Sql, userId: string, workspaceEnabled: boolean): Promise<void> {
+  await ensureSchema(sql);
+  await sql`
+    UPDATE users SET workspace_enabled = ${workspaceEnabled}, updated_at = ${new Date().toISOString()}
+    WHERE id = ${userId}
+  `;
 }

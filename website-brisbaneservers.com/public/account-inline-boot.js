@@ -10,6 +10,19 @@
   if (window.__accountInlineBootLoaded) return;
   window.__accountInlineBootLoaded = true;
 
+  window.bsTogglePassword = function (inputId, btn) {
+    var input = document.getElementById(inputId);
+    if (!input || !btn) return;
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? 'Hide' : 'Show';
+    btn.setAttribute('aria-label', (show ? 'Hide' : 'Show') + ' password');
+    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+    try {
+      input.focus({ preventScroll: true });
+    } catch (e) {}
+  };
+
   var SESSION_KEY = 'bsAccountSession';
 
   function readApiBase() {
@@ -79,8 +92,8 @@
     }
     document.querySelectorAll('[data-account-link="true"]').forEach(function (link) {
       var semantic = link.querySelector('.semantic-text');
-      if (semantic) semantic.textContent = 'Workspace';
-      else link.textContent = 'Workspace';
+      if (semantic) semantic.textContent = 'Account';
+      else link.textContent = 'Account';
       link.classList.add('nav-account-cta--signed-in');
     });
   }

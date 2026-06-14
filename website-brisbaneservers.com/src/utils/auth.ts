@@ -31,6 +31,7 @@ export interface AuthUser {
   email: string;
   role: AuthRole;
   emailVerified?: boolean;
+  workspaceEnabled?: boolean;
 }
 
 // Simple in-memory session store (in production, use Redis or database)
