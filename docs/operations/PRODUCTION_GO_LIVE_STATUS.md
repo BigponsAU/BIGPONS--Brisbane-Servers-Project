@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-15 (account sign-in OAuth state + client race fix shipped)
+**Last synced:** 2026-06-15 (inline account auth boot — Rocket Loader workaround)
 
 ---
+
+## Recent changes (2026-06-15, late)
+
+- **Account inline auth boot** (`a3cef0a`): `/account/` sign-in, password toggles, and Google OAuth return (`#session=`) now run from a non-module inline script (`data-cfasync="false"`) before the Astro module bundle loads. Fixes dead UI when Cloudflare Rocket Loader prevents the account workspace module from booting. Module boot picks up `__accountInlineOAuth` / `__accountInlineLoggedIn` and opens the full dashboard when it loads.
+- **Ops note:** Consider disabling **Rocket Loader** zone-wide (Speed → Optimization) for `brisbaneservers.com` — module scripts already opt out via `data-cfasync="false"` but RL still injects in `<head>`.
 
 ## Recent changes (2026-06-15, evening)
 
