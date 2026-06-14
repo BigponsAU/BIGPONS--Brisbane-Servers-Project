@@ -1302,8 +1302,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   justify-content: flex-start;
 }
 
-.main-home .hero-visual,
-.main-home .hero-visual .sierpinski-satellite {
+.main-home .hero-visual .sierpinski-satellite,
+.main-phi-chassis .hero-visual .sierpinski-satellite {
   z-index: 1;
 }
 

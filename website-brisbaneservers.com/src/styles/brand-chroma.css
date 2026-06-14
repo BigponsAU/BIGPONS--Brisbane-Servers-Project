@@ -237,7 +237,6 @@ header .nav-mega__link.active {
 }
 
 .hero .hero-visual {
-  /* Bleed % resolves against this grid cell */
   --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   aspect-ratio: unset !important;
   max-height: none !important;
@@ -246,85 +245,26 @@ header .nav-mega__link.active {
   justify-self: stretch !important;
   height: 100% !important;
   min-height: 100% !important;
-  width: 100% !important;
-  margin-inline-end: 0 !important;
-  overflow: visible !important;
+  width: calc(100% + var(--hero-visual-bleed-end) + var(--site-frame-gutter, 0px)) !important;
+  margin-inline-end: calc(-1 * var(--hero-visual-bleed-end) - var(--site-frame-gutter, 0px)) !important;
+  overflow: hidden !important;
   z-index: 4 !important;
-  isolation: isolate;
   pointer-events: none;
-  /* No mask here — dual-gradient mask on the wide bleed box was hiding the SVG in Chrome */
+  /* Edge fade via hero side gradients in global.css — no CSS mask (Chrome was hiding the SVG) */
   -webkit-mask-image: none !important;
   mask-image: none !important;
 }
 
 .hero .hero-visual .sierpinski-satellite {
   inset: 0 !important;
-  right: calc(-1 * (var(--hero-visual-bleed-end) + var(--site-frame-gutter, 0px))) !important;
   z-index: 1 !important;
   transform: scale(var(--hero-satellite-scale));
   transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
   opacity: var(--hero-satellite-opacity);
-  overflow: hidden;
-  /*
-   * Edge feather on the satellite layer (not the grid cell) so the network stays visible.
-   */
-  -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.45) 7%,
-      #000 16%,
-      #000 82%,
-      rgba(0, 0, 0, 0.55) 92%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.4) 6%,
-      #000 14%,
-      #000 72%,
-      rgba(0, 0, 0, 0.48) 86%,
-      transparent 100%
-    );
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.45) 7%,
-      #000 16%,
-      #000 82%,
-      rgba(0, 0, 0, 0.55) 92%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.4) 6%,
-      #000 14%,
-      #000 72%,
-      rgba(0, 0, 0, 0.48) 86%,
-      transparent 100%
-    );
-  mask-composite: intersect;
-}
-
-@supports not (mask-composite: intersect) {
-  .hero .hero-visual .sierpinski-satellite {
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.5) 10%,
-      #000 20%,
-      #000 100%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.5) 10%,
-      #000 20%,
-      #000 100%
-    );
-  }
+  /* Never mask the SVG layer — Chrome hides the whole network with mask-composite on this node */
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  overflow: visible !important;
 }
 
 @media (max-width: 70rem) {
@@ -344,11 +284,7 @@ header .nav-mega__link.active {
     max-height: none !important;
     min-height: clamp(14rem, 36dvh, 24rem) !important;
     height: clamp(14rem, 36dvh, 24rem) !important;
-    overflow: visible !important;
-  }
-
-  .hero .hero-visual .sierpinski-satellite {
-    right: 0 !important;
+    overflow: hidden !important;
   }
 }
 

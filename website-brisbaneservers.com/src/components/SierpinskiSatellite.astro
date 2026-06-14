@@ -23,26 +23,20 @@ const { connections, nodes, viewBox } = buildSierpinskiSatelliteMarkup();
     box-sizing: border-box;
     width: 100%;
     height: 100%;
+    min-height: 100%;
     pointer-events: none;
-    z-index: 2;
+    z-index: 1;
     opacity: 0.88;
     mix-blend-mode: normal;
     overflow: visible;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+    display: block;
   }
 
   .satellite-svg {
     display: block;
-    flex: 1 1 auto;
     width: 100%;
-    min-width: 0;
-    min-height: 0;
     height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    min-height: 100%;
     overflow: visible;
   }
 
