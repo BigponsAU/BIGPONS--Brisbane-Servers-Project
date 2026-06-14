@@ -262,8 +262,14 @@ async function handleOAuthReturn(): Promise<void> {
     return;
   }
   if (oauthError) {
-    showAuthBanner(decodeURIComponent(oauthError), 'error');
+    const friendly =
+      oauthError.includes('path') && oauthError.includes('undefined')
+        ? 'Google sign-in failed on the server. Please try again in a moment or use email and password.'
+        : decodeURIComponent(oauthError);
+    showAuthBanner(friendly, 'error');
     window.history.replaceState({}, '', rt.accountPath);
+    showLogin();
+    return;
   }
 }
 
@@ -670,6 +676,7 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   bindAuthForms();
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
+  showLogin();
 
   if (isProductionSiteHost()) {
     const googleStartHref = `${rt.voiceApiUrl.replace(/\/+$/, '')}/auth/oauth/google/start`;

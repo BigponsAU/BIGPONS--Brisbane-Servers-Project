@@ -1,21 +1,11 @@
-import { Pool } from 'pg';
-import { getRuntimeEnv } from '~/utils/runtime-env';
 import type { OAuthProvider, StoredOAuthIdentity } from './oauth-identities';
+import { getSharedPool } from './pg-pool';
 
-let pool: Pool | null = null;
 let schemaReady: Promise<void> | null = null;
 
-function getPool(): Pool {
-  if (!pool) {
-    const connectionString = getRuntimeEnv('DATABASE_URL');
-    if (!connectionString) throw new Error('DATABASE_URL required');
-    pool = new Pool({ connectionString, max: 10 });
-  }
-  return pool;
-}
-
-async function ensureSchema(pool: Pool): Promise<void> {
+async function ensureSchema(): Promise<void> {
   if (!schemaReady) {
+    const pool = getSharedPool();
     schemaReady = pool
       .query(`
       CREATE TABLE IF NOT EXISTS user_oauth_identities (
@@ -40,8 +30,8 @@ export async function findOAuthIdentityPg(
   provider: OAuthProvider,
   subject: string
 ): Promise<StoredOAuthIdentity | null> {
-  const pool = getPool();
-  await ensureSchema(pool);
+  const pool = getSharedPool();
+  await ensureSchema();
   const { rows } = await pool.query<{
     provider: string;
     subject: string;
@@ -64,8 +54,8 @@ export async function findOAuthIdentityPg(
 }
 
 export async function saveOAuthIdentityPg(identity: StoredOAuthIdentity): Promise<void> {
-  const pool = getPool();
-  await ensureSchema(pool);
+  const pool = getSharedPool();
+  await ensureSchema();
   await pool.query(
     `INSERT INTO user_oauth_identities (provider, subject, user_id, email, created_at)
      VALUES ($1,$2,$3,$4,$5)
@@ -75,8 +65,8 @@ export async function saveOAuthIdentityPg(identity: StoredOAuthIdentity): Promis
 }
 
 export async function listOAuthIdentitiesForUserPg(userId: string): Promise<StoredOAuthIdentity[]> {
-  const pool = getPool();
-  await ensureSchema(pool);
+  const pool = getSharedPool();
+  await ensureSchema();
   const { rows } = await pool.query<{
     provider: string;
     subject: string;

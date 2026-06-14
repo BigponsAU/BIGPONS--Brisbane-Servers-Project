@@ -6,7 +6,6 @@ import { findOAuthIdentity, saveOAuthIdentity } from '~/lib/db/oauth-identities'
 import { logAuthEvent } from '~/lib/auth-audit';
 import { getRuntimeEnv } from '~/utils/runtime-env';
 import { saveChallenge, consumeChallenge } from '~/lib/webauthn/challenges';
-import { resolvePublicSitePath } from '~/lib/api-config';
 import { authTokenSetCookie, oauthStateSetCookie, oauthStateClearCookie, readOAuthStateCookie } from '~/utils/http-cookies';
 
 const SESSION_MAX_AGE = 24 * 60 * 60;
@@ -35,7 +34,9 @@ export function getGoogleRedirectUri(request: Request): string {
 
 function getAccountReturnUrl(): string {
   const siteUrl = (getRuntimeEnv('PUBLIC_SITE_URL') ?? 'https://brisbaneservers.com').replace(/\/$/, '');
-  return `${siteUrl}${resolvePublicSitePath('/account/')}`;
+  const siteBase = (getRuntimeEnv('PUBLIC_SITE_BASE', '/') ?? '/').replace(/\/$/, '');
+  const accountPath = siteBase && siteBase !== '/' ? `${siteBase}/account/` : '/account/';
+  return `${siteUrl}${accountPath}`;
 }
 
 export function startGoogleOAuth(request: Request): Response {

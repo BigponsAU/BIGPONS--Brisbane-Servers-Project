@@ -6,7 +6,9 @@ on:
     paths:
       - 'website-brisbaneservers.com/workers/api/**'
       - 'website-brisbaneservers.com/src/lib/oauth/**'
+      - 'website-brisbaneservers.com/src/lib/db/**'
       - 'website-brisbaneservers.com/src/utils/http-cookies.ts'
+      - 'website-brisbaneservers.com/src/scripts/account-auth.ts'
       - 'website-brisbaneservers.com/standalone-api/**'
       - 'website-brisbaneservers.com/src/pages/_api/**'
       - '.github/workflows/deploy-edge-worker.yml'

@@ -1,7 +1,8 @@
 /**
  * OAuth provider links (Google, etc.) — one row per provider account per user.
  */
-import { getRuntimeEnv } from '~/utils/runtime-env';
+import { isEdgeWorkerRuntime } from './edge-hyperdrive-sql';
+import { usePostgres } from './pg-pool';
 
 export type OAuthProvider = 'google';
 
@@ -13,15 +14,19 @@ export interface StoredOAuthIdentity {
   createdAt: string;
 }
 
-function usePostgres(): boolean {
-  return Boolean(getRuntimeEnv('DATABASE_URL'));
+function authBackend(): 'postgres' | 'sqlite' {
+  if (usePostgres()) return 'postgres';
+  if (isEdgeWorkerRuntime()) {
+    throw new Error('Edge auth database is not configured (DATABASE_URL missing)');
+  }
+  return 'sqlite';
 }
 
 export async function findOAuthIdentity(
   provider: OAuthProvider,
   subject: string
 ): Promise<StoredOAuthIdentity | null> {
-  if (usePostgres()) {
+  if (authBackend() === 'postgres') {
     const { findOAuthIdentityPg } = await import('./oauth-identities-pg');
     return findOAuthIdentityPg(provider, subject);
   }
@@ -30,7 +35,7 @@ export async function findOAuthIdentity(
 }
 
 export async function saveOAuthIdentity(identity: StoredOAuthIdentity): Promise<void> {
-  if (usePostgres()) {
+  if (authBackend() === 'postgres') {
     const { saveOAuthIdentityPg } = await import('./oauth-identities-pg');
     return saveOAuthIdentityPg(identity);
   }
@@ -39,7 +44,7 @@ export async function saveOAuthIdentity(identity: StoredOAuthIdentity): Promise<
 }
 
 export async function listOAuthIdentitiesForUser(userId: string): Promise<StoredOAuthIdentity[]> {
-  if (usePostgres()) {
+  if (authBackend() === 'postgres') {
     const { listOAuthIdentitiesForUserPg } = await import('./oauth-identities-pg');
     return listOAuthIdentitiesForUserPg(userId);
   }
