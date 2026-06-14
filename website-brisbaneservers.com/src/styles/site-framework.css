@@ -1209,7 +1209,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
 }
 
-/* Golden (φ) column split — rem mins so zoom-in (narrow effective viewport) does not crush columns to 0 */
+/* Golden (φ) column split — same on home + inner marketing heroes */
 .hero-inner {
   width: 100%;
   max-width: var(--site-frame-wide);
@@ -1217,23 +1217,27 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   margin-inline: auto;
   display: grid;
   grid-template-columns:
-    minmax(min(100%, 18rem), 0.44fr)
-    minmax(min(100%, 12rem), 0.56fr);
+    minmax(min(100%, 18rem), var(--hero-text-span))
+    minmax(min(100%, 12rem), var(--hero-visual-span));
   align-items: stretch;
   min-height: max(var(--hero-inner-min-height, var(--hero-min-height)), min-content);
   padding-top: calc(var(--site-header-clearance) + var(--space-sm));
-  gap: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
+  gap: var(--hero-gap);
   justify-items: stretch;
 }
 
 .hero-text-wrapper {
-  align-self: stretch;
-  justify-self: start;
-  width: 100%;
-  max-width: 100%;
+    align-self: stretch;
+    justify-self: start;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    z-index: 5;
 }
 
 .hero-text-content {
+  position: relative;
+  z-index: 6;
   padding: clamp(var(--space-2xl), var(--space-3xl), var(--space-4xl)) 0;
   padding-inline-end: clamp(0, var(--space-sm), var(--space-md));
   border-radius: 0;
@@ -1334,25 +1338,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   box-shadow: 0 0 0.8rem rgba(255, 255, 255, 0.3);
 }
 
-.main-home .hero-visual,
-.hero-visual {
-  justify-self: stretch;
-  align-self: stretch;
-  width: 100%;
-  max-width: none;
-  margin-inline: 0;
-  min-width: 0;
-  position: relative;
-  aspect-ratio: unset;
-  max-height: none;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Must stay absolute + inset — do not set position: relative here (it overrides the component and reflows inside padding, leaving a bottom gap). */
+/* z-index stacking for copy above satellite on home */
 .main-home .hero-visual .sierpinski-satellite {
   z-index: 1;
 }
@@ -1391,8 +1377,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   transform: translateY(-2px);
 }
 
-/* Inner public routes: same φ copy gutters + scroll affordance + visual weight as home */
+/* Inner public routes: same copy gutters + vertical rhythm as home hero */
 .main-phi-chassis .hero-text-wrapper {
+  padding-top: clamp(var(--space-2xl), var(--space-4xl), var(--space-5xl));
+  padding-bottom: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
   padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
 }
 
@@ -2361,17 +2349,6 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   .hero h1,
   .hero-text-content h1 {
     max-width: min(22ch, 100%);
-  }
-
-  .hero-visual {
-    justify-self: center;
-    width: 100%;
-    max-width: min(100%, 44rem);
-    min-height: clamp(14rem, 36vh, 24rem);
-    min-height: clamp(14rem, 36dvh, 24rem);
-    max-height: none;
-    height: auto;
-    aspect-ratio: unset;
   }
 }
 

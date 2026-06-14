@@ -229,17 +229,15 @@ header .nav-mega__link.active {
 }
 
 /*
- * Hero visual — fill the right column; feather edges into the hero band.
+ * Hero visual — one profile for every page using Hero.astro (home, services, resources, …).
  */
 .hero {
   overflow: clip !important;
   z-index: 1;
 }
 
-.hero-visual,
-.main-home .hero-visual,
-.main-phi-chassis .hero-visual {
-  /* Fill the full right-column band (not a small top-right panel) */
+.hero .hero-visual {
+  /* Fill the right column and bleed to the viewport edge */
   aspect-ratio: unset !important;
   max-height: none !important;
   max-width: none !important;
@@ -247,6 +245,8 @@ header .nav-mega__link.active {
   justify-self: stretch !important;
   height: 100% !important;
   min-height: 100% !important;
+  width: calc(100% + var(--hero-visual-bleed-end) + var(--site-frame-gutter, 0px)) !important;
+  margin-inline-end: calc(-1 * var(--hero-visual-bleed-end) - var(--site-frame-gutter, 0px)) !important;
   overflow: hidden !important;
   /*
    * Blend the constellation into the hero band:
@@ -298,9 +298,7 @@ header .nav-mega__link.active {
 }
 
 @supports not (mask-composite: intersect) {
-  .hero-visual,
-  .main-home .hero-visual,
-  .main-phi-chassis .hero-visual {
+  .hero .hero-visual {
     -webkit-mask-image: linear-gradient(
       90deg,
       transparent 0%,
@@ -318,21 +316,22 @@ header .nav-mega__link.active {
   }
 }
 
-.hero-visual .sierpinski-satellite {
+.hero .hero-visual .sierpinski-satellite {
   inset: 0 !important;
-  /* Fill the column band; mask feathers edges into copy + hero sides */
-  transform: scale(1.04);
-  transform-origin: 56% 50%;
-  opacity: 0.86;
+  transform: scale(var(--hero-satellite-scale));
+  transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
+  opacity: var(--hero-satellite-opacity);
 }
 
 @media (max-width: 70rem) {
-  .hero-visual,
-  .main-home .hero-visual,
-  .main-phi-chassis .hero-visual {
+  .hero .hero-visual {
     justify-self: stretch !important;
+    width: 100% !important;
+    margin-inline-end: 0 !important;
     max-width: none !important;
     max-height: none !important;
+    min-height: clamp(14rem, 36dvh, 24rem) !important;
+    height: auto !important;
   }
 }
 

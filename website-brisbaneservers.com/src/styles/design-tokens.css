@@ -747,6 +747,13 @@
   /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
   --hero-min-height: clamp(18rem, 26rem, 34rem);
   --hero-inner-min-height: clamp(18rem, 26rem, 34rem);
+  /* Sierpinski hero visual — one sizing profile on every Hero page */
+  --hero-satellite-scale: 1.04;
+  --hero-satellite-origin-x: 56%;
+  --hero-satellite-origin-y: 50%;
+  --hero-satellite-opacity: 0.86;
+  /* Bleed visual column from frame band to viewport right edge */
+  --hero-visual-bleed-end: calc(50vw - 50%);
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
   /*

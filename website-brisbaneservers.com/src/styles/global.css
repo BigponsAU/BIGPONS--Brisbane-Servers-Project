@@ -1434,7 +1434,9 @@ nav {
 /* Hero layout: grid places text + visual in φ columns (no hollow flex gap) */
 .hero-inner {
     display: grid;
-    grid-template-columns: minmax(0, 0.382fr) minmax(0, 0.618fr);
+    grid-template-columns:
+        minmax(min(100%, 18rem), var(--hero-text-span))
+        minmax(min(100%, 12rem), var(--hero-visual-span));
     /* Keep the right visual filling the hero column height */
     align-items: stretch;
     flex: 0 1 auto;
