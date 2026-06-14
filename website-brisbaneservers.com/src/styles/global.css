@@ -1463,7 +1463,7 @@ nav {
     justify-content: flex-start;
     container-type: inline-size;
     container-name: hero-visual;
-    overflow: hidden;
+    overflow: visible;
     align-self: stretch;
     justify-self: stretch;
     aspect-ratio: unset;

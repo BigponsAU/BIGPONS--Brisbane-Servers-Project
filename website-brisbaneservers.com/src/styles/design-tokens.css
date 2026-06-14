@@ -745,8 +745,12 @@
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
   /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
-  /* Fixed band — same height on every Hero page; copy scrolls/clips inside, visual always fills right column */
-  --hero-band-height: clamp(22rem, 28rem, 30rem);
+  /* Fixed band — same tall frame on every Hero page (matches nav → section seam) */
+  --hero-band-height: clamp(
+    38rem,
+    calc(100svh - var(--site-header-clearance) - 5rem),
+    54rem
+  );
   --hero-min-height: var(--hero-band-height);
   --hero-inner-min-height: var(--hero-band-height);
   /* Sierpinski hero visual — one sizing profile on every Hero page */
@@ -808,7 +812,7 @@
 
 @media (max-width: 768px) {
   :root {
-    --hero-band-height: clamp(20rem, 26rem, 28rem);
+    --hero-band-height: clamp(34rem, calc(100svh - var(--site-header-clearance) - 4rem), 46rem);
     --hero-min-height: var(--hero-band-height);
     --hero-inner-min-height: var(--hero-band-height);
     --hero-visual-inner-pad-inline: clamp(0.18rem, min(2.75vw, 0.65rem), 0.8rem);
@@ -818,7 +822,7 @@
 @supports (height: 1svh) {
   @media (max-width: 768px) {
     :root {
-      --hero-band-height: clamp(20rem, 26rem, 28rem);
+      --hero-band-height: clamp(34rem, calc(100svh - var(--site-header-clearance) - 4rem), 46rem);
       --hero-min-height: var(--hero-band-height);
       --hero-inner-min-height: var(--hero-band-height);
     }
