@@ -8,6 +8,7 @@ Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [H
 
 ## Recent changes (2026-06-15, evening)
 
+- **Google OAuth Hyperdrive fix** (`4cb51b4`): OAuth identity DB writes used raw `pg` Pool / SQLite fallback on the edge worker — crashed with `path … Received undefined` during Google callback. Now uses shared Hyperdrive pool; edge never falls back to sql.js; sign-in UI shows immediately on `/account/`.
 - **Account sign-in round 2** (`0556e25`): Cookie-backed `oauth_state` on edge worker (fixes Google `invalid_state` across Worker isolates); client keeps bearer token as HttpOnly fallback; sequential OAuth boot + `checkAuth` race guards; `#session=` hash applied in production. Edge worker deployed via GitHub Actions (`deploy-edge-worker.yml`); Pages live on `0556e25`+.
 - **Validated:** `GET /api/auth/oauth/google/start` returns `Set-Cookie: oauth_state=…; Domain=.brisbaneservers.com`; worker `brisbane-servers-api-edge` modified 2026-06-14T18:45Z.
 
