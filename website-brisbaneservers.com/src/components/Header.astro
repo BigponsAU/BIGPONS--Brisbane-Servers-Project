@@ -1,5 +1,5 @@
 ---
-import { navigation, navItemIsActive } from '../data/navigation';
+import { navigation, navDropdownToggleIsActive } from '../data/navigation';
 import { sitePath } from '../lib/site-path';
 import logo from '../logo.png';
 import MobileNavMenu from './MobileNavMenu.astro';
@@ -49,7 +49,7 @@ const inquireHref = inquiryNavHref(currentPath, sitePath);
       {
         navItems.map((item, index) => {
           const hasPanel = Boolean(item.groups?.length || item.children?.length);
-          const active = navItemIsActive(item, currentPath);
+          const active = navDropdownToggleIsActive(item, currentPath);
           const slug = dropdownSlug(item.label);
           const menuId = `dropdown-menu-${index}`;
           const toggleId = `dropdown-toggle-${index}`;

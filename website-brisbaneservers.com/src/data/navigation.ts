@@ -42,7 +42,7 @@ export function navItemIsActive(item: NavItem, currentPath: string): boolean {
   });
 }
 
-/** Route highlight for dropdown toggles only — avoids lighting Projects/About on /resources via nested links. */
+/** Dropdown toggle highlight only — not cross-links in mega menus (e.g. /resources under Projects). */
 export function navDropdownToggleIsActive(item: NavItem, currentPath: string): boolean {
   const pathOnly = item.href.split('#')[0] || item.href;
   if (pathOnly === '/' && currentPath === '/') return true;

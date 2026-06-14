@@ -237,20 +237,18 @@ header .nav-mega__link.active {
 }
 
 .hero .hero-visual {
-  --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   aspect-ratio: unset !important;
   max-height: none !important;
   max-width: none !important;
   align-self: stretch !important;
   justify-self: stretch !important;
   height: 100% !important;
-  min-height: 100% !important;
-  width: calc(100% + var(--hero-visual-bleed-end) + var(--site-frame-gutter, 0px)) !important;
-  margin-inline-end: calc(-1 * var(--hero-visual-bleed-end) - var(--site-frame-gutter, 0px)) !important;
+  min-height: calc(var(--hero-band-height) - var(--site-header-clearance) - var(--space-md)) !important;
+  width: 100% !important;
+  margin-inline-end: 0 !important;
   overflow: hidden !important;
   z-index: 4 !important;
   pointer-events: none;
-  /* Edge fade via hero side gradients in global.css — no CSS mask (Chrome was hiding the SVG) */
   -webkit-mask-image: none !important;
   mask-image: none !important;
 }
@@ -261,7 +259,6 @@ header .nav-mega__link.active {
   transform: scale(var(--hero-satellite-scale));
   transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
   opacity: var(--hero-satellite-opacity);
-  /* Never mask the SVG layer — Chrome hides the whole network with mask-composite on this node */
   -webkit-mask-image: none !important;
   mask-image: none !important;
   overflow: visible !important;

@@ -1,5 +1,5 @@
 ---
-import { navItemIsActive, type NavItem } from '../data/navigation';
+import { navDropdownToggleIsActive, type NavItem } from '../data/navigation';
 import { sitePath } from '../lib/site-path';
 import { inquiryNavHref } from '../lib/inquiry-nav';
 
@@ -38,7 +38,7 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
 
   {
     featureItems.map((item) => {
-      const active = navItemIsActive(item, currentPath);
+      const active = navDropdownToggleIsActive(item, currentPath);
       return (
         <section class:list={['mobile-menu__feature', active && 'mobile-menu__feature--active']}>
           <a
