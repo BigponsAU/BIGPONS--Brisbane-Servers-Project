@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-05 (auth wake-up + Google OAuth UI deployed)
+**Last synced:** 2026-06-15 (account sign-in fix + auth/dashboard chunk split)
 
 ---
+
+## Recent changes (2026-06-15)
+
+- **Account sign-in** (`d2e1b38`): Split `account-auth.ts` (~21 KB initial) from lazy `account-workspace-app` dashboard chunk; sign-in handlers attach immediately; **Continue with Google** rendered in SSR HTML with `https://api.brisbaneservers.com/api/auth/oauth/google/start`; removed Render API failover from production client; `AuthHiddenUsername` for reset-password form; BaseLayout `infoCard` cleanup fix. Cloudflare Pages deploy live on `brisbaneservers.com`.
+- **Validated:** `npm run verify:production -- --api https://api.brisbaneservers.com` PASS; live `/account/` shows visible Google OAuth link (not `display:none`).
 
 ## Recent changes (2026-06-05, CSP)
 
