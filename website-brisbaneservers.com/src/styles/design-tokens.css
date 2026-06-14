@@ -758,11 +758,11 @@
   --hero-min-height: var(--hero-band-height);
   --hero-inner-min-height: var(--hero-band-height);
   /* Sierpinski hero visual — fill right φ column + bleed to viewport edge */
-  --hero-satellite-scale: 1.14;
+  --hero-satellite-scale: 1.06;
   --hero-satellite-origin-x: 100%;
   --hero-satellite-origin-y: 50%;
-  --hero-satellite-translate-x: 2%;
-  --hero-satellite-opacity: 0.88;
+  --hero-satellite-translate-x: 1%;
+  --hero-satellite-opacity: 0.86;
   /* Bleed visual column from frame band to viewport right edge (resolved on .hero-visual, not :root) */
   --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
