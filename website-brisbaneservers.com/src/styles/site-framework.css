@@ -1185,15 +1185,15 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .hero {
   width: 100%;
   margin-inline: 0;
-  /* Single source: design-tokens.css (was a different clamp here and fought global.css) */
-  min-height: var(--hero-min-height);
+  height: var(--hero-band-height);
+  min-height: var(--hero-band-height);
+  max-height: var(--hero-band-height);
   padding-inline: 0;
   border-radius: 0;
   border: none;
   box-shadow: none;
-  /* Zoom-in: avoid clipping stacked copy/visual; clip-x only if needed for stray overflow */
   overflow-x: clip;
-  overflow-y: visible;
+  overflow-y: hidden;
 }
 
 /* Homepage: left-anchored hero; copy band matches nav / sections (shell gutters + safe-area). */
@@ -1202,10 +1202,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   isolation: isolate;
 }
 
-/* Tighter horizontal padding than global .hero-text-wrapper so copy + CTAs share one lane at all zoom levels */
+/* Tighter vertical padding — fixed hero band; copy top-aligns inside the frame */
 .main-home .hero-text-wrapper {
-  padding-top: clamp(var(--space-2xl), var(--space-4xl), var(--space-5xl));
-  padding-bottom: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
+  padding-top: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+  padding-bottom: clamp(var(--space-sm), var(--space-md), var(--space-lg));
   padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
 }
 
@@ -1219,26 +1219,40 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   grid-template-columns:
     minmax(min(100%, 18rem), var(--hero-text-span))
     minmax(min(100%, 12rem), var(--hero-visual-span));
+  grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
-  min-height: max(var(--hero-inner-min-height, var(--hero-min-height)), min-content);
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   padding-top: calc(var(--site-header-clearance) + var(--space-sm));
   gap: var(--hero-gap);
   justify-items: stretch;
+  overflow: visible;
 }
 
 .hero-text-wrapper {
-    align-self: stretch;
-    justify-self: start;
-    width: 100%;
-    max-width: 100%;
-    position: relative;
-    z-index: 5;
+  align-self: stretch;
+  justify-self: start;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .hero-text-content {
   position: relative;
   z-index: 6;
-  padding: clamp(var(--space-2xl), var(--space-3xl), var(--space-4xl)) 0;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  padding: clamp(var(--space-md), var(--space-lg), var(--space-xl)) 0;
   padding-inline-end: clamp(0, var(--space-sm), var(--space-md));
   border-radius: 0;
   background: none;
@@ -1379,8 +1393,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 /* Inner public routes: same copy gutters + vertical rhythm as home hero */
 .main-phi-chassis .hero-text-wrapper {
-  padding-top: clamp(var(--space-2xl), var(--space-4xl), var(--space-5xl));
-  padding-bottom: clamp(var(--space-xl), var(--space-2xl), var(--space-3xl));
+  padding-top: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+  padding-bottom: clamp(var(--space-sm), var(--space-md), var(--space-lg));
   padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
 }
 

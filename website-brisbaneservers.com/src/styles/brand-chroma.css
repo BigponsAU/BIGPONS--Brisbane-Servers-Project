@@ -237,7 +237,8 @@ header .nav-mega__link.active {
 }
 
 .hero .hero-visual {
-  /* Fill the right column and bleed to the viewport edge */
+  /* Resolve bleed % against this element’s grid cell */
+  --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   aspect-ratio: unset !important;
   max-height: none !important;
   max-width: none !important;
@@ -248,6 +249,9 @@ header .nav-mega__link.active {
   width: calc(100% + var(--hero-visual-bleed-end) + var(--site-frame-gutter, 0px)) !important;
   margin-inline-end: calc(-1 * var(--hero-visual-bleed-end) - var(--site-frame-gutter, 0px)) !important;
   overflow: hidden !important;
+  z-index: 4 !important;
+  isolation: isolate;
+  pointer-events: none;
   /*
    * Blend the constellation into the hero band:
    * - fade left into copy, right into hero edge
@@ -318,20 +322,29 @@ header .nav-mega__link.active {
 
 .hero .hero-visual .sierpinski-satellite {
   inset: 0 !important;
+  z-index: 1 !important;
   transform: scale(var(--hero-satellite-scale));
   transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
   opacity: var(--hero-satellite-opacity);
 }
 
 @media (max-width: 70rem) {
+  .hero {
+    height: auto !important;
+    min-height: var(--hero-band-height) !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
   .hero .hero-visual {
     justify-self: stretch !important;
+    --hero-visual-bleed-end: 0px;
     width: 100% !important;
     margin-inline-end: 0 !important;
     max-width: none !important;
     max-height: none !important;
     min-height: clamp(14rem, 36dvh, 24rem) !important;
-    height: auto !important;
+    height: clamp(14rem, 36dvh, 24rem) !important;
   }
 }
 

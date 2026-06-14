@@ -1388,17 +1388,19 @@ nav {
 
 .hero {
     padding: 0;
-    padding-bottom: clamp(1.25rem, 1.75rem, 2.25rem);
-    /* Start-aligned: φ hero is copy-left / visual-right; centering collapses hierarchy at wide viewports */
+    /* Fixed band height on every Hero page — inner copy clips/top-aligns if long */
+    height: var(--hero-band-height);
+    min-height: var(--hero-band-height);
+    max-height: var(--hero-band-height);
+    box-sizing: border-box;
     text-align: start;
     background: var(--original-bg-gradient);
     position: relative;
     overflow: clip;
     overflow-x: clip;
-    overflow-y: visible;
+    overflow-y: hidden;
     isolation: isolate;
     z-index: 1;
-    min-height: var(--hero-min-height);
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -1437,26 +1439,28 @@ nav {
     grid-template-columns:
         minmax(min(100%, 18rem), var(--hero-text-span))
         minmax(min(100%, 12rem), var(--hero-visual-span));
-    /* Keep the right visual filling the hero column height */
+    grid-template-rows: minmax(0, 1fr);
     align-items: stretch;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     width: 100%;
+    height: 100%;
     min-height: 0;
+    max-height: 100%;
     position: relative;
     z-index: 10;
     box-sizing: border-box;
+    overflow: visible;
 }
 
 .hero-visual {
     position: relative;
-    z-index: 2;
+    z-index: 4;
     min-width: 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    /* Column is layout-only: colour comes from .hero / .hero-background-gradient (no local gradient “panel”) */
     container-type: inline-size;
     container-name: hero-visual;
     overflow: hidden;
@@ -1469,6 +1473,8 @@ nav {
     height: 100%;
     padding-block: 0;
     padding-inline: 0;
+    isolation: isolate;
+    pointer-events: none;
     /* Edge feathering: brand-chroma.css mask on .hero-visual */
 }
 
@@ -1494,13 +1500,16 @@ nav {
     width: 100%;
     max-width: none;
     min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    height: fit-content;
-    align-self: start;
-    padding: var(--space-5xl) clamp(var(--space-lg), calc(var(--space-2xl) * var(--phi-inv)), var(--space-3xl));
+    align-self: stretch;
+    padding: clamp(var(--space-lg), var(--space-xl), var(--space-2xl))
+        clamp(var(--space-lg), calc(var(--space-2xl) * var(--phi-inv)), var(--space-3xl));
     box-sizing: border-box;
 }
 
@@ -1526,6 +1535,8 @@ nav {
     box-sizing: border-box;
     flex: 0 1 auto;
     min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
 }
 
 .hero-text-content > .hero-scroll-cta {
@@ -3240,10 +3251,11 @@ p.text-long {
     }
     
     .hero {
-        padding-block: var(--layout-padding-block-tight);
+        padding-block: 0;
         padding-inline: var(--layout-padding-inline-start) var(--layout-padding-inline-end);
-        /* rem caps only (no vh): matches earlier 600px hero rules and avoids vw/rem fight at zoom */
-        min-height: clamp(26rem, 34rem, 44rem);
+        height: auto;
+        min-height: var(--hero-band-height);
+        max-height: none;
     }
     
     .hero-text-wrapper {

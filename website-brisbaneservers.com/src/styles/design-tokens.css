@@ -745,15 +745,17 @@
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
   /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
-  --hero-min-height: clamp(18rem, 26rem, 34rem);
-  --hero-inner-min-height: clamp(18rem, 26rem, 34rem);
+  /* Fixed band — same height on every Hero page; copy scrolls/clips inside, visual always fills right column */
+  --hero-band-height: clamp(22rem, 28rem, 30rem);
+  --hero-min-height: var(--hero-band-height);
+  --hero-inner-min-height: var(--hero-band-height);
   /* Sierpinski hero visual — one sizing profile on every Hero page */
   --hero-satellite-scale: 1.04;
   --hero-satellite-origin-x: 56%;
   --hero-satellite-origin-y: 50%;
   --hero-satellite-opacity: 0.86;
-  /* Bleed visual column from frame band to viewport right edge */
-  --hero-visual-bleed-end: calc(50vw - 50%);
+  /* Bleed visual column from frame band to viewport right edge (resolved on .hero-visual, not :root) */
+  --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
   /*
@@ -806,12 +808,9 @@
 
 @media (max-width: 768px) {
   :root {
-    /*
-     * rem-first: large vh min-heights left a tall empty band under the hero visual before the
-     * next section (especially with browser zoom). Copy + graphic + scroll CTA set real height.
-     */
-    --hero-min-height: clamp(17rem, 26rem, 38rem);
-    --hero-inner-min-height: clamp(13rem, 20rem, 28rem);
+    --hero-band-height: clamp(20rem, 26rem, 28rem);
+    --hero-min-height: var(--hero-band-height);
+    --hero-inner-min-height: var(--hero-band-height);
     --hero-visual-inner-pad-inline: clamp(0.18rem, min(2.75vw, 0.65rem), 0.8rem);
   }
 }
@@ -819,8 +818,9 @@
 @supports (height: 1svh) {
   @media (max-width: 768px) {
     :root {
-      --hero-min-height: clamp(17rem, 26rem, 38rem);
-      --hero-inner-min-height: clamp(13rem, 20rem, 28rem);
+      --hero-band-height: clamp(20rem, 26rem, 28rem);
+      --hero-min-height: var(--hero-band-height);
+      --hero-inner-min-height: var(--hero-band-height);
     }
   }
 }
