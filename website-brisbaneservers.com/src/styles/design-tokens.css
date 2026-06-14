@@ -762,7 +762,9 @@
   --hero-satellite-origin-x: 65%;
   --hero-satellite-origin-y: 50%;
   --hero-satellite-opacity: 0.86;
-  /* Bleed visual column from frame band to viewport right edge (resolved on .hero-visual, not :root) */
+  /* Extend visual upward into header clearance; fade via column mask (not hard clip) */
+  --hero-visual-bleed-top: clamp(2rem, calc(var(--site-header-clearance) * 0.52), 3.75rem);
+  --hero-satellite-bleed-top: clamp(1.25rem, 2.75vh, 2.25rem);
   --hero-visual-bleed-end: max(0px, calc(50vw - 50%));
   /* Inset for hero visual column (SVG + rings); hero colour is section-wide, not a column box */
   --hero-visual-inner-pad-inline: clamp(0.2rem, min(3.25vw, 0.8rem), 0.95rem);
