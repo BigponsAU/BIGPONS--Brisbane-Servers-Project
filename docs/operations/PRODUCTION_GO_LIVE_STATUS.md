@@ -2,9 +2,14 @@
 
 Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-15 (account sign-in fix + auth/dashboard chunk split)
+**Last synced:** 2026-06-15 (account sign-in OAuth state + client race fix shipped)
 
 ---
+
+## Recent changes (2026-06-15, evening)
+
+- **Account sign-in round 2** (`0556e25`): Cookie-backed `oauth_state` on edge worker (fixes Google `invalid_state` across Worker isolates); client keeps bearer token as HttpOnly fallback; sequential OAuth boot + `checkAuth` race guards; `#session=` hash applied in production. Edge worker deployed via GitHub Actions (`deploy-edge-worker.yml`); Pages live on `0556e25`+.
+- **Validated:** `GET /api/auth/oauth/google/start` returns `Set-Cookie: oauth_state=…; Domain=.brisbaneservers.com`; worker `brisbane-servers-api-edge` modified 2026-06-14T18:45Z.
 
 ## Recent changes (2026-06-15)
 
