@@ -744,6 +744,10 @@
   /* Golden split: minor text band (φ⁻²) | major visual (φ⁻¹); sums to 1 */
   --hero-text-span: calc(var(--phi-inv) * var(--phi-inv));
   --hero-visual-span: var(--phi-inv);
+  /* fr tracks — unitless span vars alone are invalid inside minmax() max position */
+  --hero-grid-columns:
+    minmax(min(100%, 18rem), calc(var(--hero-text-span) * 1fr))
+    minmax(min(100%, 12rem), calc(var(--hero-visual-span) * 1fr));
   /* rem-only: scales with browser zoom; vh/vw omitted here to avoid zoom/viewport mismatch */
   /* Fixed band — same tall frame on every Hero page (matches nav → section seam) */
   --hero-band-height: clamp(
@@ -754,8 +758,8 @@
   --hero-min-height: var(--hero-band-height);
   --hero-inner-min-height: var(--hero-band-height);
   /* Sierpinski hero visual — one sizing profile on every Hero page */
-  --hero-satellite-scale: 1.04;
-  --hero-satellite-origin-x: 56%;
+  --hero-satellite-scale: 0.82;
+  --hero-satellite-origin-x: 60%;
   --hero-satellite-origin-y: 50%;
   --hero-satellite-opacity: 0.86;
   /* Bleed visual column from frame band to viewport right edge (resolved on .hero-visual, not :root) */

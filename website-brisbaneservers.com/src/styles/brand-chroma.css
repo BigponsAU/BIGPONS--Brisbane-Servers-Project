@@ -243,7 +243,7 @@ header .nav-mega__link.active {
   align-self: stretch !important;
   justify-self: stretch !important;
   height: 100% !important;
-  min-height: calc(var(--hero-band-height) - var(--site-header-clearance) - var(--space-md)) !important;
+  min-height: 0 !important;
   width: 100% !important;
   margin-inline-end: 0 !important;
   overflow: hidden !important;
@@ -262,6 +262,18 @@ header .nav-mega__link.active {
   -webkit-mask-image: none !important;
   mask-image: none !important;
   overflow: visible !important;
+}
+
+/* Soft blend at visual column edges (overlay — avoids mask-composite on SVG) */
+.hero .hero-visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgba(8, 12, 24, 0.42) 0%, transparent 18%),
+    linear-gradient(to left, transparent 62%, rgba(8, 12, 24, 0.18) 82%, transparent 100%);
 }
 
 @media (max-width: 70rem) {

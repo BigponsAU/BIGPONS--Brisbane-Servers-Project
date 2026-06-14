@@ -1216,9 +1216,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   box-sizing: border-box;
   margin-inline: auto;
   display: grid;
-  grid-template-columns:
-    minmax(min(100%, 18rem), var(--hero-text-span))
-    minmax(min(100%, 12rem), var(--hero-visual-span));
+  grid-template-columns: var(--hero-grid-columns);
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
   height: 100%;
@@ -1239,7 +1237,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   z-index: 5;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1251,7 +1249,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   flex: 0 1 auto;
   min-height: 0;
   max-height: 100%;
-  overflow: hidden;
+  overflow: visible;
   padding: clamp(var(--space-md), var(--space-lg), var(--space-xl)) 0;
   padding-inline-end: clamp(0, var(--space-sm), var(--space-md));
   border-radius: 0;

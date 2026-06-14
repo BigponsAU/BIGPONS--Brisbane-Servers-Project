@@ -1436,9 +1436,7 @@ nav {
 /* Hero layout: grid places text + visual in φ columns (no hollow flex gap) */
 .hero-inner {
     display: grid;
-    grid-template-columns:
-        minmax(min(100%, 18rem), var(--hero-text-span))
-        minmax(min(100%, 12rem), var(--hero-visual-span));
+    grid-template-columns: var(--hero-grid-columns);
     grid-template-rows: minmax(0, 1fr);
     align-items: stretch;
     flex: 1 1 auto;
@@ -1452,7 +1450,14 @@ nav {
     overflow: visible;
 }
 
+.hero-text-wrapper {
+    grid-column: 1;
+    grid-row: 1;
+}
+
 .hero-visual {
+    grid-column: 2;
+    grid-row: 1;
     position: relative;
     z-index: 4;
     min-width: 0;
@@ -1487,6 +1492,19 @@ nav {
         grid-template-rows: auto auto;
         min-height: 0;
     }
+
+    .hero-text-wrapper,
+    .hero-visual {
+        grid-column: 1;
+    }
+
+    .hero-text-wrapper {
+        grid-row: 1;
+    }
+
+    .hero-visual {
+        grid-row: 2;
+    }
 }
 
 .hero-text-wrapper {
@@ -1498,7 +1516,7 @@ nav {
     min-height: 0;
     height: 100%;
     max-height: 100%;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1532,7 +1550,7 @@ nav {
     flex: 0 1 auto;
     min-height: 0;
     max-height: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .hero-text-content > .hero-scroll-cta {
