@@ -250,32 +250,29 @@ header .nav-mega__link.active {
   z-index: 4 !important;
   pointer-events: none;
   background: transparent !important;
-  /*
-   * Feather column edges into hero background — mask on the frame only (never on the SVG layer).
-   * Radial fade avoids the hard horizontal bands ::after overlays caused at top/bottom.
-   */
-  -webkit-mask-image: radial-gradient(
-    ellipse 118% 112% at 74% 50%,
-    #000 0%,
-    #000 56%,
-    rgba(0, 0, 0, 0.72) 70%,
-    rgba(0, 0, 0, 0.28) 84%,
-    transparent 100%
+  /* Left-edge feather into copy column — single axis; radial mask was hiding the network */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 4%,
+    rgba(0, 0, 0, 0.82) 11%,
+    #000 18%,
+    #000 100%
   );
-  mask-image: radial-gradient(
-    ellipse 118% 112% at 74% 50%,
-    #000 0%,
-    #000 56%,
-    rgba(0, 0, 0, 0.72) 70%,
-    rgba(0, 0, 0, 0.28) 84%,
-    transparent 100%
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 4%,
+    rgba(0, 0, 0, 0.82) 11%,
+    #000 18%,
+    #000 100%
   );
 }
 
 .hero .hero-visual .sierpinski-satellite {
   inset: 0 !important;
   z-index: 1 !important;
-  transform: scale(var(--hero-satellite-scale)) translateX(var(--hero-satellite-translate-x));
+  transform: scale(var(--hero-satellite-scale));
   transform-origin: var(--hero-satellite-origin-x) var(--hero-satellite-origin-y);
   opacity: var(--hero-satellite-opacity);
   background: transparent !important;

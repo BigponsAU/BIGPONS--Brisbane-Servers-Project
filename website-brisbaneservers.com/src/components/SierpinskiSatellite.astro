@@ -8,7 +8,7 @@ const { connections, nodes, viewBox } = buildSierpinskiSatelliteMarkup();
   <svg
     class="satellite-svg"
     viewBox={viewBox}
-    preserveAspectRatio="xMaxYMid meet"
+    preserveAspectRatio="xMaxYMid slice"
     xmlns="http://www.w3.org/2000/svg"
   >
     <g class="connections-layer" set:html={connections} />
