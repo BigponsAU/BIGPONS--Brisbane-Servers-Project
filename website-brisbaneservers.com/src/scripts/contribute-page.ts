@@ -16,17 +16,19 @@ function setAuthStatus(el: HTMLElement | null, msg: string, isError = false): vo
   el.style.color = isError ? 'var(--error-color, #c00)' : 'var(--text-secondary)';
 }
 
-function revealContributeAuth(signedIn: boolean): void {
-  const pending = document.getElementById('contribute-auth-pending');
-  const signedOut = document.getElementById('contribute-auth-signed-out');
-  const signedInEl = document.getElementById('contribute-auth-signed-in');
-  if (pending) pending.hidden = true;
-  if (signedOut) signedOut.hidden = signedIn;
-  if (signedInEl) signedInEl.hidden = !signedIn;
+function setContributeAuthState(state: 'pending' | 'signed-in' | 'signed-out'): void {
+  const root = document.getElementById('contribute-auth-root');
+  if (root) root.dataset.state = state;
+
+  const intro = document.getElementById('contribute-get-started-intro');
+  if (intro) intro.hidden = state === 'signed-in';
+
+  const howPurpose = document.getElementById('contribute-how-purpose');
+  if (howPurpose) howPurpose.hidden = state === 'signed-in';
 }
 
 function showSignedInState(email: string, config: ContributePageConfig): void {
-  revealContributeAuth(true);
+  setContributeAuthState('signed-in');
   const emailEl = document.getElementById('contribute-signed-in-email');
   if (emailEl) emailEl.textContent = email;
   setAccountNavSignedIn(true);
@@ -36,7 +38,7 @@ function showSignedInState(email: string, config: ContributePageConfig): void {
 }
 
 function showSignedOutState(config: ContributePageConfig): void {
-  revealContributeAuth(false);
+  setContributeAuthState('signed-out');
 
   const googleBtn = document.getElementById('contribute-google-oauth') as HTMLAnchorElement | null;
   if (googleBtn && config.googleOAuthHref) {
@@ -45,6 +47,7 @@ function showSignedOutState(config: ContributePageConfig): void {
 }
 
 async function hydrateSession(config: ContributePageConfig): Promise<void> {
+  setContributeAuthState('pending');
   try {
     const res = await workspaceFetch(`${config.apiBaseUrl}/auth/me`);
     if (res.ok) {
@@ -83,7 +86,7 @@ function bindForms(config: ContributePageConfig): void {
         setAuthStatus(registerStatus, data.error || 'Registration failed', true);
         return;
       }
-      setAuthStatus(registerStatus, 'Account created. You are signed in.');
+      setAuthStatus(registerStatus, 'Account created.');
       if (data?.user?.email) {
         showSignedInState(data.user.email, config);
       } else {

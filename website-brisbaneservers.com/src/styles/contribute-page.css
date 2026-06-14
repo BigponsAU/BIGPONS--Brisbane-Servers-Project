@@ -2,32 +2,54 @@
  * Contribute page — auth uses account login-card / login-form pattern.
  */
 
-.contribute-auth-shell.contribute-cta .login-grid.contribute-auth-grid {
+.contribute-get-started-inner {
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+.contribute-auth-root {
+  margin-top: var(--space-lg);
+}
+
+.contribute-auth-root[data-state='pending'] .contribute-auth-signed-in,
+.contribute-auth-root[data-state='pending'] .contribute-auth-signed-out {
+  display: none !important;
+}
+
+.contribute-auth-root[data-state='signed-in'] .contribute-auth-pending,
+.contribute-auth-root[data-state='signed-in'] .contribute-auth-signed-out {
+  display: none !important;
+}
+
+.contribute-auth-root[data-state='signed-out'] .contribute-auth-pending,
+.contribute-auth-root[data-state='signed-out'] .contribute-auth-signed-in {
+  display: none !important;
+}
+
+.contribute-auth-shell.contribute-cta .login-grid.contribute-auth-grid--signup {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: clamp(var(--space-lg), 3vw, var(--space-2xl));
-  max-width: var(--site-frame-wide);
-  margin: var(--space-xl) auto 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
 }
 
 .contribute-auth-shell .contribute-auth-google-card {
   grid-column: 1 / -1;
 }
 
-.contribute-auth-shell .contribute-auth-signed-in__card {
-  max-width: 28rem;
+.contribute-auth-signed-in {
+  max-width: 26rem;
   margin-inline: auto;
 }
 
-.contribute-auth-shell .contribute-auth-signed-in.contribute-auth-grid {
-  max-width: 28rem;
-  margin-inline: auto;
+.contribute-auth-signed-in__card {
+  margin: 0;
 }
 
 .contribute-auth-pending {
-  margin: var(--space-xl) auto 0;
-  max-width: 28rem;
-  padding: var(--space-xl);
+  max-width: 26rem;
+  margin-inline: auto;
+  padding: var(--space-lg);
   text-align: center;
   font-size: var(--text-sm);
   color: var(--text-secondary);
@@ -36,13 +58,9 @@
   background: var(--surface-elevated);
 }
 
-.contribute-auth-pending[hidden] {
-  display: none;
-}
-
 .contribute-auth-purpose {
-  margin: var(--space-xl) auto 0;
-  max-width: 42rem;
+  margin: 0 auto var(--space-md);
+  max-width: 36rem;
   font-size: var(--text-sm);
   line-height: 1.55;
   color: var(--text-secondary);
@@ -106,12 +124,12 @@
 }
 
 .contribute-how-it-works {
-  max-width: 48rem;
+  max-width: 44rem;
   margin-inline: auto;
 }
 
 .contribute-how-it-works__title {
-  margin: 0 0 var(--space-xl);
+  margin: 0 0 var(--space-lg);
   font-size: clamp(1.35rem, 1.5rem, 1.75rem);
   font-weight: var(--font-weight-bold);
   text-align: center;
@@ -122,7 +140,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .contribute-how-it-works__step {
@@ -164,24 +182,23 @@
 }
 
 .contribute-how-it-works__purpose {
-  margin-top: var(--space-2xl);
-  padding: var(--space-lg) var(--space-xl);
+  margin-top: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
   border: 1px solid var(--border);
   border-radius: var(--site-panel-radius);
   background: var(--surface-elevated);
-  box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
 }
 
 .contribute-how-it-works__purpose-title {
-  margin: 0 0 var(--space-md);
-  font-size: var(--text-lg);
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-base);
   font-weight: var(--font-weight-semibold);
 }
 
 .contribute-how-it-works__purpose p {
-  margin: 0 0 var(--space-md);
+  margin: 0 0 var(--space-sm);
   font-size: var(--text-sm);
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--text-secondary);
 }
 
@@ -220,9 +237,10 @@
 }
 
 @media (max-width: 56rem) {
-  .contribute-auth-shell.contribute-cta .login-grid.contribute-auth-grid {
+  .contribute-auth-shell.contribute-cta .login-grid.contribute-auth-grid--signup {
     grid-template-columns: 1fr;
     max-width: 24rem;
+    margin-inline: auto;
   }
 }
 

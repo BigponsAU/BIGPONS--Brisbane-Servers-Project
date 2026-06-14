@@ -148,12 +148,14 @@ const { sections } = valueProposition.contribute;
       class="section section-tartan-accent section-home-band--surface contribute-cta account-workspace-shell contribute-auth-shell"
     >
       <SectionConstellationLayer variant="partnership" semanticKey="contribute-cta" tier="whisper" placement="bottom-right" />
-      <div class="container">
-        <SectionIntro
-          eyebrow="New contributors"
-          title="Create your contributor account"
-          byline="Only needed if you do not already have an account. Same login as /account — after this, submit from topic guides under Resources, not on this page."
-        />
+      <div class="container contribute-get-started-inner">
+        <div id="contribute-get-started-intro">
+          <SectionIntro
+            eyebrow="New contributors"
+            title="Create your contributor account"
+            byline="Only if you are new — same login as /account. Submit from topic guides under Resources, not on this page."
+          />
+        </div>
 
         <ContributeGetStartedAuth
           accountPath={accountPath}

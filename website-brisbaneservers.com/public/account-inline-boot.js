@@ -81,21 +81,59 @@
     }
   }
 
-  function showDashboardShell(user) {
+  function showAuthenticatedShell(user) {
     var login = document.getElementById('login-screen');
     var dash = document.getElementById('admin-dashboard');
+    var basicHome = document.getElementById('account-basic-home');
+    var authBoot = document.getElementById('account-auth-boot');
     if (login) login.style.display = 'none';
-    if (dash) dash.style.display = 'block';
-    var greeting = document.getElementById('workspace-greeting');
-    if (greeting && user && user.email) {
-      greeting.textContent = 'Welcome back, ' + user.email;
+    if (authBoot) authBoot.hidden = true;
+
+    var rank = roleRank(user && user.role);
+    var workspace = rank >= 3 || Boolean(user && user.workspaceEnabled);
+
+    if (workspace) {
+      if (dash) dash.style.display = 'block';
+      if (basicHome) {
+        basicHome.style.display = 'none';
+        basicHome.classList.remove('is-visible');
+      }
+      var greeting = document.getElementById('workspace-greeting');
+      if (greeting && user && user.email) {
+        greeting.textContent = 'Welcome back, ' + user.email;
+      }
+    } else {
+      if (dash) dash.style.display = 'none';
+      if (basicHome) {
+        basicHome.style.display = 'flex';
+        basicHome.classList.add('is-visible');
+      }
+      var basicGreeting = document.getElementById('account-basic-greeting');
+      if (basicGreeting && user && user.email) {
+        basicGreeting.textContent = 'Welcome, ' + user.email;
+      }
+      var emailInput = document.getElementById('account-basic-email-input');
+      if (emailInput && user && user.email) {
+        emailInput.value = user.email;
+      }
     }
+
     document.querySelectorAll('[data-account-link="true"]').forEach(function (link) {
       var semantic = link.querySelector('.semantic-text');
       if (semantic) semantic.textContent = 'Account';
       else link.textContent = 'Account';
       link.classList.add('nav-account-cta--signed-in');
     });
+  }
+
+  var ROLE_RANK = { client: 1, viewer: 2, editor: 3, admin: 4, 'super-admin': 5 };
+
+  function roleRank(role) {
+    return ROLE_RANK[role] || 0;
+  }
+
+  function showDashboardShell(user) {
+    showAuthenticatedShell(user);
   }
 
   function authHeaders(token) {
@@ -264,9 +302,29 @@
     } catch (e) {}
   }
 
+  function probeExistingSession() {
+    if (window.__accountOAuthInFlight) return;
+    if (window.__accountInlineLoggedIn || window.__accountInlineOAuth) return;
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('oauth') === 'success' || params.get('oauth_error')) return;
+    var hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (hash.get('session')) return;
+
+    fetchAuth('/auth/me', { headers: authHeaders(null) })
+      .then(parseJsonResponse)
+      .then(function (result) {
+        if (result.response.ok && result.data.user) {
+          window.__accountInlineLoggedIn = { user: result.data.user, token: null };
+          showAuthenticatedShell(result.data.user);
+        }
+      })
+      .catch(function () {});
+  }
+
   function bootInline() {
     stripSensitiveQueryParams();
     handleOAuthReturn();
+    probeExistingSession();
     attachLoginFallback();
     window.__accountInlineBoot = true;
   }

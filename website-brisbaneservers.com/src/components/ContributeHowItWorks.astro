@@ -1,5 +1,4 @@
 ---
-import SiteLink from './SiteLink.astro';
 import { resolvePublicSitePath } from '../lib/api-config';
 
 interface Props {
@@ -56,23 +55,20 @@ const steps = [
   </ol>
 
   {variant === 'full' && (
-    <aside class="contribute-how-it-works__purpose" aria-labelledby="contribute-page-purpose-heading">
+    <aside
+      id="contribute-how-purpose"
+      class="contribute-how-it-works__purpose"
+      aria-labelledby="contribute-page-purpose-heading"
+    >
       <h3 id="contribute-page-purpose-heading" class="contribute-how-it-works__purpose-title">
         What this page is for
       </h3>
       <p>
-        <strong>/contribute</strong> explains the community programme — why we review submissions, how tokens work,
-        and what readers see on topic pages. It is <em>not</em> where you paste your contribution; that always happens
-        on the relevant industry guide.
-      </p>
-      <p>
-        The sign-in forms below are only for people who discover the programme here first and do not yet have an
-        account. They create the same contributor account as{' '}
-        <SiteLink href={accountPath}>/account</SiteLink>. If you already signed in with Google or email, you will see a
-        confirmation instead of the forms — go straight to Resources and submit from any topic.
+        Programme overview — how review, tokens, and topic-page publishing work. Submissions always happen on the
+        relevant industry guide, not here. Sign-in below is only for visitors who land here before they have an account.
       </p>
       <p class="contribute-how-it-works__purpose-note">
-        Full workspace tools (resource editor, voice profiles, admin console) are separate and enabled by invitation.
+        Full editor workspace is invitation-only; most contributors only need Resources and their contributor home.
       </p>
     </aside>
   )}
