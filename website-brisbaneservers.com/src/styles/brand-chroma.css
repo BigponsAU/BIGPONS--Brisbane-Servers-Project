@@ -229,35 +229,94 @@ header .nav-mega__link.active {
 }
 
 /*
- * Hero visual — full Sierpinski frame; no mask (mask was hiding the network on dark heroes).
+ * Hero visual — fill the right column; feather edges into the hero band.
  */
 .hero {
-  overflow-x: clip !important;
-  overflow-y: visible !important;
+  overflow: clip !important;
   z-index: 1;
 }
 
 .hero-visual,
 .main-home .hero-visual,
 .main-phi-chassis .hero-visual {
-  aspect-ratio: 4 / 3 !important;
-  max-height: min(30rem, 56dvh) !important;
-  max-width: min(100%, 38rem) !important;
-  width: 100% !important;
-  min-height: clamp(16rem, 24vw, 30rem) !important;
-  height: auto !important;
+  /* Fill the full right-column band (not a small top-right panel) */
+  aspect-ratio: unset !important;
+  max-height: none !important;
+  max-width: none !important;
   align-self: stretch !important;
-  justify-self: end !important;
+  justify-self: stretch !important;
+  height: 100% !important;
+  min-height: 100% !important;
   overflow: hidden !important;
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
+  /*
+   * Blend the constellation into the hero band:
+   * - fade the left edge into the copy column
+   * - feather the right into the hero edge
+   * - soften the bottom into the next section
+   */
+  -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.42) 6%,
+      #000 16%,
+      #000 86%,
+      rgba(0, 0, 0, 0.5) 95%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 68%,
+      rgba(0, 0, 0, 0.55) 86%,
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.42) 6%,
+      #000 16%,
+      #000 86%,
+      rgba(0, 0, 0, 0.5) 95%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 68%,
+      rgba(0, 0, 0, 0.55) 86%,
+      transparent 100%
+    );
+  mask-composite: intersect;
+}
+
+@supports not (mask-composite: intersect) {
+  .hero-visual,
+  .main-home .hero-visual,
+  .main-phi-chassis .hero-visual {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.5) 8%,
+      #000 18%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.5) 8%,
+      #000 18%,
+      #000 100%
+    );
+  }
 }
 
 .hero-visual .sierpinski-satellite {
   inset: 0 !important;
-  transform: none;
-  transform-origin: 50% 50%;
-  opacity: 0.95;
+  /* Bleed slightly past the frame; .hero-visual mask feathers into copy + hero edges */
+  transform: scale(1.08);
+  transform-origin: 56% 50%;
+  opacity: 0.88;
 }
 
 @media (max-width: 70rem) {

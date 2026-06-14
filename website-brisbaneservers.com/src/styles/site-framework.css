@@ -1336,17 +1336,17 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 
 .main-home .hero-visual,
 .hero-visual {
-  justify-self: end;
+  justify-self: stretch;
   align-self: stretch;
   width: 100%;
-  max-width: min(100%, 38rem);
+  max-width: none;
   margin-inline: 0;
   min-width: 0;
   position: relative;
-  aspect-ratio: 4 / 3;
-  max-height: min(30rem, 56dvh);
-  height: auto;
-  min-height: clamp(16rem, 24vw, 30rem);
+  aspect-ratio: unset;
+  max-height: none;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;

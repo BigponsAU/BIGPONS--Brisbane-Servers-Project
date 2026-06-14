@@ -1458,25 +1458,22 @@ nav {
     container-type: inline-size;
     container-name: hero-visual;
     overflow: hidden;
-    align-self: start;
-    justify-self: end;
-    aspect-ratio: 4 / 3;
-    max-height: min(28rem, 48dvh);
-    max-width: min(100%, 34rem);
-    height: auto;
+    align-self: stretch;
+    justify-self: stretch;
+    aspect-ratio: unset;
+    max-height: none;
+    max-width: none;
+    min-height: 100%;
+    height: 100%;
     padding-block: 0;
-    padding-inline: var(--hero-visual-inner-pad-inline);
-    /*
-     * Radial mask caused a hard vertical seam beside copy + “cut” bands at zoom; blend is from section gradients.
-     */
-    -webkit-mask-image: none;
-    mask-image: none;
+    padding-inline: 0;
+    /* Edge feathering: brand-chroma.css mask on .hero-visual */
 }
 
 /* Satellite fills the bounded visual frame (brand-chroma adds scale). */
 .hero-visual .sierpinski-satellite {
     position: absolute;
-    inset: 0.5rem;
+    inset: 0;
 }
 
 @media (max-width: 768px) {

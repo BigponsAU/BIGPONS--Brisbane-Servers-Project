@@ -107,16 +107,38 @@ function nodeMarkup(node: SatelliteNode, iconClass: string, nodeIndex: number): 
   ].join('');
 }
 
-export function buildSierpinskiSatelliteMarkup(): { connections: string; nodes: string } {
+function computeViewBox(nodes: SatelliteNode[], padding = 52): string {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const node of nodes) {
+    const margin = node.size * 2.4;
+    minX = Math.min(minX, node.x - margin);
+    minY = Math.min(minY, node.y - margin);
+    maxX = Math.max(maxX, node.x + margin);
+    maxY = Math.max(maxY, node.y + margin);
+  }
+
+  const x = minX - padding;
+  const y = minY - padding;
+  const width = maxX - minX + padding * 2;
+  const height = maxY - minY + padding * 2;
+
+  return `${x} ${y} ${width} ${height}`;
+}
+
+export function buildSierpinskiSatelliteMarkup(): {
+  connections: string;
+  nodes: string;
+  viewBox: string;
+} {
   const centerX = 400;
   const centerY = 300;
-  const layoutScale = 0.66;
 
-  const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4).map((node) => ({
-    ...node,
-    x: centerX + (node.x - centerX) * layoutScale,
-    y: centerY + (node.y - centerY) * layoutScale,
-  }));
+  const nodes = generateSierpinskiNodes(centerX, centerY, 0, 4);
+  const viewBox = computeViewBox(nodes);
 
   const connectionParts: string[] = [];
   let connectionSeq = 0;
@@ -135,5 +157,6 @@ export function buildSierpinskiSatelliteMarkup(): { connections: string; nodes: 
   return {
     connections: connectionParts.join(''),
     nodes: nodeParts.join(''),
+    viewBox,
   };
 }

@@ -1,14 +1,14 @@
 ---
 import { buildSierpinskiSatelliteMarkup } from '../lib/sierpinski-satellite';
 
-const { connections, nodes } = buildSierpinskiSatelliteMarkup();
+const { connections, nodes, viewBox } = buildSierpinskiSatelliteMarkup();
 ---
 
 <div class="sierpinski-satellite" aria-hidden="true">
   <svg
     class="satellite-svg"
-    viewBox="0 0 800 600"
-    preserveAspectRatio="xMidYMid meet"
+    viewBox={viewBox}
+    preserveAspectRatio="xMidYMid slice"
     xmlns="http://www.w3.org/2000/svg"
   >
     <g class="connections-layer" set:html={connections} />
@@ -21,8 +21,8 @@ const { connections, nodes } = buildSierpinskiSatelliteMarkup();
     position: absolute;
     inset: 0;
     box-sizing: border-box;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 2;
     opacity: 0.92;
