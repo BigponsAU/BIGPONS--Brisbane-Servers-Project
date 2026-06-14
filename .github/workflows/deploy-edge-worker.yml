@@ -25,7 +25,13 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: website-brisbaneservers.com/workers/api/package-lock.json
+          cache-dependency-path: |
+            website-brisbaneservers.com/package-lock.json
+            website-brisbaneservers.com/workers/api/package-lock.json
+
+      - name: Install website dependencies (worker bundle imports parent src)
+        working-directory: website-brisbaneservers.com
+        run: npm ci
 
       - name: Install worker dependencies
         working-directory: website-brisbaneservers.com/workers/api
