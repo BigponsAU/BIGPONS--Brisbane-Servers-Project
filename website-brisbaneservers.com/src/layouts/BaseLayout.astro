@@ -128,6 +128,9 @@ const skipFontAwesome = pageId === 'account';
     {!noindex && <meta name="twitter:image" content={shareImage} />}
     <title>{pageTitle}</title>
     {!noindex && <script type="application/ld+json" set:html={jsonLd} />}
+    {pageId === 'account' && (
+      <script src="/account-inline-boot.js" data-cfasync="false" />
+    )}
     {/* Immediate cleanup script - runs before any cached scripts */}
     <script is:inline data-cfasync="false">
       // Force cleanup immediately - Chrome cache workaround

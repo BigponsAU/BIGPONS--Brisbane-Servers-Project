@@ -1410,6 +1410,7 @@
       radial-gradient(circle at 70% 60%, rgba(var(--portal-primary-rgb), 0.08) 0%, transparent 60%);
     opacity: 0.6;
     z-index: 0;
+    pointer-events: none;
     animation: pulse-glow 8s ease-in-out infinite;
   }
 
@@ -1534,6 +1535,7 @@
     border-right: 60px solid transparent;
     border-top: 60px solid var(--primary-color);
     opacity: 0.15;
+    pointer-events: none;
     animation: sierpinski-path 20s linear infinite;
     transform-origin: center bottom;
   }

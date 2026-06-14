@@ -33,6 +33,8 @@
   width: 100%;
   max-width: var(--site-frame-wide);
   margin-inline: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .account-workspace-shell .login-container > .auth-status-banner {
@@ -58,6 +60,8 @@
   border-radius: var(--site-panel-radius);
   padding: var(--space-xl);
   box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
+  position: relative;
+  z-index: 1;
 }
 
 .account-workspace-shell .workspace-toolbar-title {

@@ -333,6 +333,7 @@ async function verifyToken(): Promise<void> {
 async function checkAuth(): Promise<void> {
   const rt = getPortalRuntime();
   if (rt.sessionActive) return;
+  if (hasInlineAuthed() || hasPendingOAuthReturn()) return;
 
   if (usesSessionStorageAuth(rt.voiceApiUrl)) {
     restorePersistedSessionToken(rt.voiceApiUrl);
@@ -350,8 +351,36 @@ async function checkAuth(): Promise<void> {
     return;
   }
   if (rt.sessionActive) return;
+  if (hasInlineAuthed() || hasPendingOAuthReturn()) return;
   rt.sessionActive = false;
   showLogin();
+}
+
+function hasPendingOAuthReturn(): boolean {
+  const win = window as Window & { __accountOAuthInFlight?: boolean };
+  if (win.__accountOAuthInFlight) return true;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('oauth') === 'success' || params.get('oauth_error')) return true;
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  return Boolean(hash.get('session'));
+}
+
+function hasInlineAuthed(): boolean {
+  const win = window as Window & {
+    __accountInlineOAuth?: { user?: unknown };
+    __accountInlineLoggedIn?: { user?: unknown };
+  };
+  return Boolean(win.__accountInlineOAuth?.user || win.__accountInlineLoggedIn?.user);
+}
+
+async function waitForInlineOAuth(maxMs = 10000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < maxMs) {
+    if (hasInlineAuthed()) return;
+    const win = window as Window & { __accountOAuthInFlight?: boolean };
+    if (!win.__accountOAuthInFlight && !hasPendingOAuthReturn()) return;
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+  }
 }
 
 function bindAuthForms(): void {
@@ -652,6 +681,8 @@ function bindAuthForms(): void {
 
   document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   document.getElementById('sidebar-logout-btn')?.addEventListener('click', handleLogout);
+
+  (window as Window & { __accountAuthFormsBound?: boolean }).__accountAuthFormsBound = true;
 }
 
 export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
@@ -695,9 +726,10 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   bindAuthForms();
   setupPasswordVisibilityToggles();
   setResendVerificationVisibility(false);
+  const pendingOAuth = hasPendingOAuthReturn();
   if (preAuthed && inlineSession?.user) {
     void showDashboard(inlineSession.user);
-  } else {
+  } else if (!pendingOAuth) {
     showLogin();
   }
 
@@ -709,13 +741,22 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
   void (async () => {
     const authStatusBanner = document.getElementById('auth-status-banner') as HTMLElement | null;
     try {
+      await waitForInlineOAuth();
+      if (hasInlineAuthed()) {
+        const session =
+          win.__accountInlineOAuth || win.__accountInlineLoggedIn;
+        if (session?.token) applyLoginSession(session.token);
+        else rt.sessionActive = true;
+        if (session?.user) await showDashboard(session.user);
+        return;
+      }
       await ensureReachableApiBase({ fast: true });
       await handleOAuthReturn();
       await handleVerificationToken();
       if (rt.pendingResetToken) {
         showResetPasswordForm();
       }
-      if (!rt.sessionActive) {
+      if (!rt.sessionActive && !hasInlineAuthed() && !hasPendingOAuthReturn()) {
         await checkAuth();
       }
       await loadOAuthProviders();
@@ -724,7 +765,7 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
         (document.getElementById('register-email') as HTMLInputElement | null)?.focus();
       }
     } catch {
-      if (!rt.sessionActive) {
+      if (!rt.sessionActive && !hasInlineAuthed() && !hasPendingOAuthReturn()) {
         showLogin();
       }
       showAuthBanner('Could not reach the sign-in service. Try again in a moment.', 'warning');
