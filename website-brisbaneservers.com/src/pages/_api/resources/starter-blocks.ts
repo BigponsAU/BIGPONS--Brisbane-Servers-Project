@@ -1,9 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
-import {
-  ensureResourcesFile,
-  loadResources
-} from '../../../lib/resources-api';
+import { loadResources } from '../../../lib/resources-api';
 
 /**
  * Get starter blocks only
@@ -30,7 +27,6 @@ export const GET: APIRoute = async ({ request }) => {
     const industry = url.searchParams.get('industry');
     const topic = url.searchParams.get('topic');
 
-    await ensureResourcesFile();
     let resources = await loadResources();
 
     resources = resources.filter((r) => r.isStarterBlock === true);

@@ -20,7 +20,8 @@ export {
  * Ensure backing store exists (empty array / DB). Idempotent.
  */
 export async function ensureResourcesFile(): Promise<void> {
-  await loadResources();
+  const repo = await getResourceRepository();
+  await repo.loadAll();
 }
 
 export async function loadResources(): Promise<Resource[]> {

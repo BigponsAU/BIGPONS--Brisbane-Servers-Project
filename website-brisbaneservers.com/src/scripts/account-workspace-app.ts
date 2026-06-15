@@ -48,9 +48,44 @@ export function bootAccountWorkspaceDashboard(): void {
   const ACCOUNT_PATH = rt.accountPath;
   const pageTitleSignedIn = rt.pageTitleSignedIn;
   const pageTitleSignedOut = rt.pageTitleSignedOut;
+  const isDev = import.meta.env.MODE === 'development';
+
+  const getVoiceApiUrl = (): string => rt.voiceApiUrl || VOICE_API_URL;
+
+  function escapeHtml(text: unknown): string {
+    const value = String(text ?? '');
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function clearDashboardLoadingPlaceholders(message?: string): void {
+    const activityList = document.getElementById('recent-activity-list');
+    if (activityList) {
+      activityList.innerHTML = message
+        ? `<div class="activity-loading"><p>${escapeHtml(message)}</p></div>`
+        : activityList.innerHTML;
+    }
+    const previewGrid = document.getElementById('recent-resources-preview');
+    if (previewGrid?.querySelector('.preview-loading, .preview-loading p')) {
+      previewGrid.innerHTML = message
+        ? `<div class="preview-loading"><p>${escapeHtml(message)}</p></div>`
+        : previewGrid.innerHTML;
+    }
+  }
+
+  function setDashboardStatsError(message: string): void {
+    ['dashboard-total-resources', 'dashboard-published', 'dashboard-drafts', 'dashboard-avg-score'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    clearDashboardLoadingPlaceholders(message);
+  }
 
   const syncRuntimeFromLocals = (): void => {
-    rt.voiceApiUrl = VOICE_API_URL;
+    VOICE_API_URL = rt.voiceApiUrl;
     rt.sessionActive = sessionActive;
     publishPortalBridge({});
   };
@@ -59,7 +94,7 @@ export function bootAccountWorkspaceDashboard(): void {
     const roles = ['super-admin', 'admin', 'editor'];
     if (!user?.role || !roles.includes(user.role)) return;
     try {
-      const res = await workspaceFetch(`${VOICE_API_URL}/profiles/create-base`, {
+      const res = await workspaceFetch(`${getVoiceApiUrl()}/profiles/create-base`, {
         method: 'POST',
         headers: {
         }
@@ -156,9 +191,6 @@ export function bootAccountWorkspaceDashboard(): void {
       void syncBaseVoiceProfile(user);
       loadDashboardData();
       loadResources();
-      if (hasWorkspaceCapability(user, 'editor')) {
-        loadStarterBlocks();
-      }
       // Ensure tree view is shown by default
       const workspace = document.getElementById('resource-workspace');
       const listView = document.getElementById('resources-list-view');
@@ -370,7 +402,7 @@ export function bootAccountWorkspaceDashboard(): void {
   // Load dashboard data
   async function loadDashboardData(retryCount = 0): Promise<void> {
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -416,11 +448,11 @@ export function bootAccountWorkspaceDashboard(): void {
         
         // Update recent resources preview (user's own resources only)
         updateRecentResourcesPreview(userResources);
-        
-        // Load starter blocks if on dashboard
+
+        // Prefer starter blocks from this response (avoids a second API round-trip).
         const dashboardPanel = document.getElementById('dashboard-panel');
-        if (dashboardPanel && dashboardPanel.classList.contains('active')) {
-          loadStarterBlocks();
+        if (dashboardPanel?.classList.contains('active')) {
+          renderStarterBlocksGrid(starterBlocks);
         }
       } else if (response.status === 401) {
         if (sessionActive && retryCount < 2) {
@@ -533,127 +565,156 @@ export function bootAccountWorkspaceDashboard(): void {
   }
 
   // Load starter blocks
+  let starterBlocksLoading = false;
+
+  async function fetchStarterBlocksList(): Promise<any[]> {
+    const apiBase = getVoiceApiUrl();
+    const starterRes = await workspaceFetch(`${apiBase}/resources/starter-blocks`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (starterRes.status === 401) {
+      await handleWorkspaceSessionExpired();
+      return [];
+    }
+
+    if (starterRes.ok) {
+      const data = await starterRes.json();
+      return Array.isArray(data.resources) ? data.resources : [];
+    }
+
+    const mainRes = await workspaceFetch(`${apiBase}/resources?includeStarterBlocks=true`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (mainRes.ok) {
+      const data = await mainRes.json();
+      const all = Array.isArray(data.resources) ? data.resources : [];
+      return all.filter((r: { isStarterBlock?: boolean }) => r.isStarterBlock === true);
+    }
+
+    if (currentResources.length) {
+      return currentResources.filter((r: any) => r.isStarterBlock === true);
+    }
+
+    let errorMessage = 'Failed to load starter blocks';
+    try {
+      const errorData = await starterRes.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(errorMessage);
+  }
+
+  function renderStarterBlocksGrid(starterBlocks: any[]): void {
+    const grid = document.getElementById('starter-blocks-grid');
+    if (!grid) return;
+
+    if (starterBlocks.length === 0) {
+      grid.innerHTML = `
+        <div class="starter-blocks-loading">
+          <p>No starter blocks available</p>
+          <p style="font-size: var(--text-xs); color: var(--portal-text-tertiary); margin-top: var(--space-sm);">
+            Starter blocks will appear here once created
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    const displayBlocks = starterBlocks.slice(0, 12);
+    grid.innerHTML = displayBlocks.map((block: any) => {
+      const industryName = String(block.industry ?? 'Uncategorized')
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (l: string) => l.toUpperCase());
+      const descriptionSource =
+        typeof block.description === 'string'
+          ? block.description
+          : typeof block.content === 'string'
+            ? block.content.substring(0, 150)
+            : '';
+      const blockId = escapeHtml(block.id);
+      return `
+        <div class="starter-block-card" onclick="createFromStarterBlock('${blockId}')">
+          <div class="starter-block-header">
+            <div class="starter-block-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </div>
+            <div class="starter-block-content">
+              <h4 class="starter-block-title">${escapeHtml(block.title || 'Untitled')}</h4>
+              <div class="starter-block-meta">
+                <span class="starter-block-meta-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  </svg>
+                  ${escapeHtml(industryName)}
+                </span>
+                <span class="starter-block-meta-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                  </svg>
+                  ${escapeHtml(block.topic || 'N/A')}
+                </span>
+              </div>
+              <p class="starter-block-description">${escapeHtml(descriptionSource || 'No description available')}</p>
+            </div>
+          </div>
+          <div class="starter-block-actions">
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); createFromStarterBlock('${blockId}');">
+              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Use This Block
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); navigateToPanel('resources'); setTimeout(() => selectResource('${blockId}'), 100);">
+              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              Preview
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (starterBlocks.length > 12) {
+      grid.innerHTML += `
+        <div class="starter-block-card" style="border-style: dashed; cursor: pointer;" onclick="navigateToPanel('resources'); document.getElementById('resource-search').value = 'starter block'; loadResources();">
+          <div style="text-align: center; padding: var(--space-xl);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3; margin-bottom: var(--space-md);">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <p style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-xs);">View All Starter Blocks</p>
+            <p style="font-size: var(--text-sm); color: var(--portal-text-tertiary);">${starterBlocks.length - 12} more available</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   async function loadStarterBlocks(): Promise<void> {
     const grid = document.getElementById('starter-blocks-grid');
     if (!grid) return;
+    if (starterBlocksLoading) return;
+    starterBlocksLoading = true;
 
     grid.innerHTML = '<div class="starter-blocks-loading">Loading starter blocks...</div>';
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/starter-blocks`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 401) {
-        await handleWorkspaceSessionExpired();
+      const cachedStarterBlocks = currentResources.filter((r: any) => r.isStarterBlock === true);
+      if (cachedStarterBlocks.length) {
+        renderStarterBlocksGrid(cachedStarterBlocks);
         return;
       }
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to load starter blocks';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          /* ignore */
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      const starterBlocks = Array.isArray(data.resources) ? data.resources : [];
-
-      if (starterBlocks.length === 0) {
-        grid.innerHTML = `
-          <div class="starter-blocks-loading">
-            <p>No starter blocks available</p>
-            <p style="font-size: var(--text-xs); color: var(--portal-text-tertiary); margin-top: var(--space-sm);">
-              Starter blocks will appear here once created
-            </p>
-          </div>
-        `;
-        return;
-      }
-
-      // Group by industry
-      const byIndustry: { [key: string]: any[] } = {};
-      starterBlocks.forEach((block: any) => {
-        if (!byIndustry[block.industry]) {
-          byIndustry[block.industry] = [];
-        }
-        byIndustry[block.industry].push(block);
-      });
-
-      // Display first 12 blocks (can be expanded)
-      const displayBlocks = starterBlocks.slice(0, 12);
-
-      grid.innerHTML = displayBlocks.map((block: any) => {
-        const industryName = block.industry.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
-        return `
-          <div class="starter-block-card" onclick="createFromStarterBlock('${escapeHtml(block.id)}')">
-            <div class="starter-block-header">
-              <div class="starter-block-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                </svg>
-              </div>
-              <div class="starter-block-content">
-                <h4 class="starter-block-title">${escapeHtml(block.title || 'Untitled')}</h4>
-                <div class="starter-block-meta">
-                  <span class="starter-block-meta-item">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    </svg>
-                    ${escapeHtml(industryName)}
-                  </span>
-                  <span class="starter-block-meta-item">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    ${escapeHtml(block.topic || 'N/A')}
-                  </span>
-                </div>
-                <p class="starter-block-description">${escapeHtml(block.description || block.content?.substring(0, 150) || 'No description available')}</p>
-              </div>
-            </div>
-            <div class="starter-block-actions">
-              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); createFromStarterBlock('${escapeHtml(block.id)}');">
-                <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Use This Block
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); navigateToPanel('resources'); setTimeout(() => selectResource('${escapeHtml(block.id)}'), 100);">
-                <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                Preview
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (starterBlocks.length > 12) {
-        grid.innerHTML += `
-          <div class="starter-block-card" style="border-style: dashed; cursor: pointer;" onclick="navigateToPanel('resources'); document.getElementById('resource-search').value = 'starter block'; loadResources();">
-            <div style="text-align: center; padding: var(--space-xl);">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3; margin-bottom: var(--space-md);">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-              <p style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-xs);">View All Starter Blocks</p>
-              <p style="font-size: var(--text-sm); color: var(--portal-text-tertiary);">${starterBlocks.length - 12} more available</p>
-            </div>
-          </div>
-        `;
-      }
-
+      const starterBlocks = await fetchStarterBlocksList();
+      renderStarterBlocksGrid(starterBlocks);
     } catch (error) {
       console.error('[Portal] Error loading starter blocks:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -663,6 +724,8 @@ export function bootAccountWorkspaceDashboard(): void {
           <button class="btn btn-secondary btn-sm" onclick="loadStarterBlocks()" style="margin-top: var(--space-md);">Retry</button>
         </div>
       `;
+    } finally {
+      starterBlocksLoading = false;
     }
   }
 
@@ -670,7 +733,7 @@ export function bootAccountWorkspaceDashboard(): void {
   async function createFromStarterBlock(starterBlockId: string): Promise<void> {
     showNotification('Creating resource from starter block...', 'info', 0);
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/from-starter-block`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/from-starter-block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -886,7 +949,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/generate`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -977,12 +1040,12 @@ export function bootAccountWorkspaceDashboard(): void {
       const searchQuery = (document.getElementById('resource-search') as HTMLInputElement)?.value;
       const typeFilter = (document.getElementById('resource-type-filter') as HTMLSelectElement)?.value || 'user';
 
-      let url = `${VOICE_API_URL}/resources`;
+      let url = `${getVoiceApiUrl()}/resources`;
       const params = new URLSearchParams();
       if (statusFilter) params.append('status', statusFilter);
       if (typeFilter === 'starter') {
         // Fetch starter blocks separately
-        url = `${VOICE_API_URL}/resources/starter-blocks`;
+        url = `${getVoiceApiUrl()}/resources/starter-blocks`;
       } else if (typeFilter === 'all') {
         params.append('includeStarterBlocks', 'true');
       }
@@ -2126,7 +2189,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2164,7 +2227,7 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!confirm('Unpublish this resource? It will no longer be visible on the website.')) return;
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2192,7 +2255,7 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!confirm('Archive this resource? It will be hidden from normal views but can be restored later.')) return;
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2222,7 +2285,7 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!confirm('Unarchive this resource? It will be restored to draft status.')) return;
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2274,7 +2337,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2395,7 +2458,7 @@ export function bootAccountWorkspaceDashboard(): void {
     showNotification('Improving resource... This may take a moment.', 'info', 0);
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}/improve`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}/improve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2443,7 +2506,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'DELETE',
         headers: {
         }
@@ -2472,12 +2535,6 @@ export function bootAccountWorkspaceDashboard(): void {
       }
     }
   };
-
-  function escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 
   const PORTAL_RESOURCE_VOICE_PROFILE_KEY = 'portalResourceVoiceProfileId';
 
@@ -2541,7 +2598,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
     if (!sessionActive) return;
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -2621,7 +2678,7 @@ export function bootAccountWorkspaceDashboard(): void {
       const uploadProfileId = getWorkspaceVoiceProfileIdForApi();
       if (uploadProfileId) uploadFormData.append('profileId', uploadProfileId);
 
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/upload`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/upload`, {
         method: 'POST',
         headers: {
         },
@@ -2736,7 +2793,7 @@ export function bootAccountWorkspaceDashboard(): void {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Process & Create Resource'; }
         return;
       }
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/process`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2808,7 +2865,7 @@ export function bootAccountWorkspaceDashboard(): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -2841,7 +2898,7 @@ export function bootAccountWorkspaceDashboard(): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -2874,7 +2931,7 @@ export function bootAccountWorkspaceDashboard(): void {
     
     try {
       const results = await Promise.all(ids.map(id => 
-        workspaceFetch(`${VOICE_API_URL}/resources/${id}`, {
+        workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
           method: 'DELETE',
           headers: {
           }
@@ -2968,7 +3025,7 @@ export function bootAccountWorkspaceDashboard(): void {
     btn.textContent = 'Deduplicating...';
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/deduplicate`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/deduplicate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3011,7 +3068,7 @@ export function bootAccountWorkspaceDashboard(): void {
     btn.textContent = 'Seeding...';
     
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources/seed`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/seed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3089,7 +3146,7 @@ export function bootAccountWorkspaceDashboard(): void {
       const industry = industryEl?.value?.trim() || undefined;
       const body = industry ? { industry } : {};
 
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/create-base`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/create-base`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -3141,13 +3198,11 @@ export function bootAccountWorkspaceDashboard(): void {
     `;
 
     try {
-      // Use Astro API route for profiles (not Express dashboard)
-      const isDev = import.meta.env.MODE === 'development';
       if (isDev) {
-        console.log('[Portal] Fetching profiles from:', `${VOICE_API_URL}/profiles`);
+        console.log('[Portal] Fetching profiles from:', `${getVoiceApiUrl()}/profiles`);
       }
       
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -3379,7 +3434,7 @@ export function bootAccountWorkspaceDashboard(): void {
   // View Default Profile
   document.getElementById('view-default-profile')?.addEventListener('click', async () => {
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/default`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/default`, {
         headers: {
           'Accept': 'application/json'
         }
@@ -3448,7 +3503,7 @@ export function bootAccountWorkspaceDashboard(): void {
       if (resources.length === 0) {
         // Reload resources to ensure we have the latest data
         const statusFilter = (document.getElementById('status-filter') as HTMLSelectElement)?.value;
-        let url = `${VOICE_API_URL}/resources`;
+        let url = `${getVoiceApiUrl()}/resources`;
         const params = new URLSearchParams();
         if (statusFilter) params.append('status', statusFilter);
         if (params.toString()) url += '?' + params.toString();
@@ -3488,7 +3543,7 @@ export function bootAccountWorkspaceDashboard(): void {
     const listEl = document.getElementById('analytics-suggestions-list');
     if (!configEl || !listEl) return;
     try {
-      const res = await workspaceFetch(`${VOICE_API_URL}/analytics/suggestions`, {
+      const res = await workspaceFetch(`${getVoiceApiUrl()}/analytics/suggestions`, {
       });
       if (!res.ok) { configEl.innerHTML = '<p>Unable to load suggestions (admin only).</p>'; listEl.innerHTML = ''; return; }
       const data = await res.json();
@@ -3510,7 +3565,7 @@ export function bootAccountWorkspaceDashboard(): void {
           const value = parseFloat((btn as HTMLElement).getAttribute('data-value') || '0');
           if (!key) return;
           try {
-            const patchRes = await workspaceFetch(`${VOICE_API_URL}/admin/pipeline-config`, {
+            const patchRes = await workspaceFetch(`${getVoiceApiUrl()}/admin/pipeline-config`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ [key]: value })
@@ -3530,8 +3585,8 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!container) return;
     try {
       const [usersRes, vectorsRes] = await Promise.all([
-        workspaceFetch(`${VOICE_API_URL}/admin/users`),
-        workspaceFetch(`${VOICE_API_URL}/admin/vectors-summary`)
+        workspaceFetch(`${getVoiceApiUrl()}/admin/users`),
+        workspaceFetch(`${getVoiceApiUrl()}/admin/vectors-summary`)
       ]);
       const usersData = usersRes.ok ? await usersRes.json() : null;
       const vectorsData = vectorsRes.ok ? await vectorsRes.json() : null;
@@ -4098,7 +4153,7 @@ export function bootAccountWorkspaceDashboard(): void {
   // View Profile
   (window as any).viewProfile = async (id: string) => {
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
           'Accept': 'application/json'
         }
@@ -4207,7 +4262,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -4258,7 +4313,7 @@ export function bootAccountWorkspaceDashboard(): void {
     }
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -4402,7 +4457,7 @@ export function bootAccountWorkspaceDashboard(): void {
       if (!confirm('Set this profile as the default voice profile? New resource runs that use “Auto” will prefer this saved profile when present.')) return;
     }
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/${encodeURIComponent(id)}`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -4431,7 +4486,7 @@ export function bootAccountWorkspaceDashboard(): void {
     try {
       showNotification('Analyzing profile similarities...', 'info');
       
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
           'Accept': 'application/json'
         }
@@ -4644,7 +4699,7 @@ export function bootAccountWorkspaceDashboard(): void {
     showNotification('Analyzing and sculpting profile library...', 'info');
 
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles/deduplicate`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/deduplicate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -4739,7 +4794,7 @@ export function bootAccountWorkspaceDashboard(): void {
   // Export Profiles
   (window as any).exportProfiles = async () => {
     try {
-      const response = await workspaceFetch(`${VOICE_API_URL}/profiles`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
           'Accept': 'application/json'
         }
@@ -4825,7 +4880,7 @@ export function bootAccountWorkspaceDashboard(): void {
   (window as any).exportResources = async () => {
     try {
       // Get all resources, not just filtered ones
-      const response = await workspaceFetch(`${VOICE_API_URL}/resources`, {
+      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources`, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -4891,7 +4946,7 @@ export function bootAccountWorkspaceDashboard(): void {
         const batch = drafts.slice(i, i + batchSize);
         const results = await Promise.allSettled(
           batch.map(resource =>
-            workspaceFetch(`${VOICE_API_URL}/resources/${resource.id}/improve`, {
+            workspaceFetch(`${getVoiceApiUrl()}/resources/${resource.id}/improve`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
