@@ -3,7 +3,6 @@ import { requireAdmin } from '../../../utils/auth';
 import { fileURLToPath } from 'url';
 import { industries } from '../../../data/industries';
 import {
-  ensureResourcesFile,
   loadResources,
   saveResources,
   normalizeTopicSlug,
@@ -104,7 +103,6 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     console.log('[API] POST /api/resources/seed - Starting resource seeding');
     
-    await ensureResourcesFile();
     const existingResources = await loadResources();
     
     const newResources: Resource[] = [];

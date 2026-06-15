@@ -61,6 +61,16 @@ export function bootAccountWorkspaceDashboard(): void {
       .replace(/"/g, '&quot;');
   }
 
+  function resourceExcerpt(resource: { description?: unknown; content?: unknown }, maxLen = 150): string {
+    const pick = (value: unknown): string => {
+      if (typeof value !== 'string') return '';
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      return trimmed.length > maxLen ? trimmed.substring(0, maxLen) : trimmed;
+    };
+    return pick(resource.description) || pick(resource.content);
+  }
+
   function clearDashboardLoadingPlaceholders(message?: string): void {
     const activityList = document.getElementById('recent-activity-list');
     if (activityList) {
@@ -189,8 +199,7 @@ export function bootAccountWorkspaceDashboard(): void {
     console.log('[Portal] Loading dashboard data');
     setTimeout(() => {
       void syncBaseVoiceProfile(user);
-      loadDashboardData();
-      loadResources();
+      // navigateToPanel('dashboard') already loads overview data — avoid duplicate /resources calls.
       // Ensure tree view is shown by default
       const workspace = document.getElementById('resource-workspace');
       const listView = document.getElementById('resources-list-view');
@@ -361,7 +370,7 @@ export function bootAccountWorkspaceDashboard(): void {
       window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
       window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
     } else if (panelName === 'admin-users') {
-      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(VOICE_API_URL));
+      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()));
     }
   };
 
@@ -411,49 +420,7 @@ export function bootAccountWorkspaceDashboard(): void {
       if (response.ok) {
         const data = await response.json();
         const resources = Array.isArray(data.resources) ? data.resources : [];
-        
-        // Store resources globally for analytics sync
-        currentResources = resources;
-        
-        // Separate starter blocks from user's own resources
-        const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
-        const userResources = resources.filter((r: any) => !r.isStarterBlock);
-        
-        // Update stats (only user's own resources, not starter blocks)
-        const total = userResources.length;
-        const published = userResources.filter((r: any) => r.status === 'published').length;
-        const drafts = userResources.filter((r: any) => r.status === 'draft').length;
-        const scores = userResources
-          .map((r: any) => r.metadata?.voiceScore)
-          .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
-        const avgScore = scores.length > 0
-          ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
-          : 0;
-
-        const totalEl = document.getElementById('dashboard-total-resources');
-        const publishedEl = document.getElementById('dashboard-published');
-        const draftsEl = document.getElementById('dashboard-drafts');
-        const avgScoreEl = document.getElementById('dashboard-avg-score');
-
-        if (totalEl) totalEl.textContent = total.toString();
-        if (publishedEl) publishedEl.textContent = published.toString();
-        if (draftsEl) draftsEl.textContent = drafts.toString();
-        if (avgScoreEl) avgScoreEl.textContent = `${Math.round(avgScore * 100)}%`;
-
-        // Sync analytics with dashboard data
-        updateAnalyticsDisplay(userResources);
-
-        // Update recent activity (user's own resources only)
-        updateRecentActivity(userResources);
-        
-        // Update recent resources preview (user's own resources only)
-        updateRecentResourcesPreview(userResources);
-
-        // Prefer starter blocks from this response (avoids a second API round-trip).
-        const dashboardPanel = document.getElementById('dashboard-panel');
-        if (dashboardPanel?.classList.contains('active')) {
-          renderStarterBlocksGrid(starterBlocks);
-        }
+        applyDashboardResourceSnapshot(resources);
       } else if (response.status === 401) {
         if (sessionActive && retryCount < 2) {
           await new Promise((resolve) => window.setTimeout(resolve, 350 * (retryCount + 1)));
@@ -564,6 +531,42 @@ export function bootAccountWorkspaceDashboard(): void {
     }).join('');
   }
 
+  function applyDashboardResourceSnapshot(resources: any[]): void {
+    currentResources = resources;
+
+    const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
+    const userResources = resources.filter((r: any) => !r.isStarterBlock);
+
+    const total = userResources.length;
+    const published = userResources.filter((r: any) => r.status === 'published').length;
+    const drafts = userResources.filter((r: any) => r.status === 'draft').length;
+    const scores = userResources
+      .map((r: any) => r.metadata?.voiceScore)
+      .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
+    const avgScore = scores.length > 0
+      ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
+      : 0;
+
+    const totalEl = document.getElementById('dashboard-total-resources');
+    const publishedEl = document.getElementById('dashboard-published');
+    const draftsEl = document.getElementById('dashboard-drafts');
+    const avgScoreEl = document.getElementById('dashboard-avg-score');
+
+    if (totalEl) totalEl.textContent = total.toString();
+    if (publishedEl) publishedEl.textContent = published.toString();
+    if (draftsEl) draftsEl.textContent = drafts.toString();
+    if (avgScoreEl) avgScoreEl.textContent = `${Math.round(avgScore * 100)}%`;
+
+    updateAnalyticsDisplay(userResources);
+    updateRecentActivity(userResources);
+    updateRecentResourcesPreview(userResources);
+
+    const dashboardPanel = document.getElementById('dashboard-panel');
+    if (dashboardPanel?.classList.contains('active')) {
+      renderStarterBlocksGrid(starterBlocks);
+    }
+  }
+
   // Load starter blocks
   let starterBlocksLoading = false;
 
@@ -627,12 +630,7 @@ export function bootAccountWorkspaceDashboard(): void {
       const industryName = String(block.industry ?? 'Uncategorized')
         .replace(/-/g, ' ')
         .replace(/\b\w/g, (l: string) => l.toUpperCase());
-      const descriptionSource =
-        typeof block.description === 'string'
-          ? block.description
-          : typeof block.content === 'string'
-            ? block.content.substring(0, 150)
-            : '';
+        const descriptionSource = resourceExcerpt(block);
       const blockId = escapeHtml(block.id);
       return `
         <div class="starter-block-card" onclick="createFromStarterBlock('${blockId}')">
@@ -1380,8 +1378,8 @@ export function bootAccountWorkspaceDashboard(): void {
               ` : ''}
             </div>
             <div class="resource-content">
-              ${escapeHtml(resource.description || resource.content?.substring(0, 150) || 'No description available')}
-              ${(resource.description || resource.content || '').length > 150 ? `
+              ${escapeHtml(resourceExcerpt(resource) || 'No description available')}
+              ${resourceExcerpt(resource).length >= 150 ? `
                 <a href="#" class="resource-description-toggle" onclick="event.preventDefault(); this.previousSibling.classList.toggle('resource-content-expanded'); this.textContent = this.previousSibling.classList.contains('resource-content-expanded') ? 'Show less' : 'Show more';">
                   Show more
                 </a>
@@ -1436,36 +1434,11 @@ export function bootAccountWorkspaceDashboard(): void {
         }
       }
       
-      // Sync analytics with dashboard - always update when resources are loaded
-      // Reuse userResources already declared above (filtered from resources)
       updateAnalyticsDisplay(userResources);
-      
-      // Also sync dashboard if it's active
+
       const dashboardPanel = document.getElementById('dashboard-panel');
-      if (dashboardPanel && dashboardPanel.classList.contains('active')) {
-        // Dashboard stats are already updated above, but ensure sync
-        const totalEl = document.getElementById('dashboard-total-resources');
-        const publishedEl = document.getElementById('dashboard-published');
-        const draftsEl = document.getElementById('dashboard-drafts');
-        const avgScoreEl = document.getElementById('dashboard-avg-score');
-        
-        if (totalEl || publishedEl || draftsEl || avgScoreEl) {
-          // Dashboard stats already updated, but ensure consistency
-          const total = userResources.length;
-          const published = userResources.filter((r: any) => r.status === 'published').length;
-          const drafts = userResources.filter((r: any) => r.status === 'draft').length;
-          const scores = userResources
-            .map((r: any) => r.metadata?.voiceScore)
-            .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
-          const avgScore = scores.length > 0
-            ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
-            : 0;
-          
-          if (totalEl) totalEl.textContent = total.toString();
-          if (publishedEl) publishedEl.textContent = published.toString();
-          if (draftsEl) draftsEl.textContent = drafts.toString();
-          if (avgScoreEl) avgScoreEl.textContent = `${Math.round(avgScore * 100)}%`;
-        }
+      if (dashboardPanel?.classList.contains('active')) {
+        applyDashboardResourceSnapshot(resources);
       }
     } catch (error) {
       console.error('[Portal] Error loading resources:', error);

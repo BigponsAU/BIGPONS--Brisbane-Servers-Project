@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
 import {
-  ensureResourcesFile,
   loadResources,
   saveResources,
   normalizeTopicSlug,
