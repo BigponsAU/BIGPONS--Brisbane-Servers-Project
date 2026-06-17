@@ -1,4 +1,4 @@
-import type { OAuthProvider, StoredOAuthIdentity } from './oauth-identities';
+import type { OAuthProvider, StoredOAuthIdentity } from './oauth-identity-types';
 import { getSharedPool } from './pg-pool';
 
 let schemaReady: Promise<void> | null = null;

@@ -1,25 +1,16 @@
 /**
- * Postgres-backed auth store (production). Set DATABASE_URL.
- * Schema matches SQLite auth tables in auth-sqlite.ts.
+ * Postgres-backed auth store (production). Requires DATABASE_URL.
  */
 
 import { existsSync, readFileSync } from 'fs';
-import * as path from 'path';
 import type { Pool } from 'pg';
-import { fileURLToPath } from 'url';
 import type { AuthRole, AuthUser } from '../../utils/auth';
 import { getRuntimeEnv } from '../../utils/runtime-env';
+import { getAuthTokensJsonFile, getSessionsJsonFile, getUsersJsonFile } from '../storage-paths';
 import { getSharedPool } from './pg-pool';
 import type { StoredAuthToken } from './auth-types';
 import type { StoredSession } from './sessions';
 import type { StoredUser } from './users';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '../../../../');
-const USERS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'users.json');
-const SESSIONS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'sessions.json');
-const AUTH_TOKENS_JSON_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'auth-tokens.json');
 
 let schemaReady: Promise<void> | null = null;
 
@@ -99,7 +90,7 @@ async function ensureSchema(pool: Pool): Promise<void> {
 }
 
 async function migrateJsonFromFiles(pool: Pool): Promise<void> {
-  const users = readJsonArray<StoredUser>(USERS_JSON_FILE);
+  const users = readJsonArray<StoredUser>(getUsersJsonFile());
   for (const user of users) {
     await pool.query(
       `INSERT INTO users (id, email, password_hash, role, created_at, email_verified_at, updated_at)
@@ -117,7 +108,7 @@ async function migrateJsonFromFiles(pool: Pool): Promise<void> {
     );
   }
 
-  const sessions = readJsonArray<StoredSession>(SESSIONS_JSON_FILE);
+  const sessions = readJsonArray<StoredSession>(getSessionsJsonFile());
   for (const session of sessions) {
     await pool.query(
       `INSERT INTO sessions (token, user_id, email, role, expires_at, created_at)
@@ -134,7 +125,7 @@ async function migrateJsonFromFiles(pool: Pool): Promise<void> {
     );
   }
 
-  const authTokens = readJsonArray<StoredAuthToken>(AUTH_TOKENS_JSON_FILE);
+  const authTokens = readJsonArray<StoredAuthToken>(getAuthTokensJsonFile());
   for (const token of authTokens) {
     await pool.query(
       `INSERT INTO auth_tokens (id, user_id, email, type, token_hash, created_at, expires_at, consumed_at)

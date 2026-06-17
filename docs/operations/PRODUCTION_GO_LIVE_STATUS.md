@@ -2,11 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-18 (edge worker CI deploy; local changes need push for new routes)
+**Last synced:** 2026-06-18 (commit `85b5fb1` — dashboard routes + `verify:dashboard-api` 26/26 on production)
 
-### Pending deploy (local / unpushed)
+### 2026-06-18 deploy
 
-Worker deploy via GitHub Actions succeeded on `main`, but **this session's** route manifest, token redemption, topic guides, and portal UI require **commit + push to `main`** then CI redeploy (or fix `CLOUDFLARE_API_TOKEN` for local `deploy:edge-worker`). Pages rebuild needed for static topic guides and portal panels.
+- Pushed `85b5fb1` → GitHub Actions **Deploy edge worker** succeeded.
+- `npm run verify:production` and `npm run verify:dashboard-api` both **PASS** against `https://api.brisbaneservers.com`.
+- Fixed Worker module-load 500s (`fileURLToPath` at import time) on passkey, profiles, vectors-summary routes.
 
 ---
 
@@ -35,7 +37,6 @@ Worker deploy via GitHub Actions succeeded on `main`, but **this session's** rou
 
 | Item | Notes |
 |------|-------|
-| **Deploy** Worker + Pages | Batch portal fixes + new API routes when ready |
 | **Pages deploy hook** | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on worker |
 | **Billing** | Stripe / PayID — not built by design yet |
 

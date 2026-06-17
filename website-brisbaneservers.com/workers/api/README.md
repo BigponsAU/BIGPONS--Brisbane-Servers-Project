@@ -45,4 +45,4 @@ npm install
 npx wrangler dev
 ```
 
-For full API locally without worker: `npm run start:api` from `website-brisbaneservers.com`.
+Deploy: push to `main` (`.github/workflows/deploy-edge-worker.yml`) or `npm run deploy:edge-worker` from this package.

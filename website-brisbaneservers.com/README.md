@@ -1,26 +1,25 @@
 # Brisbane Servers website
 
-Static Astro frontend with a **hybrid API** hosted separately (Cloudflare Pages + standalone Node API).
+Static Astro site on **Cloudflare Pages** with API on **Cloudflare Worker** (`api.brisbaneservers.com`) and **Neon Postgres** via Hyperdrive.
+
+There is no local hybrid API server. Full platform behaviour (auth, corpus, account workspace, tokens, voice) requires production infrastructure.
 
 ## Layout
 
 - **Frontend:** `src/` — pages, components, styles (built to `dist/`)
-- **API handlers:** `api/` — loaded at runtime by `standalone-api/server.ts`
-- **API server:** `standalone-api/server.ts` (default port 3002)
+- **API handlers:** `src/pages/_api/` — dispatched by the edge worker via `standalone-api/route-manifest.ts`
+- **Edge worker:** `workers/api/`
 
 ## Scripts
 
 ```bash
-npm run dev              # Astro dev server (port 3000)
-npm run start:api        # Standalone hybrid API (port 3002)
-npm run build            # Production static build → dist/
-npm run build:hosted     # Local build with production-like env
-npm run preview:hosted   # Preview after build:hosted
-npm test                 # Vitest (includes API contract tests)
+npm run dev                  # Astro dev (UI only; set PUBLIC_API_BASE_URL to production API)
+npm run build                # Production static build → dist/
+npm run test                 # Vitest
+npm run verify:production    # Smoke-check live API
+npm run verify:dashboard-api # All /account workspace routes
 ```
 
-From monorepo root: `npm run start:hybrid` runs website + standalone API together.
+Deploy API: push to `main` (GitHub Actions `deploy-edge-worker.yml`) or `npm run deploy:edge-worker` with Cloudflare token.
 
-## Deployment & SEO
-
-**Master guide:** [docs/MASTER.md](../docs/MASTER.md) — deployment, SEO, content publishing, build validation.
+**Ops guide:** [docs/operations/HOSTING_MCP_WORKSPACE.md](../docs/operations/HOSTING_MCP_WORKSPACE.md)

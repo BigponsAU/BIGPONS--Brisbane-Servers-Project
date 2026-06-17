@@ -52,7 +52,8 @@ export const POST: APIRoute = async ({ request }) => {
         email: String(email),
         role: isSuperAdmin ? 'super-admin' : 'admin'
       };
-      const token = createSessionToken(user);
+      const token = createSessionToken();
+      await createSession(user, token);
       return new Response(
         JSON.stringify({ user, success: true, token }),
         {
@@ -97,7 +98,7 @@ export const POST: APIRoute = async ({ request }) => {
       emailVerified: true,
       workspaceEnabled: Boolean(stored.workspaceEnabled),
     };
-    const token = createSessionToken(user);
+    const token = createSessionToken();
     await createSession(user, token);
     await logAuthEvent({ userId: user.id, email: user.email, eventType: 'auth.login.succeeded' });
 

@@ -33,15 +33,10 @@ export default defineConfig({
         '@voice-framework': path.resolve(__dirname, '../voice-framework'),
       }
     },
-  server: {
+    server: {
       watch: {
         usePolling: false,
         interval: 100
-      },
-      // Local dev only: browser uses relative /api; Vite proxies to the API process.
-      // Override with API_DEV_PROXY if your API is not on 127.0.0.1:3002.
-      proxy: {
-        '/api': process.env.API_DEV_PROXY ?? 'http://127.0.0.1:3002',
       },
     },
     build: {

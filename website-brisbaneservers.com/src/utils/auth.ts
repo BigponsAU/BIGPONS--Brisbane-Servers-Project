@@ -4,7 +4,6 @@
  */
 
 import * as crypto from 'crypto';
-import { getRuntimeEnv } from './runtime-env';
 
 const SALT_LEN = 16;
 const KEY_LEN = 64;
@@ -34,76 +33,17 @@ export interface AuthUser {
   workspaceEnabled?: boolean;
 }
 
-// Simple in-memory session store (in production, use Redis or database)
-const sessions = new Map<string, { user: AuthUser; expiresAt: number }>();
-
-// Session expiration (24 hours)
-const SESSION_DURATION = 24 * 60 * 60 * 1000;
-
-/**
- * Create a session token
- */
-export function createSessionToken(user: AuthUser): string {
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = Date.now() + SESSION_DURATION;
-  
-  sessions.set(token, { user, expiresAt });
-  
-  // Clean up expired sessions
-  setTimeout(() => {
-    sessions.delete(token);
-  }, SESSION_DURATION);
-  
-  return token;
+// Opaque session token — persisted via createSession() in lib/db/sessions (Postgres).
+export function createSessionToken(): string {
+  return crypto.randomBytes(32).toString('hex');
 }
 
 /**
- * Verify session token (in-memory only)
- */
-export function verifySessionToken(token: string): AuthUser | null {
-  const session = sessions.get(token);
-  if (!session) return null;
-  if (Date.now() > session.expiresAt) {
-    sessions.delete(token);
-    return null;
-  }
-  return session.user;
-}
-
-/**
- * Verify session token (memory + persisted DB). Use in API routes.
+ * Verify session token against Postgres (production only).
  */
 export async function verifySessionTokenAsync(token: string): Promise<AuthUser | null> {
-  const fromMemory = verifySessionToken(token);
-  try {
-    const { getSessionUser } = await import('../lib/db/sessions');
-    const persisted = await getSessionUser(token);
-    if (persisted) {
-      return persisted;
-    }
-  } catch {
-    // Ignore persistence errors so bootstrap admin can still sign in when DB storage is unavailable.
-  }
-
-  if (fromMemory) {
-    const adminEmail = getRuntimeEnv('ADMIN_EMAIL') ?? '';
-    const isBootstrapAdmin = Boolean(
-      adminEmail &&
-      fromMemory.email === adminEmail &&
-      (fromMemory.role === 'admin' || fromMemory.role === 'super-admin')
-    );
-    if (isBootstrapAdmin) {
-      return fromMemory;
-    }
-  }
-
-  try {
-    const { deleteSession } = await import('../lib/db/sessions');
-    await deleteSession(token);
-  } catch {
-    // Ignore cleanup failures.
-  }
-  return null;
+  const { getSessionUser } = await import('../lib/db/sessions');
+  return getSessionUser(token);
 }
 
 /**
@@ -134,7 +74,7 @@ export function getTokenFromRequest(request: Request): string | null {
 }
 
 /**
- * Require authentication - returns user or error (async: checks memory + persisted sessions)
+ * Require authentication — Postgres session only.
  */
 export async function requireAuth(
   request: Request

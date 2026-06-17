@@ -10,7 +10,9 @@
 | **Resend** | Outbound auth email | *none* | Worker secret `RESEND_API_KEY` |
 | **Google Cloud** | Sign-in with Google | Google Console | Worker secrets `GOOGLE_OAUTH_*` |
 
-**Render is not in the production path.** Legacy resources: [RENDER_MCP.md](RENDER_MCP.md) (decommission only).
+**Production-only runtime:** No local hybrid API, SQLite, or JSON resource store. Auth, corpus, and resources require `DATABASE_URL` (Neon via Hyperdrive on the worker). UI dev (`npm run dev`) uses `PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api`.
+
+**Render is not in the production path.** Legacy resources: [RENDER_MCP.md](RENDER_MCP.md) (archive).
 
 **Canonical URLs** (`website-brisbaneservers.com/src/lib/canonical-hosts.ts`):
 

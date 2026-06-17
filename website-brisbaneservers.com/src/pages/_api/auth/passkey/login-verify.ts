@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
       role: dbUser.role,
       emailVerified: true
     };
-    const token = createSessionToken(user);
+    const token = createSessionToken();
     await createSession(user, token);
     await logAuthEvent({ userId: user.id, email: user.email, eventType: 'auth.passkey.login.succeeded' });
 

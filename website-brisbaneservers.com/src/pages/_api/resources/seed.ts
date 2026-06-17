@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
-import { fileURLToPath } from 'url';
 import { industries } from '../../../data/industries';
 import {
   loadResources,

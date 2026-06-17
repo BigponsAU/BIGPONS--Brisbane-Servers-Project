@@ -13,7 +13,6 @@ export { normalizeTopicSlug } from './resource-slug';
 export {
   getResourcesFile,
   getSemanticIndexFile,
-  getSqliteDbFile,
 } from './storage-paths';
 
 /**

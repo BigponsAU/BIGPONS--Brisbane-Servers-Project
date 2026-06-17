@@ -18,14 +18,6 @@ export function getSemanticIndexFile(): string {
   return path.join(storageDir(), 'semantic-index.json');
 }
 
-export function getSqliteDbFile(): string {
-  return path.join(storageDir(), 'resources.db');
-}
-
-export function getAuthSqliteDbFile(): string {
-  return path.join(storageDir(), 'auth.db');
-}
-
 export function getProfilesFile(): string {
   return path.join(storageDir(), 'profiles.json');
 }
@@ -36,4 +28,16 @@ export function getDefaultVoiceProfileFile(): string {
 
 export function getVectorsFile(): string {
   return path.join(storageDir(), 'vectors.json');
+}
+
+export function getUsersJsonFile(): string {
+  return path.join(storageDir(), 'users.json');
+}
+
+export function getSessionsJsonFile(): string {
+  return path.join(storageDir(), 'sessions.json');
+}
+
+export function getAuthTokensJsonFile(): string {
+  return path.join(storageDir(), 'auth-tokens.json');
 }

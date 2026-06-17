@@ -3,20 +3,13 @@
   "version": "1.0.0",
   "description": "Brisbane Servers website and voice framework",
   "scripts": {
-    "start": "npm run start:hybrid",
-    "start:hybrid": "concurrently \"npm run start:website\" \"npm run start:api\"",
-    "start:unified": "npx tsx start-unified.ts",
-    "start:legacy": "concurrently \"npm run start:website\" \"npm run start:voice\"",
-    "start:website": "cd website-brisbaneservers.com && npm run dev",
-    "start:api": "cd website-brisbaneservers.com && npm run start:api",
-    "start:voice": "cd voice-framework && npm run dashboard",
+    "start": "cd website-brisbaneservers.com && npm run dev",
     "install:all": "cd website-brisbaneservers.com && npm install && cd ../voice-framework && npm install",
     "verify:go-live": "cd website-brisbaneservers.com && npm run verify:go-live",
     "configure:cloudflare-mcp": "cd website-brisbaneservers.com && npm run configure:cloudflare-mcp",
     "configure:cloudflare-full": "cd website-brisbaneservers.com && npm run configure:cloudflare-full",
     "configure:cloudflare-pages-env": "cd website-brisbaneservers.com && npm run configure:cloudflare-pages-env",
     "verify:cloudflare-pages-env": "cd website-brisbaneservers.com && npm run verify:cloudflare-pages-env",
-    "configure:render-mcp": "cd website-brisbaneservers.com && npm run configure:render-mcp",
     "configure:neon-database": "cd website-brisbaneservers.com && npm run configure:neon-database",
     "configure:hosting": "cd website-brisbaneservers.com && npm run configure:hosting",
     "complete:cloudflare-oauth": "cd website-brisbaneservers.com && npm run complete:cloudflare-oauth",
@@ -27,12 +20,9 @@
     "deploy:edge-worker": "cd website-brisbaneservers.com && npm run deploy:edge-worker",
     "seed:resources": "npx tsx scripts/seed-resources.ts",
     "mark:starter-blocks": "npx tsx scripts/mark-starter-blocks.ts",
-    "create-base-profile": "npx tsx scripts/create-base-profile.ts",
-    "docker:dashboard": "docker build -f voice-framework/Dockerfile -t voice-framework-dashboard voice-framework"
+    "create-base-profile": "npx tsx scripts/create-base-profile.ts"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "tsx": "^4.7.0"
   }
 }
-
