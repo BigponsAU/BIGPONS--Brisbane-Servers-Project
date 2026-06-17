@@ -2,11 +2,11 @@
 
 Professional go-live guide for the public site, account signup, admin workspace, data handling, and legal pages.
 
-**Architecture:** Cloudflare Pages (static frontend) + standalone Node API + managed Postgres (production auth).
+**Architecture:** Cloudflare Pages (static site) + **Cloudflare Worker** (API at `api.brisbaneservers.com`) + **Neon** Postgres via Hyperdrive.
 
-**Step-by-step go-live:** [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md) (Phases 0–6).
+**Step-by-step:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md) · [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md)
 
-**Recommended production API URL:** `https://api.brisbaneservers.com/api` (Cloudflare DNS → Render/Railway origin). Interim: `https://brisbane-servers-api.onrender.com/api` via [`render.yaml`](../../render.yaml) blueprint service **`brisbane-servers-api`**.
+**Production API URL:** `https://api.brisbaneservers.com/api` only. Render is retired — [RENDER_MCP.md](RENDER_MCP.md).
 
 ---
 
@@ -32,11 +32,9 @@ PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api
 INTERNAL_API_BASE_URL=https://api.brisbaneservers.com/api
 ```
 
-Use your real API hostname if different (e.g. `https://brisbane-servers-api.onrender.com/api` until a custom API subdomain exists).
-
 Remove `SKIP_HOSTED_API_CHECK` once the API is live.
 
-**Never** put database credentials, `JWT_SECRET`, or admin passwords on Cloudflare Pages — those belong **only** on the API host.
+**Never** put database credentials, `JWT_SECRET`, or admin passwords on Cloudflare Pages — those belong on the **Worker** secrets only.
 
 ---
 

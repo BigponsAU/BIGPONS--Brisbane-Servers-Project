@@ -4,16 +4,15 @@ Cohesive checklist to connect **Cloudflare Pages** (public site) + **Node API** 
 
 **Linked hosting map (MCP):** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md)
 
-| Layer | Live (2026-05-26) |
-|-------|-------------------|
+> **2026-06-18:** Production API is the **Cloudflare Worker** at `https://api.brisbaneservers.com/api`. Render is retired. Phases below are historical; use [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md) for current deploy/verify steps.
+
+| Layer | Live |
+|-------|------|
 | Pages | `brisbaneservers` → https://brisbaneservers.com |
-| API | `brisbane-servers-api` → https://brisbane-servers-api.onrender.com/api |
-| Postgres | **Neon** via `DATABASE_URL` on API ([NEON_DATABASE.md](NEON_DATABASE.md)) |
+| API | Worker `brisbane-servers-api-edge` → https://api.brisbaneservers.com/api |
+| Postgres | **Neon** via Hyperdrive on Worker |
 
-**Canonical API URL (target):** `https://api.brisbaneservers.com/api`  
-**Current Pages env:** `https://brisbane-servers-api.onrender.com/api`
-
-> Cloudflare hosts the **static site** and DNS; it does **not** run `standalone-api/server.ts` today. Use Render/Railway/Fly for the API (see [MASTER.md](../MASTER.md) §5).
+**Canonical API URL:** `https://api.brisbaneservers.com/api`
 
 ---
 

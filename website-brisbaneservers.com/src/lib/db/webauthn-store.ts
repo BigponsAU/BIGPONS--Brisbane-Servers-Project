@@ -3,14 +3,10 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import { getRuntimeEnv } from '~/utils/runtime-env';
 import { getAuthSqliteDbFile } from '~/lib/storage-paths';
 import type { StoredWebAuthnCredential } from './webauthn-types';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 type SqlJsModule = typeof import('sql.js');
 type DatabaseInstance = InstanceType<Awaited<ReturnType<SqlJsModule['default']>>['Database']>;

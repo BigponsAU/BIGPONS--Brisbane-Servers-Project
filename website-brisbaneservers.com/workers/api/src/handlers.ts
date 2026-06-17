@@ -2,8 +2,6 @@ import type { WorkerEnv } from './env';
 
 export type Env = WorkerEnv;
 
-const RENDER_HEALTH_PATH = '/api/health';
-
 export interface ContactPayload {
   name?: string;
   email: string;
@@ -140,84 +138,4 @@ export async function handleContactInquiry(request: Request, env: Env): Promise<
     200,
     cors
   );
-}
-
-export function renderApiOrigin(env: Env): string {
-  return (env.RENDER_API_ORIGIN ?? 'https://brisbane-servers-api.onrender.com').replace(/\/+$/, '');
-}
-
-export async function pingRenderHealth(env: Env, timeoutMs = 120_000): Promise<boolean> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(`${renderApiOrigin(env)}${RENDER_HEALTH_PATH}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    if (!res.ok) return false;
-    const data = (await res.json().catch(() => null)) as { status?: string; persistence?: unknown } | null;
-    return Boolean(data && (data.status === 'ok' || data.status === 'degraded') && data.persistence);
-  } catch {
-    return false;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/** Instant edge response; kicks Render warm in background (Phase 1). */
-export function handleAuthWake(request: Request, env: Env, ctx: ExecutionContext): Response {
-  const origin = request.headers.get('origin');
-  const cors = corsHeaders(origin);
-  ctx.waitUntil(pingRenderHealth(env));
-  return json(
-    {
-      success: true,
-      status: 'waking',
-      edge: 'cloudflare-worker',
-      renderOrigin: renderApiOrigin(env),
-      message: 'Edge is ready. Render API warm-up started in background.',
-    },
-    200,
-    cors
-  );
-}
-
-/** True stack health — proxies to Render (may take minutes on cold start). */
-export async function handleRenderHealth(request: Request, env: Env): Promise<Response> {
-  const origin = request.headers.get('origin');
-  const cors = corsHeaders(origin);
-  const ready = await pingRenderHealth(env, 120_000);
-  return json(
-    {
-      success: ready,
-      status: ready ? 'ok' : 'unavailable',
-      edge: 'cloudflare-worker',
-      render: { reachable: ready, origin: renderApiOrigin(env) },
-    },
-    ready ? 200 : 503,
-    cors
-  );
-}
-
-export async function proxyToRender(request: Request, env: Env, url: URL): Promise<Response> {
-  const origin = env.RENDER_API_ORIGIN ?? 'https://brisbane-servers-api.onrender.com';
-  const target = new URL(url.pathname + url.search, origin);
-  const headers = new Headers(request.headers);
-  headers.set('X-Forwarded-Host', url.host);
-
-  const init: RequestInit = {
-    method: request.method,
-    headers,
-    redirect: 'manual',
-  };
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    init.body = await request.clone().arrayBuffer();
-  }
-
-  const res = await fetch(target.toString(), init);
-  const outHeaders = new Headers(res.headers);
-  const cors = corsHeaders(request.headers.get('origin'));
-  Object.entries(cors).forEach(([k, v]) => outHeaders.set(k, v));
-  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: outHeaders });
 }

@@ -18,6 +18,7 @@
     "preview:hosted": "npx tsx scripts/build-hosted.ts && astro preview",
     "seed:admin": "npx tsx scripts/seed-admin-user.ts",
     "verify:production": "npx tsx scripts/verify-production-api.ts",
+    "verify:dashboard-api": "npx tsx scripts/verify-dashboard-api.ts",
     "verify:publish-pipeline": "npx tsx scripts/verify-publish-pipeline.ts",
     "verify:production-auth": "npx tsx scripts/verify-production-auth.ts",
     "verify:production-auth:edge": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-production-auth-with-env.ps1",

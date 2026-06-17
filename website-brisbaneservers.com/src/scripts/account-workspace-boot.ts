@@ -12,6 +12,8 @@ import {
 } from './portal-account-extensions';
 import { bindLibraryGrowthPanel, loadLibraryGrowthPanel } from './account-library-growth';
 import { bindVoiceFeaturePanels } from './account-workspace-voice-features';
+import { bindAdminOpsPanel, loadAdminOpsPanel } from './account-admin-ops';
+import { syncPortalAccountContext, getPortalAccountContext } from './account-workspace-runtime';
 
 export function bootAccountWorkspaceExtensions(): void {
   const bridge = () => (window as unknown as { __portalBridge?: Record<string, unknown> }).__portalBridge;
@@ -19,6 +21,7 @@ export function bootAccountWorkspaceExtensions(): void {
   const ctx = (): PortalAccountContext => ({
     apiBaseUrl: (bridge()?.apiBaseUrl as string) ?? '',
     getAuthToken: () => (bridge()?.getAuthToken as () => string | null)?.() ?? null,
+    hasWorkspaceSession: () => (bridge()?.hasWorkspaceSession as () => boolean)?.() ?? false,
     setAuthToken: (token) => (bridge()?.setAuthToken as (t: string | null) => void)?.(token),
     showDashboard: (user) =>
       (bridge()?.showDashboard as (u: { email?: string; role?: string }) => void)?.(user),
@@ -42,15 +45,15 @@ export function bootAccountWorkspaceExtensions(): void {
     loadSiteReviewSections,
     loadHostingStatus,
     loadLibraryGrowthPanel,
+    loadAdminOpsPanel,
   };
 
-  const context = ctx();
-  win.__portalAccountCtx = context;
-  bindPortalAccountExtensions(context);
-  bindLibraryGrowthPanel(context);
-  bindVoiceFeaturePanels();
+  const resolveCtx = (): PortalAccountContext => getPortalAccountContext() as unknown as PortalAccountContext;
 
-  if (win.__portalBridge) {
-    win.__portalAccountCtx = ctx();
-  }
+  bindPortalAccountExtensions(resolveCtx);
+  bindLibraryGrowthPanel(resolveCtx);
+  bindVoiceFeaturePanels();
+  bindAdminOpsPanel(resolveCtx);
+
+  syncPortalAccountContext();
 }

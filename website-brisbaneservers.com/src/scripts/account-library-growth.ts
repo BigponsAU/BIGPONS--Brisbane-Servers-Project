@@ -3,6 +3,7 @@
  */
 import { workspaceFetch } from '../lib/client-api';
 import type { PortalAccountContext } from './portal-account-extensions';
+import { getPortalAccountContext } from './account-workspace-runtime';
 
 function formatProposalKind(kind: string): string {
   return kind === 'case_study' ? 'Case study' : 'Resource guide';
@@ -28,7 +29,10 @@ function hasSession(ctx: PortalAccountContext): boolean {
 }
 
 export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise<void> {
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    setGrowthStatus('Sign in again to manage library growth.', true);
+    return;
+  }
 
   try {
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`);
@@ -199,8 +203,12 @@ async function renderGrowthProposals(
   container.querySelectorAll('.growth-proposal-card').forEach((card) => {
     const id = (card as HTMLElement).dataset.proposalId;
     if (!id) return;
-    card.querySelector('.growth-approve')?.addEventListener('click', () => void actOnProposal(ctx, id, 'approve'));
-    card.querySelector('.growth-reject')?.addEventListener('click', () => void actOnProposal(ctx, id, 'reject'));
+    card.querySelector('.growth-approve')?.addEventListener('click', () => {
+      void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
+    });
+    card.querySelector('.growth-reject')?.addEventListener('click', () => {
+      void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
+    });
   });
 }
 
@@ -209,7 +217,10 @@ async function actOnProposal(
   proposalId: string,
   action: 'approve' | 'reject'
 ): Promise<void> {
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    setGrowthStatus('Sign in again to update growth proposals.', true);
+    return;
+  }
   setGrowthStatus(action === 'approve' ? 'Generating resource…' : 'Rejecting…');
 
   try {
@@ -243,9 +254,13 @@ async function actOnProposal(
   }
 }
 
-export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
+export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('growth-save-config')?.addEventListener('click', async () => {
-    if (!hasSession(ctx)) return;
+    const ctx = resolveCtx();
+    if (!hasSession(ctx)) {
+      setGrowthStatus('Sign in again to save growth settings.', true);
+      return;
+    }
     const body = {
       enabled: (document.getElementById('growth-enabled') as HTMLInputElement)?.checked ?? false,
       intervalHours: Number((document.getElementById('growth-interval-hours') as HTMLInputElement)?.value ?? 168),
@@ -271,7 +286,11 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-arm-schedule')?.addEventListener('click', async () => {
-    if (!hasSession(ctx)) return;
+    const ctx = resolveCtx();
+    if (!hasSession(ctx)) {
+      setGrowthStatus('Sign in again to save growth settings.', true);
+      return;
+    }
     setGrowthStatus('Activating schedule…');
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
@@ -289,7 +308,11 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-pause-schedule')?.addEventListener('click', async () => {
-    if (!hasSession(ctx)) return;
+    const ctx = resolveCtx();
+    if (!hasSession(ctx)) {
+      setGrowthStatus('Sign in again to save growth settings.', true);
+      return;
+    }
     setGrowthStatus('Pausing schedule…');
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
@@ -302,7 +325,11 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
   });
 
   document.getElementById('growth-run-cycle')?.addEventListener('click', async () => {
-    if (!hasSession(ctx)) return;
+    const ctx = resolveCtx();
+    if (!hasSession(ctx)) {
+      setGrowthStatus('Sign in again to save growth settings.', true);
+      return;
+    }
     setGrowthStatus('Running growth cycle…');
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
@@ -329,5 +356,5 @@ export function bindLibraryGrowthPanel(ctx: PortalAccountContext): void {
     await loadLibraryGrowthPanel(ctx);
   });
 
-  document.getElementById('growth-refresh-queue')?.addEventListener('click', () => void loadLibraryGrowthPanel(ctx));
+  document.getElementById('growth-refresh-queue')?.addEventListener('click', () => void loadLibraryGrowthPanel(resolveCtx()));
 }

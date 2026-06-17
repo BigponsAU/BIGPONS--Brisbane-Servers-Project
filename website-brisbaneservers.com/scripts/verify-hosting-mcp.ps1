@@ -3,19 +3,19 @@
 
 $ErrorActionPreference = 'Continue'
 
-function Test-UserEnv([string]$Name) {
+function Test-UserEnv([string]$Name, [switch]$Optional) {
   $v = [Environment]::GetEnvironmentVariable($Name, 'User')
   if ($v) { Write-Host "  [OK]   $Name is set" -ForegroundColor Green }
+  elseif ($Optional) { Write-Host "  [SKIP] $Name (optional)" -ForegroundColor DarkGray }
   else { Write-Host "  [MISS] $Name - run configure script" -ForegroundColor Yellow }
 }
 
 Write-Host ""
 Write-Host "=== MCP credentials (Windows user env) ===" -ForegroundColor Cyan
-Test-UserEnv 'RENDER_API_KEY'
-Test-UserEnv 'RENDER_AUTH_HEADER'
 Test-UserEnv 'CLOUDFLARE_API_TOKEN'
-Test-UserEnv 'CLOUDFLARE_AUTH_HEADER'
-Test-UserEnv 'NEON_DATABASE_URL'
+Test-UserEnv 'CLOUDFLARE_AUTH_HEADER' -Optional
+Test-UserEnv 'NEON_DATABASE_URL' -Optional
+Test-UserEnv 'RENDER_API_KEY' -Optional
 
 Write-Host ""
 Write-Host "=== Cursor MCP servers (.cursor/mcp.json) ===" -ForegroundColor Cyan
@@ -34,8 +34,8 @@ Write-Host ""
 Write-Host "=== Live endpoints ===" -ForegroundColor Cyan
 
 $checks = @(
-  @{ Name = 'Pages /account/ API base'; Url = 'https://brisbaneservers.com/account/' },
-  @{ Name = 'API health (custom domain)'; Url = 'https://api.brisbaneservers.com/api/health' },
+  @{ Name = 'Pages /account/'; Url = 'https://brisbaneservers.com/account/' },
+  @{ Name = 'API health (Worker)'; Url = 'https://api.brisbaneservers.com/api/health' },
   @{ Name = 'API OAuth status'; Url = 'https://api.brisbaneservers.com/api/auth/oauth/status' }
 )
 
@@ -49,26 +49,21 @@ foreach ($c in $checks) {
 }
 
 Write-Host ""
-Write-Host "=== Database provider (from live health JSON) ===" -ForegroundColor Cyan
+Write-Host "=== Edge API ===" -ForegroundColor Cyan
 try {
   $health = Invoke-RestMethod -Uri 'https://api.brisbaneservers.com/api/health' -TimeoutSec 45
-  $provider = $health.persistence.databaseProvider
-  if ($provider -eq 'neon') {
-    Write-Host "  [OK]   DATABASE_URL host is Neon ($provider)" -ForegroundColor Green
-  } elseif ($provider -eq 'render') {
-    Write-Host "  [WARN] Still on Render Postgres - run configure:neon-database" -ForegroundColor Yellow
-  } elseif ($provider) {
-    Write-Host "  [INFO] databaseProvider=$provider" -ForegroundColor DarkGray
+  if ($health.edge -eq 'cloudflare-worker' -and $health.render -eq $false) {
+    Write-Host "  [OK]   Production API on Cloudflare Worker (Render not in path)" -ForegroundColor Green
   } else {
-    Write-Host "  [INFO] persistence field not in health yet (deploy latest API)" -ForegroundColor DarkGray
+    Write-Host "  [INFO] health=$($health | ConvertTo-Json -Compress)" -ForegroundColor DarkGray
   }
 } catch {
-  Write-Host "  [SKIP] Could not read health persistence - $($_.Exception.Message)" -ForegroundColor DarkGray
+  Write-Host "  [SKIP] Could not read API health - $($_.Exception.Message)" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 Write-Host "Setup commands:" -ForegroundColor Cyan
-Write-Host '  npm run configure:render-mcp' -ForegroundColor DarkGray
 Write-Host '  npm run configure:cloudflare-mcp' -ForegroundColor DarkGray
-Write-Host '  npm run configure:neon-database' -ForegroundColor DarkGray
+Write-Host '  npm run connect:cloudflare-mcp-oauth' -ForegroundColor DarkGray
+Write-Host '  npm run deploy:edge-worker' -ForegroundColor DarkGray
 Write-Host ""

@@ -23,6 +23,8 @@ import {
   showAuthBanner,
   publishPortalBridge,
   syncPortalAccountContext,
+  getPortalAccountContext,
+  hasWorkspaceSession,
 } from './account-workspace-runtime';
 
 export type { AccountWorkspaceBootConfig };
@@ -61,6 +63,29 @@ export function bootAccountWorkspaceDashboard(): void {
       .replace(/"/g, '&quot;');
   }
 
+  function escapeJsString(text: unknown): string {
+    return String(text ?? '')
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n');
+  }
+
+  function treeGroupLabel(value: unknown, fallback: string): string {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed || fallback;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return String(value);
+    }
+    return fallback;
+  }
+
+  function treeSlug(value: string): string {
+    return value.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'item';
+  }
+
   function resourceExcerpt(resource: { description?: unknown; content?: unknown }, maxLen = 150): string {
     const pick = (value: unknown): string => {
       if (typeof value !== 'string') return '';
@@ -96,7 +121,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
   const syncRuntimeFromLocals = (): void => {
     VOICE_API_URL = rt.voiceApiUrl;
-    rt.sessionActive = sessionActive;
+    sessionActive = rt.sessionActive;
     publishPortalBridge({});
   };
 
@@ -132,11 +157,17 @@ export function bootAccountWorkspaceDashboard(): void {
   }
 
   let extensionsBooted = false;
+  let extensionsBootPromise: Promise<void> | null = null;
 
-  function ensureWorkspaceExtensions(): void {
-    if (extensionsBooted) return;
-    extensionsBooted = true;
-    void import('./account-workspace-boot.ts').then((mod) => mod.bootAccountWorkspaceExtensions());
+  function ensureWorkspaceExtensions(): Promise<void> {
+    if (extensionsBooted && extensionsBootPromise) return extensionsBootPromise;
+    if (!extensionsBootPromise) {
+      extensionsBootPromise = import('./account-workspace-boot.ts').then((mod) => {
+        mod.bootAccountWorkspaceExtensions();
+        extensionsBooted = true;
+      });
+    }
+    return extensionsBootPromise;
   }
 
   function showLogin(): void {
@@ -150,8 +181,10 @@ export function bootAccountWorkspaceDashboard(): void {
   function showDashboard(user: any): void {
     workspaceUser = user;
     (window as Window & { __workspaceSessionUser?: { role?: string } }).__workspaceSessionUser = user;
+    sessionActive = true;
+    rt.sessionActive = true;
     syncRuntimeFromLocals();
-    ensureWorkspaceExtensions();
+    void ensureWorkspaceExtensions();
 
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Showing dashboard for user:', user);
@@ -197,7 +230,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     // Load dashboard data and resources
     console.log('[Portal] Loading dashboard data');
-    setTimeout(() => {
+    void ensureWorkspaceExtensions().then(() => {
       void syncBaseVoiceProfile(user);
       // navigateToPanel('dashboard') already loads overview data — avoid duplicate /resources calls.
       // Ensure tree view is shown by default
@@ -207,12 +240,14 @@ export function bootAccountWorkspaceDashboard(): void {
         workspace.classList.remove('hidden');
         listView.classList.add('hidden');
       }
-      
+
       // Set up search and filter event listeners
       setupResourceFilters();
-      window.__portalAccountExt?.loadClientWorkspaceData(window.__portalAccountCtx);
-      window.__portalAccountExt?.loadPasskeyCredentials(window.__portalAccountCtx);
-    }, 100);
+      syncPortalAccountContext();
+      const accountCtx = getPortalAccountContext();
+      window.__portalAccountExt?.loadClientWorkspaceData(accountCtx);
+      window.__portalAccountExt?.loadPasskeyCredentials(accountCtx);
+    });
   }
 
   getPortalRuntime().showDashboardImpl = showDashboard;
@@ -243,11 +278,64 @@ export function bootAccountWorkspaceDashboard(): void {
         el.setAttribute('aria-hidden', 'true');
       }
     });
+    document.querySelectorAll<HTMLElement>('[data-require-role]').forEach((el) => {
+      const requiredRole = el.dataset.requireRole;
+      const allowed = requiredRole ? user?.role === requiredRole : true;
+      if (allowed) {
+        el.style.removeProperty('display');
+        el.removeAttribute('hidden');
+        el.setAttribute('aria-hidden', 'false');
+      } else {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
     initWorkspaceModeSwitcher(user);
   }
 
   // Navigate to panel with smooth transitions
   let panelNavGeneration = 0;
+
+  function refreshPanelData(panelName: string): void {
+    const accountCtx = getPortalAccountContext();
+    if (panelName === 'dashboard') {
+      loadDashboardData();
+    } else if (panelName === 'resources') {
+      const workspace = document.getElementById('resource-workspace');
+      const listView = document.getElementById('resources-list-view');
+      if (workspace && listView) {
+        workspace.classList.remove('hidden');
+        listView.classList.add('hidden');
+      }
+      loadResources();
+      void ensureWorkspaceVoiceProfiles();
+    } else if (panelName === 'profiles') {
+      setTimeout(() => {
+        loadProfiles();
+      }, 100);
+    } else if (panelName === 'analytics') {
+      if (currentResources && currentResources.length > 0) {
+        const userResources = currentResources.filter((r: any) => !r.isStarterBlock);
+        updateAnalyticsDisplay(userResources);
+        loadAnalyticsSuggestions();
+      } else {
+        loadAnalytics();
+      }
+    } else if (panelName === 'voice-map' || panelName === 'voice-lab') {
+      void import('./account-workspace-voice-features.ts').then((mod) => mod.onVoicePanelShown(panelName));
+    } else if (panelName === 'library-growth') {
+      window.__portalAccountExt?.loadLibraryGrowthPanel(accountCtx);
+    } else if (panelName === 'moderation') {
+      window.__portalAccountExt?.loadModerationQueue(accountCtx);
+    } else if (panelName === 'site-review') {
+      window.__portalAccountExt?.loadSiteReviewSections(accountCtx);
+      window.__portalAccountExt?.loadHostingStatus(accountCtx);
+    } else if (panelName === 'admin-users') {
+      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()));
+    } else if (panelName === 'admin-ops') {
+      window.__portalAccountExt?.loadAdminOpsPanel(accountCtx);
+    }
+  }
 
   (window as any).navigateToPanel = function(panelName: string): void {
     if (import.meta.env.MODE === 'development') {
@@ -256,6 +344,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     const targetPanel = document.getElementById(`${panelName}-panel`) as HTMLElement | null;
     if (targetPanel?.classList.contains('active')) {
+      refreshPanelData(panelName);
       return;
     }
 
@@ -336,42 +425,7 @@ export function bootAccountWorkspaceDashboard(): void {
       sidebar.style.display = 'flex';
     }
 
-    // Load panel-specific data
-    if (panelName === 'dashboard') {
-      loadDashboardData();
-    } else if (panelName === 'resources') {
-      // Ensure workspace is visible when navigating to resources
-      const workspace = document.getElementById('resource-workspace');
-      const listView = document.getElementById('resources-list-view');
-      if (workspace && listView) {
-        workspace.classList.remove('hidden');
-        listView.classList.add('hidden');
-      }
-      loadResources();
-      void ensureWorkspaceVoiceProfiles();
-    } else if (panelName === 'profiles') {
-      // Ensure profiles panel is ready before loading
-      setTimeout(() => {
-        loadProfiles();
-      }, 100);
-    } else if (panelName === 'analytics') {
-      // Sync analytics with current resources (same data as dashboard)
-      if (currentResources && currentResources.length > 0) {
-        const userResources = currentResources.filter((r: any) => !r.isStarterBlock);
-        updateAnalyticsDisplay(userResources);
-      } else {
-        loadAnalytics();
-      }
-    } else if (panelName === 'library-growth') {
-      window.__portalAccountExt?.loadLibraryGrowthPanel(window.__portalAccountCtx);
-    } else if (panelName === 'moderation') {
-      window.__portalAccountExt?.loadModerationQueue(window.__portalAccountCtx);
-    } else if (panelName === 'site-review') {
-      window.__portalAccountExt?.loadSiteReviewSections(window.__portalAccountCtx);
-      window.__portalAccountExt?.loadHostingStatus(window.__portalAccountCtx);
-    } else if (panelName === 'admin-users') {
-      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()));
-    }
+    refreshPanelData(panelName);
   };
 
   // Sidebar toggle
@@ -422,11 +476,11 @@ export function bootAccountWorkspaceDashboard(): void {
         const resources = Array.isArray(data.resources) ? data.resources : [];
         applyDashboardResourceSnapshot(resources);
       } else if (response.status === 401) {
-        if (sessionActive && retryCount < 2) {
+        if (hasWorkspaceSession() && retryCount < 2) {
           await new Promise((resolve) => window.setTimeout(resolve, 350 * (retryCount + 1)));
           return loadDashboardData(retryCount + 1);
         }
-        if (sessionActive) {
+        if (hasWorkspaceSession()) {
           await handleWorkspaceSessionExpired();
           return;
         }
@@ -1480,6 +1534,24 @@ export function bootAccountWorkspaceDashboard(): void {
   let selectedResourceId: string | null = null;
   let treeData: { [industry: string]: { [topic: string]: any[] } } = {};
 
+  function getTreeResourcesForDisplay(resources: any[] = currentResources): any[] {
+    const typeFilter = (document.getElementById('resource-type-filter') as HTMLSelectElement)?.value || 'user';
+    const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
+    const userResources = resources.filter((r: any) => !r.isStarterBlock);
+    return typeFilter === 'starter' ? starterBlocks :
+      typeFilter === 'all' ? resources :
+      userResources;
+  }
+
+  function showResourceTreeError(treeContainer: HTMLElement, message: string): void {
+    treeContainer.innerHTML = `
+      <div class="tree-loading" style="color: var(--error-color, #dc3545);">
+        <p><strong>Error loading tree:</strong> ${escapeHtml(message)}</p>
+        <button class="btn btn-secondary btn-sm" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+      </div>
+    `;
+  }
+
   // Toggle between tree and list view
   (window as any).toggleResourceView = function() {
     treeViewMode = !treeViewMode;
@@ -1499,7 +1571,7 @@ export function bootAccountWorkspaceDashboard(): void {
       
       // Ensure tree is built if resources are loaded
       if (currentResources && currentResources.length > 0) {
-        buildResourceTree(currentResources);
+        buildResourceTree(getTreeResourcesForDisplay());
       }
     } else {
       // Show list view
@@ -1530,134 +1602,132 @@ export function bootAccountWorkspaceDashboard(): void {
     const treeContainer = document.getElementById('resource-tree');
     if (!treeContainer) return;
 
-    // Organize resources by industry > topic
-    treeData = {};
-    const filteredResources = currentTreeStatusFilter 
-      ? resources.filter((r: any) => r.status === currentTreeStatusFilter)
-      : resources;
+    try {
+      treeData = {};
+      const filteredResources = currentTreeStatusFilter
+        ? resources.filter((r: any) => r.status === currentTreeStatusFilter)
+        : resources;
 
-    filteredResources.forEach((resource: any) => {
-      const industry = resource.industry || 'Uncategorized';
-      const topic = resource.topic || 'Untitled';
-      
-      if (!treeData[industry]) {
-        treeData[industry] = {};
+      filteredResources.forEach((resource: any) => {
+        const industry = treeGroupLabel(resource?.industry, 'Uncategorized');
+        const topic = treeGroupLabel(resource?.topic, 'Untitled');
+
+        if (!treeData[industry]) {
+          treeData[industry] = {};
+        }
+        if (!treeData[industry][topic]) {
+          treeData[industry][topic] = [];
+        }
+        treeData[industry][topic].push(resource);
+      });
+
+      const industries = Object.keys(treeData).sort();
+
+      if (industries.length === 0) {
+        treeContainer.innerHTML = `
+          <div class="tree-empty-state" role="status">
+            <p class="tree-empty-title">No resources yet</p>
+            <p class="tree-empty-hint">Create from a starter block on the dashboard, or use Generate / Create from content / Upload above.</p>
+          </div>
+        `;
+        return;
       }
-      if (!treeData[industry][topic]) {
-        treeData[industry][topic] = [];
-      }
-      treeData[industry][topic].push(resource);
-    });
 
-    // Build tree HTML
-    const industries = Object.keys(treeData).sort();
-    
-    if (industries.length === 0) {
-      treeContainer.innerHTML = `
-        <div class="tree-empty-state" role="status">
-          <p class="tree-empty-title">No resources yet</p>
-          <p class="tree-empty-hint">Create from a starter block on the dashboard, or use Generate / Create from content / Upload above.</p>
-        </div>
-      `;
-      return;
-    }
+      let html = '';
+      industries.forEach((industry, industryIndex) => {
+        const topics = Object.keys(treeData[industry]).sort();
+        const industryId = `industry-${treeSlug(industry)}-${industryIndex}`;
+        const totalResources = topics.reduce((sum, topic) => sum + treeData[industry][topic].length, 0);
 
-    let html = '';
-    industries.forEach((industry, industryIndex) => {
-      const topics = Object.keys(treeData[industry]).sort();
-      const industryId = `industry-${industry.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${industryIndex}`;
-      const totalResources = topics.reduce((sum, topic) => sum + treeData[industry][topic].length, 0);
-      
-      html += '<div class="tree-node" role="treeitem" data-industry="' + escapeHtml(industry) + '" aria-expanded="false" aria-label="' + escapeHtml(industry) + ', ' + totalResources + ' resources">' +
-        '<div class="tree-node-header" role="button" tabindex="0" id="header-' + industryId + '" onclick="toggleTreeNode(\'' + industryId + '\')" onkeydown="handleTreeNodeKeydown(event, \'' + industryId + '\', \'industry\')">' +
-        '<span class="tree-toggle" id="toggle-' + industryId + '" aria-hidden="true">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-        '<polyline points="9 18 15 12 9 6"></polyline>' +
-        '</svg>' +
-        '</span>' +
-        '<svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-        '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>' +
-        '<polyline points="9 22 9 12 15 12 15 22"></polyline>' +
-        '</svg>' +
-        '<span class="tree-label">' +
-        escapeHtml(industry) +
-        '<span class="tree-count">' + totalResources + '</span>' +
-        '</span>' +
-        '</div>' +
-        '<div class="tree-children" id="' + industryId + '" role="group">';
-      
-      topics.forEach((topic, topicIndex) => {
-        const resources = treeData[industry][topic];
-        const topicId = 'topic-' + industry.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-' + topic.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-' + topicIndex;
-        const badgeClass = 'badge-' + (resources[0]?.status || 'draft');
-        
-        html += '<div class="tree-node" role="treeitem" data-topic="' + escapeHtml(topic) + '" aria-expanded="false" aria-label="' + escapeHtml(topic) + ', ' + resources.length + ' resources">' +
-          '<div class="tree-node-header" role="button" tabindex="0" id="header-' + topicId + '" onclick="toggleTreeNode(\'' + topicId + '\')" onkeydown="handleTreeNodeKeydown(event, \'' + topicId + '\', \'topic\')">' +
-          '<span class="tree-toggle" id="toggle-' + topicId + '" aria-hidden="true">' +
+        html += '<div class="tree-node" role="treeitem" data-industry="' + escapeHtml(industry) + '" aria-expanded="false" aria-label="' + escapeHtml(industry) + ', ' + totalResources + ' resources">' +
+          '<div class="tree-node-header" role="button" tabindex="0" id="header-' + industryId + '" data-tree-node-id="' + escapeHtml(industryId) + '" onclick="toggleTreeNode(\'' + escapeJsString(industryId) + '\')" onkeydown="handleTreeNodeKeydown(event, \'' + escapeJsString(industryId) + '\')">' +
+          '<span class="tree-toggle" id="toggle-' + industryId + '" aria-hidden="true">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
           '<polyline points="9 18 15 12 9 6"></polyline>' +
           '</svg>' +
           '</span>' +
           '<svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-          '<circle cx="12" cy="12" r="10"></circle>' +
-          '<line x1="12" y1="8" x2="12" y2="16"></line>' +
-          '<line x1="8" y1="12" x2="16" y2="12"></line>' +
+          '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>' +
+          '<polyline points="9 22 9 12 15 12 15 22"></polyline>' +
           '</svg>' +
           '<span class="tree-label">' +
-          escapeHtml(topic) +
-          '<span class="tree-count">' + resources.length + '</span>' +
+          escapeHtml(industry) +
+          '<span class="tree-count">' + totalResources + '</span>' +
           '</span>' +
           '</div>' +
-          '<div class="tree-children" id="' + topicId + '" role="group">';
-        
-        resources.forEach((resource: any) => {
-          const resourceBadgeClass = 'badge-' + (resource.status || 'draft');
-          const statusText = (resource.status || 'draft').charAt(0).toUpperCase() + (resource.status || 'draft').slice(1);
-          const industrySlug = (resource.industry || '').toLowerCase().replace(/\s+/g, '-');
-          const isSelected = selectedResourceId === resource.id;
-          html += '<div class="tree-resource-item" role="treeitem" tabindex="0" ' +
-            'data-resource-id="' + escapeHtml(resource.id) + '" ' +
-            'data-industry="' + escapeHtml(industrySlug) + '" ' +
-            'aria-selected="' + (isSelected ? 'true' : 'false') + '" ' +
-            'aria-label="' + escapeHtml(resource.title || 'Untitled') + ', ' + statusText + '" ' +
-            'onclick="selectResource(\'' + escapeHtml(resource.id) + '\')" ' +
-            'onkeydown="handleTreeResourceKeydown(event, \'' + escapeHtml(resource.id) + '\')">' +
-            '<span class="tree-resource-title">' + escapeHtml(resource.title || 'Untitled') + '</span>' +
-            '<span class="tree-resource-badge ' + resourceBadgeClass + '">' + escapeHtml(statusText) + '</span>' +
-            '</div>';
+          '<div class="tree-children" id="' + industryId + '" role="group">';
+
+        topics.forEach((topic, topicIndex) => {
+          const topicResources = treeData[industry][topic];
+          const topicId = 'topic-' + treeSlug(industry) + '-' + treeSlug(topic) + '-' + topicIndex;
+
+          html += '<div class="tree-node" role="treeitem" data-topic="' + escapeHtml(topic) + '" aria-expanded="false" aria-label="' + escapeHtml(topic) + ', ' + topicResources.length + ' resources">' +
+            '<div class="tree-node-header" role="button" tabindex="0" id="header-' + topicId + '" data-tree-node-id="' + escapeHtml(topicId) + '" onclick="toggleTreeNode(\'' + escapeJsString(topicId) + '\')" onkeydown="handleTreeNodeKeydown(event, \'' + escapeJsString(topicId) + '\')">' +
+            '<span class="tree-toggle" id="toggle-' + topicId + '" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+            '<polyline points="9 18 15 12 9 6"></polyline>' +
+            '</svg>' +
+            '</span>' +
+            '<svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+            '<circle cx="12" cy="12" r="10"></circle>' +
+            '<line x1="12" y1="8" x2="12" y2="16"></line>' +
+            '<line x1="8" y1="12" x2="16" y2="12"></line>' +
+            '</svg>' +
+            '<span class="tree-label">' +
+            escapeHtml(topic) +
+            '<span class="tree-count">' + topicResources.length + '</span>' +
+            '</span>' +
+            '</div>' +
+            '<div class="tree-children" id="' + topicId + '" role="group">';
+
+          topicResources.forEach((resource: any) => {
+            const resourceId = treeGroupLabel(resource?.id, '');
+            if (!resourceId) return;
+            const resourceBadgeClass = 'badge-' + treeGroupLabel(resource?.status, 'draft');
+            const statusKey = treeGroupLabel(resource?.status, 'draft');
+            const statusText = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+            const industrySlug = treeSlug(treeGroupLabel(resource?.industry, ''));
+            const isSelected = selectedResourceId === resourceId;
+            html += '<div class="tree-resource-item" role="treeitem" tabindex="0" ' +
+              'data-resource-id="' + escapeHtml(resourceId) + '" ' +
+              'data-industry="' + escapeHtml(industrySlug) + '" ' +
+              'aria-selected="' + (isSelected ? 'true' : 'false') + '" ' +
+              'aria-label="' + escapeHtml(treeGroupLabel(resource?.title, 'Untitled')) + ', ' + statusText + '" ' +
+              'onclick="selectResource(\'' + escapeJsString(resourceId) + '\')" ' +
+              'onkeydown="handleTreeResourceKeydown(event, \'' + escapeJsString(resourceId) + '\')">' +
+              '<span class="tree-resource-title">' + escapeHtml(treeGroupLabel(resource?.title, 'Untitled')) + '</span>' +
+              '<span class="tree-resource-badge ' + resourceBadgeClass + '">' + escapeHtml(statusText) + '</span>' +
+              '</div>';
+          });
+
+          html += '</div></div>';
         });
-        
+
         html += '</div></div>';
       });
-      
-      html += '</div></div>';
-    });
 
-    treeContainer.innerHTML = html;
-    
-    // Auto-expand first industry and topic by default
-    setTimeout(() => {
-      const firstIndustry = treeContainer.querySelector('.tree-node[data-industry]');
-      if (firstIndustry) {
-        const industryHeader = firstIndustry.querySelector('.tree-node-header');
-        const industryId = industryHeader?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+      treeContainer.innerHTML = html;
+
+      setTimeout(() => {
+        const firstIndustry = treeContainer.querySelector('.tree-node[data-industry]');
+        const industryId = firstIndustry?.querySelector('.tree-node-header')?.getAttribute('data-tree-node-id');
         if (industryId) {
           (window as any).toggleTreeNode(industryId);
-          
-          // Also expand first topic
-          const firstTopic = firstIndustry.querySelector('.tree-node[data-topic]');
-          if (firstTopic) {
-            const topicHeader = firstTopic.querySelector('.tree-node-header');
-            const topicId = topicHeader?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-            if (topicId) {
-              setTimeout(() => {
-                (window as any).toggleTreeNode(topicId);
-              }, 100);
-            }
+
+          const firstTopic = firstIndustry?.querySelector('.tree-node[data-topic]');
+          const topicId = firstTopic?.querySelector('.tree-node-header')?.getAttribute('data-tree-node-id');
+          if (topicId) {
+            setTimeout(() => {
+              (window as any).toggleTreeNode(topicId);
+            }, 100);
           }
         }
-      }
-    }, 50);
+      }, 50);
+    } catch (error) {
+      console.error('[Portal] Error building resource tree:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      showResourceTreeError(treeContainer, message);
+    }
   }
 
   // Toggle collapsible section
@@ -1891,84 +1961,65 @@ export function bootAccountWorkspaceDashboard(): void {
       return;
     }
     
-    const nodes = treeContainer.querySelectorAll('.tree-node');
     const lowerQuery = query.toLowerCase().trim();
-    
-    nodes.forEach((node: Element) => {
+    const industryNodes = treeContainer.querySelectorAll('.tree-node[data-industry]');
+    const topicNodes = treeContainer.querySelectorAll('.tree-node[data-topic]');
+
+    topicNodes.forEach((node: Element) => {
       const header = node.querySelector('.tree-node-header');
-      const resourceItems = node.querySelectorAll('.tree-resource-item');
-      
       if (!header) return;
-      
+
       const label = header.querySelector('.tree-label')?.textContent?.toLowerCase() || '';
       const matches = label.includes(lowerQuery);
-      
-      if (resourceItems.length > 0) {
-        // Topic node - check if any resources match
-        let resourceMatches = false;
-        resourceItems.forEach((item: Element) => {
-          const title = item.querySelector('.tree-resource-title')?.textContent?.toLowerCase() || '';
-          if (title.includes(lowerQuery)) {
-            (item as HTMLElement).style.display = '';
-            resourceMatches = true;
-          } else {
-            (item as HTMLElement).style.display = 'none';
-          }
-        });
-        
-        const shouldShow = matches || resourceMatches;
-        (node as HTMLElement).style.display = shouldShow ? '' : 'none';
-        if (shouldShow) {
-          node.classList.add('expanded');
-          const toggle = header.querySelector('.tree-toggle');
-          if (toggle) toggle.classList.add('expanded');
-          // Expand parent industry node
-          const parentIndustry = node.closest('.tree-node[data-industry]');
-          if (parentIndustry && !parentIndustry.classList.contains('expanded')) {
-            const industryHeader = parentIndustry.querySelector('.tree-node-header');
-            const industryToggle = parentIndustry.querySelector('.tree-toggle');
-            if (industryHeader && industryToggle) {
-              parentIndustry.classList.add('expanded');
-              industryToggle.classList.add('expanded');
-            }
-          }
+      const resourceItems = node.querySelectorAll(':scope > .tree-children > .tree-resource-item');
+      let resourceMatches = false;
+
+      resourceItems.forEach((item: Element) => {
+        const title = item.querySelector('.tree-resource-title')?.textContent?.toLowerCase() || '';
+        if (title.includes(lowerQuery)) {
+          (item as HTMLElement).style.display = '';
+          resourceMatches = true;
+        } else {
+          (item as HTMLElement).style.display = 'none';
         }
-      } else {
-        // Industry node - check if any children match
-        const childNodes = node.querySelectorAll('.tree-node[data-topic]');
-        let hasMatchingChildren = false;
-        
-        childNodes.forEach((child: Element) => {
-          const childHeader = child.querySelector('.tree-node-header');
-          const childLabel = childHeader?.querySelector('.tree-label')?.textContent?.toLowerCase() || '';
-          const childResources = child.querySelectorAll('.tree-resource-item');
-          let childMatches = childLabel.includes(lowerQuery);
-          
-          childResources.forEach((item: Element) => {
-            const title = item.querySelector('.tree-resource-title')?.textContent?.toLowerCase() || '';
-            if (title.includes(lowerQuery)) {
-              childMatches = true;
-            }
-          });
-          
-          if (childMatches) {
-            hasMatchingChildren = true;
-            (child as HTMLElement).style.display = '';
-            child.classList.add('expanded');
-            const childToggle = childHeader?.querySelector('.tree-toggle');
-            if (childToggle) childToggle.classList.add('expanded');
-          } else {
-            (child as HTMLElement).style.display = 'none';
-          }
-        });
-        
-        const shouldShow = matches || hasMatchingChildren;
-        (node as HTMLElement).style.display = shouldShow ? '' : 'none';
-        if (shouldShow && hasMatchingChildren) {
-          node.classList.add('expanded');
-          const toggle = header.querySelector('.tree-toggle');
-          if (toggle) toggle.classList.add('expanded');
+      });
+
+      const shouldShow = matches || resourceMatches;
+      (node as HTMLElement).style.display = shouldShow ? '' : 'none';
+      if (shouldShow) {
+        node.classList.add('expanded');
+        const toggle = header.querySelector('.tree-toggle');
+        if (toggle) toggle.classList.add('expanded');
+        const parentIndustry = node.closest('.tree-node[data-industry]');
+        if (parentIndustry && !parentIndustry.classList.contains('expanded')) {
+          parentIndustry.classList.add('expanded');
+          const industryToggle = parentIndustry.querySelector('.tree-toggle');
+          if (industryToggle) industryToggle.classList.add('expanded');
         }
+      }
+    });
+
+    industryNodes.forEach((node: Element) => {
+      const header = node.querySelector('.tree-node-header');
+      if (!header) return;
+
+      const label = header.querySelector('.tree-label')?.textContent?.toLowerCase() || '';
+      const matches = label.includes(lowerQuery);
+      const childTopics = node.querySelectorAll(':scope > .tree-children > .tree-node[data-topic]');
+      let hasMatchingChildren = false;
+
+      childTopics.forEach((child: Element) => {
+        if ((child as HTMLElement).style.display !== 'none') {
+          hasMatchingChildren = true;
+        }
+      });
+
+      const shouldShow = matches || hasMatchingChildren;
+      (node as HTMLElement).style.display = shouldShow ? '' : 'none';
+      if (shouldShow && hasMatchingChildren) {
+        node.classList.add('expanded');
+        const toggle = header.querySelector('.tree-toggle');
+        if (toggle) toggle.classList.add('expanded');
       }
     });
   };
@@ -1987,7 +2038,7 @@ export function bootAccountWorkspaceDashboard(): void {
     
     // Rebuild tree with filter
     if (currentResources && currentResources.length > 0) {
-      buildResourceTree(currentResources);
+      buildResourceTree(getTreeResourcesForDisplay());
       
       // Also update list view if it's visible
       const listView = document.getElementById('resources-list-view');
@@ -2517,6 +2568,16 @@ export function bootAccountWorkspaceDashboard(): void {
     return v ? v : undefined;
   }
 
+  function setVoiceProfileSelectMessage(message: string): void {
+    const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+    if (!sel) return;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = message;
+    sel.appendChild(opt);
+  }
+
   function populateWorkspaceVoiceProfileSelect(profiles: any[]): void {
     const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
     if (!sel) return;
@@ -2569,7 +2630,7 @@ export function bootAccountWorkspaceDashboard(): void {
       populateWorkspaceVoiceProfileSelect(cached);
       return;
     }
-    if (!sessionActive) return;
+    if (!hasWorkspaceSession()) return;
     try {
       const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles`, {
         headers: {
@@ -2578,12 +2639,19 @@ export function bootAccountWorkspaceDashboard(): void {
         },
         credentials: 'include'
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        setVoiceProfileSelectMessage('Could not load voice profiles');
+        return;
+      }
       const data = await response.json();
-      if (!data.success || !Array.isArray(data.profiles)) return;
+      if (!data.success || !Array.isArray(data.profiles)) {
+        setVoiceProfileSelectMessage('Voice profiles unavailable');
+        return;
+      }
       (window as any).allProfiles = data.profiles;
       populateWorkspaceVoiceProfileSelect(data.profiles);
     } catch (e) {
+      setVoiceProfileSelectMessage('Could not load voice profiles');
       if (import.meta.env.MODE === 'development') {
         console.warn('[Portal] ensureWorkspaceVoiceProfiles:', e);
       }

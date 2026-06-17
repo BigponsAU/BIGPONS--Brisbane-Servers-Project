@@ -35,7 +35,7 @@ Last updated: 2026-05-24
 | **Library growth cycle** | Enable in workspace → cron `POST /api/cron/library-growth` or `LIBRARY_GROWTH_SCHEDULER=1` |
 | **Validate before release** | `cd website-brisbaneservers.com && npm run verify:go-live` |
 | **Go-live progress** | [PRODUCTION_GO_LIVE_STATUS.md](operations/PRODUCTION_GO_LIVE_STATUS.md) |
-| **Render MCP (API host)** | [RENDER_MCP.md](operations/RENDER_MCP.md) — `npm run configure:render-mcp` |
+| **Render MCP (legacy)** | [RENDER_MCP.md](operations/RENDER_MCP.md) — decommission only |
 
 **Primary priority:** organic search (Google). Link previews (Open Graph / Twitter) are secondary but supported.
 
@@ -279,7 +279,7 @@ Details: [portal/LIBRARY_GROWTH.md](portal/LIBRARY_GROWTH.md)
 
 | Variable | Required | Example |
 |----------|----------|---------|
-| `PUBLIC_API_BASE_URL` | **Yes** | `https://your-api.onrender.com/api` |
+| `PUBLIC_API_BASE_URL` | **Yes** | `https://api.brisbaneservers.com/api` |
 | `INTERNAL_API_BASE_URL` | Optional | Same as public |
 | `PUBLIC_SITE_URL` | **Yes** | `https://brisbaneservers.com` |
 | `PUBLIC_SITE_BASE` | **Yes** | `/` |
@@ -331,7 +331,7 @@ Redirects in `public/_redirects` (portal → account) apply on Cloudflare Pages.
 
 ```bash
 cd website-brisbaneservers.com
-PUBLIC_API_BASE_URL=https://your-api.onrender.com/api \
+PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api \
 PUBLIC_SITE_URL=https://brisbaneservers.com \
 PUBLIC_SITE_BASE=/ \
 npm run build:hosted
@@ -503,7 +503,8 @@ This master document consolidates operational and SEO guidance. Use the links be
 | [operations/HOSTING_MCP_WORKSPACE.md](operations/HOSTING_MCP_WORKSPACE.md) | **Live** Cloudflare Pages + Render map (MCP-linked) |
 | [operations/GO_LIVE_RUNBOOK.md](operations/GO_LIVE_RUNBOOK.md) | Phased domain go-live (Pages + API + account) |
 | [operations/PRODUCTION_GO_LIVE_STATUS.md](operations/PRODUCTION_GO_LIVE_STATUS.md) | Go-live checklist progress |
-| [operations/RENDER_MCP.md](operations/RENDER_MCP.md) | Render MCP setup |
+| [operations/RENDER_MCP.md](operations/RENDER_MCP.md) | Legacy Render decommission |
+| [operations/FEATURES_NOT_BUILT.md](operations/FEATURES_NOT_BUILT.md) | Intentional product gaps |
 | [operations/CLOUDFLARE_PAGES.md](operations/CLOUDFLARE_PAGES.md) | → **See [§5](#5-deployment--cloudflare-pages-primary)** |
 | [operations/ACCOUNT_DOMAIN_VERIFICATION.md](operations/ACCOUNT_DOMAIN_VERIFICATION.md) | Phase 3 `/account` browser checklist |
 | [operations/DEPLOYMENT_PATHWAYS.md](operations/DEPLOYMENT_PATHWAYS.md) | → **See [§6](#6-deployment-pathways)** |

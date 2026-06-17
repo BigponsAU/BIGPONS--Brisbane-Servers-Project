@@ -11,6 +11,9 @@ import AccountGrowthPanel from './AccountGrowthPanel.astro';
 import AccountModerationPanel from './AccountModerationPanel.astro';
 import AccountSiteReviewPanel from './AccountSiteReviewPanel.astro';
 import AccountAdminUsersPanel from './AccountAdminUsersPanel.astro';
+import AccountVoiceLabPanel from './AccountVoiceLabPanel.astro';
+import AccountVoiceMapPanel from './AccountVoiceMapPanel.astro';
+import AccountAdminOpsPanel from './AccountAdminOpsPanel.astro';
 import AccountResourceModals from './AccountResourceModals.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '../../lib/api-config';
@@ -67,6 +70,9 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       <AccountModerationPanel />
       <AccountSiteReviewPanel />
       <AccountAdminUsersPanel />
+      <AccountVoiceLabPanel />
+      <AccountVoiceMapPanel />
+      <AccountAdminOpsPanel />
     </AccountWorkspaceShell>
     <AccountResourceModals />
     <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>

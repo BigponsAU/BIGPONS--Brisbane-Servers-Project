@@ -8,7 +8,8 @@ export type TokenReason =
   | 'initial_contribution'
   | 'moderation_adjustment'
   | 'admin_grant'
-  | 'admin_revoke';
+  | 'admin_revoke'
+  | 'redemption';
 
 export interface TokenLedgerEntry {
   id: string;
@@ -17,6 +18,7 @@ export interface TokenLedgerEntry {
   reason: TokenReason;
   resourceId?: string;
   contributionId?: string;
+  perkId?: string;
   createdAt: string;
 }
 

@@ -15,6 +15,13 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/auth/revoke-all', loadModule: () => import('../src/pages/_api/auth/revoke-all') },
   { path: '/api/semantic/search', loadModule: () => import('../src/pages/_api/semantic/search') },
   { path: '/api/tokens/me', loadModule: () => import('../src/pages/_api/tokens/me') },
+  { path: '/api/tokens/perks', loadModule: () => import('../src/pages/_api/tokens/perks') },
+  { path: '/api/tokens/redeem', loadModule: () => import('../src/pages/_api/tokens/redeem') },
+  { path: '/api/usage/me', loadModule: () => import('../src/pages/_api/usage/me') },
+  { path: '/api/voice/analyze', loadModule: () => import('../src/pages/_api/voice/analyze') },
+  { path: '/api/voice-map/corpus', loadModule: () => import('../src/pages/_api/voice-map/corpus') },
+  { path: '/api/voice-map/principles', loadModule: () => import('../src/pages/_api/voice-map/principles') },
+  { path: '/api/voice-map/semantic', loadModule: () => import('../src/pages/_api/voice-map/semantic') },
 
   { path: '/api/resources', loadModule: () => import('../src/pages/_api/resources/index') },
   { path: '/api/resources/public', loadModule: () => import('../src/pages/_api/resources/public') },
@@ -68,4 +75,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/admin/site-sections', loadModule: () => import('../src/pages/_api/admin/site-sections') },
   { path: '/api/admin/hosting-status', loadModule: () => import('../src/pages/_api/admin/hosting-status') },
   { path: '/api/admin/email-hosting-checklist', loadModule: () => import('../src/pages/_api/admin/email-hosting-checklist') },
+  { path: '/api/admin/bootstrap-voice-corpus', loadModule: () => import('../src/pages/_api/admin/bootstrap-voice-corpus') },
+  { path: '/api/admin/token-redemptions', loadModule: () => import('../src/pages/_api/admin/token-redemptions') },
+  { path: '/api/admin/token-redemptions/fulfill', loadModule: () => import('../src/pages/_api/admin/token-redemptions/fulfill') },
 ];

@@ -1,5 +1,5 @@
 ---
-description: Use Cloudflare and Render MCP (or APIs) for production auth, email, DNS, and deploy tasks — do not ask the user to configure manually.
+description: Use Cloudflare MCP (or APIs) for production auth, email, DNS, and deploy tasks — do not ask the user to configure manually.
 alwaysApply: true
 ---
 
@@ -8,35 +8,35 @@ alwaysApply: true
 When the task touches **production auth**, **email**, **DNS**, **env vars**, **deploys**, or **go-live** for brisbaneservers.com:
 
 1. **Do it yourself** via MCP or documented APIs before asking the user to click dashboards.
-2. **Read first:** `docs/operations/HOSTING_MCP_WORKSPACE.md`, `docs/operations/PRODUCTION_GO_LIVE_STATUS.md`.
+2. **Read first:** `docs/operations/HOSTING_MCP_WORKSPACE.md`, `docs/operations/PRODUCTION_GO_LIVE_STATUS.md`, `docs/operations/FEATURES_NOT_BUILT.md`.
+
+**Production API is Cloudflare Worker only** — not Render. Render is legacy/decommission: `docs/operations/RENDER_MCP.md`.
 
 ## MCP servers (`.cursor/mcp.json`)
 
 | Server | Use for |
 |--------|---------|
-| `cloudflare-api` | Pages env, DNS, Email Routing (`execute` tool) |
-| `render` | Service env, deploys, logs (requires `RENDER_AUTH_HEADER` in user env) |
+| `cloudflare-api` | Pages env, DNS, Workers, Email Routing (`execute` tool) |
+| `render` | **Legacy only** — decommission, historical logs (optional) |
 
-If Render MCP tools are unavailable, use **Render REST API** with `$env:RENDER_API_KEY` (User env). Service id: `srv-d8ae7qbbc2fs73fv227g`.
+Canonical API: `https://api.brisbaneservers.com/api`
 
 ## Auth email (Resend)
 
 - **Do not** leave `AUTH_EMAIL_FROM` on `onboarding@resend.dev` in production (403 for non-test recipients).
-- Verified sending domain in DNS: **`mail.brisbaneservers.com`** (Resend DKIM/SPF already in Cloudflare).
-- Production `AUTH_EMAIL_FROM`: `Brisbane Servers <support@mail.brisbaneservers.com>`
-- After changing Render env vars, **trigger a redeploy** and test send (Resend API or register flow).
-- Target long-term From: `support@brisbaneservers.com` after root domain is verified in Resend (add root DKIM via Cloudflare MCP).
+- Verified sending domains in DNS: **`mail.brisbaneservers.com`** and **`brisbaneservers.com`** (Resend DKIM/SPF in Cloudflare).
+- Production `AUTH_EMAIL_FROM` (worker secret): `Brisbane Servers <support@brisbaneservers.com>` when root domain verified; interim `support@mail.brisbaneservers.com` if needed.
+- After changing **worker** secrets, redeploy edge worker and test send.
 
 ## Google OAuth
 
-- Check `GET /api/auth/oauth/status` on the live API.
+- Check `GET /api/auth/oauth/status` on the live API (`api.brisbaneservers.com`).
 - Client ID (production): `1040878189962-o0que80vsplu0vghos3ogdgjdakpvdda.apps.googleusercontent.com`
-- Redirect URI on Render: `https://brisbane-servers-api.onrender.com/api/auth/oauth/google/callback` (must match Google Console **Authorized redirect URIs**).
-- Set secret via `.\website-brisbaneservers.com\scripts\configure-google-oauth.ps1` (updates Render + user env).
-- Cursor Google Cloud MCP uses same env vars; add `cursor://anysphere.cursor-mcp/oauth/callback` in Google Console if using BigQuery MCP.
+- Redirect URI (Worker): `https://api.brisbaneservers.com/api/auth/oauth/google/callback` (must match Google Console **Authorized redirect URIs**).
+- Set secrets via `.\website-brisbaneservers.com\scripts\configure-google-oauth.ps1` (worker secrets + user env).
 
 ## After infra changes
 
-- Run `npm run verify:production` from `website-brisbaneservers.com`.
+- Run `npm run verify:production -- --api https://api.brisbaneservers.com` from `website-brisbaneservers.com`.
 - Update `docs/operations/PRODUCTION_GO_LIVE_STATUS.md` with date and what changed.
 - Never print secrets (`CRON_SECRET`, API keys, generated passwords) in chat.

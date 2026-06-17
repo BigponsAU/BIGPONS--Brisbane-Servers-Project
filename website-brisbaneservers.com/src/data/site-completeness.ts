@@ -45,23 +45,23 @@ export const industryHubStatus: SiteCompletenessItem[] = [
   {
     id: 'construction',
     label: 'Construction and trades',
-    status: 'overview-only',
+    status: 'published',
     href: '/resources/construction',
-    note: 'Industry overview guide live; topic guides expanding.',
+    note: 'Industry overview plus topic guides (job costing, site compliance).',
   },
   {
     id: 'finance',
     label: 'Finance and accounting',
-    status: 'overview-only',
+    status: 'published',
     href: '/resources/finance',
-    note: 'Industry overview guide live; topic guides expanding.',
+    note: 'Industry overview plus topic guides (reporting, workflow).',
   },
   {
     id: 'manufacturing',
     label: 'Manufacturing',
-    status: 'overview-only',
+    status: 'published',
     href: '/resources/manufacturing',
-    note: 'Industry overview guide live; topic guides expanding.',
+    note: 'Industry overview plus topic guides (shop floor, traceability).',
   },
 ];
 

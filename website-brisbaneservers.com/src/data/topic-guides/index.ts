@@ -40,6 +40,9 @@ import { professionalServicesGuides } from './professional-services';
 import { retailGuides } from './retail';
 import { healthcareGuides } from './healthcare';
 import { hospitalityGuides } from './hospitality';
+import { constructionGuides } from './construction';
+import { financeGuides } from './finance';
+import { manufacturingGuides } from './manufacturing';
 import { industryOverviewGuides } from './industry-overviews';
 
 const allTopicGuides: TopicGuide[] = [
@@ -47,6 +50,9 @@ const allTopicGuides: TopicGuide[] = [
   ...retailGuides,
   ...healthcareGuides,
   ...hospitalityGuides,
+  ...constructionGuides,
+  ...financeGuides,
+  ...manufacturingGuides,
 ];
 
 const topicGuideKey = (industrySlug: string, topicSlug: string) => `${industrySlug}/${topicSlug}`;

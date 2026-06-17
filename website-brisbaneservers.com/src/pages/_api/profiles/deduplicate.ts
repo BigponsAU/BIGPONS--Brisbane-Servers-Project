@@ -1,15 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
 import { promises as fs } from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Resolve to project root, then to voice-framework storage
-const projectRoot = path.resolve(__dirname, '../../../../../');
-const PROFILES_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'profiles.json');
+import { getProfilesFile } from '../../../lib/storage-paths';
 
 interface ProfileMetadata {
   name: string;
@@ -38,7 +30,7 @@ interface ProfilesData {
 
 async function loadProfiles(): Promise<ProfilesData | null> {
   try {
-    const data = await fs.readFile(PROFILES_FILE, 'utf-8');
+    const data = await fs.readFile(getProfilesFile(), 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     console.error('[API] Error loading profiles:', error);
@@ -47,9 +39,9 @@ async function loadProfiles(): Promise<ProfilesData | null> {
 }
 
 async function saveProfiles(data: ProfilesData): Promise<void> {
-  await fs.writeFile(PROFILES_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.writeFile(getProfilesFile(), JSON.stringify(data, null, 2), 'utf-8');
   const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../../../lib/corpus-store');
-  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, PROFILES_FILE);
+  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, getProfilesFile());
 }
 
 /**

@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { LEGACY_RENDER_API_BASE_URL } from '../src/lib/canonical-hosts';
 import {
   clearLegacyAuthTokenStorage,
   clearPersistedSession,
@@ -33,7 +34,7 @@ describe('client-api auth security', () => {
 
   it('rejects misconfigured api1 bases', () => {
     expect(isUsableAbsoluteApiBase('https://api1.brisbaneservers.com/api1')).toBe(false);
-    expect(isUsableAbsoluteApiBase('https://brisbane-servers-api.onrender.com/api')).toBe(true);
+    expect(isUsableAbsoluteApiBase(LEGACY_RENDER_API_BASE_URL)).toBe(true);
   });
 
   it('uses HttpOnly cookie mode on brisbaneservers.com API hosts', () => {
@@ -41,9 +42,9 @@ describe('client-api auth security', () => {
     expect(usesSessionStorageAuth('https://api.brisbaneservers.com/api')).toBe(false);
   });
 
-  it('uses sessionStorage fallback on cross-origin Render API', () => {
-    expect(usesHttpOnlyCookieAuth('https://brisbane-servers-api.onrender.com/api')).toBe(false);
-    expect(usesSessionStorageAuth('https://brisbane-servers-api.onrender.com/api')).toBe(true);
+  it('uses sessionStorage fallback on cross-origin legacy API hosts', () => {
+    expect(usesHttpOnlyCookieAuth(LEGACY_RENDER_API_BASE_URL)).toBe(false);
+    expect(usesSessionStorageAuth(LEGACY_RENDER_API_BASE_URL)).toBe(true);
   });
 
   it('does not persist JWT to sessionStorage when API is on brisbaneservers.com', () => {
@@ -52,9 +53,9 @@ describe('client-api auth security', () => {
   });
 
   it('persists JWT to sessionStorage only for cross-origin API', () => {
-    persistSessionToken('test-jwt', 'https://brisbane-servers-api.onrender.com/api');
+    persistSessionToken('test-jwt', LEGACY_RENDER_API_BASE_URL);
     expect(sessionStorage.getItem('bsAccountSession')).toBe('test-jwt');
-    expect(restorePersistedSessionToken('https://brisbane-servers-api.onrender.com/api')).toBe(true);
+    expect(restorePersistedSessionToken(LEGACY_RENDER_API_BASE_URL)).toBe(true);
   });
 
   it('clears legacy localStorage authToken', () => {

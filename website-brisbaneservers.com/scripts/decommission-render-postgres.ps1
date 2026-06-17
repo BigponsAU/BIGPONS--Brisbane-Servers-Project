@@ -41,4 +41,4 @@ try {
   Write-Error "Delete failed: $($_.Exception.Message)"
 }
 
-Write-Host "Render API (brisbane-servers-api) is unchanged — only the old database was removed." -ForegroundColor DarkGray
+Write-Host 'Render API (brisbane-servers-api) is unchanged - only the old database was removed.' -ForegroundColor DarkGray

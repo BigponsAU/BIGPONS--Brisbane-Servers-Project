@@ -16,11 +16,30 @@ import { accountWorkspace } from '../../data/account-workspace';
 
       <div class="admin-ops-grid">
         <div class="card admin-ops-card">
-          <h3 class="card-title">Daily AI usage</h3>
-          <p id="admin-ops-usage-summary" class="section-subtitle">Sign in to load usage meter.</p>
+          <div class="admin-ops-usage-header">
+            <h3 class="card-title">Daily AI usage</h3>
+            <button type="button" id="refresh-admin-ops-usage" class="btn btn-secondary btn-sm">Refresh</button>
+          </div>
+          <div class="admin-ops-usage-meter" aria-live="polite">
+            <p id="admin-ops-usage-summary" class="section-subtitle">Sign in to load usage meter.</p>
+            <div id="admin-ops-usage-bar-wrap" class="admin-ops-usage-bar" hidden>
+              <div id="admin-ops-usage-bar-fill" class="admin-ops-usage-bar__fill"></div>
+            </div>
+            <p id="admin-ops-usage-meta" class="form-hint"></p>
+          </div>
           <p class="form-hint">
             Free tier: capped generations per day. SuperGrok / Cloudflare AI Gateway calls are metered before inference runs.
           </p>
+        </div>
+
+        <div class="card admin-ops-card" data-min-role="admin">
+          <div class="admin-ops-usage-header">
+            <h3 class="card-title">Token perk queue</h3>
+            <button type="button" id="refresh-admin-ops-token-queue" class="btn btn-secondary btn-sm">Refresh</button>
+          </div>
+          <p class="form-hint">Spotlight and office-hours redemptions awaiting manual follow-up.</p>
+          <div id="admin-ops-token-queue" class="admin-ops-token-queue" aria-live="polite"></div>
+          <p id="admin-ops-token-queue-status" class="form-hint" role="status"></p>
         </div>
 
         <div class="card admin-ops-card" data-min-role="admin">

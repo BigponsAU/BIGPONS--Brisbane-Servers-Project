@@ -4,7 +4,6 @@
  *
  * Usage:
  *   npm run verify:production -- --api https://api.brisbaneservers.com
- *   npm run verify:production -- --api https://brisbane-servers-api.onrender.com
  */
 const args = process.argv.slice(2);
 const apiFlag = args.indexOf('--api');
@@ -117,3 +116,5 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+export {};

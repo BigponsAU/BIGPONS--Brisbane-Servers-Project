@@ -276,6 +276,16 @@ export function syncPortalAccountContext(): void {
   };
 }
 
+/** Always use this before admin/client panel loads — avoids stale closures missing cookie session. */
+export function getPortalAccountContext(): Record<string, unknown> {
+  syncPortalAccountContext();
+  const ctx = (window as Window & { __portalAccountCtx?: Record<string, unknown> }).__portalAccountCtx;
+  if (!ctx) {
+    throw new Error('Portal account context is not available');
+  }
+  return ctx;
+}
+
 function syncPortalBridgeApiUrl(): void {
   const bridge = (window as Window & { __portalBridge?: Record<string, unknown> }).__portalBridge;
   if (bridge) {

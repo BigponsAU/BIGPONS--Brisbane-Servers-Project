@@ -5,7 +5,7 @@
 
 ## Summary
 
-- **Linked hosting (Pages + Render via MCP):** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md)
+- **Linked hosting:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md) (Pages + Worker API; Render retired)
 - **Full go-live (Pages + API + domain):** [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md)
 - Use **Cloudflare Pages** (Connect to Git), **not** Workers + `npx wrangler deploy`
 - Root: `website-brisbaneservers.com` · Build: `npm run build` · Output: `dist`
@@ -17,10 +17,10 @@
 |----------|------------------|
 | `PUBLIC_SITE_URL` | `https://brisbaneservers.com` |
 | `PUBLIC_SITE_BASE` | `/` |
-| `PUBLIC_API_BASE_URL` | `https://<your-api-host>/api` |
-| `INTERNAL_API_BASE_URL` | Same as public |
+| `PUBLIC_API_BASE_URL` | `https://api.brisbaneservers.com/api` |
+| `INTERNAL_API_BASE_URL` | `https://api.brisbaneservers.com/api` |
 
-### API host (secrets — not on Cloudflare)
+### API host (Worker secrets — not on Pages)
 
 | Variable | Purpose |
 |----------|---------|
@@ -37,9 +37,9 @@ Verify after deploy: `/account`, `/sitemap.xml`, `/robots.txt`, `/privacy-policy
 
 Cloudflare provides **remote MCP servers** that work with Cursor. There is no separate “Pages-only” server; **Pages is covered by the Cloudflare API MCP server** (deployments, project settings, env vars, custom domains, deploy hooks).
 
-### Render MCP (API host)
+### Render (legacy — decommission only)
 
-See [RENDER_MCP.md](RENDER_MCP.md) — `render` server in `.cursor/mcp.json`. Live API: **`brisbane-servers-api`** on Render; Pages project **`brisbaneservers`** uses its `*.onrender.com/api` URL in production env.
+See [RENDER_MCP.md](RENDER_MCP.md). Production API is the **Cloudflare Worker** at `api.brisbaneservers.com`.
 
 ### Project config (this repo)
 

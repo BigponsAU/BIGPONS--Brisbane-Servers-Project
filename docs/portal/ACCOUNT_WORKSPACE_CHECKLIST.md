@@ -50,15 +50,16 @@ Cross-reference [GO_LIVE_RUNBOOK.md](../operations/GO_LIVE_RUNBOOK.md) and [PROD
 | Item | Status | Action |
 |------|--------|--------|
 | Phase 0: `npm run verify:go-live` | **Done** | Repo verified |
-| Hosting MCP (Render + Cloudflare) | **Linked** | [HOSTING_MCP_WORKSPACE.md](../operations/HOSTING_MCP_WORKSPACE.md) |
-| Render `brisbane-servers-api` | **Live** | https://brisbane-servers-api.onrender.com |
+| Hosting MCP (Cloudflare) | **Active** | [HOSTING_MCP_WORKSPACE.md](../operations/HOSTING_MCP_WORKSPACE.md) |
+| Worker `brisbane-servers-api-edge` | **Live** | https://api.brisbaneservers.com/api |
 | Cloudflare Pages `brisbaneservers` | **Live** | https://brisbaneservers.com |
-| `PUBLIC_API_BASE_URL` on Pages | **Done** | → `*.onrender.com/api` |
-| Postgres `DATABASE_URL` | **Done** | `brisbane-servers-db` → `brisbane-servers-api` |
-| `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Pending** | API host |
-| `/account` on domain | **Verify** | [ACCOUNT_DOMAIN_VERIFICATION.md](../operations/ACCOUNT_DOMAIN_VERIFICATION.md) |
-| Post-build verify | **Done** | 6/6 including brand chroma |
-| E2E growth on production | **Deploy** | After Phases 1–3 |
+| `PUBLIC_API_BASE_URL` on Pages | **Done** | `https://api.brisbaneservers.com/api` |
+| Postgres (Neon + Hyperdrive) | **Live** | Worker binding |
+| Render legacy | **Retired** | [RENDER_MCP.md](../operations/RENDER_MCP.md) |
+| `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Optional** | Worker secret |
+| `/account` on domain | **Live** | [ACCOUNT_DOMAIN_VERIFICATION.md](../operations/ACCOUNT_DOMAIN_VERIFICATION.md) |
+| Intentional feature gaps | **Documented** | [FEATURES_NOT_BUILT.md](../operations/FEATURES_NOT_BUILT.md) |
+| Deploy pending repo changes | **When ready** | `deploy:edge-worker` + Pages |
 
 ---
 

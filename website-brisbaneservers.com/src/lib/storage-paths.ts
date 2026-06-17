@@ -4,7 +4,7 @@
  */
 
 import * as path from 'path';
-import { voiceFrameworkStorageDir } from './monorepo-root';
+import { getMonorepoRoot, voiceFrameworkStorageDir } from './monorepo-root';
 
 function storageDir(): string {
   return voiceFrameworkStorageDir();
@@ -24,4 +24,16 @@ export function getSqliteDbFile(): string {
 
 export function getAuthSqliteDbFile(): string {
   return path.join(storageDir(), 'auth.db');
+}
+
+export function getProfilesFile(): string {
+  return path.join(storageDir(), 'profiles.json');
+}
+
+export function getDefaultVoiceProfileFile(): string {
+  return path.join(getMonorepoRoot(), 'voice-framework', 'voice-profile.json');
+}
+
+export function getVectorsFile(): string {
+  return path.join(storageDir(), 'vectors.json');
 }

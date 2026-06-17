@@ -1,20 +1,11 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
 import { promises as fs } from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Resolve to project root, then to voice-framework storage
-const projectRoot = path.resolve(__dirname, '../../../../../');
-const PROFILES_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'profiles.json');
-const DEFAULT_PROFILE_FILE = path.join(projectRoot, 'voice-framework', 'voice-profile.json');
+import { getDefaultVoiceProfileFile, getProfilesFile } from '../../../lib/storage-paths';
 
 async function loadProfiles(): Promise<any> {
   try {
-    const data = await fs.readFile(PROFILES_FILE, 'utf-8');
+    const data = await fs.readFile(getProfilesFile(), 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     return null;
@@ -23,7 +14,7 @@ async function loadProfiles(): Promise<any> {
 
 async function loadDefaultProfile(): Promise<any> {
   try {
-    const data = await fs.readFile(DEFAULT_PROFILE_FILE, 'utf-8');
+    const data = await fs.readFile(getDefaultVoiceProfileFile(), 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     return null;

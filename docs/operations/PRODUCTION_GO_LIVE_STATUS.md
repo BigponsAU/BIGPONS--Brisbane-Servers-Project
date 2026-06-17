@@ -1,145 +1,92 @@
 # brisbaneservers.com — go-live status
 
-Living tracker for [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md). **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
+Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-15 (inline account auth boot — Rocket Loader workaround)
+**Last synced:** 2026-06-18 (edge worker CI deploy; local changes need push for new routes)
 
----
+### Pending deploy (local / unpushed)
 
-## Recent changes (2026-06-15, late)
-
-- **Account inline auth boot** (`a3cef0a`): `/account/` sign-in, password toggles, and Google OAuth return (`#session=`) now run from a non-module inline script (`data-cfasync="false"`) before the Astro module bundle loads. Fixes dead UI when Cloudflare Rocket Loader prevents the account workspace module from booting. Module boot picks up `__accountInlineOAuth` / `__accountInlineLoggedIn` and opens the full dashboard when it loads.
-- **Account auth round 3** (pending): Head-loaded classic `/account-inline-boot.js`; OAuth race guards (module no longer calls `showLogin()` while `#session=` / `?oauth=success` pending); `/auth/me` retry on OAuth return; login-card z-index / `pointer-events` fixes; `scripts/disable-rocket-loader.ps1`.
-- **Ops note:** Disable **Rocket Loader** zone-wide (Speed → Optimization) for `brisbaneservers.com` — module scripts already opt out via `data-cfasync="false"` but RL still injects in `<head>` and can block button clicks until all scripts finish.
-
-## Recent changes (2026-06-15, evening)
-
-- **Google OAuth Hyperdrive fix** (`4cb51b4`): OAuth identity DB writes used raw `pg` Pool / SQLite fallback on the edge worker — crashed with `path … Received undefined` during Google callback. Now uses shared Hyperdrive pool; edge never falls back to sql.js; sign-in UI shows immediately on `/account/`.
-- **Account sign-in round 2** (`0556e25`): Cookie-backed `oauth_state` on edge worker (fixes Google `invalid_state` across Worker isolates); client keeps bearer token as HttpOnly fallback; sequential OAuth boot + `checkAuth` race guards; `#session=` hash applied in production. Edge worker deployed via GitHub Actions (`deploy-edge-worker.yml`); Pages live on `0556e25`+.
-- **Validated:** `GET /api/auth/oauth/google/start` returns `Set-Cookie: oauth_state=…; Domain=.brisbaneservers.com`; worker `brisbane-servers-api-edge` modified 2026-06-14T18:45Z.
-
-## Recent changes (2026-06-15)
-
-- **Account sign-in** (`d2e1b38`): Split `account-auth.ts` (~21 KB initial) from lazy `account-workspace-app` dashboard chunk; sign-in handlers attach immediately; **Continue with Google** rendered in SSR HTML with `https://api.brisbaneservers.com/api/auth/oauth/google/start`; removed Render API failover from production client; `AuthHiddenUsername` for reset-password form; BaseLayout `infoCard` cleanup fix. Cloudflare Pages deploy live on `brisbaneservers.com`.
-- **Validated:** `npm run verify:production -- --api https://api.brisbaneservers.com` PASS; live `/account/` shows visible Google OAuth link (not `display:none`).
-
-## Recent changes (2026-06-05, CSP)
-
-- **Site CSP** (`public/_headers`): explicit policy for scripts, `connect-src` (API + Cloudflare RUM), Google OAuth frames. Removed duplicate CSP meta from `BaseLayout`. Account scripts use `data-cfasync="false"` to avoid Rocket Loader preload/credentials mismatch.
-- **If console still shows report-only violations** with `connect-src 'none'`: that policy is **not** from the repo — disable **Cloudflare → Security → Page Shield → Client-side resource monitoring / CSP reporting** for `brisbaneservers.com`, or remove any zone CSP report-only rule in **Rules → Configuration rules**.
-
-## Recent changes (2026-06-05, evening)
-
-- **Auth sign-in UX** (`4289ab7`): API wake retries before login/register; **Continue with Google** shown optimistically on production; 45s login timeout + retry on 5xx; nav session probe uses `api.brisbaneservers.com`. Cloudflare Pages deploy `1e0e26b3` live on `brisbaneservers.com`.
-- **Validated:** `npm run verify:production` PASS; `npm run verify:production-auth` PASS (CORS, register, login cookie, logout); live `/account/` markup + JS bundle; `GET /api/auth/oauth/google/start` → Google OAuth redirect.
-
-## Recent changes (2026-06-05)
-
-- **Brisbane 2032 UI shipped** (`7ca0395`): `/brisbane-2032`, Project purpose nav (Resources / Projects / About), `ProjectObjectivePanel`, inference links on Resources. Cloudflare Pages deploy `97b64977` live on `brisbaneservers.com`.
-- **Auth hardening:** Logout clears HttpOnly cookie even when session invalid; sign-up/resend/forgot probe API on cold start; `npm run verify:production-auth` E2E script. Render API deploy `dep-d8hbqki8qa3s73bh5mn0` live.
-
-## Recent changes (2026-06-04)
-
-- **Neon-only Postgres:** Removed `brisbane-servers-db` from `render.yaml`. Scripts: `configure:neon-database`, `migrate:render-postgres-to-neon`, `decommission:render-postgres`, `verify:hosting-mcp`.
-- **Health endpoint** exposes `persistence.databaseProvider` (neon vs render) for ops checks.
-
-## Recent changes (2026-06-03)
-
-- **Account sign-in CORS fix** (`90a048c`): Render API now sends `Access-Control-Allow-Credentials: true` for `https://brisbaneservers.com`. Session cookies use `SameSite=Lax` on `api.brisbaneservers.com`. Pages fallback API URL is `https://api.brisbaneservers.com/api`.
-- **Session persistence fix** (`0c2eaf1`): Standalone API forwards `Set-Cookie` correctly; auth cookies use `Domain=.brisbaneservers.com`; login returns an in-memory Bearer token so dashboard API calls stay authenticated after sign-in.
-
-## MCP-linked hosting (active)
-
-| Platform | MCP | Live resource |
-|----------|-----|----------------|
-| **Cloudflare** | `cloudflare-api` | Pages **`brisbaneservers`**, zone **`brisbaneservers.com`** |
-| **Render** | `render` | **`brisbane-servers-api`** (API host only) |
-| **Neon** | — | Postgres via `DATABASE_URL` on API |
+Worker deploy via GitHub Actions succeeded on `main`, but **this session's** route manifest, token redemption, topic guides, and portal UI require **commit + push to `main`** then CI redeploy (or fix `CLOUDFLARE_API_TOKEN` for local `deploy:edge-worker`). Pages rebuild needed for static topic guides and portal panels.
 
 ---
 
-## Summary
+## Current production state
 
 | Layer | Status |
 |-------|--------|
-| **Phase 0** — local gates | **Complete** — `npm run verify:go-live` |
-| **Phase 1** — API (Render) | **Live** — health OK on `*.onrender.com` |
-| **Phase 2** — Pages (Cloudflare) | **Live** — `https://brisbaneservers.com` |
-| **Phase 3** — `/account` on domain | **Live** — auth email from `support@mail.brisbaneservers.com`; signup UX fixes pushed |
-| **Phase 4–6** | **Pending** — root Resend domain (`support@brisbaneservers.com`), Google OAuth env, deploy hook, cron, sign-off |
+| **Site** | **Live** — `https://brisbaneservers.com` (Cloudflare Pages) |
+| **API** | **Live** — `https://api.brisbaneservers.com/api` (Worker `brisbane-servers-api-edge`) |
+| **Database** | **Live** — Neon via Hyperdrive |
+| **Render** | **Retired** — API suspended; Postgres decommissioned |
+| **Account portal** | **Live** — sign-in, Google OAuth, workspace panels |
+| **Intentional gaps** | [FEATURES_NOT_BUILT.md](FEATURES_NOT_BUILT.md) |
+
+### MCP-linked hosting (active)
+
+| Platform | MCP | Role |
+|----------|-----|------|
+| **Cloudflare** | `cloudflare-api` | Pages, Worker, DNS, Email Routing |
+| **Neon** | — | Postgres (console.neon.tech) |
+| **Resend** | — | Outbound auth email (worker secret) |
+| **Google Cloud** | — | OAuth credentials |
+| ~~Render~~ | legacy | Decommission only — [RENDER_MCP.md](RENDER_MCP.md) |
+
+### Pending (non-blocking)
+
+| Item | Notes |
+|------|-------|
+| **Deploy** Worker + Pages | Batch portal fixes + new API routes when ready |
+| **Pages deploy hook** | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on worker |
+| **Billing** | Stripe / PayID — not built by design yet |
+
+### Verification
+
+```bash
+cd website-brisbaneservers.com
+npm run verify:production -- --api https://api.brisbaneservers.com
+npm run verify:production-auth:edge
+```
 
 ---
 
-## Phase 0 — Repo readiness
+## Recent changes (2026-06-18)
 
-| Check | Status |
-|-------|--------|
-| Vitest / typecheck / build 6/6 | **Pass** |
-| `npm run verify:go-live` | **Ready** |
-
----
-
-## Phase 1 — Render API
-
-| Check | Status |
-|-------|--------|
-| `brisbane-servers-api` deployed | **Live** — https://brisbane-servers-api.onrender.com/api/health |
-| Postgres (Neon) | **Migrate** — `npm run configure:neon-database` |
-| ~~`brisbane-servers-db` (Render)~~ | **Retire** — `npm run decommission:render-postgres` after Neon verified |
-| `DATABASE_URL` on API | **Set to Neon pooled URL** |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | **Set** — `bigpons@brisbaneservers.com` bootstrap super-admin |
-| `CRON_SECRET` | **Set** — for `provision-admin` after next deploy |
-| `JWT_SECRET` | **Set** |
-| Custom domain `api.brisbaneservers.com` | **Verified** on Render |
-| Persistent disk `voice-storage` | **Blueprint: Starter + 1GB** — [STORAGE_AND_VECTORS.md](STORAGE_AND_VECTORS.md) |
-| Library growth APIs + bootstrap | **Pushed** — `prestart:api` seeds corpus if empty |
-| `RESEND_API_KEY` | **Done** |
-| `AUTH_EMAIL_FROM` | **Done** — `Brisbane Servers <support@mail.brisbaneservers.com>` |
-| Google OAuth env vars | **Done** — client ID, secret, redirect on Render |
-| `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | **Pending** |
-| Push + `npm run seed:admin` or `POST /api/cron/provision-admin` | **Re-run** — credential email should deliver after `AUTH_EMAIL_FROM` fix |
+- **Hosting truth pass:** `FEATURES_NOT_BUILT.md` documents intentional gaps with reasoning.
+- **Render Postgres** decommissioned (`brisbane-servers-db`); API service remains suspended.
+- **Docs/code cleanup:** `RENDER_MCP.md`, `HOSTING_MCP_WORKSPACE.md`, `EDGE_API_STATUS.md` updated; removed active `onrender.com` references from CSP/client API; dead Render proxy code removed from worker handlers.
+- **Deploy held:** Worker/Pages deploy batched for when operator is ready (step 4 in hosting doc).
 
 ---
 
-## Phase 2 — Cloudflare Pages
+## Historical changelog
 
-| Check | Status |
-|-------|--------|
-| Project `brisbaneservers` + GitHub | **Linked** |
-| `brisbaneservers.com` custom domain | **Active** |
-| Apex CNAME → `brisbaneservers.pages.dev` | **Done** |
-| `api` CNAME → Render (DNS only) | **Done** |
-| Pages `PUBLIC_API_BASE_URL` | **Done** — prefer `https://api.brisbaneservers.com/api` (same-site cookies) |
+<details>
+<summary>2026-06-15 — account auth boot, OAuth Hyperdrive</summary>
 
----
+- Inline auth boot for Rocket Loader; Google OAuth Hyperdrive fix; cookie-backed `oauth_state` on edge.
+- Render API failover removed from production client (`d2e1b38`).
 
-## Phase 3 — Account workspace
+</details>
 
-| Check | Status |
-|-------|--------|
-| UI on domain | **Verify** — [ACCOUNT_DOMAIN_VERIFICATION.md](ACCOUNT_DOMAIN_VERIFICATION.md) |
-| API calls from browser | **Fixed** — credentialed CORS + `api.brisbaneservers.com` session cookies |
+<details>
+<summary>2026-06-05 — CSP, sign-in UX, Brisbane 2032 UI</summary>
 
----
+- Site CSP in `public/_headers`; auth wake retries; Google OAuth on production.
 
-## Phase 4–6
+</details>
 
-| Check | Status |
-|-------|--------|
-| Pages deploy hook on API | **Pending** |
-| Library growth cron | **Pending** |
-| Production sign-off | **Pending** |
+<details>
+<summary>2026-06-03–04 — Neon migration, CORS, session cookies</summary>
 
----
+- Neon-only Postgres; `api.brisbaneservers.com` session cookies; Render API CORS fix (historical — Render later retired).
 
-## Email routing — confirmed
-
-Forwards to `brisbaneservers@gmail.com`: `connect@`, `contact@`, `bigpons@`, `support@`. Outbound SMTP on API still required.
+</details>
 
 ---
 
 ## Related
 
+- [FEATURES_NOT_BUILT.md](FEATURES_NOT_BUILT.md)
 - [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md)
 - [RENDER_MCP.md](RENDER_MCP.md)
-- [CLOUDFLARE_PAGES.md](CLOUDFLARE_PAGES.md)
+- [GO_LIVE_RUNBOOK.md](GO_LIVE_RUNBOOK.md)

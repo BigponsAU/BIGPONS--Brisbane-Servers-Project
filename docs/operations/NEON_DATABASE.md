@@ -20,7 +20,7 @@ One `DATABASE_URL` stores:
 1. [console.neon.tech](https://console.neon.tech) → New project → e.g. `brisbane-servers`.
 2. Copy the **pooled** connection string (hostname contains `-pooler`), e.g.  
    `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require`  
-   Use the pooler URL for Render/serverless — not the direct (non-pooler) host.
+   Use the pooler URL for serverless (Worker/Hyperdrive) — not the direct (non-pooler) host.
 
 ### 2. Connect via Hyperdrive (production)
 
@@ -30,8 +30,8 @@ Update origin in Cloudflare dashboard → **Hyperdrive**, or run:
 
 ```powershell
 cd website-brisbaneservers.com
-npm run configure:neon-database   # legacy script may still set Render if present
-npm run sync:edge-worker-secrets  # after DATABASE_URL in user env
+npm run configure:hyperdrive
+npm run sync:edge-worker-secrets
 ```
 
 For local / one-off scripts, set `DATABASE_URL` to the same pooled connection string.
@@ -64,7 +64,7 @@ Or register fresh accounts after switching.
 
 ### 5. Decommission Render Postgres
 
-After verify passes with `databaseProvider: neon`:
+After verify passes:
 
 ```powershell
 npm run decommission:render-postgres

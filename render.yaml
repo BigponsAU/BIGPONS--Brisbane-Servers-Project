@@ -1,17 +1,8 @@
-# Render Blueprint — Brisbane Servers hybrid production
+# @deprecated Render blueprint — NOT used for production (2026-06-11+).
+# Live API: Cloudflare Worker brisbane-servers-api-edge at api.brisbaneservers.com
+# See docs/operations/HOSTING_MCP_WORKSPACE.md and docs/operations/RENDER_MCP.md
+#
 # https://render.com/docs/blueprint-spec
-#
-# LIVE (workspace My Workspace via Render MCP):
-#   - brisbane-servers-api  → https://brisbane-servers-api.onrender.com
-#   - Postgres: Neon only (DATABASE_URL on API — not Render Postgres; free Render DB expires in 30 days)
-# Static frontend: Cloudflare Pages project "brisbaneservers" (MCP cloudflare-api).
-# Map: docs/operations/HOSTING_MCP_WORKSPACE.md · Neon: docs/operations/NEON_DATABASE.md
-#
-# Remaining operator steps:
-# 1. Set DATABASE_URL to Neon pooled URL: npm run configure:neon-database
-# 2. Decommission legacy Render Postgres if present: npm run decommission:render-postgres
-# 3. Set sync:false env: SMTP_*, CLOUDFLARE_PAGES_DEPLOY_HOOK_URL.
-# 4. Cloudflare Pages env: PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api
 
 services:
   - type: web

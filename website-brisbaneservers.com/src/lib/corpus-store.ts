@@ -21,6 +21,8 @@ export const CORPUS_DOC_KEYS = {
   CONTRIBUTIONS: 'contributions',
   TOKEN_LEDGER: 'token-ledger',
   USAGE_LEDGER: 'usage-ledger',
+  AI_DAILY_BONUSES: 'ai-daily-bonuses',
+  TOKEN_REDEMPTION_QUEUE: 'token-redemption-queue',
   GROWTH_USAGE_LEDGER: 'growth-usage-ledger',
   CASE_STUDY_DRAFTS: 'case-study-drafts',
   PROFILES: 'profiles',

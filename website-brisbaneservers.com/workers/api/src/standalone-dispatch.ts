@@ -72,7 +72,6 @@ function matchRoute(pathname: string): { route: CompiledRoute; params: Record<st
 const EDGE_NATIVE_PATHS = new Set([
   '/api/health',
   '/api/auth/wake',
-  '/api/health/render',
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/me',

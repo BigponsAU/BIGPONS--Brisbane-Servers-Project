@@ -2,9 +2,11 @@
  * Browser API client — security model:
  * - Never store auth tokens in localStorage (XSS persistence risk).
  * - Prefer HttpOnly cookies when API is on *.brisbaneservers.com (same-site family).
- * - sessionStorage fallback only for cross-origin API hosts (e.g. Render) where HttpOnly cookies cannot be shared with the Pages origin.
+ * - sessionStorage fallback only for cross-origin API hosts (legacy dev) where HttpOnly cookies cannot be shared with the Pages origin.
  * - Invalid sessions cleared on failed /auth/me (see account-auth).
  */
+
+import { CANONICAL_API_BASE_URL } from './canonical-hosts';
 
 let inMemorySessionToken: string | null = null;
 
@@ -26,8 +28,9 @@ export function clearLegacyAuthTokenStorage(): void {
 
 const SESSION_STORAGE_KEY = 'bsAccountSession';
 
-export const PRODUCTION_API_URL = 'https://brisbane-servers-api.onrender.com/api';
-export const PRODUCTION_API_CUSTOM_DOMAIN = 'https://api.brisbaneservers.com/api';
+/** @deprecated Use CANONICAL_API_BASE_URL */
+export const PRODUCTION_API_URL = CANONICAL_API_BASE_URL;
+export const PRODUCTION_API_CUSTOM_DOMAIN = CANONICAL_API_BASE_URL;
 
 export function isUsableAbsoluteApiBase(value: string): boolean {
   if (!/^https?:\/\//i.test(value)) return false;

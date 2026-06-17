@@ -3,6 +3,7 @@
  */
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { workspaceFetch } from '../lib/client-api';
+import { getPortalAccountContext } from './account-workspace-runtime';
 
 export interface PortalAccountContext {
   apiBaseUrl: string;
@@ -28,21 +29,97 @@ function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
 }
 
-export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promise<void> {
-  if (!hasSession(ctx)) return;
+function sessionRequiredMessage(container: HTMLElement | null, message: string): void {
+  if (container) {
+    container.innerHTML = `<p class="status-message">${escapeHtml(message)}</p>`;
+  }
+}
 
+export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promise<void> {
   const balanceEl = document.getElementById('client-token-balance');
   const listEl = document.getElementById('client-contributions-list');
+  const perksEl = document.getElementById('client-token-perks');
+  const redeemStatus = document.getElementById('client-token-redeem-status');
+
+  if (!hasSession(ctx)) {
+    if (balanceEl) balanceEl.textContent = '—';
+    if (perksEl) perksEl.innerHTML = '';
+    if (listEl) {
+      listEl.innerHTML = '<li class="empty-state">Sign in to see your contributions and token balance.</li>';
+    }
+    return;
+  }
 
   try {
-    const [tokensRes, contribRes] = await Promise.all([
+    const [tokensRes, contribRes, perksRes] = await Promise.all([
       workspaceFetch(`${ctx.apiBaseUrl}/tokens/me`),
-      workspaceFetch(`${ctx.apiBaseUrl}/community/my-contributions`)
+      workspaceFetch(`${ctx.apiBaseUrl}/community/my-contributions`),
+      workspaceFetch(`${ctx.apiBaseUrl}/tokens/perks`),
     ]);
 
+    let balance = 0;
     if (tokensRes.ok) {
       const data = await tokensRes.json();
-      if (balanceEl && data.success) balanceEl.textContent = String(data.balance ?? 0);
+      if (data.success) {
+        balance = Number(data.balance ?? 0);
+        if (balanceEl) balanceEl.textContent = String(balance);
+      }
+    }
+
+    if (perksRes.ok && perksEl) {
+      const perksData = await perksRes.json();
+      const perks = Array.isArray(perksData.perks) ? perksData.perks : [];
+      if (!perks.length) {
+        perksEl.innerHTML = '';
+      } else {
+        perksEl.innerHTML = perks
+          .map(
+            (p: { id: string; label: string; description: string; cost: number }) => `
+          <li class="client-token-perk">
+            <div class="client-token-perk-body">
+              <strong>${escapeHtml(p.label)}</strong>
+              <span class="client-token-perk-cost">${p.cost} tokens</span>
+              <p class="client-token-perk-desc">${escapeHtml(p.description)}</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" data-redeem-perk="${escapeHtml(p.id)}" ${
+              balance < p.cost ? 'disabled' : ''
+            }>Redeem</button>
+          </li>`
+          )
+          .join('');
+
+        perksEl.querySelectorAll<HTMLButtonElement>('[data-redeem-perk]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const perkId = btn.getAttribute('data-redeem-perk');
+            if (!perkId) return;
+            btn.disabled = true;
+            if (redeemStatus) redeemStatus.textContent = 'Redeeming…';
+            try {
+              const res = await workspaceFetch(`${ctx.apiBaseUrl}/tokens/redeem`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ perkId }),
+              });
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                if (redeemStatus) redeemStatus.textContent = data.error || 'Could not redeem.';
+                btn.disabled = balance < Number(btn.closest('.client-token-perk')?.querySelector('.client-token-perk-cost')?.textContent?.split(' ')[0] ?? 0);
+                return;
+              }
+              if (redeemStatus) redeemStatus.textContent = data.message || 'Redeemed.';
+              await loadClientWorkspaceData(ctx);
+            } catch {
+              if (redeemStatus) redeemStatus.textContent = 'Network error while redeeming.';
+              btn.disabled = false;
+            }
+          });
+        });
+      }
+    } else if (perksEl) {
+      perksEl.innerHTML =
+        perksRes.status === 404
+          ? '<li class="empty-state">Token perks will appear after the next API deploy.</li>'
+          : '';
     }
 
     if (contribRes.ok && listEl) {
@@ -76,7 +153,10 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
 export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('passkey-credentials-list');
   if (!container) return;
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    container.innerHTML = '<p class="status-message">Sign in to manage passkeys.</p>';
+    return;
+  }
 
   container.innerHTML = '<p class="status-message">Loading passkeys…</p>';
   try {
@@ -117,8 +197,27 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
 
 export async function registerPasskey(ctx: PortalAccountContext): Promise<void> {
   const statusEl = document.getElementById('passkey-register-status');
-  if (!hasSession(ctx)) return;
+  const registerBtn = document.getElementById('passkey-register-btn') as HTMLButtonElement | null;
+
+  if (!hasSession(ctx)) {
+    const message = 'Sign in again to register a passkey.';
+    if (statusEl) statusEl.textContent = message;
+    ctx.showAuthBanner(message, true);
+    return;
+  }
+
+  if (!ctx.apiBaseUrl) {
+    const message = 'Account API is not configured. Refresh the page and try again.';
+    if (statusEl) statusEl.textContent = message;
+    ctx.showAuthBanner(message, true);
+    return;
+  }
+
   if (statusEl) statusEl.textContent = 'Starting passkey registration…';
+  if (registerBtn) {
+    registerBtn.disabled = true;
+    registerBtn.setAttribute('aria-busy', 'true');
+  }
 
   try {
     const optRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/register-options`, {
@@ -127,6 +226,7 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
     const optData = await optRes.json();
     if (!optRes.ok || !optData.success) throw new Error(optData.error || 'Could not start registration');
 
+    if (statusEl) statusEl.textContent = 'Complete the passkey prompt on this device…';
     const attestation = await startRegistration({ optionsJSON: optData.options });
     const verifyRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/register-verify`, {
       method: 'POST',
@@ -138,7 +238,16 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
     if (statusEl) statusEl.textContent = verifyData.message || 'Passkey registered.';
     await loadPasskeyCredentials(ctx);
   } catch (error) {
-    if (statusEl) statusEl.textContent = error instanceof Error ? error.message : 'Passkey registration failed.';
+    const message = error instanceof Error ? error.message : 'Passkey registration failed.';
+    if (statusEl) statusEl.textContent = message;
+    if (error instanceof Error && error.name === 'NotAllowedError') {
+      ctx.showAuthBanner('Passkey registration was cancelled or timed out. Try again when ready.', true);
+    }
+  } finally {
+    if (registerBtn) {
+      registerBtn.disabled = false;
+      registerBtn.removeAttribute('aria-busy');
+    }
   }
 }
 
@@ -183,7 +292,11 @@ async function moderateContribution(
   contributionId: string,
   action: 'approve' | 'reject'
 ): Promise<void> {
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    const container = document.getElementById('moderation-queue');
+    sessionRequiredMessage(container, 'Sign in again to moderate uploads.');
+    return;
+  }
   const endpoint = action === 'approve' ? 'approve' : 'reject';
   await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
     method: 'POST',
@@ -196,7 +309,10 @@ async function moderateContribution(
 export async function loadModerationQueue(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('moderation-queue');
   if (!container) return;
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    sessionRequiredMessage(container, 'Sign in again to view the moderation queue.');
+    return;
+  }
 
   container.innerHTML = '<p class="status-message">Loading pending uploads…</p>';
   try {
@@ -242,12 +358,17 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
       const id = (card as HTMLElement).dataset.contributionId;
       const resourceId = (card as HTMLElement).dataset.resourceId;
       if (!id) return;
-      card.querySelector('.moderation-approve')?.addEventListener('click', () => void moderateContribution(ctx, id, 'approve'));
-      card.querySelector('.moderation-reject')?.addEventListener('click', () => void moderateContribution(ctx, id, 'reject'));
+      card.querySelector('.moderation-approve')?.addEventListener('click', () => {
+        void moderateContribution(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
+      });
+      card.querySelector('.moderation-reject')?.addEventListener('click', () => {
+        void moderateContribution(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
+      });
       card.querySelector('.moderation-open-resource')?.addEventListener('click', () => {
-        ctx.navigateToPanel('resources');
-        if (resourceId && ctx.selectResource) {
-          window.setTimeout(() => ctx.selectResource?.(resourceId), 150);
+        const liveCtx = getPortalAccountContext() as unknown as PortalAccountContext;
+        liveCtx.navigateToPanel('resources');
+        if (resourceId && liveCtx.selectResource) {
+          window.setTimeout(() => liveCtx.selectResource?.(resourceId), 150);
         }
       });
     });
@@ -259,7 +380,10 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
 export async function loadSiteReviewSections(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('site-review-list');
   if (!container) return;
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    sessionRequiredMessage(container, 'Sign in again to review public site sections.');
+    return;
+  }
 
   container.innerHTML = '<p class="status-message">Loading public sections…</p>';
   try {
@@ -295,7 +419,11 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
   const container = document.getElementById('hosting-status-list');
   const message = document.getElementById('hosting-status-message');
   if (!container) return;
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    sessionRequiredMessage(container, 'Sign in again to view hosting status.');
+    if (message) message.textContent = '';
+    return;
+  }
 
   container.innerHTML = '<p class="status-message">Loading environment status…</p>';
   if (message) message.textContent = '';
@@ -331,7 +459,10 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
 
 export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<void> {
   const message = document.getElementById('hosting-status-message');
-  if (!hasSession(ctx)) return;
+  if (!hasSession(ctx)) {
+    if (message) message.textContent = 'Sign in again to email the hosting checklist.';
+    return;
+  }
   if (message) message.textContent = 'Sending checklist email…';
 
   try {
@@ -355,8 +486,9 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
   }
 }
 
-export function bindPortalAccountExtensions(ctx: PortalAccountContext): void {
+export function bindPortalAccountExtensions(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('passkey-login-btn')?.addEventListener('click', () => {
+    const ctx = resolveCtx();
     const email = (document.getElementById('email') as HTMLInputElement | null)?.value?.trim();
     if (!email) {
       ctx.showAuthBanner('Enter your email first, then use passkey sign-in.', true);
@@ -365,9 +497,9 @@ export function bindPortalAccountExtensions(ctx: PortalAccountContext): void {
     void loginWithPasskey(ctx, email);
   });
 
-  document.getElementById('passkey-register-btn')?.addEventListener('click', () => void registerPasskey(ctx));
-  document.getElementById('refresh-moderation-btn')?.addEventListener('click', () => void loadModerationQueue(ctx));
-  document.getElementById('refresh-site-review-btn')?.addEventListener('click', () => void loadSiteReviewSections(ctx));
-  document.getElementById('refresh-hosting-status-btn')?.addEventListener('click', () => void loadHostingStatus(ctx));
-  document.getElementById('email-hosting-checklist-btn')?.addEventListener('click', () => void emailHostingChecklist(ctx));
+  document.getElementById('passkey-register-btn')?.addEventListener('click', () => void registerPasskey(resolveCtx()));
+  document.getElementById('refresh-moderation-btn')?.addEventListener('click', () => void loadModerationQueue(resolveCtx()));
+  document.getElementById('refresh-site-review-btn')?.addEventListener('click', () => void loadSiteReviewSections(resolveCtx()));
+  document.getElementById('refresh-hosting-status-btn')?.addEventListener('click', () => void loadHostingStatus(resolveCtx()));
+  document.getElementById('email-hosting-checklist-btn')?.addEventListener('click', () => void emailHostingChecklist(resolveCtx()));
 }

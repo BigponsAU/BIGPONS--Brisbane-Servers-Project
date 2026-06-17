@@ -90,8 +90,10 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                           <span class="client-token-label">tokens</span>
                         </p>
                         <p class="client-token-help">
-                          Tokens reflect accepted contributions and may be used for rewards in future.
+                          Earn tokens when contributions are accepted. Redeem below — simple flat perks, no tiers.
                         </p>
+                        <ul id="client-token-perks" class="client-token-perks" aria-live="polite"></ul>
+                        <p id="client-token-redeem-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
                       <div class="client-contributions-card">
                         <h3>Your recent contributions</h3>
@@ -101,18 +103,21 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                           </li>
                         </ul>
                       </div>
-                      <div class="client-contributions-card">
-                        <h3>Passkeys (recommended)</h3>
-                        <p class="client-token-help">Register a passkey for phishing-resistant sign-in. Env bootstrap passwords are for initial setup only — prefer passkeys for admin access.</p>
-                        <div id="passkey-credentials-list" class="passkey-credentials-list"></div>
-                        <button type="button" id="passkey-register-btn" class="btn btn-secondary btn-sm">Add passkey</button>
-                        <p id="passkey-register-status" class="status-message" role="status" aria-live="polite"></p>
-                      </div>
-                      <div class="client-contributions-card">
+                      <div class="client-contributions-card client-security-card">
                         <h3>Security</h3>
-                        <p class="client-token-help">Revoke all active sessions if you signed in on another machine or want to force a fresh sign-in everywhere.</p>
-                        <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
-                        <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                        <div class="security-subsection">
+                          <h4 class="security-subsection-title">Passkeys (recommended)</h4>
+                          <p class="client-token-help">Register a passkey for phishing-resistant sign-in. Bootstrap passwords from your environment are for initial setup only — use passkeys for day-to-day admin access.</p>
+                          <div id="passkey-credentials-list" class="passkey-credentials-list"></div>
+                          <button type="button" id="passkey-register-btn" class="btn btn-secondary btn-sm">Add passkey</button>
+                          <p id="passkey-register-status" class="status-message" role="status" aria-live="polite"></p>
+                        </div>
+                        <div class="security-subsection">
+                          <h4 class="security-subsection-title">Active sessions</h4>
+                          <p class="client-token-help">Revoke all active sessions if you signed in on another machine or want to force a fresh sign-in everywhere.</p>
+                          <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
+                          <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                        </div>
                       </div>
                     </div>
 

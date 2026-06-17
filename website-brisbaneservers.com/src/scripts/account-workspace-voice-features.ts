@@ -8,10 +8,14 @@ type MapNode = {
   label?: string;
   x: number;
   y: number;
+  z?: number;
   kind?: string;
   industry?: string;
 };
 type MapEdge = { sourceId: string; targetId: string; strength?: number; kind?: string };
+
+let voiceMapDepthMode = false;
+let voiceMapCache: { nodes: MapNode[]; edges: MapEdge[]; meta: string } | null = null;
 
 const INDUSTRY_COLORS: Record<string, string> = {
   profile: 'rgba(249, 115, 22, 0.95)',
@@ -46,7 +50,20 @@ function nodeColor(node: MapNode): string {
   return INDUSTRY_COLORS[key] ?? INDUSTRY_COLORS.general;
 }
 
-function projectToSvg(nodes: MapNode[], width: number, height: number): Map<string, { cx: number; cy: number }> {
+function nodeDepthZ(node: MapNode): number {
+  if (typeof node.z === 'number') return node.z;
+  if (node.kind === 'profile') return 24;
+  if (node.kind === 'resource') return 12;
+  if (node.kind === 'principle') return 18;
+  return 6;
+}
+
+function projectToSvg(
+  nodes: MapNode[],
+  width: number,
+  height: number,
+  depthMode: boolean
+): Map<string, { cx: number; cy: number; z: number; scale: number }> {
   if (nodes.length === 0) return new Map();
   const xs = nodes.map((n) => n.x);
   const ys = nodes.map((n) => n.y);
@@ -57,11 +74,25 @@ function projectToSvg(nodes: MapNode[], width: number, height: number): Map<stri
   const pad = 48;
   const spanX = maxX - minX || 1;
   const spanY = maxY - minY || 1;
-  const positions = new Map<string, { cx: number; cy: number }>();
+  const positions = new Map<string, { cx: number; cy: number; z: number; scale: number }>();
+
   for (const node of nodes) {
-    const cx = pad + ((node.x - minX) / spanX) * (width - pad * 2);
-    const cy = pad + ((node.y - minY) / spanY) * (height - pad * 2);
-    positions.set(node.id, { cx, cy });
+    const nx = (node.x - minX) / spanX;
+    const ny = (node.y - minY) / spanY;
+    const z = nodeDepthZ(node);
+
+    if (!depthMode) {
+      const cx = pad + nx * (width - pad * 2);
+      const cy = pad + ny * (height - pad * 2);
+      positions.set(node.id, { cx, cy, z, scale: 1 });
+      continue;
+    }
+
+    // Isometric depth: same layout math as 2D, lifted on Y by z (no WebGL — stays fast).
+    const cx = pad + nx * (width - pad * 2);
+    const cy = pad + ny * (height - pad * 2) - z * 1.4;
+    const scale = 0.75 + (z / 40) * 0.45;
+    positions.set(node.id, { cx, cy, z, scale });
   }
   return positions;
 }
@@ -83,6 +114,9 @@ function renderLegend(industries: string[]): void {
 function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[], meta: string): void {
   const width = 800;
   const height = 480;
+  const stage = svg.closest('.voice-map-stage');
+  stage?.classList.toggle('voice-map-stage--depth', voiceMapDepthMode);
+
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.innerHTML = '';
 
@@ -99,9 +133,15 @@ function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[
     return;
   }
 
-  const positions = projectToSvg(nodes, width, height);
+  const positions = projectToSvg(nodes, width, height, voiceMapDepthMode);
 
-  for (const edge of edges) {
+  const sortedEdges = [...edges].sort((a, b) => {
+    const za = positions.get(a.sourceId)?.z ?? 0;
+    const zb = positions.get(b.sourceId)?.z ?? 0;
+    return za - zb;
+  });
+
+  for (const edge of sortedEdges) {
     const a = positions.get(edge.sourceId);
     const b = positions.get(edge.targetId);
     if (!a || !b) continue;
@@ -115,15 +155,24 @@ function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[
     svg.appendChild(line);
   }
 
-  for (const node of nodes) {
+  const sortedNodes = [...nodes].sort(
+    (a, b) => (positions.get(a.id)?.z ?? 0) - (positions.get(b.id)?.z ?? 0)
+  );
+
+  for (const node of sortedNodes) {
     const pos = positions.get(node.id);
     if (!pos) continue;
     const isProfile = node.kind === 'profile';
+    const baseR = isProfile ? 12 : node.kind === 'resource' ? 7 : 4;
+    const r = baseR * pos.scale;
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circle.setAttribute('cx', String(pos.cx));
     circle.setAttribute('cy', String(pos.cy));
-    circle.setAttribute('r', isProfile ? '12' : node.kind === 'resource' ? '7' : '4');
+    circle.setAttribute('r', String(r));
     circle.setAttribute('fill', nodeColor(node));
+    if (voiceMapDepthMode) {
+      circle.setAttribute('opacity', String(0.65 + Math.min(0.35, pos.z / 40)));
+    }
     circle.setAttribute('class', isProfile ? 'voice-map-node voice-map-node--profile' : 'voice-map-node');
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     title.textContent = node.label || node.id;
@@ -184,7 +233,8 @@ export async function loadVoiceMap(): Promise<void> {
       data.brisbaneProfile ? `Hub: ${brisbane}` : '',
     ].filter(Boolean);
     if (stats?.industries) renderLegend(stats.industries as string[]);
-    renderVoiceMapSvg(svg, nodes, edges, metaParts.join(' · '));
+    voiceMapCache = { nodes, edges, meta: metaParts.join(' · ') };
+    renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta);
   } catch {
     renderVoiceMapSvg(svg, [], [], 'Network error loading voice map.');
   }
@@ -251,6 +301,18 @@ async function runVoiceLab(mode: 'tone' | 'patterns'): Promise<void> {
 export function bindVoiceFeaturePanels(): void {
   document.getElementById('voice-map-refresh-btn')?.addEventListener('click', () => void loadVoiceMap());
   document.getElementById('voice-map-view')?.addEventListener('change', () => void loadVoiceMap());
+  document.getElementById('voice-map-view-mode')?.addEventListener('click', () => {
+    voiceMapDepthMode = !voiceMapDepthMode;
+    const btn = document.getElementById('voice-map-view-mode');
+    if (btn) {
+      btn.setAttribute('aria-pressed', voiceMapDepthMode ? 'true' : 'false');
+      btn.textContent = voiceMapDepthMode ? 'Flat view' : 'Depth view';
+    }
+    const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
+    if (svg && voiceMapCache) {
+      renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta);
+    }
+  });
   document.getElementById('voice-map-bootstrap-btn')?.addEventListener('click', () => void bootstrapVoiceCorpus());
   document.getElementById('voice-lab-analyze-btn')?.addEventListener('click', () => void runVoiceLab('tone'));
   document.getElementById('voice-lab-patterns-btn')?.addEventListener('click', () => void runVoiceLab('patterns'));

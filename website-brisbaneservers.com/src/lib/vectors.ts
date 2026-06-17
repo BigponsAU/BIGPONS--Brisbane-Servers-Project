@@ -5,13 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const projectRoot = path.resolve(__dirname, '../../../../');
-const VECTORS_FILE = path.join(projectRoot, 'voice-framework', 'storage', 'vectors.json');
+import { getVectorsFile } from './storage-paths';
 
 export interface VectorEntry {
   id: string;
@@ -22,17 +16,18 @@ export interface VectorEntry {
 }
 
 async function ensureVectorsFile(): Promise<void> {
+  const vectorsFile = getVectorsFile();
   try {
-    await fs.access(VECTORS_FILE);
+    await fs.access(vectorsFile);
   } catch {
-    await fs.mkdir(path.dirname(VECTORS_FILE), { recursive: true });
-    await fs.writeFile(VECTORS_FILE, JSON.stringify([], null, 2));
+    await fs.mkdir(path.dirname(vectorsFile), { recursive: true });
+    await fs.writeFile(vectorsFile, JSON.stringify([], null, 2));
   }
 }
 
 export async function loadVectors(): Promise<VectorEntry[]> {
   await ensureVectorsFile();
-  const data = await fs.readFile(VECTORS_FILE, 'utf-8');
+  const data = await fs.readFile(getVectorsFile(), 'utf-8');
   try {
     const items = JSON.parse(data);
     return Array.isArray(items) ? items : [];
@@ -42,7 +37,7 @@ export async function loadVectors(): Promise<VectorEntry[]> {
 }
 
 export async function saveVectors(entries: VectorEntry[]): Promise<void> {
-  await fs.writeFile(VECTORS_FILE, JSON.stringify(entries, null, 2));
+  await fs.writeFile(getVectorsFile(), JSON.stringify(entries, null, 2));
 }
 
 export async function addVector(

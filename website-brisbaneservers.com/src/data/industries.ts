@@ -167,7 +167,24 @@ export const industries: Industry[] = [
     description:
       'Jobs run on quotes, site coordination, and compliance evidence — when status lives in messages and spreadsheets, margin and safety both suffer. This hub frames technology as job control and visibility, with scope and costs agreed before major platform spend.',
     icon: 'fas fa-hard-hat',
-    topics: [],
+    topics: [
+      {
+        id: 'job-costing',
+        name: 'Job Costing & Variations',
+        slug: 'job-costing-variations',
+        description:
+          'Quote-to-invoice control when variations and committed costs must stay visible — margin is decided before the final claim, not in a spreadsheet after the fact.',
+        icon: 'fas fa-calculator',
+      },
+      {
+        id: 'site-compliance',
+        name: 'Site Compliance & Diaries',
+        slug: 'site-compliance',
+        description:
+          'SWMS, inductions, and site evidence linked to the job — so principal contractors and auditors get answers in minutes, not archaeology.',
+        icon: 'fas fa-clipboard-check',
+      },
+    ],
   },
   {
     id: 'finance',
@@ -176,7 +193,24 @@ export const industries: Industry[] = [
     description:
       'Reporting cycles, audit trails, and client confidentiality set the bar — manual reconciliation and fragmented ledgers consume capacity that should go to advice and growth. Resources connect financial operations to automation and controls you can defend to clients and regulators.',
     icon: 'fas fa-chart-line',
-    topics: [],
+    topics: [
+      {
+        id: 'client-reporting',
+        name: 'Client Reporting Packs',
+        slug: 'client-reporting',
+        description:
+          'Standardised management reporting without monthly rebuilds — partners review exceptions, not formulas.',
+        icon: 'fas fa-file-invoice',
+      },
+      {
+        id: 'workflow-compliance',
+        name: 'Workflow & Compliance',
+        slug: 'workflow-compliance',
+        description:
+          'BAS, tax, and audit jobs with visible sign-off — named owners and timestamps you can defend.',
+        icon: 'fas fa-tasks',
+      },
+    ],
   },
   {
     id: 'manufacturing',
@@ -185,7 +219,24 @@ export const industries: Industry[] = [
     description:
       'Throughput, quality signals, and supply timing determine competitiveness — when production data lags the floor, planning guesses and rework follow. Guides tie shop-floor reality to tracking and integration with trade-offs visible up front.',
     icon: 'fas fa-industry',
-    topics: [],
+    topics: [
+      {
+        id: 'shop-floor',
+        name: 'Shop Floor Tracking',
+        slug: 'shop-floor-tracking',
+        description:
+          'WIP and downtime visible before the customer calls — schedules grounded in what the floor actually did.',
+        icon: 'fas fa-conveyor-belt-boxes',
+      },
+      {
+        id: 'quality-trace',
+        name: 'Quality & Traceability',
+        slug: 'quality-traceability',
+        description:
+          'Batch genealogy for recalls and audits — answer which customers got which lot without paper travellers.',
+        icon: 'fas fa-magnifying-glass-chart',
+      },
+    ],
   },
 ];
 

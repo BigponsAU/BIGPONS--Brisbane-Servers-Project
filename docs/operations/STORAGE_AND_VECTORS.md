@@ -1,8 +1,8 @@
 # Storage, vectors, and library growth (production)
 
-How the **corpus**, **semantic index**, and **library growth** work on the hybrid stack (Cloudflare Pages + Render API).
+How the **corpus**, **semantic index**, and **library growth** work on the production stack (Cloudflare Pages + **Worker API** + Neon).
 
-**Live API:** `brisbane-servers-api` · **Postgres:** users/sessions only · **Corpus:** `voice-framework/storage/` on the API host.
+**Live API:** `api.brisbaneservers.com` (Worker) · **Postgres:** Neon via Hyperdrive · **Corpus:** `corpus_documents` JSONB in Neon.
 
 ---
 
@@ -13,13 +13,7 @@ How the **corpus**, **semantic index**, and **library growth** work on the hybri
 | **Auth** | Postgres `DATABASE_URL` (**Neon recommended**) | Users, sessions, passkeys | **Yes** |
 | **Corpus + vectors** | Same DB → `corpus_documents` JSONB | Resources, embeddings, growth, profiles | **Yes** |
 
-**Do not use Render free Postgres for long-term** — it expires after 30 days. Use **[Neon](NEON_DATABASE.md)** (free tier, no expiry) and set `DATABASE_URL` on the API to the Neon connection string.
-
-`MONOREPO_ROOT` on Render is `/opt/render/project/src` (repo root). All corpus paths resolve to:
-
-```text
-/opt/render/project/src/voice-framework/storage/
-```
+**Production:** Neon via Hyperdrive on the Worker. Render Postgres is decommissioned.
 
 ---
 
@@ -90,13 +84,12 @@ flowchart TB
 
 ---
 
-## Render API + Neon (recommended $0 durable)
+## Edge Worker + Neon (production)
 
 | Setup | Corpus on redeploy |
 |-------|-------------------|
-| **Free API + Neon `DATABASE_URL`** | **Survives** in Postgres |
-| **Free API + Render free Postgres** | Auth expires in **30 days** — avoid |
-| **Free API + no DATABASE_URL** | **Lost** — filesystem only, git seed on bootstrap |
+| **Worker + Neon via Hyperdrive** | **Survives** in Postgres |
+| **No Hyperdrive / no DATABASE_URL** | **Lost** — filesystem only, git seed on bootstrap |
 
 See **[NEON_DATABASE.md](NEON_DATABASE.md)** for setup steps.
 
@@ -106,14 +99,13 @@ See **[NEON_DATABASE.md](NEON_DATABASE.md)** for setup steps.
 
 | # | Task | Owner |
 |---|------|--------|
-| 1 | **Neon `DATABASE_URL`** on API (replace Render 30-day DB) | [NEON_DATABASE.md](NEON_DATABASE.md) |
-| 2 | Deploy latest `main` (library growth APIs + bootstrap) | Git push / auto-deploy |
-| 3 | `OPENAI_API_KEY` on API (optional, better vectors) | Render env |
-| 4 | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | Cloudflare Pages → Deploy hooks |
-| 5 | GitHub secrets `API_BASE_URL` + `CRON_SECRET` | Repo → Actions |
-| 6 | Resend **domain verified** → `AUTH_EMAIL_FROM=support@...` | Resend + Render |
-| 7 | `/account` → Library growth → Activate schedule → Run cycle | You |
-| 8 | `npm run verify:production -- --api https://brisbane-servers-api.onrender.com` | Local |
+| 1 | **Hyperdrive** → Neon pooled URL | `npm run configure:hyperdrive` |
+| 2 | Deploy edge worker + Pages | `deploy:edge-worker`, git push |
+| 3 | `OPENAI_API_KEY` on worker (optional, better vectors) | Worker secrets |
+| 4 | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` | Worker secret |
+| 5 | Resend domain verified → `AUTH_EMAIL_FROM` | Resend + worker |
+| 6 | `/account` → Library growth → Activate schedule | Admin |
+| 7 | `npm run verify:production -- --api https://api.brisbaneservers.com` | Local |
 
 ---
 
