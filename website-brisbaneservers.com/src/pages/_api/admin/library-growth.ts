@@ -33,6 +33,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   const pending = proposals.filter((p) => p.status === 'pending');
   const materialized = proposals.filter((p) => p.status === 'materialized');
+  const rejected = proposals.filter((p) => p.status === 'rejected');
 
   return jsonOk({
     config,
@@ -40,6 +41,7 @@ export const GET: APIRoute = async ({ request }) => {
     stats: {
       pending: pending.length,
       materialized: materialized.length,
+      rejected: rejected.length,
       total: proposals.length,
     },
     pending: pending.slice(0, 50),
@@ -192,7 +194,13 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
     const result = await runAutonomousGrowthCycle();
-    return jsonOk({ success: true, estimate, ...result });
+    const proposalsAfter = await loadGrowthProposals();
+    const queue = {
+      pending: proposalsAfter.filter((p) => p.status === 'pending').length,
+      materialized: proposalsAfter.filter((p) => p.status === 'materialized').length,
+      rejected: proposalsAfter.filter((p) => p.status === 'rejected').length,
+    };
+    return jsonOk({ success: true, estimate, ...result, queue });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Growth cycle failed';
     return jsonError(message, 500);

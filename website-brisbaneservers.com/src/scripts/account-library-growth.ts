@@ -116,13 +116,18 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
     }
 
     const meta = document.getElementById('growth-cycle-meta');
+    const stats = data.stats as
+      | { pending?: number; materialized?: number; rejected?: number; total?: number }
+      | undefined;
     if (meta) {
       const parts = [
         cfg.lastCycleAt ? `Last cycle: ${new Date(cfg.lastCycleAt).toLocaleString()}` : null,
         armed && cfg.nextCycleAt
           ? `Next automatic cycle: ${new Date(cfg.nextCycleAt).toLocaleString()}`
           : 'Automatic cycles: off (use Run cycle now or Activate schedule)',
-        `Pending proposals: ${data.stats?.pending ?? 0}`,
+        stats
+          ? `Queue: ${stats.pending ?? 0} pending · ${stats.materialized ?? 0} materialized · ${stats.rejected ?? 0} rejected`
+          : null,
       ].filter(Boolean);
       meta.textContent = parts.join(' · ');
     }
@@ -149,7 +154,7 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
       }
     }
 
-    await renderGrowthProposals(ctx, data.pending ?? []);
+    await renderGrowthProposals(ctx, stats);
   } catch {
     setGrowthStatus('Could not reach growth API.', true);
   }
@@ -157,7 +162,14 @@ export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise
 
 async function renderGrowthProposals(
   ctx: PortalAccountContext,
-  cached: Array<{
+  stats?: { pending?: number; materialized?: number; rejected?: number }
+): Promise<void> {
+  const container = document.getElementById('growth-proposals-queue');
+  if (!container) return;
+
+  const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/growth-proposals?status=pending`);
+  const data = await res.json();
+  const items = (Array.isArray(data.proposals) ? data.proposals : []) as Array<{
     id: string;
     kind: string;
     title: string;
@@ -165,21 +177,22 @@ async function renderGrowthProposals(
     topic: string;
     rationale: string;
     status: string;
-  }>
-): Promise<void> {
-  const container = document.getElementById('growth-proposals-queue');
-  if (!container) return;
-
-  let items = cached;
-  if (!items.length) {
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/growth-proposals?status=pending`);
-    const data = await res.json();
-    items = Array.isArray(data.proposals) ? data.proposals : [];
-  }
+  }>;
 
   if (!items.length) {
-    container.innerHTML =
-      '<p class="status-message">No pending proposals. Run a cycle to plan new topics from analytics gaps and contributor interest.</p>';
+    const materialized = stats?.materialized ?? 0;
+    const hint =
+      materialized > 0
+        ? `No pending proposals. ${materialized} proposal(s) were already turned into drafts — open Resources to review and publish.`
+        : 'No pending proposals. Run a cycle to plan new topics from analytics gaps and contributor interest.';
+    container.innerHTML = `<p class="status-message">${escapeHtml(hint)}</p>${
+      materialized > 0
+        ? '<p class="growth-queue-actions"><button type="button" class="btn btn-secondary btn-sm" id="growth-open-resources">Open Resources</button></p>'
+        : ''
+    }`;
+    document.getElementById('growth-open-resources')?.addEventListener('click', () => {
+      ctx.navigateToPanel('resources');
+    });
     return;
   }
 
@@ -346,13 +359,21 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       budgetReason?: string;
       skippedBudget?: number;
     } | undefined;
-    let matLine = '';
+    const queue = data.queue as { pending?: number; materialized?: number; rejected?: number } | undefined;
+    const parts = [
+      `Cycle: ${data.created} new proposal(s), ${data.skipped} skipped.`,
+    ];
     if (mat?.budgetBlocked) {
-      matLine = ` Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`;
+      parts.push(`Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`);
     } else if (mat && (mat.materialized ?? 0) > 0) {
-      matLine = ` Generated ${mat.materialized} draft(s)${mat.published ? ` (${mat.published} auto-published)` : ''}.`;
+      parts.push(
+        `Auto-generated ${mat.materialized} draft(s) in Resources${mat.published ? ` (${mat.published} auto-published)` : ''}.`
+      );
     }
-    setGrowthStatus(`Cycle created ${data.created} proposal(s), skipped ${data.skipped}.${matLine}`);
+    if (queue) {
+      parts.push(`Queue now: ${queue.pending ?? 0} pending, ${queue.materialized ?? 0} materialized.`);
+    }
+    setGrowthStatus(parts.join(' '));
     await loadLibraryGrowthPanel(ctx);
   });
 

@@ -542,7 +542,12 @@
 .account-workspace-shell .growth-proposals-queue {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.account-workspace-shell .growth-queue-actions {
+  margin: 0.5rem 0 0;
 }
 
 .account-workspace-shell .growth-proposal-card {
