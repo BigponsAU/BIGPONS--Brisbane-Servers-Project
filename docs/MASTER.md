@@ -28,14 +28,14 @@ Last updated: 2026-05-24
 |------|--------|
 | **Deploy production site** | [HOSTING_MCP_WORKSPACE.md](operations/HOSTING_MCP_WORKSPACE.md) · [GO_LIVE_RUNBOOK.md](operations/GO_LIVE_RUNBOOK.md) |
 | **Hosting status** | [PRODUCTION_GO_LIVE_STATUS.md](operations/PRODUCTION_GO_LIVE_STATUS.md) |
-| **Run locally** | From repo root: `npm run start:hybrid` → frontend `http://localhost:3000`, API `http://localhost:3002/api` |
+| **Run locally** | `cd website-brisbaneservers.com && npm run dev` — set `PUBLIC_API_BASE_URL=https://api.brisbaneservers.com/api` |
 | **Add a case study** | Add entry to `src/data/case-studies.ts` → push → Cloudflare rebuilds |
 | **Add a topic guide** | Add topic to `src/data/industries.ts` + guide in `src/data/topic-guides/*.ts` → push |
 | **Publish an API resource** | Publish in `/account` workspace → deploy hook triggers rebuild → prerendered SEO page |
-| **Library growth cycle** | Enable in workspace → cron `POST /api/cron/library-growth` or `LIBRARY_GROWTH_SCHEDULER=1` |
+| **Library growth cycle** | Workspace → Library growth → cron via `.github/workflows/library-growth-cron.yml` (`POST /api/cron/library-growth`) |
 | **Validate before release** | `cd website-brisbaneservers.com && npm run verify:go-live` |
 | **Go-live progress** | [PRODUCTION_GO_LIVE_STATUS.md](operations/PRODUCTION_GO_LIVE_STATUS.md) |
-| **Render MCP (legacy)** | [RENDER_MCP.md](operations/RENDER_MCP.md) — decommission only |
+| **Render MCP (legacy)** | [RENDER_MCP.md](operations/RENDER_MCP.md) — archive only |
 
 **Primary priority:** organic search (Google). Link previews (Open Graph / Twitter) are secondary but supported.
 
@@ -45,23 +45,29 @@ Last updated: 2026-05-24
 
 ```
 ┌─────────────────────┐     HTTPS      ┌──────────────────────────┐
-│  Cloudflare Pages   │ ──────────────▶│  Standalone API (Node)   │
-│  Astro static dist/ │   PUBLIC_API   │  standalone-api/server   │
-│  Marketing + /account│               │  Handlers in api/        │
-└─────────────────────┘                └──────────────────────────┘
+│  Cloudflare Pages   │ ──────────────▶│  Cloudflare Worker API   │
+│  Astro static dist/ │   PUBLIC_API   │  api.brisbaneservers.com │
+│  Marketing + /account│               │  route-manifest → _api   │
+└─────────────────────┘                └────────────┬─────────────┘
+                                                    │
+                                                    ▼
+                                         ┌──────────────────────┐
+                                         │ Neon Postgres        │
+                                         │ (Hyperdrive binding) │
+                                         └──────────────────────┘
          │                                         │
          │  Build-time prerender                   │  Runtime publish
          │  (guides, case studies,                 │  → deploy hook
          │   published resources)                  │  → Pages rebuild
          ▼                                         ▼
-   sitemap.xml, JSON-LD, HTML              JSON / Postgres storage
+   sitemap.xml, JSON-LD, HTML              Corpus JSONB in Postgres
 ```
 
 | Path | Role |
 |------|------|
 | `website-brisbaneservers.com/src/` | Astro pages, layouts, components, data |
-| `website-brisbaneservers.com/api/` | Hybrid API route handlers |
-| `website-brisbaneservers.com/standalone-api/` | Node server mounting `api/` |
+| `website-brisbaneservers.com/src/pages/_api/` | API handlers (dispatched by edge worker) |
+| `website-brisbaneservers.com/standalone-api/route-manifest.ts` | Worker route table |
 | `website-brisbaneservers.com/dist/` | Static build output (gitignored) |
 | `website-brisbaneservers.com/public/` | Static assets (`og-default.png`, `_redirects`) |
 

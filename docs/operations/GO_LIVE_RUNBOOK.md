@@ -152,10 +152,6 @@ curl -sS https://brisbaneservers.com/sitemap.xml | head -40
 
 - Set repo secrets: `API_BASE_URL`, `CRON_SECRET`.
 
-**Option B — API process:** `LIBRARY_GROWTH_SCHEDULER=1` on API host.
-
-**Option C — Render cron:** daily `POST /api/cron/library-growth` with `Authorization: Bearer $CRON_SECRET`.
-
 - [ ] Cron returns `success` when schedule armed; skips when paused.
 
 ---
@@ -181,15 +177,12 @@ Update [ACCOUNT_WORKSPACE_CHECKLIST.md](../portal/ACCOUNT_WORKSPACE_CHECKLIST.md
 flowchart TB
   CF[Cloudflare Pages dist]
   DNS[Cloudflare DNS]
-  API[brisbane-servers-api Render]
-  PG[(Postgres)]
-  Store[voice-framework/storage disk]
+  API[brisbane-servers-api-edge Worker]
+  PG[(Neon Postgres via Hyperdrive)]
 
   DNS --> CF
   DNS --> API
-  CF -->|PUBLIC_API_BASE_URL| API
   API --> PG
-  API --> Store
   API -->|deploy hook| CF
 ```
 
