@@ -54,10 +54,10 @@
     "verify": "npm run audit:css-vars && npm run build && npm run check-scaling"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.13",
+    "@astrojs/cloudflare": "^13.7.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
-    "astro": "^5.18.2",
+    "astro": "^6.4.8",
     "nodemailer": "^8.0.4",
     "pg": "^8.13.1",
     "postgres": "^3.4.9",
@@ -68,6 +68,6 @@
     "@types/pg": "^8.11.10",
     "glob": "^10.3.10",
     "typescript": "^5.0.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   }
 }
