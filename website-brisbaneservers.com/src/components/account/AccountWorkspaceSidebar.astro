@@ -57,12 +57,11 @@ const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
           {
             creatorItems.map((item, index) => (
               <a
-                href={`#${item.panel === 'dashboard' ? 'overview' : item.panel}`}
+                href="#"
                 class={`sidebar-nav-item${index === 0 ? ' active' : ''}`}
                 data-panel={item.panel}
                 data-min-role={item.minRole}
                 data-nav-mode="creator"
-                onclick={`navigateToPanel('${item.panel}'); return false;`}
                 title={item.title}
               >
                 <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -124,12 +123,11 @@ const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
           {
             adminItems.map((item) => (
               <a
-                href={`#${item.panel}`}
+                href="#"
                 class="sidebar-nav-item"
                 data-panel={item.panel}
                 data-min-role={item.minRole}
                 data-nav-mode="admin"
-                onclick={`navigateToPanel('${item.panel}'); return false;`}
                 title={item.title}
               >
                 <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

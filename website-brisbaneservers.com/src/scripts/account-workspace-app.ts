@@ -31,6 +31,19 @@ export type { AccountWorkspaceBootConfig };
 
 let dashboardBooted = false;
 
+function applyAccountWorkspaceFormDefaults(): void {
+  document.querySelectorAll('form.resource-form, #edit-resource-form').forEach((node) => {
+    const form = node as HTMLFormElement;
+    form.removeAttribute('method');
+    const action = form.getAttribute('action') ?? '';
+    if (!action || action === '#') {
+      form.setAttribute('action', 'javascript:void(0)');
+    }
+  });
+}
+
+type ResourceCreateSection = 'generate' | 'upload' | 'paste';
+
 /** @deprecated Use bootAccountAuth + lazy bootAccountWorkspaceDashboard */
 export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
   void import('./account-auth.ts').then((mod) => mod.bootAccountAuth(config));
@@ -39,6 +52,8 @@ export function bootAccountWorkspace(config: AccountWorkspaceBootConfig): void {
 export function bootAccountWorkspaceDashboard(): void {
   if (dashboardBooted) return;
   dashboardBooted = true;
+
+  applyAccountWorkspaceFormDefaults();
 
   const rt = tryGetPortalRuntime();
   if (!rt) {
@@ -1252,10 +1267,10 @@ export function bootAccountWorkspaceDashboard(): void {
                   </div>
                 ` : `
                   <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; justify-content: center;">
-                    <button class="btn btn-primary" onclick="document.getElementById('generate-resource-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });">
+                    <button class="btn btn-primary" onclick="focusResourceCreationSection('generate')">
                       Generate Resource
                     </button>
-                    <button class="btn btn-primary" onclick="document.getElementById('upload-resource-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });">
+                    <button class="btn btn-primary" onclick="focusResourceCreationSection('upload')">
                       Upload Resource
                     </button>
                     <button class="btn btn-secondary" onclick="document.getElementById('resource-type-filter').value = 'starter'; loadResources();">
@@ -1759,6 +1774,86 @@ export function bootAccountWorkspaceDashboard(): void {
       if (svg) svg.style.transform = 'rotate(0deg)';
     }
   };
+
+  function expandResourceSection(contentId: string): void {
+    const content = document.getElementById(contentId);
+    if (!content) return;
+    const section = content.closest('.admin-section');
+    const toggle = section?.querySelector('.section-toggle') as HTMLElement | null;
+    if (!toggle) {
+      content.style.display = 'block';
+      content.classList.remove('collapsed');
+      return;
+    }
+    if (toggle.getAttribute('aria-expanded') !== 'true') {
+      (window as any).toggleSection(contentId, toggle);
+      return;
+    }
+    content.style.display = 'block';
+    content.classList.remove('collapsed');
+  }
+
+  function portalScrollToElement(element: HTMLElement): void {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => {
+      const main = document.querySelector('.account-workspace-shell') as HTMLElement | null;
+      if (!main) return;
+      const mainBottom = main.getBoundingClientRect().bottom;
+      const viewportBottom = window.innerHeight;
+      if (mainBottom < viewportBottom - 8) {
+        window.scrollTo({ top: window.scrollY + (mainBottom - viewportBottom) + 16, behavior: 'smooth' });
+      }
+    }, 120);
+  }
+
+  (window as any).focusResourceCreationSection = function(section: ResourceCreateSection): void {
+    const sectionMap: Record<ResourceCreateSection, { contentId: string; headingId: string; focusId: string }> = {
+      generate: {
+        contentId: 'generate-resource-content',
+        headingId: 'generate-resource-heading',
+        focusId: 'resource-industry',
+      },
+      upload: {
+        contentId: 'upload-resource-content',
+        headingId: 'upload-resource-heading',
+        focusId: 'upload-industry',
+      },
+      paste: {
+        contentId: 'create-from-content-content',
+        headingId: 'create-from-content-heading',
+        focusId: 'process-content',
+      },
+    };
+    const cfg = sectionMap[section];
+    if (!cfg) return;
+
+    const resourcesPanel = document.getElementById('resources-panel');
+    const openPanel = () => {
+      expandResourceSection(cfg.contentId);
+      const heading = document.getElementById(cfg.headingId);
+      if (!heading) return;
+      portalScrollToElement(heading);
+      window.setTimeout(() => {
+        const focusEl = document.getElementById(cfg.focusId) as HTMLElement | null;
+        focusEl?.focus({ preventScroll: true });
+      }, 180);
+    };
+
+    if (!resourcesPanel?.classList.contains('active')) {
+      (window as any).navigateToPanel('resources');
+      window.setTimeout(openPanel, 220);
+      return;
+    }
+    openPanel();
+  };
+
+  document.getElementById('portal-sidebar')?.addEventListener('click', (event) => {
+    const item = (event.target as HTMLElement).closest('.sidebar-nav-item[data-panel]') as HTMLElement | null;
+    if (!item) return;
+    event.preventDefault();
+    const panel = item.getAttribute('data-panel');
+    if (panel) (window as any).navigateToPanel(panel);
+  });
 
   // Initialize collapsible sections on page load
   if (document.readyState === 'loading') {
@@ -5211,9 +5306,9 @@ export function bootAccountWorkspaceDashboard(): void {
 
   // Enhanced form validation for upload
   document.getElementById('upload-resource-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
     const fileInput = document.getElementById('upload-file') as HTMLInputElement;
     if (!fileInput?.files?.[0]) {
-      e.preventDefault();
       showNotification('Please select a file to upload.', 'warning');
       fileInput?.focus();
       return false;

@@ -1025,6 +1025,11 @@ body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar 
   z-index: 30;
 }
 
+/* Signed-in workspace: keep focus on the dashboard, not the marketing footer below. */
+body[data-page-id='account'].account-workspace-dashboard-active .site-shell--marketing > footer {
+  display: none;
+}
+
 .account-workspace-shell .admin-ops-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

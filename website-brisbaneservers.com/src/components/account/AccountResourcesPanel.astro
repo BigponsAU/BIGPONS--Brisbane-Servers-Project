@@ -26,7 +26,7 @@ import { industries } from '../../data/industries';
           <section class="admin-section admin-section-collapsible" aria-labelledby="upload-resource-heading">
             <div class="section-header">
               <h2 id="upload-resource-heading">Upload Resource</h2>
-              <button class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)">
+              <button type="button" class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
@@ -81,7 +81,7 @@ import { industries } from '../../data/industries';
           <section class="admin-section admin-section-collapsible" aria-labelledby="create-from-content-heading">
             <div class="section-header">
               <h2 id="create-from-content-heading">Create from Content</h2>
-              <button class="section-toggle" aria-expanded="false" aria-controls="create-from-content-content" onclick="toggleSection('create-from-content-content', this)">
+              <button type="button" class="section-toggle" aria-expanded="false" aria-controls="create-from-content-content" onclick="toggleSection('create-from-content-content', this)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
@@ -130,7 +130,7 @@ import { industries } from '../../data/industries';
           <section class="admin-section admin-section-collapsible" aria-labelledby="generate-resource-heading">
             <div class="section-header">
               <h2 id="generate-resource-heading">Generate New Resource</h2>
-              <button class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">
+              <button type="button" class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
@@ -194,7 +194,7 @@ import { industries } from '../../data/industries';
                   </svg>
                   Refresh
                 </button>
-                <button id="view-toggle" class="btn btn-secondary btn-sm" onclick="toggleResourceView()" aria-label="Toggle view">
+                <button type="button" id="view-toggle" class="btn btn-secondary btn-sm" onclick="toggleResourceView()" aria-label="Toggle view">
                   <svg class="btn-icon" id="view-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -227,7 +227,7 @@ import { industries } from '../../data/industries';
                   </div>
                 </div>
                 <div class="tree-filters">
-                  <button class="btn btn-secondary btn-sm filter-btn active" onclick="filterTreeByStatus('')" data-status="" aria-label="Show all resources">
+                  <button type="button" class="btn btn-secondary btn-sm filter-btn active" onclick="filterTreeByStatus('')" data-status="" aria-label="Show all resources">
                     <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                       <line x1="9" y1="3" x2="9" y2="21"></line>
@@ -237,13 +237,13 @@ import { industries } from '../../data/industries';
                     </svg>
                     <span>All</span>
                   </button>
-                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('published')" data-status="published" aria-label="Show published resources">
+                  <button type="button" class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('published')" data-status="published" aria-label="Show published resources">
                     <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                     <span>Published</span>
                   </button>
-                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('draft')" data-status="draft" aria-label="Show draft resources">
+                  <button type="button" class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('draft')" data-status="draft" aria-label="Show draft resources">
                     <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
@@ -252,7 +252,7 @@ import { industries } from '../../data/industries';
                     </svg>
                     <span>Drafts</span>
                   </button>
-                  <button class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('archived')" data-status="archived" aria-label="Show archived resources">
+                  <button type="button" class="btn btn-secondary btn-sm filter-btn" onclick="filterTreeByStatus('archived')" data-status="archived" aria-label="Show archived resources">
                     <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="21 16 21 22 3 22 3 16"></polyline>
                       <line x1="7" y1="16" x2="7" y2="2"></line>
@@ -282,7 +282,7 @@ import { industries } from '../../data/industries';
                   <h3>Select a resource to refine</h3>
                   <p>Choose a resource from the tree to view and edit it, or create a new one.</p>
                   <div class="workspace-empty-actions">
-                    <button class="btn btn-primary" onclick="document.getElementById('generate-resource-heading').scrollIntoView({ behavior: 'smooth' })">
+                    <button type="button" class="btn btn-primary" onclick="focusResourceCreationSection('generate')">
                       <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
