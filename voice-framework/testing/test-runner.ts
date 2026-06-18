@@ -5,8 +5,9 @@
 
 import { TestHarness, type TestSuiteResult } from './test-harness';
 import type { TestSuite, TestCase } from './models/test-case';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
+import { ensureDirExists } from '../utils/fs-safe';
 
 export class TestRunner {
   private harness: TestHarness;
@@ -15,7 +16,6 @@ export class TestRunner {
   constructor(outputDir: string = './test-results') {
     this.harness = new TestHarness();
     this.outputDir = outputDir;
-    this.ensureOutputDir();
   }
 
   /**
@@ -32,7 +32,7 @@ export class TestRunner {
 
     // Save report if output path specified
     if (testSuite.config?.outputPath) {
-      this.saveReport(report, testSuite.config.outputPath, testSuite.config.outputFormat || 'json');
+      await this.saveReport(report, testSuite.config.outputPath, testSuite.config.outputFormat || 'json');
     }
 
     // Print summary
@@ -268,15 +268,12 @@ export class TestRunner {
   /**
    * Saves report to file
    */
-  private saveReport(report: string, filePath: string, format: string): void {
+  private async saveReport(report: string, filePath: string, format: string): Promise<void> {
     const fullPath = path.join(this.outputDir, filePath);
     const dir = path.dirname(fullPath);
-    
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
 
-    fs.writeFileSync(fullPath, report, 'utf-8');
+    await ensureDirExists(dir);
+    await fs.writeFile(fullPath, report, 'utf-8');
     console.log(`\n📄 Report saved to: ${fullPath}`);
   }
 
@@ -290,15 +287,6 @@ export class TestRunner {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-  }
-
-  /**
-   * Ensures output directory exists
-   */
-  private ensureOutputDir(): void {
-    if (!fs.existsSync(this.outputDir)) {
-      fs.mkdirSync(this.outputDir, { recursive: true });
-    }
   }
 }
 

@@ -5,6 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { ensureDirExists } from '../utils/fs-safe';
 
 export interface TextSample {
   id: string;
@@ -79,7 +80,7 @@ export class TextStorage {
   async initialize(): Promise<void> {
     try {
       const dir = path.dirname(this.storagePath);
-      await fs.mkdir(dir, { recursive: true });
+      await ensureDirExists(dir);
       
       try {
         const fileData = await fs.readFile(this.storagePath, 'utf-8');
@@ -125,6 +126,7 @@ export class TextStorage {
   private async save(): Promise<void> {
     try {
       this.data.lastUpdated = new Date();
+      await ensureDirExists(path.dirname(this.storagePath));
       await fs.writeFile(this.storagePath, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (error) {
       throw new Error(`Failed to save text storage: ${error instanceof Error ? error.message : String(error)}`);

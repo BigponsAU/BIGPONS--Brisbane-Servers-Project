@@ -5,6 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { ensureDirExists } from '@voice-framework/utils/fs-safe';
 import { getVectorsFile } from './storage-paths';
 
 export interface VectorEntry {
@@ -20,7 +21,7 @@ async function ensureVectorsFile(): Promise<void> {
   try {
     await fs.access(vectorsFile);
   } catch {
-    await fs.mkdir(path.dirname(vectorsFile), { recursive: true });
+    await ensureDirExists(path.dirname(vectorsFile));
     await fs.writeFile(vectorsFile, JSON.stringify([], null, 2));
   }
 }

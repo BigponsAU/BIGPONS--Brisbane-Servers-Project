@@ -9,13 +9,12 @@ import { Shredder } from '@voice-framework/analyzers/shredder';
 import { TextGenerator } from '@voice-framework/generators/text-generator';
 import { Extrapolator } from '@voice-framework/generators/extrapolator';
 import { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
-import { TestRunner } from '@voice-framework/testing/test-runner';
 import { TextStorage } from '@voice-framework/storage/text-storage';
 import { ProfileManager } from '@voice-framework/storage/profile-manager';
 import { ProfileBuilder } from '@voice-framework/builders/profile-builder';
 import { DocumentProcessor } from '@voice-framework/processors/document-processor';
 import * as path from 'path';
-import { getMonorepoRoot, voiceFrameworkStorageDir } from '../lib/monorepo-root';
+import { voiceFrameworkStorageDir } from '../lib/monorepo-root';
 
 // Initialize framework components (singleton pattern)
 let toneAnalyzer: ToneAnalyzer | null = null;
@@ -24,7 +23,6 @@ let shredder: Shredder | null = null;
 let textGenerator: TextGenerator | null = null;
 let extrapolator: Extrapolator | null = null;
 let voiceMatcher: VoiceMatcher | null = null;
-let testRunner: TestRunner | null = null;
 let textStorage: TextStorage | null = null;
 let profileManager: ProfileManager | null = null;
 let profileBuilder: ProfileBuilder | null = null;
@@ -42,6 +40,21 @@ function isEdgeWorkerRuntime(): boolean {
     return process.env.EDGE_WORKER === '1';
   }
 }
+
+const EMPTY_PROFILES_DATA = {
+  profiles: [],
+  version: '1.0.0',
+  lastUpdated: new Date().toISOString(),
+};
+
+const EMPTY_TEXT_STORAGE_DATA = {
+  samples: [],
+  principles: [],
+  archivedPrinciples: [],
+  relationships: [],
+  version: '1.0.0',
+  lastUpdated: new Date().toISOString(),
+};
 
 /**
  * Persist profiles.json mirror into Postgres corpus (edge worker uses /tmp for ProfileManager).
@@ -63,28 +76,37 @@ export async function initializeVoiceFramework() {
   }
 
   try {
-    // Initialize core components
     toneAnalyzer = new ToneAnalyzer();
     patternExtractor = new PatternExtractor();
     shredder = new Shredder();
     textGenerator = new TextGenerator();
     extrapolator = new Extrapolator();
     voiceMatcher = new VoiceMatcher();
-    if (!isEdgeWorkerRuntime()) {
-      const monorepoRoot = getMonorepoRoot();
-      testRunner = new TestRunner(path.join(monorepoRoot, 'voice-framework/test-results'));
-    }
 
     const storageDir = voiceFrameworkStorageDir();
-    const { CORPUS_DOC_KEYS, exportCorpusToFile } = await import('../lib/corpus-store');
-    await exportCorpusToFile(CORPUS_DOC_KEYS.PROFILES, path.join(storageDir, 'profiles.json'));
-    await exportCorpusToFile(CORPUS_DOC_KEYS.TEXT_STORAGE, path.join(storageDir, 'text-storage.json'));
-    textStorage = new TextStorage(path.join(storageDir, 'text-storage.json'));
-    profileManager = new ProfileManager(path.join(storageDir, 'profiles.json'));
+    const profilesPath = path.join(storageDir, 'profiles.json');
+    const textStoragePath = path.join(storageDir, 'text-storage.json');
+    const { CORPUS_DOC_KEYS, exportCorpusToFile, materializeCorpusToEphemeralFile } = await import(
+      '../lib/corpus-store'
+    );
+
+    if (isEdgeWorkerRuntime()) {
+      await materializeCorpusToEphemeralFile(CORPUS_DOC_KEYS.PROFILES, profilesPath, EMPTY_PROFILES_DATA);
+      await materializeCorpusToEphemeralFile(
+        CORPUS_DOC_KEYS.TEXT_STORAGE,
+        textStoragePath,
+        EMPTY_TEXT_STORAGE_DATA,
+      );
+    } else {
+      await exportCorpusToFile(CORPUS_DOC_KEYS.PROFILES, profilesPath);
+      await exportCorpusToFile(CORPUS_DOC_KEYS.TEXT_STORAGE, textStoragePath);
+    }
+
+    textStorage = new TextStorage(textStoragePath);
+    profileManager = new ProfileManager(profilesPath);
     profileBuilder = new ProfileBuilder();
     documentProcessor = new DocumentProcessor(textStorage);
 
-    // Initialize storage systems
     await textStorage.initialize();
     await profileManager.initialize();
 
@@ -111,10 +133,9 @@ export async function getVoiceFramework() {
     textGenerator: textGenerator!,
     extrapolator: extrapolator!,
     voiceMatcher: voiceMatcher!,
-    testRunner: testRunner as TestRunner,
     textStorage: textStorage!,
     profileManager: profileManager!,
     profileBuilder: profileBuilder!,
-    documentProcessor: documentProcessor!
+    documentProcessor: documentProcessor!,
   };
 }

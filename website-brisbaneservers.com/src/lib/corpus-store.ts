@@ -5,6 +5,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { pid, platform } from 'node:process';
+import { ensureDirExists } from '@voice-framework/utils/fs-safe';
 import { getSharedPool, usePostgres } from './db/pg-pool';
 import { getRuntimeEnv } from '../utils/runtime-env';
 
@@ -68,7 +69,7 @@ async function writeJsonFileAtomic(filePath: string, data: unknown): Promise<voi
   const base = path.basename(filePath);
   const tmp = path.join(dir, `.${base}.${pid}.${Date.now()}.tmp`);
   const payload = JSON.stringify(data, null, 2);
-  await fs.mkdir(dir, { recursive: true });
+  await ensureDirExists(dir);
   await fs.writeFile(tmp, payload, 'utf-8');
   try {
     if (platform === 'win32') {
@@ -162,6 +163,20 @@ export async function exportCorpusToFile(key: CorpusDocKey, filePath: string): P
   if (data === null) return false;
   await writeJsonFileAtomic(filePath, data);
   return true;
+}
+
+/**
+ * Materialize a corpus document to an ephemeral path (/tmp on Workers).
+ * Unlike exportCorpusToFile, always writes the file even when CORPUS_SKIP_FILE_MIRROR is set.
+ */
+export async function materializeCorpusToEphemeralFile<T>(
+  key: CorpusDocKey,
+  filePath: string,
+  defaultValue: T,
+): Promise<void> {
+  const data = await readCorpusJson(key, filePath, defaultValue);
+  await ensureDirExists(path.dirname(filePath));
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
 export async function migrateAllCorpusFilesFromDisk(

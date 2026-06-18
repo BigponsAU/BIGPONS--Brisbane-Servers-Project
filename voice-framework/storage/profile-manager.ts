@@ -5,6 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { ensureDirExists } from '../utils/fs-safe';
 import type { VoiceProfile } from '../models/voice-profile';
 import { ToneAnalyzer } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
@@ -62,7 +63,7 @@ export class ProfileManager {
   async initialize(): Promise<void> {
     try {
       const dir = path.dirname(this.profilesPath);
-      await fs.mkdir(dir, { recursive: true });
+      await ensureDirExists(dir);
       
       try {
         const fileData = await fs.readFile(this.profilesPath, 'utf-8');
@@ -97,6 +98,7 @@ export class ProfileManager {
   private async save(): Promise<void> {
     try {
       this.data.lastUpdated = new Date();
+      await ensureDirExists(path.dirname(this.profilesPath));
       await fs.writeFile(this.profilesPath, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (error) {
       throw new Error(`Failed to save profiles: ${error instanceof Error ? error.message : String(error)}`);
@@ -260,7 +262,7 @@ export class ProfileManager {
     }
 
     const dir = path.dirname(filePath);
-    await fs.mkdir(dir, { recursive: true });
+    await ensureDirExists(dir);
     await fs.writeFile(filePath, JSON.stringify(entry.profile, null, 2), 'utf-8');
   }
 
