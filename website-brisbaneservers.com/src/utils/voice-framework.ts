@@ -32,6 +32,28 @@ let documentProcessor: DocumentProcessor | null = null;
 
 let initialized = false;
 
+function isEdgeWorkerRuntime(): boolean {
+  try {
+    return (
+      process.env.EDGE_WORKER === '1' ||
+      (typeof navigator !== 'undefined' && /Cloudflare-Workers/i.test(navigator.userAgent ?? ''))
+    );
+  } catch {
+    return process.env.EDGE_WORKER === '1';
+  }
+}
+
+/**
+ * Persist profiles.json mirror into Postgres corpus (edge worker uses /tmp for ProfileManager).
+ */
+export async function syncVoiceProfilesToCorpus(): Promise<void> {
+  const { usePostgres } = await import('../lib/db/pg-pool');
+  if (!usePostgres()) return;
+  const storageDir = voiceFrameworkStorageDir();
+  const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../lib/corpus-store');
+  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, path.join(storageDir, 'profiles.json'));
+}
+
 /**
  * Initialize voice framework components
  */
@@ -48,8 +70,10 @@ export async function initializeVoiceFramework() {
     textGenerator = new TextGenerator();
     extrapolator = new Extrapolator();
     voiceMatcher = new VoiceMatcher();
-    const monorepoRoot = getMonorepoRoot();
-    testRunner = new TestRunner(path.join(monorepoRoot, 'voice-framework/test-results'));
+    if (!isEdgeWorkerRuntime()) {
+      const monorepoRoot = getMonorepoRoot();
+      testRunner = new TestRunner(path.join(monorepoRoot, 'voice-framework/test-results'));
+    }
 
     const storageDir = voiceFrameworkStorageDir();
     const { CORPUS_DOC_KEYS, exportCorpusToFile } = await import('../lib/corpus-store');
@@ -87,7 +111,7 @@ export async function getVoiceFramework() {
     textGenerator: textGenerator!,
     extrapolator: extrapolator!,
     voiceMatcher: voiceMatcher!,
-    testRunner: testRunner!,
+    testRunner: testRunner as TestRunner,
     textStorage: textStorage!,
     profileManager: profileManager!,
     profileBuilder: profileBuilder!,

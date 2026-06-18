@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   const checklist = buildHostingEnvChecklist();
-  const missingRequired = checklist.filter((item) => item.required && !item.configured);
+  const missingRequired = checklist.filter((item) => item.required && item.configured === false);
 
   return new Response(
     JSON.stringify({

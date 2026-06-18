@@ -8,13 +8,23 @@ import { isPasskeyEnabled } from './webauthn/config';
 export type HostingEnvItem = {
   key: string;
   required: boolean;
-  configured: boolean;
+  /** false = missing; true = set on this host; null = Pages-only (not readable from API worker). */
+  configured: boolean | null;
   notes: string;
   setOn: 'api' | 'pages' | 'both';
 };
 
+function isApiWorkerHost(): boolean {
+  return process.env.EDGE_WORKER === '1';
+}
+
 export function buildHostingEnvChecklist(): HostingEnvItem[] {
   const has = (key: string) => Boolean(getRuntimeEnv(key)?.trim());
+
+  const pagesOnlyConfigured = (key: string): boolean | null => {
+    if (isApiWorkerHost()) return null;
+    return has(key);
+  };
 
   return [
     {
@@ -76,15 +86,15 @@ export function buildHostingEnvChecklist(): HostingEnvItem[] {
     {
       key: 'PUBLIC_API_BASE_URL',
       required: true,
-      configured: has('PUBLIC_API_BASE_URL'),
-      notes: 'Browser API base (Cloudflare Pages production).',
+      configured: pagesOnlyConfigured('PUBLIC_API_BASE_URL'),
+      notes: 'Browser API base (Cloudflare Pages production). Set in Pages → brisbaneservers → Settings → Environment variables.',
       setOn: 'pages',
     },
     {
       key: 'INTERNAL_API_BASE_URL',
       required: true,
-      configured: has('INTERNAL_API_BASE_URL'),
-      notes: 'Build-time fetch for prerendered resource pages.',
+      configured: pagesOnlyConfigured('INTERNAL_API_BASE_URL'),
+      notes: 'Build-time fetch for prerendered resource pages (Cloudflare Pages production).',
       setOn: 'pages',
     },
     {
@@ -106,8 +116,15 @@ export function buildHostingEnvChecklist(): HostingEnvItem[] {
 
 export function formatHostingEnvChecklistEmail(): string {
   const items = buildHostingEnvChecklist();
-  const missing = items.filter((i) => i.required && !i.configured);
-  const optional = items.filter((i) => !i.required && !i.configured);
+  const missing = items.filter((i) => i.required && i.configured === false);
+  const optional = items.filter((i) => !i.required && i.configured === false);
+  const pagesUnverified = items.filter((i) => i.configured === null);
+
+  const statusLabel = (configured: boolean | null) => {
+    if (configured === true) return 'OK';
+    if (configured === null) return 'PAGES';
+    return 'MISSING';
+  };
 
   const lines = [
     'Brisbane Servers — production environment checklist',
@@ -116,14 +133,21 @@ export function formatHostingEnvChecklistEmail(): string {
     '',
     'Required (API host — Cloudflare Worker brisbane-servers-api-edge secrets / Hyperdrive):',
     ...items
-      .filter((i) => i.required)
-      .map((i) => `  [${i.configured ? 'OK' : 'MISSING'}] ${i.key} — ${i.notes}`),
+      .filter((i) => i.required && i.setOn !== 'pages')
+      .map((i) => `  [${statusLabel(i.configured)}] ${i.key} — ${i.notes}`),
     '',
     'Cloudflare Pages (project brisbaneservers → Environment → Production):',
     ...items
       .filter((i) => i.setOn === 'pages' || i.setOn === 'both')
-      .map((i) => `  [${i.configured ? 'OK' : 'MISSING'}] ${i.key} — ${i.notes}`),
+      .map((i) => `  [${statusLabel(i.configured)}] ${i.key} — ${i.notes}`),
   ];
+
+  if (pagesUnverified.length) {
+    lines.push(
+      '',
+      'Note: PAGES = set on Cloudflare Pages; the API worker cannot read Pages build env to verify.'
+    );
+  }
 
   if (optional.length) {
     lines.push('', 'Optional (recommended):');

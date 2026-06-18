@@ -438,13 +438,29 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
     const checklist = Array.isArray(data.checklist) ? data.checklist : [];
     container.innerHTML = checklist
       .map(
-        (item: { key: string; required: boolean; configured: boolean; notes: string; setOn: string }) => `
-      <article class="hosting-status-row ${item.configured ? 'hosting-status-row--ok' : 'hosting-status-row--missing'}">
+        (item: { key: string; required: boolean; configured: boolean | null; notes: string; setOn: string }) => {
+          const rowClass =
+            item.configured === true
+              ? 'hosting-status-row--ok'
+              : item.configured === null
+                ? 'hosting-status-row--pages'
+                : 'hosting-status-row--missing';
+          const statusLabel =
+            item.configured === true
+              ? 'Configured'
+              : item.configured === null
+                ? 'Set on Pages'
+                : item.required
+                  ? 'Missing'
+                  : 'Optional';
+          return `
+      <article class="hosting-status-row ${rowClass}">
         <strong>${escapeHtml(item.key)}</strong>
-        <span>${item.configured ? 'Configured' : item.required ? 'Missing' : 'Optional'}</span>
+        <span>${statusLabel}</span>
         <p>${escapeHtml(item.notes)} <em>(${escapeHtml(item.setOn)})</em></p>
       </article>
-    `,
+    `;
+        },
       )
       .join('');
     if (message) {

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
-import { getVoiceFramework } from '../../../utils/voice-framework';
+import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
 import { loadResources, type Resource } from '../../../lib/resources-api';
 import { resourcesForSiteVoiceCorpus } from '../../../lib/resource-voice-profile';
 import {
@@ -97,6 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!body.industry && (!body.resourceIds || body.resourceIds.length === 0)) {
       const result = await ensureBrisbaneProfile(profileManager, profileBuilder, resources);
+      await syncVoiceProfilesToCorpus();
       return new Response(
         JSON.stringify({
           profile: result.profile,
@@ -159,6 +160,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
       await profileManager.setDefaultProfile(profileMetadata.id);
     }
+
+    await syncVoiceProfilesToCorpus();
 
     const wasUpdate = Boolean(existingBigpons);
 
