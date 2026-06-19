@@ -2,9 +2,15 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-18 (commit `85b5fb1` — dashboard routes + `verify:dashboard-api` 26/26 on production)
+**Last synced:** 2026-06-19 — dashboard corpus sync, case studies in Neon, CI-only worker deploy
 
-### 2026-06-18 deploy
+### 2026-06-19 deploy
+
+- Voice corpus: profiles + text-storage persist via Neon; case studies materialized as API resources (20 corpus items, 60 semantic chunks).
+- Analytics panel counts starter blocks and published corpus (no longer shows 0 when only starters exist).
+- Worker deploy path: **push to `main` only** — local `wrangler deploy` removed; CI paths expanded (`voice-framework/**`, `src/lib/**`, `src/utils/**`).
+- `npm run bootstrap:voice-corpus` run against production Neon (4 case studies added).
+
 
 - Pushed `85b5fb1` → GitHub Actions **Deploy edge worker** succeeded.
 - `npm run verify:production` and `npm run verify:dashboard-api` both **PASS** against `https://api.brisbaneservers.com`.

@@ -37,7 +37,7 @@
     "configure:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-edge-worker.ps1",
     "configure:hyperdrive": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-hyperdrive.ps1",
     "setup:edge-production": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-edge-production.ps1",
-    "deploy:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-edge-worker.ps1",
+    "deploy:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-via-ci.ps1",
     "sync:edge-worker-secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-secrets-to-edge-worker.ps1",
     "configure:hosting": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-hosting.ps1",
     "reset:cloudflare-mcp-oauth": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/reset-cloudflare-mcp-oauth.ps1",

@@ -61,6 +61,7 @@ export interface TextStorageData {
 export class TextStorage {
   private storagePath: string;
   private data: TextStorageData;
+  private onAfterSave?: () => void | Promise<void>;
 
   constructor(storagePath: string = './storage/text-storage.json') {
     this.storagePath = storagePath;
@@ -72,6 +73,11 @@ export class TextStorage {
       version: '1.0.0',
       lastUpdated: new Date()
     };
+  }
+
+  /** Optional hook after each disk save (e.g. sync to Postgres corpus on edge). */
+  setOnAfterSave(hook: () => void | Promise<void>): void {
+    this.onAfterSave = hook;
   }
 
   /**
@@ -128,6 +134,9 @@ export class TextStorage {
       this.data.lastUpdated = new Date();
       await ensureDirExists(path.dirname(this.storagePath));
       await fs.writeFile(this.storagePath, JSON.stringify(this.data, null, 2), 'utf-8');
+      if (this.onAfterSave) {
+        await this.onAfterSave();
+      }
     } catch (error) {
       throw new Error(`Failed to save text storage: ${error instanceof Error ? error.message : String(error)}`);
     }

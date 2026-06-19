@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "lastUpdated": "2026-06-15",
+  "lastUpdated": "2026-06-18",
   "items": [
     {
       "id": "professional-services-index",
@@ -264,9 +264,42 @@
       "description": "Jobs run on quotes, site coordination, and compliance evidence — when status lives in messages and spreadsheets, margin and safety both suffer. This hub frames technology as job control and visibility, with scope and costs agreed before major platform spend.",
       "url": "resources/construction/index.html",
       "industry": "construction",
-      "topics": [],
+      "topics": [
+        "job-costing-variations",
+        "site-compliance"
+      ],
       "keywords": [
-        "construction & trades"
+        "construction & trades",
+        "job costing & variations",
+        "site compliance & diaries"
+      ]
+    },
+    {
+      "id": "construction-job-costing-variations",
+      "title": "Job Costing & Variations",
+      "description": "Quote-to-invoice control when variations and committed costs must stay visible — margin is decided before the final claim, not in a spreadsheet after the fact.",
+      "url": "resources/construction/job-costing-variations/index.html",
+      "industry": "construction",
+      "topics": [
+        "job-costing-variations"
+      ],
+      "keywords": [
+        "construction & trades",
+        "job costing & variations"
+      ]
+    },
+    {
+      "id": "construction-site-compliance",
+      "title": "Site Compliance & Diaries",
+      "description": "SWMS, inductions, and site evidence linked to the job — so principal contractors and auditors get answers in minutes, not archaeology.",
+      "url": "resources/construction/site-compliance/index.html",
+      "industry": "construction",
+      "topics": [
+        "site-compliance"
+      ],
+      "keywords": [
+        "construction & trades",
+        "site compliance & diaries"
       ]
     },
     {
@@ -275,9 +308,42 @@
       "description": "Reporting cycles, audit trails, and client confidentiality set the bar — manual reconciliation and fragmented ledgers consume capacity that should go to advice and growth. Resources connect financial operations to automation and controls you can defend to clients and regulators.",
       "url": "resources/finance/index.html",
       "industry": "finance",
-      "topics": [],
+      "topics": [
+        "client-reporting",
+        "workflow-compliance"
+      ],
       "keywords": [
-        "finance & accounting"
+        "finance & accounting",
+        "client reporting packs",
+        "workflow & compliance"
+      ]
+    },
+    {
+      "id": "finance-client-reporting",
+      "title": "Client Reporting Packs",
+      "description": "Standardised management reporting without monthly rebuilds — partners review exceptions, not formulas.",
+      "url": "resources/finance/client-reporting/index.html",
+      "industry": "finance",
+      "topics": [
+        "client-reporting"
+      ],
+      "keywords": [
+        "finance & accounting",
+        "client reporting packs"
+      ]
+    },
+    {
+      "id": "finance-workflow-compliance",
+      "title": "Workflow & Compliance",
+      "description": "BAS, tax, and audit jobs with visible sign-off — named owners and timestamps you can defend.",
+      "url": "resources/finance/workflow-compliance/index.html",
+      "industry": "finance",
+      "topics": [
+        "workflow-compliance"
+      ],
+      "keywords": [
+        "finance & accounting",
+        "workflow & compliance"
       ]
     },
     {
@@ -286,9 +352,42 @@
       "description": "Throughput, quality signals, and supply timing determine competitiveness — when production data lags the floor, planning guesses and rework follow. Guides tie shop-floor reality to tracking and integration with trade-offs visible up front.",
       "url": "resources/manufacturing/index.html",
       "industry": "manufacturing",
-      "topics": [],
+      "topics": [
+        "shop-floor-tracking",
+        "quality-traceability"
+      ],
       "keywords": [
-        "manufacturing & production"
+        "manufacturing & production",
+        "shop floor tracking",
+        "quality & traceability"
+      ]
+    },
+    {
+      "id": "manufacturing-shop-floor-tracking",
+      "title": "Shop Floor Tracking",
+      "description": "WIP and downtime visible before the customer calls — schedules grounded in what the floor actually did.",
+      "url": "resources/manufacturing/shop-floor-tracking/index.html",
+      "industry": "manufacturing",
+      "topics": [
+        "shop-floor-tracking"
+      ],
+      "keywords": [
+        "manufacturing & production",
+        "shop floor tracking"
+      ]
+    },
+    {
+      "id": "manufacturing-quality-traceability",
+      "title": "Quality & Traceability",
+      "description": "Batch genealogy for recalls and audits — answer which customers got which lot without paper travellers.",
+      "url": "resources/manufacturing/quality-traceability/index.html",
+      "industry": "manufacturing",
+      "topics": [
+        "quality-traceability"
+      ],
+      "keywords": [
+        "manufacturing & production",
+        "quality & traceability"
       ]
     },
     {

@@ -20,6 +20,6 @@ npm run verify:production    # Smoke-check live API
 npm run verify:dashboard-api # All /account workspace routes
 ```
 
-Deploy API: push to `main` (GitHub Actions `deploy-edge-worker.yml`) or `npm run deploy:edge-worker` with Cloudflare token.
+Deploy API: **push to `main`** — GitHub Actions `deploy-edge-worker.yml` (no local wrangler deploy).
 
 **Ops guide:** [docs/operations/HOSTING_MCP_WORKSPACE.md](../docs/operations/HOSTING_MCP_WORKSPACE.md)

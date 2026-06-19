@@ -5,6 +5,7 @@ import { getSemanticIndexStats } from '../../../lib/semantic/chunk-index';
 
 /**
  * Summary of stored vectors for admin dashboard. Admin only.
+ * Primary counts come from the semantic chunk index (Neon); legacy 1D vectors are secondary.
  * GET /api/admin/vectors-summary
  */
 export const GET: APIRoute = async ({ request }) => {
@@ -16,19 +17,28 @@ export const GET: APIRoute = async ({ request }) => {
     );
   }
   try {
-    const entries = await loadVectors();
-    const semantic = await getSemanticIndexStats();
-    const byKind = { resource: 0, contribution: 0 };
-    entries.forEach((e) => {
-      if (e.kind === 'resource') byKind.resource += 1;
-      if (e.kind === 'contribution') byKind.contribution += 1;
+    const [legacyEntries, semantic] = await Promise.all([loadVectors(), getSemanticIndexStats()]);
+    const legacyByKind = { resource: 0, contribution: 0 };
+    legacyEntries.forEach((e) => {
+      if (e.kind === 'resource') legacyByKind.resource += 1;
+      if (e.kind === 'contribution') legacyByKind.contribution += 1;
     });
+
+    const byKind = {
+      resource: semantic.resourceIds,
+      contribution: legacyByKind.contribution,
+    };
+
     return new Response(
       JSON.stringify({
-        total: entries.length,
+        total: semantic.chunkCount,
         byKind,
         semanticIndex: semantic,
-        success: true
+        legacyVectors: {
+          total: legacyEntries.length,
+          byKind: legacyByKind,
+        },
+        success: true,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

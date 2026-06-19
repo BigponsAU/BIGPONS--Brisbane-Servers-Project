@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
-import { getVoiceFramework } from '../../../utils/voice-framework';
+import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
 import {
   loadResources,
   saveResources,
@@ -115,6 +115,7 @@ export const POST: APIRoute = async ({ request }) => {
         archived: false
       });
 
+      await syncVoiceProfilesToCorpus();
       profileCreated = true;
       console.log(`[API] Created base profile from starter block: ${starterBlock.id}`);
     } catch (profileError) {

@@ -3,8 +3,16 @@
  */
 import { promises as fs } from 'fs';
 
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message: unknown }).message);
+  }
+  return String(error);
+}
+
 function isUnenvFsError(error: unknown): boolean {
-  const msg = error instanceof Error ? error.message : String(error);
+  const msg = errorMessage(error);
   return msg.includes('[unenv]') || msg.includes('not implemented');
 }
 
@@ -19,6 +27,9 @@ export function isLimitedFsRuntime(): boolean {
 export async function ensureDirExists(dir: string): Promise<void> {
   const normalized = dir.replace(/\\/g, '/');
   if (!normalized || normalized === '.' || normalized === '/') return;
+
+  // Workers unenv: mkdir is not implemented; corpus files live directly under /tmp.
+  if (isLimitedFsRuntime()) return;
 
   try {
     await fs.mkdir(dir, { recursive: true });

@@ -36,7 +36,14 @@ const STATIC_MARKETING_PATHS = [
 
 /** Resources eligible for prerendered detail pages and sitemap inclusion. */
 export function isIndexableResource(resource: Resource): boolean {
-  return isPublicResource(resource) && isSubstantiveApiResource(resource);
+  if (!isPublicResource(resource)) {
+    return false;
+  }
+  if (resource.isStarterBlock === true) {
+    const wordCount = (resource.content ?? '').split(/\s+/).filter(Boolean).length;
+    return wordCount >= 120;
+  }
+  return isSubstantiveApiResource(resource);
 }
 
 export function getStaticMarketingPaths(): string[] {

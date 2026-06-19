@@ -22,6 +22,10 @@ export function getProfilesFile(): string {
   return path.join(storageDir(), 'profiles.json');
 }
 
+export function getTextStorageFile(): string {
+  return path.join(storageDir(), 'text-storage.json');
+}
+
 export function getDefaultVoiceProfileFile(): string {
   return path.join(getMonorepoRoot(), 'voice-framework', 'voice-profile.json');
 }

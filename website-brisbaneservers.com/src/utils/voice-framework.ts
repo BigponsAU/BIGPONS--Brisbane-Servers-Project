@@ -63,8 +63,26 @@ export async function syncVoiceProfilesToCorpus(): Promise<void> {
   const { usePostgres } = await import('../lib/db/pg-pool');
   if (!usePostgres()) return;
   const storageDir = voiceFrameworkStorageDir();
-  const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../lib/corpus-store');
-  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, path.join(storageDir, 'profiles.json'));
+  const profilesPath = path.join(storageDir, 'profiles.json');
+  const { promises: fs } = await import('fs');
+  const { saveProfilesData } = await import('../lib/profiles-api');
+  try {
+    const raw = await fs.readFile(profilesPath, 'utf-8');
+    const data = JSON.parse(raw);
+    await saveProfilesData(data);
+  } catch {
+    /* ProfileManager has not flushed to disk yet */
+  }
+}
+
+/** Persist text-storage (principles, samples) into Postgres corpus. */
+export async function syncVoiceTextStorageToCorpus(): Promise<void> {
+  const { usePostgres } = await import('../lib/db/pg-pool');
+  if (!usePostgres() || !textStorage) return;
+  const { saveTextStorageData } = await import('../lib/text-storage-api');
+  const exported = textStorage.export();
+  const serializable = JSON.parse(JSON.stringify(exported)) as import('../lib/text-storage-api').TextStorageJsonData;
+  await saveTextStorageData(serializable);
 }
 
 /**
@@ -103,7 +121,9 @@ export async function initializeVoiceFramework() {
     }
 
     textStorage = new TextStorage(textStoragePath);
+    textStorage.setOnAfterSave(() => syncVoiceTextStorageToCorpus());
     profileManager = new ProfileManager(profilesPath);
+    profileManager.setOnAfterSave(() => syncVoiceProfilesToCorpus());
     profileBuilder = new ProfileBuilder();
     documentProcessor = new DocumentProcessor(textStorage);
 

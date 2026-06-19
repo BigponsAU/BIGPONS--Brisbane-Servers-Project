@@ -330,8 +330,7 @@ export function bootAccountWorkspaceDashboard(): void {
       }, 100);
     } else if (panelName === 'analytics') {
       if (currentResources && currentResources.length > 0) {
-        const userResources = currentResources.filter((r: any) => !r.isStarterBlock);
-        updateAnalyticsDisplay(userResources);
+        updateAnalyticsDisplay(currentResources);
         loadAnalyticsSuggestions();
       } else {
         loadAnalytics();
@@ -600,35 +599,55 @@ export function bootAccountWorkspaceDashboard(): void {
     }).join('');
   }
 
+  function computeWorkspaceResourceStats(resources: any[]): {
+    total: number;
+    published: number;
+    drafts: number;
+    archived: number;
+    starterBlocks: number;
+    avgScorePercent: string;
+    avgScoreRaw: number;
+  } {
+    const total = resources.length;
+    const published = resources.filter((r: any) => r.status === 'published').length;
+    const drafts = resources.filter((r: any) => r.status === 'draft').length;
+    const archived = resources.filter((r: any) => r.status === 'archived').length;
+    const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true).length;
+    const scores = resources
+      .map((r: any) => r.metadata?.voiceScore)
+      .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
+    const avgScoreRaw = scores.length > 0
+      ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
+      : 0;
+    const avgScorePercent = scores.length > 0
+      ? (avgScoreRaw * 100).toFixed(1)
+      : 'N/A';
+    return { total, published, drafts, archived, starterBlocks, avgScorePercent, avgScoreRaw };
+  }
+
   function applyDashboardResourceSnapshot(resources: any[]): void {
     currentResources = resources;
 
     const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
-    const userResources = resources.filter((r: any) => !r.isStarterBlock);
-
-    const total = userResources.length;
-    const published = userResources.filter((r: any) => r.status === 'published').length;
-    const drafts = userResources.filter((r: any) => r.status === 'draft').length;
-    const scores = userResources
-      .map((r: any) => r.metadata?.voiceScore)
-      .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
-    const avgScore = scores.length > 0
-      ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
-      : 0;
+    const stats = computeWorkspaceResourceStats(resources);
 
     const totalEl = document.getElementById('dashboard-total-resources');
     const publishedEl = document.getElementById('dashboard-published');
     const draftsEl = document.getElementById('dashboard-drafts');
     const avgScoreEl = document.getElementById('dashboard-avg-score');
 
-    if (totalEl) totalEl.textContent = total.toString();
-    if (publishedEl) publishedEl.textContent = published.toString();
-    if (draftsEl) draftsEl.textContent = drafts.toString();
-    if (avgScoreEl) avgScoreEl.textContent = `${Math.round(avgScore * 100)}%`;
+    if (totalEl) totalEl.textContent = stats.total.toString();
+    if (publishedEl) publishedEl.textContent = stats.published.toString();
+    if (draftsEl) draftsEl.textContent = stats.drafts.toString();
+    if (avgScoreEl) {
+      avgScoreEl.textContent = stats.avgScorePercent === 'N/A'
+        ? 'N/A'
+        : `${Math.round(stats.avgScoreRaw * 100)}%`;
+    }
 
-    updateAnalyticsDisplay(userResources);
-    updateRecentActivity(userResources);
-    updateRecentResourcesPreview(userResources);
+    updateAnalyticsDisplay(resources);
+    updateRecentActivity(resources.filter((r: any) => !r.isStarterBlock));
+    updateRecentResourcesPreview(resources.filter((r: any) => !r.isStarterBlock));
 
     const dashboardPanel = document.getElementById('dashboard-panel');
     if (dashboardPanel?.classList.contains('active')) {
@@ -3719,6 +3738,7 @@ export function bootAccountWorkspaceDashboard(): void {
   async function loadAdminMeta(): Promise<void> {
     const container = document.getElementById('analytics-users-vectors');
     if (!container) return;
+    container.innerHTML = '<p style="color: var(--text-secondary); font-size: var(--text-sm);">Loading users and vector summary…</p>';
     try {
       const [usersRes, vectorsRes] = await Promise.all([
         workspaceFetch(`${getVoiceApiUrl()}/admin/users`),
@@ -3727,10 +3747,15 @@ export function bootAccountWorkspaceDashboard(): void {
       const usersData = usersRes.ok ? await usersRes.json() : null;
       const vectorsData = vectorsRes.ok ? await vectorsRes.json() : null;
       const userCount = usersData?.count ?? '—';
-      const vecTotal = vectorsData?.total ?? '—';
-      const vecResource = vectorsData?.byKind?.resource ?? '—';
-      const vecContrib = vectorsData?.byKind?.contribution ?? '—';
-      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Vectors (resource / contribution):</strong> ${vecResource} / ${vecContrib} (total ${vecTotal})</p>`;
+      const semantic = vectorsData?.semanticIndex;
+      const chunkCount = semantic?.chunkCount ?? vectorsData?.total ?? '—';
+      const resourceIds = semantic?.resourceIds ?? vectorsData?.byKind?.resource ?? '—';
+      const legacyTotal = vectorsData?.legacyVectors?.total ?? 0;
+      const legacyNote =
+        typeof legacyTotal === 'number' && legacyTotal > 0
+          ? ` &nbsp;|&nbsp; legacy score vectors: ${legacyTotal}`
+          : '';
+      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Semantic chunks:</strong> ${chunkCount} &nbsp;|&nbsp; <strong>Indexed resources:</strong> ${resourceIds}${legacyNote}</p>`;
     } catch {
       container.innerHTML = '<p>Could not load users/vectors summary.</p>';
     }
@@ -3739,20 +3764,7 @@ export function bootAccountWorkspaceDashboard(): void {
   // Update analytics display
   function updateAnalyticsDisplay(resources: any[]): void {
     try {
-      // Filter out starter blocks for analytics (same as dashboard)
-      const userResources = resources.filter((r: any) => !r.isStarterBlock);
-      
-      const total = userResources.length;
-      const published = userResources.filter((r: any) => r.status === 'published').length;
-      const drafts = userResources.filter((r: any) => r.status === 'draft').length;
-      const archived = userResources.filter((r: any) => r.status === 'archived').length;
-      
-      const scores = userResources
-        .map((r: any) => r.metadata?.voiceScore)
-        .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
-      const avgScore = scores.length > 0 
-        ? (scores.reduce((a: number, b: number) => a + b, 0) / scores.length * 100).toFixed(1)
-        : 'N/A';
+      const stats = computeWorkspaceResourceStats(resources);
 
       const totalEl = document.getElementById('stat-total-resources');
       const publishedEl = document.getElementById('stat-published');
@@ -3760,38 +3772,42 @@ export function bootAccountWorkspaceDashboard(): void {
       const avgScoreEl = document.getElementById('stat-avg-score');
 
       if (totalEl) {
-        totalEl.textContent = total.toString();
-        totalEl.parentElement?.setAttribute('title', `Total: ${total} resources`);
-        // Ensure value fits
-        if (total > 9999) {
-          totalEl.textContent = (total / 1000).toFixed(1) + 'k';
+        totalEl.textContent = stats.total.toString();
+        totalEl.parentElement?.setAttribute(
+          'title',
+          `Total: ${stats.total} resources (${stats.starterBlocks} starter blocks)`
+        );
+        if (stats.total > 9999) {
+          totalEl.textContent = (stats.total / 1000).toFixed(1) + 'k';
         }
       }
       if (publishedEl) {
-        publishedEl.textContent = published.toString();
-        publishedEl.parentElement?.setAttribute('title', `${published} published resources`);
-        if (published > 9999) {
-          publishedEl.textContent = (published / 1000).toFixed(1) + 'k';
+        publishedEl.textContent = stats.published.toString();
+        publishedEl.parentElement?.setAttribute('title', `${stats.published} published resources`);
+        if (stats.published > 9999) {
+          publishedEl.textContent = (stats.published / 1000).toFixed(1) + 'k';
         }
       }
       if (draftsEl) {
-        draftsEl.textContent = drafts.toString();
-        draftsEl.parentElement?.setAttribute('title', `${drafts} draft resources`);
-        if (drafts > 9999) {
-          draftsEl.textContent = (drafts / 1000).toFixed(1) + 'k';
+        draftsEl.textContent = stats.drafts.toString();
+        draftsEl.parentElement?.setAttribute('title', `${stats.drafts} draft resources`);
+        if (stats.drafts > 9999) {
+          draftsEl.textContent = (stats.drafts / 1000).toFixed(1) + 'k';
         }
       }
       if (avgScoreEl) {
-        const scoreText = avgScore === 'N/A' ? 'N/A' : `${avgScore}%`;
+        const scoreText = stats.avgScorePercent === 'N/A' ? 'N/A' : `${stats.avgScorePercent}%`;
         avgScoreEl.textContent = scoreText;
-        avgScoreEl.parentElement?.setAttribute('title', `Average voice score: ${avgScore === 'N/A' ? 'N/A' : avgScore + '%'}`);
-        // Ensure percentage fits
+        avgScoreEl.parentElement?.setAttribute(
+          'title',
+          `Average voice score: ${stats.avgScorePercent === 'N/A' ? 'N/A' : stats.avgScorePercent + '%'}`
+        );
         if (scoreText.length > 8) {
           avgScoreEl.style.fontSize = 'clamp(var(--text-lg), 3vw, var(--text-2xl))';
         }
       }
 
-      console.log('[Portal] Analytics updated:', { total, published, drafts, archived, avgScore });
+      console.log('[Portal] Analytics updated:', stats);
     } catch (error) {
       console.error('[Portal] Error updating analytics display:', error);
     }

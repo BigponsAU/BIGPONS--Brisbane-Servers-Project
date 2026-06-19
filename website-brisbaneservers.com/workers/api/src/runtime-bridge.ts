@@ -19,7 +19,8 @@ export function bindWorkerRuntime(env: WorkerEnv): void {
 
   process.env.EDGE_WORKER = '1';
   process.env.CORPUS_SKIP_FILE_MIRROR = '1';
-  process.env.VOICE_STORAGE_DIR = '/tmp/brisbane-voice-storage';
+  // Flat /tmp paths — Workers unenv has no fs.mkdir; /tmp already exists.
+  process.env.VOICE_STORAGE_DIR = '/tmp';
   process.env.PUBLIC_SITE_URL = env.PUBLIC_SITE_URL ?? 'https://brisbaneservers.com';
   process.env.INFERENCE_PROVIDER = env.INFERENCE_PROVIDER ?? 'workers-ai';
   process.env.WORKERS_AI_MODEL = env.WORKERS_AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct';

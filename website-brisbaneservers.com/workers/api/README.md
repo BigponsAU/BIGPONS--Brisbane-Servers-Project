@@ -45,4 +45,4 @@ npm install
 npx wrangler dev
 ```
 
-Deploy: push to `main` (`.github/workflows/deploy-edge-worker.yml`) or `npm run deploy:edge-worker` from this package.
+Deploy: push to `main` (`.github/workflows/deploy-edge-worker.yml`). `npm run deploy:edge-worker` prints CI instructions only.

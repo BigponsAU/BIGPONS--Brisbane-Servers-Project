@@ -12,8 +12,8 @@ try {
   & (Join-Path $PSScriptRoot 'sync-secrets-to-edge-worker.ps1')
 
   Write-Host ""
-  Write-Host "Step 3: Deploy edge worker..." -ForegroundColor Cyan
-  & (Join-Path $PSScriptRoot 'deploy-edge-worker.ps1')
+  Write-Host "Step 3: Deploy edge worker (CI only — push to main)..." -ForegroundColor Cyan
+  & (Join-Path $PSScriptRoot 'deploy-via-ci.ps1')
 
   Write-Host ""
   Write-Host "Step 4: Verify Pages API URL..." -ForegroundColor Cyan

@@ -1,53 +1,12 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
-import { promises as fs } from 'fs';
-import { getDefaultVoiceProfileFile, getProfilesFile } from '../../../lib/storage-paths';
-
-interface ProfileMetadata {
-  name: string;
-  description?: string;
-  version: string;
-  sourceDocument?: string;
-  tags?: string[];
-  isDefault?: boolean;
-  archived?: boolean;
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  corpusResourceIds?: string[];
-}
-
-interface ProfileData {
-  metadata: ProfileMetadata;
-  profile: any;
-}
-
-interface ProfilesData {
-  profiles: ProfileData[];
-  version: string;
-  lastUpdated: string;
-  defaultProfileId?: string;
-}
-
-async function loadProfiles(): Promise<ProfilesData | null> {
-  try {
-    const data = await fs.readFile(getProfilesFile(), 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('[API] Error loading profiles:', error);
-    return null;
-  }
-}
-
-async function loadDefaultProfile(): Promise<any | null> {
-  try {
-    const data = await fs.readFile(getDefaultVoiceProfileFile(), 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('[API] Error loading default profile:', error);
-    return null;
-  }
-}
+import { findBrisbaneProfileMeta, ensureBrisbaneProfile } from '../../../lib/brisbane-profile';
+import {
+  getBundledVoiceProfile,
+  loadProfilesData,
+  type ProfileData,
+} from '../../../lib/profiles-api';
+import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
 
 /**
  * Get all voice profiles
@@ -75,13 +34,29 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     console.log('[API] GET /api/profiles - Loading profiles');
-    
-    const profilesData = await loadProfiles();
-    const defaultProfile = await loadDefaultProfile();
+
+    let profilesData = await loadProfilesData();
+
+    const storedMetas = profilesData.profiles.map((p) => p.metadata);
+    if (!findBrisbaneProfileMeta(storedMetas)) {
+      try {
+        const { syncCaseStudiesToResources } = await import('../../../lib/case-study-corpus');
+        const { resources } = await syncCaseStudiesToResources();
+        const { profileManager, profileBuilder } = await getVoiceFramework();
+        await ensureBrisbaneProfile(profileManager, profileBuilder, resources);
+        await syncVoiceProfilesToCorpus();
+        profilesData = await loadProfilesData();
+        console.log('[API] GET /api/profiles - Built missing Brisbane default from resource corpus');
+      } catch (healErr) {
+        console.warn('[API] GET /api/profiles - Brisbane profile auto-build skipped:', healErr);
+      }
+    }
+
+    const defaultProfile = getBundledVoiceProfile();
     
     let profiles: any[] = [];
     
-    if (profilesData && profilesData.profiles) {
+    if (profilesData.profiles.length > 0) {
       profiles = profilesData.profiles.map((p: ProfileData) => ({
         id: p.metadata.id,
         name: p.metadata.name,
@@ -99,25 +74,25 @@ export const GET: APIRoute = async ({ request }) => {
       }));
     }
     
-    const hasStoredDefault = Boolean(profilesData?.defaultProfileId);
+    const hasStoredDefault = Boolean(profilesData.defaultProfileId);
     // Add bundled fallback profile when not already represented (never steal default flag from BIGPONS / storage)
-    if (defaultProfile) {
-      const defaultExists = profiles.some(p => p.id === 'default' || p.voiceName === defaultProfile.voiceName);
-      if (!defaultExists) {
-        profiles.unshift({
-          id: 'default',
-          name: defaultProfile.voiceName || 'Default Voice Profile',
-          description: 'Bundled fallback from voice-profile.json (used when no storage default matches).',
-          version: defaultProfile.version || '1.0.0',
-          tags: ['default', 'system'],
-          isDefault: !hasStoredDefault,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          sourceDocument: defaultProfile.sourceDocument,
-          voiceName: defaultProfile.voiceName,
-          characteristics: defaultProfile.characteristics
-        });
-      }
+    const defaultExists = profiles.some(
+      (p) => p.id === 'default' || p.voiceName === defaultProfile.voiceName,
+    );
+    if (!defaultExists) {
+      profiles.unshift({
+        id: 'default',
+        name: (defaultProfile.voiceName as string) || 'Default Voice Profile',
+        description: 'Bundled fallback from voice-profile.json (used when no storage default matches).',
+        version: (defaultProfile.version as string) || '1.0.0',
+        tags: ['default', 'system'],
+        isDefault: !hasStoredDefault,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        sourceDocument: defaultProfile.sourceDocument,
+        voiceName: defaultProfile.voiceName,
+        characteristics: defaultProfile.characteristics,
+      });
     }
 
     const duration = Date.now() - startTime;

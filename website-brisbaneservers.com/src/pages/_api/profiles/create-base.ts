@@ -34,7 +34,7 @@ function pickCorpus(resources: Resource[], body: CreateBaseProfileBody): Resourc
 }
 
 function findExistingBigpons(existingProfiles: { name: string; tags?: string[]; id: string }[]) {
-  return findBrisbaneProfileMeta(existingProfiles as import('@voice-framework/storage/profile-manager').ProfileMetadata[]);
+  return findBrisbaneProfileMeta(existingProfiles);
 }
 
 /**

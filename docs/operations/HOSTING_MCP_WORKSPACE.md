@@ -5,7 +5,7 @@
 | Platform | Role | MCP in Cursor | Setup script |
 |----------|------|---------------|--------------|
 | **Cloudflare Pages** | Static site `brisbaneservers.com` | `cloudflare-api` | `npm run configure:cloudflare-pages-env` |
-| **Cloudflare Worker** | All `/api/*` at `api.brisbaneservers.com` | `cloudflare-api` | `npm run deploy:edge-worker` |
+| **Cloudflare Worker** | All `/api/*` at `api.brisbaneservers.com` | `cloudflare-api` | Push to `main` → `deploy-edge-worker.yml` |
 | **Neon** | Postgres (users, sessions, corpus JSONB) | *none* — [console.neon.tech](https://console.neon.tech) | Hyperdrive on Worker |
 | **Resend** | Outbound auth email | *none* | Worker secret `RESEND_API_KEY` |
 | **Google Cloud** | Sign-in with Google | Google Console | Worker secrets `GOOGLE_OAUTH_*` |
@@ -47,7 +47,7 @@ Holding step 4 until 1–3 are done is reasonable: infra and docs match reality 
 | Channel | What | Where |
 |---------|------|--------|
 | **OAuth MCP** | Cursor agent | `cloudflare-api` in Settings → MCP |
-| **API token** | `deploy:edge-worker`, Pages env scripts | User env `CLOUDFLARE_API_TOKEN` |
+| **API token** | GitHub Actions deploy, Pages env scripts | Repo secret `CLOUDFLARE_API_TOKEN` |
 
 Setup: `npm run configure:cloudflare-mcp` + `npm run connect:cloudflare-mcp-oauth` → Reload Window.
 
@@ -106,7 +106,7 @@ api.brisbaneservers.com → Worker brisbane-servers-api-edge
 
 `RESEND_API_KEY`, `JWT_SECRET`, `ADMIN_*`, `GOOGLE_OAUTH_*`, `CRON_SECRET`, optional `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`
 
-Sync: `npm run sync:edge-worker-secrets` · Deploy: `npm run deploy:edge-worker`
+Sync: `npm run sync:edge-worker-secrets` · Deploy: **push to `main`** (GitHub Actions)
 
 ---
 

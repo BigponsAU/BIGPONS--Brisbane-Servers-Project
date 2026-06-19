@@ -1,48 +1,11 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
-import { promises as fs } from 'fs';
-import { getProfilesFile } from '../../../lib/storage-paths';
-
-interface ProfileMetadata {
-  name: string;
-  description?: string;
-  version: string;
-  sourceDocument?: string;
-  tags?: string[];
-  isDefault?: boolean;
-  archived?: boolean;
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ProfileData {
-  metadata: ProfileMetadata;
-  profile: any;
-}
-
-interface ProfilesData {
-  profiles: ProfileData[];
-  version: string;
-  lastUpdated: string;
-  defaultProfileId?: string;
-}
-
-async function loadProfiles(): Promise<ProfilesData | null> {
-  try {
-    const data = await fs.readFile(getProfilesFile(), 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('[API] Error loading profiles:', error);
-    return null;
-  }
-}
-
-async function saveProfiles(data: ProfilesData): Promise<void> {
-  await fs.writeFile(getProfilesFile(), JSON.stringify(data, null, 2), 'utf-8');
-  const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../../../lib/corpus-store');
-  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, getProfilesFile());
-}
+import {
+  loadProfilesData,
+  saveProfilesData,
+  type ProfileData,
+  type ProfilesData,
+} from '../../../lib/profiles-api';
 
 /**
  * Normalize profile name for comparison
@@ -189,6 +152,14 @@ function areProfilesDuplicate(p1: ProfileData, p2: ProfileData, similarityThresh
 /**
  * Merge two profiles, keeping the best version
  */
+type ProfileCharacteristics = {
+  linguisticPatterns?: {
+    vocabulary?: Record<string, string[]>;
+  };
+  domainKnowledge?: Record<string, string[]>;
+  voiceMarkers?: Record<string, string[]>;
+};
+
 function mergeProfiles(keep: ProfileData, remove: ProfileData): ProfileData {
   // Prefer: default > non-default, newer version, newer date, more complete characteristics
   const merged: ProfileData = {
@@ -219,40 +190,46 @@ function mergeProfiles(keep: ProfileData, remove: ProfileData): ProfileData {
 
   // Merge characteristics - combine vocabulary and domain knowledge
   if (keep.profile?.characteristics && remove.profile?.characteristics) {
-    const kc = keep.profile.characteristics;
-    const rc = remove.profile.characteristics;
+    const kc = keep.profile.characteristics as ProfileCharacteristics;
+    const rc = remove.profile.characteristics as ProfileCharacteristics;
+    const mergedChars = (merged.profile.characteristics ?? {}) as ProfileCharacteristics;
+    merged.profile.characteristics = mergedChars;
 
     // Merge vocabulary
     if (kc.linguisticPatterns?.vocabulary && rc.linguisticPatterns?.vocabulary) {
+      mergedChars.linguisticPatterns ??= { vocabulary: {} };
+      mergedChars.linguisticPatterns.vocabulary ??= {};
       const vocabCategories = ['technicalTerms', 'descriptiveTerms', 'relationshipTerms'];
       vocabCategories.forEach(cat => {
         const terms = new Set([
-          ...(kc.linguisticPatterns.vocabulary[cat] || []),
-          ...(rc.linguisticPatterns.vocabulary[cat] || [])
+          ...(kc.linguisticPatterns!.vocabulary![cat] || []),
+          ...(rc.linguisticPatterns!.vocabulary![cat] || [])
         ]);
-        merged.profile.characteristics.linguisticPatterns.vocabulary[cat] = Array.from(terms);
+        mergedChars.linguisticPatterns!.vocabulary![cat] = Array.from(terms);
       });
     }
 
     // Merge domain knowledge
     if (kc.domainKnowledge && rc.domainKnowledge) {
+      mergedChars.domainKnowledge ??= {};
       Object.keys(rc.domainKnowledge).forEach(key => {
         const concepts = new Set([
-          ...(merged.profile.characteristics.domainKnowledge[key] || []),
-          ...(rc.domainKnowledge[key] || [])
+          ...(mergedChars.domainKnowledge![key] || []),
+          ...(rc.domainKnowledge![key] || [])
         ]);
-        merged.profile.characteristics.domainKnowledge[key] = Array.from(concepts);
+        mergedChars.domainKnowledge![key] = Array.from(concepts);
       });
     }
 
     // Merge voice markers
     if (kc.voiceMarkers && rc.voiceMarkers) {
+      mergedChars.voiceMarkers ??= {};
       Object.keys(rc.voiceMarkers).forEach(key => {
         const markers = new Set([
-          ...(merged.profile.characteristics.voiceMarkers[key] || []),
-          ...(rc.voiceMarkers[key] || [])
+          ...(mergedChars.voiceMarkers![key] || []),
+          ...(rc.voiceMarkers![key] || [])
         ]);
-        merged.profile.characteristics.voiceMarkers[key] = Array.from(markers);
+        mergedChars.voiceMarkers![key] = Array.from(markers);
       });
     }
   }
@@ -303,8 +280,8 @@ export const GET: APIRoute = async ({ request }) => {
       );
     }
 
-    const profilesData = await loadProfiles();
-    if (!profilesData || !profilesData.profiles) {
+    const profilesData = await loadProfilesData();
+    if (profilesData.profiles.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'No profiles found',
@@ -419,8 +396,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     console.log(`[API] POST /api/profiles/deduplicate - Starting neural deduplication (threshold: ${similarityThreshold})`);
     
-    const profilesData = await loadProfiles();
-    if (!profilesData || !profilesData.profiles) {
+    const profilesData = await loadProfilesData();
+    if (profilesData.profiles.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'No profiles found',
@@ -559,7 +536,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Save deduplicated profiles
     profilesData.profiles = deduplicated;
     profilesData.lastUpdated = new Date().toISOString();
-    await saveProfiles(profilesData);
+    await saveProfilesData(profilesData);
 
     const duration = Date.now() - startTime;
     console.log(`[API] POST /api/profiles/deduplicate - Removed ${removedCount} duplicate(s) (${duration}ms)`);

@@ -430,5 +430,113 @@
     "isStarterBlock": true,
     "embeddingVersion": 1,
     "processingStatus": "ready"
+  },
+  {
+    "id": "case-study-retail-inventory-ecommerce",
+    "industry": "retail",
+    "topic": "case-studies",
+    "title": "Retail: inventory and e-commerce integration",
+    "description": "Brisbane retail SME transitioning from manual tracking to automated inventory with e-commerce integration, delivered through a grant-assisted rollout.",
+    "content": "# Retail: inventory and e-commerce integration\n\nManual tracking replaced with a cloud inventory core, barcode workflows, and real-time sync to the online store — phased so trade never stopped.\n\n## Challenge\n\nA small retail business in Brisbane was struggling with manual inventory tracking. The owner spent hours each week updating spreadsheets, reconciling discrepancies, and manually syncing data between their physical store and online presence.\n\nAs the business grew, this manual process became unsustainable. Stock levels were frequently incorrect, leading to overselling online or missed sales opportunities in-store. The business needed an automated solution that could:\n- Track inventory in real-time across physical and online channels\n- Automatically update stock levels when sales occurred\n- Provide accurate reporting for purchasing decisions\n- Integrate with their existing e-commerce platform\n- Be cost-effective for a small business budget\n\n## Our approach\n\nWe assessed the business's current operations, budget constraints, and growth trajectory. After identifying available digital transformation grants, we designed a phased implementation plan:\n\nPhase 1: Core inventory system\n- Implemented a cloud-based inventory management system\n- Set up barcode scanning for efficient stock tracking\n- Configured automated stock level alerts\n\nPhase 2: E-commerce integration\n- Integrated inventory system with existing e-commerce platform\n- Automated stock synchronization between channels\n- Real-time inventory updates for online customers\n\nPhase 3: Reporting and analytics\n- Custom reporting dashboard for purchasing decisions\n- Sales trend analysis\n- Inventory turnover metrics\n\nThe solution was designed to scale with the business while remaining cost-effective through grant assistance.\n\n## Results\n\n## Time savings\n\nReduced inventory management time from 8 hours per week to 1 hour per week. Owner can focus on growing the business instead of data entry.\n\n## Accuracy improvement\n\nStock level accuracy increased from 75% to 98%. Eliminated overselling and missed sales opportunities.\n\n## Cost efficiency\n\nGrant assistance covered 60% of implementation costs. Monthly operational savings exceed system costs.\n\n## Scalability\n\nSystem designed to handle 3x current inventory levels without additional infrastructure costs.\n\n## Key technologies\n\nCloud-based inventory management platform, RESTful API integration, barcode scanning hardware, automated reporting system, grant application assistance.\n\n## Lessons learned\n\nThis project demonstrated that small businesses can successfully implement enterprise-grade solutions when properly planned and grant-assisted. The key was understanding the business's immediate needs while building a foundation for future growth. Phased implementation allowed the business to adapt gradually without disrupting operations.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
+    "ownerId": "system",
+    "version": 1,
+    "status": "published",
+    "visibility": "public",
+    "isStarterBlock": false,
+    "metadata": {
+      "wordCount": 389,
+      "growthKind": "case_study"
+    },
+    "processingStatus": "ready",
+    "chunkIds": [
+      "case-study-retail-inventory-ecommerce::0",
+      "case-study-retail-inventory-ecommerce::1",
+      "case-study-retail-inventory-ecommerce::2"
+    ],
+    "embeddingModel": "hash-fallback-v1",
+    "embeddingVersion": 1
+  },
+  {
+    "id": "case-study-gallery-semantic-search",
+    "industry": "retail",
+    "topic": "case-studies",
+    "title": "Gallery: semantic search and NLP categorisation",
+    "description": "Australian gallery implementing semantic categorisation with NLP-assisted search, helping visitors explore collections by style, theme, and technique.",
+    "content": "# Gallery: semantic search and categorisation\n\nA creative retail space replaced folder-based artwork lists with semantic categories and natural-language search — so visitors and staff find works by how people actually describe art.\n\n## Challenge\n\nA commercial gallery sold original works and limited editions online and in-room. Inventory lived in spreadsheets and image folders named by artist or acquisition date — not by how buyers search.\n\nStaff spent time answering repeat enquiries (\"Do you have anything in this style?\") because the public site only supported basic filters. The gallery needed:\n- Consistent metadata across artists, mediums, and periods\n- Search that understood style, theme, mood, and technique — not exact titles\n- Fast publishing when new works arrived\n- A browse experience that felt curated, not like a file dump\n\n## Our approach\n\nWe mapped how curators and visitors already talked about the collection, then designed a lightweight catalogue model and semantic layer:\n\nPhase 1: Catalogue discipline\n- Standardised fields for artist, medium, dimensions, price band, and availability\n- Bulk import from existing folders with human review on edge cases\n- Image pipeline with consistent crops and alt text for accessibility\n\nPhase 2: Semantic categories\n- Tagging schema aligned to style, theme, technique, and collection series\n- Assisted labelling from titles and descriptions, with curator approval\n- Related-work suggestions on each artwork page\n\nPhase 3: NLP search and discovery\n- Natural-language search over approved metadata and descriptions\n- Featured collections driven by tags instead of manual HTML updates\n- Enquiry forms pre-filled with the artwork context the visitor was viewing\n\nRollout stayed incremental — the in-room experience unchanged while the online catalogue improved week by week.\n\n## Results\n\n## Faster discovery\n\nAverage time-to-relevant artwork on the site dropped sharply; fewer \"nothing matched\" search sessions.\n\n## Staff capacity\n\nRepeat style-and-theme enquiries reduced; curators spend more time on sales conversations and hang planning.\n\n## Publishing speed\n\nNew works go live in one workflow — metadata, images, and related links — instead of ad hoc page edits.\n\n## Visitor engagement\n\nMore pages per session and longer on-site time on collection and artwork routes after semantic browse launched.\n\n## Key technologies\n\nStructured catalogue database, semantic tagging layer, NLP-backed search index, image CDN, CMS integration, analytics on search queries and zero-result terms.\n\n## Lessons learned\n\nCreative retail benefits when search vocabulary matches how people talk, not how files were stored. Curator sign-off on tags kept quality high; automation accelerated labelling but did not replace judgment. Measuring zero-result searches surfaced gaps in metadata early.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
+    "ownerId": "system",
+    "version": 1,
+    "status": "published",
+    "visibility": "public",
+    "isStarterBlock": false,
+    "metadata": {
+      "wordCount": 418,
+      "growthKind": "case_study"
+    },
+    "processingStatus": "ready",
+    "chunkIds": [
+      "case-study-gallery-semantic-search::0",
+      "case-study-gallery-semantic-search::1",
+      "case-study-gallery-semantic-search::2"
+    ],
+    "embeddingModel": "hash-fallback-v1",
+    "embeddingVersion": 1
+  },
+  {
+    "id": "case-study-healthcare-patient-management",
+    "industry": "healthcare",
+    "topic": "case-studies",
+    "title": "Healthcare: patient management system",
+    "description": "Brisbane medical practice implementing APP-aligned patient management with automated appointments and secure records through a phased rollout.",
+    "content": "# Healthcare: patient management system\n\nCompliant digital records, appointment automation, and reporting — implemented in phases so clinical staff could validate each step against Australian Privacy Principles.\n\n## Challenge\n\nA Brisbane-based medical practice was using a combination of paper records and basic software that no longer met their needs. The practice faced several critical challenges:\n\n- Patient records were scattered across multiple systems and paper files\n- Appointment scheduling was manual and prone to double-booking\n- No automated reminders, leading to high no-show rates\n- Concerns about Australian Privacy Principles (APP) compliance\n- Difficulty generating reports for practice management\n- Limited integration between clinical and administrative systems\n\nThe practice needed a comprehensive solution that prioritized patient privacy, streamlined operations, and maintained compliance with Australian healthcare regulations.\n\n## Our approach\n\nWe conducted a thorough assessment of the practice's workflows, compliance requirements, and technical infrastructure. The solution was implemented in carefully planned phases to minimize disruption:\n\nPhase 1: Secure patient records\n- Migrated all patient records to secure, encrypted cloud storage\n- Implemented role-based access controls\n- Ensured APP compliance with audit trails and consent management\n\nPhase 2: Automated appointment system\n- Integrated appointment scheduling with patient records\n- Automated SMS and email reminders\n- Online booking portal for patients\n\nPhase 3: Practice management tools\n- Custom reporting dashboard for practice analytics\n- Billing integration\n- Clinical note templates\n\nThroughout implementation, we ensured all systems met Australian Privacy Principles and healthcare industry standards.\n\n## Results\n\n## Reduced no-shows\n\nAutomated reminders reduced no-show rates from 25% to 8%, improving practice efficiency and patient care.\n\n## Compliance assurance\n\nFull APP alignment with automated audit trails, secure data storage, and consent management systems.\n\n## Time efficiency\n\nAdministrative time reduced by 40%, allowing staff to focus on patient care.\n\n## Improved access\n\nPatients can book appointments online 24/7, improving accessibility and satisfaction.\n\n## Key technologies\n\nEncrypted cloud infrastructure, secure database systems, automated SMS/email services, secure API integrations, Australian Privacy Principles compliance framework, role-based access control.\n\n## Lessons learned\n\nHealthcare technology implementations require careful attention to compliance and patient privacy. Phased implementation was crucial to ensure staff training and system validation at each stage. The key success factor was maintaining patient trust while modernising operations.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
+    "ownerId": "system",
+    "version": 1,
+    "status": "published",
+    "visibility": "public",
+    "isStarterBlock": false,
+    "metadata": {
+      "wordCount": 368,
+      "growthKind": "case_study"
+    },
+    "processingStatus": "ready",
+    "chunkIds": [
+      "case-study-healthcare-patient-management::0",
+      "case-study-healthcare-patient-management::1",
+      "case-study-healthcare-patient-management::2"
+    ],
+    "embeddingModel": "hash-fallback-v1",
+    "embeddingVersion": 1
+  },
+  {
+    "id": "case-study-professional-services-database",
+    "industry": "professional-services",
+    "topic": "case-studies",
+    "title": "Professional services: spreadsheet to database",
+    "description": "Professional services firm moving beyond spreadsheets to a governed database with semantic search and automated reporting for accuracy and scalability.",
+    "content": "# Professional services: spreadsheet to database\n\nA growing firm replaced fragmented spreadsheets with a single source of truth, semantic search across client work, and reporting that runs itself.\n\n## Challenge\n\nA professional services company had grown from a small team to 20+ employees, but was still managing all client data, projects, and communications in spreadsheets. The limitations became increasingly apparent:\n\n- Multiple team members editing the same spreadsheets caused version conflicts\n- No way to search across historical client communications effectively\n- Reporting required manual data compilation, taking hours each week\n- No automated workflows for common tasks\n- Difficulty tracking project timelines and deliverables\n- Risk of data loss with no proper backup strategy\n\nThe company needed a proper database system that could handle their growing data volume while improving team collaboration and operational efficiency.\n\n## Our approach\n\nWe assessed the firm's data model, security requirements, and reporting needs before selecting a platform sized to SME operations:\n\nPhase 1: Data foundation\n- Migrated critical spreadsheets into a governed database schema\n- Established roles, permissions, and backup policies\n- Defined client, matter, and document relationships\n\nPhase 2: Semantic search\n- Indexed communications and deliverables for natural-language search\n- Standardised metadata on client work products\n- Reduced time spent hunting for prior advice and templates\n\nPhase 3: Automation and reporting\n- Scheduled reports for utilisation, pipeline, and delivery status\n- Workflow triggers for onboarding and matter closure checklists\n- Integration hooks for email and document storage\n\nTraining and change management ran alongside each phase so adoption matched technical rollout.\n\n## Results\n\n## Search efficiency\n\nStaff locate prior client work in minutes instead of hours — semantic search across approved content.\n\n## Reporting automation\n\nWeekly management reports run on schedule; partners review exceptions instead of rebuilding spreadsheets.\n\n## Data integrity\n\nVersion conflicts eliminated; single source of truth for client and matter records.\n\n## Scalable operations\n\nSystem supports growing headcount without proportional admin overhead.\n\n## Key technologies\n\nRelational database platform, semantic search index, role-based access control, automated reporting, document integration APIs, backup and audit logging.\n\n## Lessons learned\n\nSpreadsheet culture dies slowly — wins came from picking one workflow to migrate first, then proving time saved. Semantic search only worked once metadata rules were agreed. Partners had to model the behaviour they wanted from staff.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
+    "ownerId": "system",
+    "version": 1,
+    "status": "published",
+    "visibility": "public",
+    "isStarterBlock": false,
+    "metadata": {
+      "wordCount": 382,
+      "growthKind": "case_study"
+    },
+    "processingStatus": "ready",
+    "chunkIds": [
+      "case-study-professional-services-database::0",
+      "case-study-professional-services-database::1",
+      "case-study-professional-services-database::2"
+    ],
+    "embeddingModel": "hash-fallback-v1",
+    "embeddingVersion": 1
   }
 ]

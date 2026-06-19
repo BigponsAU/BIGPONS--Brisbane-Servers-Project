@@ -5,8 +5,10 @@ export function getStaticPaths() {
   return [];
 }
 import { requireEditor } from '../../../utils/auth';
-import { promises as fs } from 'fs';
-import { getProfilesFile } from '../../../lib/storage-paths';
+import {
+  loadProfilesData,
+  saveProfilesData,
+} from '../../../lib/profiles-api';
 
 interface ProfileMetadata {
   name: string;
@@ -23,30 +25,7 @@ interface ProfileMetadata {
 
 interface ProfileData {
   metadata: ProfileMetadata;
-  profile: any;
-}
-
-interface ProfilesData {
-  profiles: ProfileData[];
-  version: string;
-  lastUpdated: string;
-  defaultProfileId?: string;
-}
-
-async function loadProfiles(): Promise<ProfilesData | null> {
-  try {
-    const data = await fs.readFile(getProfilesFile(), 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('[API] Error loading profiles:', error);
-    return null;
-  }
-}
-
-async function saveProfiles(data: ProfilesData): Promise<void> {
-  await fs.writeFile(getProfilesFile(), JSON.stringify(data, null, 2), 'utf-8');
-  const { CORPUS_DOC_KEYS, importFileToCorpus } = await import('../../../lib/corpus-store');
-  await importFileToCorpus(CORPUS_DOC_KEYS.PROFILES, getProfilesFile());
+  profile: Record<string, unknown>;
 }
 
 /**
@@ -85,8 +64,8 @@ export const GET: APIRoute = async ({ params, request }) => {
       );
     }
 
-    const profilesData = await loadProfiles();
-    if (!profilesData?.profiles) {
+    const profilesData = await loadProfilesData();
+    if (profilesData.profiles.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'Profiles file not found or invalid',
@@ -186,9 +165,9 @@ export const PUT: APIRoute = async ({ params, request }) => {
       profile?: Record<string, unknown>;
       [key: string]: unknown;
     };
-    const profilesData = await loadProfiles();
+    const profilesData = await loadProfilesData();
 
-    if (!profilesData || !profilesData.profiles) {
+    if (profilesData.profiles.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'Profiles file not found or invalid',
@@ -256,7 +235,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     profilesData.lastUpdated = new Date().toISOString();
 
-    await saveProfiles(profilesData);
+    await saveProfilesData(profilesData);
 
     return new Response(
       JSON.stringify({
@@ -325,8 +304,8 @@ export const DELETE: APIRoute = async ({ params, request }) => {
       );
     }
 
-    const profilesData = await loadProfiles();
-    if (!profilesData?.profiles) {
+    const profilesData = await loadProfilesData();
+    if (profilesData.profiles.length === 0) {
       return new Response(
         JSON.stringify({
           error: 'Profiles file not found or invalid',
@@ -372,7 +351,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 
     profilesData.profiles.splice(index, 1);
     profilesData.lastUpdated = new Date().toISOString();
-    await saveProfiles(profilesData);
+    await saveProfilesData(profilesData);
 
     return new Response(
       JSON.stringify({

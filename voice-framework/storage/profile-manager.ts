@@ -47,6 +47,7 @@ export interface ProfileManagerData {
 export class ProfileManager {
   private profilesPath: string;
   private data: ProfileManagerData;
+  private onAfterSave?: () => void | Promise<void>;
 
   constructor(profilesPath: string = './storage/profiles.json') {
     this.profilesPath = profilesPath;
@@ -55,6 +56,11 @@ export class ProfileManager {
       version: '1.0.0',
       lastUpdated: new Date()
     };
+  }
+
+  /** Optional hook after each disk save (e.g. sync to Postgres corpus on edge). */
+  setOnAfterSave(hook: () => void | Promise<void>): void {
+    this.onAfterSave = hook;
   }
 
   /**
@@ -100,6 +106,9 @@ export class ProfileManager {
       this.data.lastUpdated = new Date();
       await ensureDirExists(path.dirname(this.profilesPath));
       await fs.writeFile(this.profilesPath, JSON.stringify(this.data, null, 2), 'utf-8');
+      if (this.onAfterSave) {
+        await this.onAfterSave();
+      }
     } catch (error) {
       throw new Error(`Failed to save profiles: ${error instanceof Error ? error.message : String(error)}`);
     }

@@ -52,4 +52,4 @@ try {
   Pop-Location
 }
 
-Write-Host 'Worker secrets synced. Deploy: npm run deploy:edge-worker' -ForegroundColor Cyan
+Write-Host 'Worker secrets synced. Deploy: push to main (GitHub Actions deploy-edge-worker.yml).' -ForegroundColor Cyan

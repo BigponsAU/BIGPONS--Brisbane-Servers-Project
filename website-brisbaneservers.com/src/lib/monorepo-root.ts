@@ -65,7 +65,7 @@ export function voiceFrameworkStorageDir(): string {
     return path.resolve(override);
   }
   if (isCloudflareWorkerRuntime() || process.env.EDGE_WORKER === '1') {
-    return '/tmp/brisbane-voice-storage';
+    return '/tmp';
   }
   return voiceFrameworkSeedStorageDir();
 }

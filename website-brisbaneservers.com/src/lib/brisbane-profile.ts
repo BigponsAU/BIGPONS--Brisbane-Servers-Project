@@ -9,6 +9,7 @@ import type { ProfileMetadata } from '@voice-framework/storage/profile-manager';
 import { loadResources, saveResources, type Resource } from './resources-api';
 import { resourcesForSiteVoiceCorpus } from './resource-voice-profile';
 import { runIndexPipeline } from './semantic/pipeline';
+import { syncCaseStudiesToResources } from './case-study-corpus';
 
 export const BRISBANE_PROFILE_NAME = 'Brisbane';
 export const BRISBANE_PROFILE_TAG = 'brisbane-user-default';
@@ -30,9 +31,18 @@ export function resourcesForVoiceMapIndex(resources: Resource[]): Resource[] {
   return [...byId.values()];
 }
 
+/** Minimal fields used to detect the site default Brisbane profile. */
+export type BrisbaneProfileLookup = {
+  id: string;
+  name: string;
+  tags?: string[];
+  isDefault?: boolean;
+  corpusResourceIds?: string[];
+};
+
 export function findBrisbaneProfileMeta(
-  profiles: ProfileMetadata[]
-): ProfileMetadata | undefined {
+  profiles: BrisbaneProfileLookup[]
+): BrisbaneProfileLookup | undefined {
   return profiles.find(
     (p) =>
       p.tags?.includes(BRISBANE_PROFILE_TAG) ||
@@ -58,7 +68,11 @@ export async function ensureBrisbaneProfile(
   profileBuilder: ProfileBuilder,
   resources?: Resource[]
 ): Promise<EnsureBrisbaneProfileResult> {
-  const allResources = resources ?? (await loadResources());
+  let allResources = resources;
+  if (!allResources) {
+    const sync = await syncCaseStudiesToResources();
+    allResources = sync.resources;
+  }
   const corpus = resourcesForSiteVoiceCorpus(allResources);
 
   if (corpus.length === 0) {
@@ -93,7 +107,11 @@ export async function ensureBrisbaneProfile(
       ...corpusMeta,
     });
     await profileManager.setDefaultProfile(existing.id);
-    profileMeta = profileManager.getAllProfiles().find((p) => p.id === existing.id) ?? existing;
+    const refreshed = profileManager.getAllProfiles().find((p) => p.id === existing.id);
+    if (!refreshed) {
+      throw new Error(`Brisbane profile ${existing.id} missing after update`);
+    }
+    profileMeta = refreshed;
   } else {
     profileMeta = await profileManager.createProfile(built, {
       name: BRISBANE_PROFILE_NAME,
@@ -119,6 +137,7 @@ export async function ensureBrisbaneProfile(
 
 export interface BootstrapVoiceCorpusResult {
   brisbane: EnsureBrisbaneProfileResult;
+  caseStudies: { added: number; updated: number; totalCaseStudies: number };
   indexed: number;
   indexFailed: number;
   indexSkipped: number;
@@ -132,7 +151,8 @@ export async function bootstrapVoiceCorpus(
   profileManager: ProfileManager,
   profileBuilder: ProfileBuilder
 ): Promise<BootstrapVoiceCorpusResult> {
-  const resources = await loadResources();
+  const caseStudySync = await syncCaseStudiesToResources();
+  let resources = caseStudySync.resources;
   const toIndex = resourcesForVoiceMapIndex(resources);
   let indexed = 0;
   let indexFailed = 0;
@@ -162,6 +182,11 @@ export async function bootstrapVoiceCorpus(
 
   return {
     brisbane,
+    caseStudies: {
+      added: caseStudySync.added,
+      updated: caseStudySync.updated,
+      totalCaseStudies: caseStudySync.totalCaseStudies,
+    },
     indexed,
     indexFailed,
     indexSkipped,

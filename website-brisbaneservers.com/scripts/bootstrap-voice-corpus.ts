@@ -14,6 +14,11 @@ async function main(): Promise<void> {
   console.log('Brisbane profile:', result.brisbane.profile.name, `(${result.brisbane.profile.id})`);
   console.log('  Created:', result.brisbane.created);
   console.log('  Corpus resources:', result.brisbane.corpusCount);
+  console.log(
+    'Case studies in corpus:',
+    result.caseStudies.totalCaseStudies,
+    `(added ${result.caseStudies.added}, updated ${result.caseStudies.updated})`
+  );
   console.log('Indexed:', result.indexed, '| Failed:', result.indexFailed, '| Skipped:', result.indexSkipped);
   console.log('Semantic index:', result.chunkStats.chunkCount, 'chunks across', result.chunkStats.resourceIds, 'resources');
   console.log('\nDone.');

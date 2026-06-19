@@ -97,9 +97,12 @@ voice-framework/storage/test-results.json
 website-brisbaneservers.com/.wrangler/
 .cursor/*.log
 
-# Temporary folders
-tmp/
-temp/
+# Temporary local debug artifacts (never commit)
+tmp-*.html
+tmp-*.js
+tmp-worker-bundle/
+website-brisbaneservers.com/tmp-worker-bundle/
+
 
 # Local visual archive
 _visual-archive/

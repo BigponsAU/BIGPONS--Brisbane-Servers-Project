@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from 'fs';
 import type { Pool } from 'pg';
 import type { AuthRole, AuthUser } from '../../utils/auth';
+import { isLimitedFsRuntime } from '@voice-framework/utils/fs-safe';
 import { getRuntimeEnv } from '../../utils/runtime-env';
 import { getAuthTokensJsonFile, getSessionsJsonFile, getUsersJsonFile } from '../storage-paths';
 import { getSharedPool } from './pg-pool';
@@ -15,6 +16,7 @@ import type { StoredUser } from './users';
 let schemaReady: Promise<void> | null = null;
 
 function readJsonArray<T>(filePath: string): T[] {
+  if (isLimitedFsRuntime()) return [];
   if (!existsSync(filePath)) return [];
   try {
     const raw = readFileSync(filePath, 'utf-8');
