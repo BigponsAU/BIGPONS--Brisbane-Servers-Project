@@ -15,7 +15,9 @@ type MapNode = {
 type MapEdge = { sourceId: string; targetId: string; strength?: number; kind?: string };
 
 let voiceMapDepthMode = false;
+let voiceMap3dMode = false;
 let voiceMapCache: { nodes: MapNode[]; edges: MapEdge[]; meta: string } | null = null;
+let voiceMapWebGl: { render: () => void; destroy: () => void } | null = null;
 
 const INDUSTRY_COLORS: Record<string, string> = {
   profile: 'rgba(249, 115, 22, 0.95)',
@@ -111,11 +113,49 @@ function renderLegend(industries: string[]): void {
     .join('');
 }
 
+function applyVoiceMapViewMode(): void {
+  const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
+  const canvas = document.getElementById('voice-map-canvas') as HTMLCanvasElement | null;
+  const stage = svg?.closest('.voice-map-stage');
+  stage?.classList.toggle('voice-map-stage--depth', voiceMapDepthMode && !voiceMap3dMode);
+  if (svg) {
+    if (voiceMap3dMode) svg.setAttribute('hidden', '');
+    else svg.removeAttribute('hidden');
+  }
+  if (canvas) {
+    if (voiceMap3dMode) canvas.removeAttribute('hidden');
+    else canvas.setAttribute('hidden', '');
+  }
+}
+
+function destroyVoiceMapWebGl(): void {
+  if (voiceMapWebGl) {
+    voiceMapWebGl.destroy();
+    voiceMapWebGl = null;
+  }
+}
+
+async function renderVoiceMap3d(nodes: MapNode[], edges: MapEdge[]): Promise<void> {
+  const canvas = document.getElementById('voice-map-canvas') as HTMLCanvasElement | null;
+  if (!canvas) return;
+  destroyVoiceMapWebGl();
+  try {
+    const { mountVoiceMapWebGl } = await import('./voice-map-webgl');
+    voiceMapWebGl = mountVoiceMapWebGl(canvas, nodes, edges);
+  } catch (err) {
+    const metaEl = document.getElementById('voice-map-meta');
+    if (metaEl) {
+      metaEl.textContent = `3D view unavailable: ${err instanceof Error ? err.message : 'WebGL error'}`;
+    }
+    voiceMap3dMode = false;
+    applyVoiceMapViewMode();
+  }
+}
+
 function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[], meta: string): void {
   const width = 800;
   const height = 480;
-  const stage = svg.closest('.voice-map-stage');
-  stage?.classList.toggle('voice-map-stage--depth', voiceMapDepthMode);
+  applyVoiceMapViewMode();
 
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.innerHTML = '';
@@ -234,7 +274,12 @@ export async function loadVoiceMap(): Promise<void> {
     ].filter(Boolean);
     if (stats?.industries) renderLegend(stats.industries as string[]);
     voiceMapCache = { nodes, edges, meta: metaParts.join(' · ') };
-    renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta);
+    if (voiceMap3dMode) {
+      await renderVoiceMap3d(nodes, edges);
+    } else {
+      destroyVoiceMapWebGl();
+      renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta);
+    }
   } catch {
     renderVoiceMapSvg(svg, [], [], 'Network error loading voice map.');
   }
@@ -302,6 +347,7 @@ export function bindVoiceFeaturePanels(): void {
   document.getElementById('voice-map-refresh-btn')?.addEventListener('click', () => void loadVoiceMap());
   document.getElementById('voice-map-view')?.addEventListener('change', () => void loadVoiceMap());
   document.getElementById('voice-map-view-mode')?.addEventListener('click', () => {
+    if (voiceMap3dMode) return;
     voiceMapDepthMode = !voiceMapDepthMode;
     const btn = document.getElementById('voice-map-view-mode');
     if (btn) {
@@ -311,6 +357,30 @@ export function bindVoiceFeaturePanels(): void {
     const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
     if (svg && voiceMapCache) {
       renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta);
+    }
+  });
+  document.getElementById('voice-map-3d-btn')?.addEventListener('click', () => {
+    voiceMap3dMode = !voiceMap3dMode;
+    if (voiceMap3dMode) voiceMapDepthMode = false;
+    const btn3d = document.getElementById('voice-map-3d-btn');
+    if (btn3d) {
+      btn3d.setAttribute('aria-pressed', voiceMap3dMode ? 'true' : 'false');
+      btn3d.textContent = voiceMap3dMode ? '2D view' : '3D view';
+    }
+    const depthBtn = document.getElementById('voice-map-view-mode');
+    if (depthBtn && voiceMap3dMode) {
+      depthBtn.setAttribute('aria-pressed', 'false');
+      depthBtn.textContent = 'Depth view';
+    }
+    applyVoiceMapViewMode();
+    if (voiceMapCache) {
+      if (voiceMap3dMode) {
+        void renderVoiceMap3d(voiceMapCache.nodes, voiceMapCache.edges);
+      } else {
+        destroyVoiceMapWebGl();
+        const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
+        if (svg) renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta);
+      }
     }
   });
   document.getElementById('voice-map-bootstrap-btn')?.addEventListener('click', () => void bootstrapVoiceCorpus());

@@ -19,6 +19,11 @@ async function main(): Promise<void> {
     result.caseStudies.totalCaseStudies,
     `(added ${result.caseStudies.added}, updated ${result.caseStudies.updated})`
   );
+  console.log(
+    'Topic guides in corpus:',
+    result.topicGuides.totalGuides,
+    `(added ${result.topicGuides.added}, updated ${result.topicGuides.updated})`
+  );
   console.log('Indexed:', result.indexed, '| Failed:', result.indexFailed, '| Skipped:', result.indexSkipped);
   console.log('Semantic index:', result.chunkStats.chunkCount, 'chunks across', result.chunkStats.resourceIds, 'resources');
   console.log('\nDone.');

@@ -10,6 +10,7 @@ import { loadResources, saveResources, type Resource } from './resources-api';
 import { resourcesForSiteVoiceCorpus } from './resource-voice-profile';
 import { runIndexPipeline } from './semantic/pipeline';
 import { syncCaseStudiesToResources } from './case-study-corpus';
+import { syncTopicGuidesToResources } from './topic-guide-corpus';
 
 export const BRISBANE_PROFILE_NAME = 'Brisbane';
 export const BRISBANE_PROFILE_TAG = 'brisbane-user-default';
@@ -70,8 +71,9 @@ export async function ensureBrisbaneProfile(
 ): Promise<EnsureBrisbaneProfileResult> {
   let allResources = resources;
   if (!allResources) {
-    const sync = await syncCaseStudiesToResources();
-    allResources = sync.resources;
+    const caseSync = await syncCaseStudiesToResources();
+    const guideSync = await syncTopicGuidesToResources(caseSync.resources);
+    allResources = guideSync.resources;
   }
   const corpus = resourcesForSiteVoiceCorpus(allResources);
 
@@ -138,6 +140,7 @@ export async function ensureBrisbaneProfile(
 export interface BootstrapVoiceCorpusResult {
   brisbane: EnsureBrisbaneProfileResult;
   caseStudies: { added: number; updated: number; totalCaseStudies: number };
+  topicGuides: { added: number; updated: number; totalGuides: number };
   indexed: number;
   indexFailed: number;
   indexSkipped: number;
@@ -152,7 +155,8 @@ export async function bootstrapVoiceCorpus(
   profileBuilder: ProfileBuilder
 ): Promise<BootstrapVoiceCorpusResult> {
   const caseStudySync = await syncCaseStudiesToResources();
-  let resources = caseStudySync.resources;
+  const topicGuideSync = await syncTopicGuidesToResources(caseStudySync.resources);
+  let resources = topicGuideSync.resources;
   const toIndex = resourcesForVoiceMapIndex(resources);
   let indexed = 0;
   let indexFailed = 0;
@@ -186,6 +190,11 @@ export async function bootstrapVoiceCorpus(
       added: caseStudySync.added,
       updated: caseStudySync.updated,
       totalCaseStudies: caseStudySync.totalCaseStudies,
+    },
+    topicGuides: {
+      added: topicGuideSync.added,
+      updated: topicGuideSync.updated,
+      totalGuides: topicGuideSync.totalGuides,
     },
     indexed,
     indexFailed,

@@ -71,9 +71,16 @@ export function buildHostingEnvChecklist(): HostingEnvItem[] {
     },
     {
       key: 'CLOUDFLARE_PAGES_DEPLOY_HOOK_URL',
-      required: false,
+      required: true,
       configured: has('CLOUDFLARE_PAGES_DEPLOY_HOOK_URL'),
-      notes: 'Rebuild static site when resources publish (SEO).',
+      notes: 'Rebuild static site when resources publish (SEO). POST to Pages deploy_hooks URL.',
+      setOn: 'api',
+    },
+    {
+      key: 'CLOUDFLARE_API_TOKEN',
+      required: true,
+      configured: has('CLOUDFLARE_API_TOKEN'),
+      notes: 'CDN cache purge on publish (zone cache). Pages deploy uses hook URL only.',
       setOn: 'api',
     },
     {

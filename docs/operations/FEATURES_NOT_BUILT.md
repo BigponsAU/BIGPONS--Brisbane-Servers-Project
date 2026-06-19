@@ -1,6 +1,6 @@
 # Features intentionally not built (yet)
 
-**Last updated:** 2026-06-18
+**Last updated:** 2026-06-19
 
 This document records product and platform capabilities that are **deliberately out of scope** for the current production line, with reasoning. UI copy that mentions these items (e.g. Admin Ops cards) is informational — not a bug.
 
@@ -13,7 +13,7 @@ This document records product and platform capabilities that are **deliberately 
 | Feature | Status | Why not built yet |
 |---------|--------|-------------------|
 | **Stripe subscription** past daily AI cap | Planned | Portal auth, corpus, and inference metering had to stabilise first. Stripe needs webhook handling, customer portal, and alignment with daily `usage-ledger` caps — hybrid billing is a separate product slice. |
-| **PayID manual top-up** + admin grant | Planned | Australian PayID has no automated webhook like Stripe. Flow is intentionally manual: user pays with reference `BS-{userId}-TOPUP`, admin verifies payment and grants units. Automating this needs ops tooling and audit trail beyond the current meter. |
+| **PayID manual top-up** + admin grant | On hold | Deferred until Stripe/billing slice is scoped; manual flow documented for later. |
 | **Automated credit purchase** | Not planned (short term) | Daily role-based caps + template fallback already prevent runaway cost on Workers AI free tier. Paid top-up is a business process, not a code gap. |
 
 **What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding on the edge worker.
@@ -24,9 +24,10 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Why not built yet |
 |---------|--------|-------------------|
-| **3D voice topology canvas** | **Partial** | Isometric “Depth view” on Voice Map (toggle). Full WebGL orbit canvas deferred — 2D + depth covers admin needs without lag. |
+| **3D voice topology canvas** | **Live** | WebGL orbit (`3D view`) plus 2D flat and isometric depth on Voice Map. |
+| **Topic guides in API corpus** | **Live** | All industry/topic guides sync to Neon on bootstrap (`topic-guide-*` resources). |
 | **Legacy voice-framework Docker dashboard** (Render port 3001) | **Retired** | Replaced by Voice Lab, Voice Map, and admin panels in `/account`. Separate cold-start host duplicated portal features. |
-| **PDF OCR** for image-only PDFs | Partial | Upload extracts text from text-based PDFs. Scanned/image PDFs return an explicit placeholder — full OCR needs a vision model or external service (cost, privacy, and latency review). |
+| **PDF OCR** for image-only PDFs | On hold | Text-based PDFs work; scanned PDFs return a placeholder — deferred unless needed. |
 | **Single automated “article → publish” pipeline** | By design | Markdown/CMS articles and API-backed resources are both valid inputs. Auto-publishing through voice analysis without human review would bypass moderation and site-section review workflows. |
 
 ---
@@ -48,8 +49,8 @@ This document records product and platform capabilities that are **deliberately 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **2D SVG map** | **Live** | Default — fast, accessible |
-| **Depth / isometric view** | **Live** | Opt-in toggle — no WebGL, no extra deps |
-| **Full WebGL 3D canvas** | Not planned | Only if corpus scale demands it; higher lag risk on low-end devices |
+| **Depth / isometric view** | **Live** | Opt-in toggle — no WebGL |
+| **WebGL 3D orbit canvas** | **Live** | `3D view` on Voice Map — drag to orbit corpus topology |
 
 ---
 
@@ -57,7 +58,7 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Why not built yet |
 |---------|--------|-------------------|
-| **Full topic guides** for construction, finance, manufacturing | Expanding | Hubs are `overview-only` in `site-completeness.ts`; retail/healthcare/hospitality/professional-services are fully published. Content production, not a platform blocker. |
+| **Topic guides** for all industry hubs | **Live** | Full guides in `src/data/topic-guides/`; synced to API corpus for voice map + Brisbane profile. |
 | **More client showcase sites** | Curated | Only verified public presences are listed (e.g. Cool Finance). Placeholder cards are avoided on purpose. |
 
 ---
@@ -76,8 +77,8 @@ This document records product and platform capabilities that are **deliberately 
 
 Suggested order after portal and edge are stable:
 
-1. **Pages deploy hook** on worker (`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`) — static SEO refresh after publish (ops, not user feature).
-2. **PayID grant admin UI** — if manual top-ups become frequent.
+1. **PayID grant admin UI** — if manual top-ups become frequent.
+2. **Stripe subscription** past daily AI cap — when billing product slice is ready.
 3. **Stripe** — if subscription revenue is prioritised over manual PayID.
 4. **PDF OCR** — if upload volume of scanned PDFs justifies model cost.
 

@@ -1116,6 +1116,22 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   transform-origin: center center;
 }
 
+.account-workspace-shell .voice-map-canvas {
+  display: block;
+  width: 100%;
+  min-height: 480px;
+  border-radius: var(--radius-md);
+  cursor: grab;
+}
+
+.account-workspace-shell .voice-map-canvas:active {
+  cursor: grabbing;
+}
+
+.account-workspace-shell .voice-map-canvas[hidden] {
+  display: none;
+}
+
 .account-workspace-shell .admin-ops-token-queue {
   display: flex;
   flex-direction: column;

@@ -24,6 +24,9 @@ import { accountWorkspace, BRISBANE_PROFILE_NAME } from '../../data/account-work
           <button type="button" id="voice-map-view-mode" class="btn btn-secondary btn-sm" aria-pressed="false" title="Toggle isometric depth view">
             Depth view
           </button>
+          <button type="button" id="voice-map-3d-btn" class="btn btn-secondary btn-sm" aria-pressed="false" title="Orbit 3D WebGL topology">
+            3D view
+          </button>
           <button type="button" id="voice-map-refresh-btn" class="btn btn-secondary btn-sm">Refresh</button>
           <button type="button" id="voice-map-bootstrap-btn" class="btn btn-primary btn-sm" data-min-role="admin">
             Reindex corpus
@@ -37,6 +40,7 @@ import { accountWorkspace, BRISBANE_PROFILE_NAME } from '../../data/account-work
         <svg id="voice-map-svg" class="voice-map-svg" viewBox="0 0 800 480" role="img" aria-label="Voice topology map">
           <text x="400" y="240" text-anchor="middle" class="voice-map-placeholder">Loading voice map…</text>
         </svg>
+        <canvas id="voice-map-canvas" class="voice-map-canvas" width="800" height="480" hidden aria-label="3D voice topology map"></canvas>
         <p id="voice-map-meta" class="voice-map-meta" aria-live="polite"></p>
       </div>
     </section>

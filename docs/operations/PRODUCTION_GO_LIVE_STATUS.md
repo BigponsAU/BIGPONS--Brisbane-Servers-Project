@@ -2,7 +2,14 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-19 — dashboard corpus sync, case studies in Neon, CI-only worker deploy
+**Last synced:** 2026-06-19 — topic guides in corpus, WebGL voice map, Pages deploy hook on worker
+
+### 2026-06-19 (b) — guides, 3D map, publish hook
+
+- **Topic guides** (22) + overviews synced to Neon API corpus — 42 indexed resources, 104 semantic chunks.
+- **WebGL 3D view** on Voice Map (`3D view` toggle, orbit drag).
+- **Pages deploy hook** set on edge worker (`CLOUDFLARE_PAGES_DEPLOY_HOOK_URL`) — static rebuild on publish.
+- PayID and PDF OCR explicitly **on hold** per product direction.
 
 ### 2026-06-19 deploy
 
@@ -43,8 +50,8 @@ Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPAC
 
 | Item | Notes |
 |------|-------|
-| **Pages deploy hook** | `CLOUDFLARE_PAGES_DEPLOY_HOOK_URL` on worker |
-| **Billing** | Stripe / PayID — not built by design yet |
+| **Pages deploy hook** | **Live** — worker secret set; fires on resource publish |
+| **Billing** | Stripe / PayID — on hold by design |
 
 ### Verification
 

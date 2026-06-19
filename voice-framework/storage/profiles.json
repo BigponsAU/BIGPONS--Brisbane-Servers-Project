@@ -5,7 +5,7 @@
       "profile": {
         "version": "1.0.0",
         "voiceName": "Brisbane",
-        "sourceDocument": "brisbane-corpus:v=1;count=20;starters=16;caseStudies=4",
+        "sourceDocument": "brisbane-corpus:v=1;count=42;starters=16;caseStudies=4",
         "characteristics": {
           "tone": {
             "formality": "casual",
@@ -23,47 +23,49 @@
             },
             "vocabulary": {
               "technicalTerms": [
+                "solutions",
+                "business",
+                "technology",
+                "systems",
                 "businesses",
                 "industry",
                 "specific",
-                "systems",
-                "implementation",
                 "compliance",
                 "management",
+                "implementation",
+                "integration",
+                "document",
                 "processes",
                 "consider",
-                "integration",
-                "services",
                 "professional",
-                "commerce",
-                "overview",
-                "analytics",
                 "workflows",
-                "solution",
-                "existing",
-                "current",
-                "requirements"
+                "reporting",
+                "services",
+                "context",
+                "analytics"
               ],
               "descriptiveTerms": [
                 "solutions",
                 "business",
                 "technology",
+                "systems",
                 "businesses",
                 "industry",
                 "specific",
-                "systems",
-                "implementation",
                 "compliance",
                 "management",
-                "processes",
-                "consider",
+                "implementation",
                 "integration",
-                "services",
-                "professional"
+                "document",
+                "before",
+                "processes",
+                "consider"
               ],
               "relationshipTerms": [
+                "creates",
                 "provides",
-                "forms"
+                "forms",
+                "uses"
               ]
             },
             "numericalPrecision": {
@@ -72,10 +74,13 @@
                 1,
                 3,
                 2,
-                4,
                 5,
+                4,
                 6,
-                8
+                8,
+                7,
+                20,
+                10
               ],
               "formatting": "integer",
               "units": [
@@ -101,10 +106,14 @@
           "domainKnowledge": {
             "mathematicalConcepts": [
               "ratio",
+              "angle",
+              "function",
               "transform"
             ],
             "designConcepts": [
               "design",
+              "layout",
+              "aesthetic",
               "style"
             ],
             "technicalConcepts": [
@@ -129,11 +138,11 @@
               "key"
             ],
             "closingPhrases": [
-              "proportional admin overhead",
-              "and audit logging",
-              "proving time saved",
-              "rules were agreed",
-              "wanted from staff"
+              "revenue products first",
+              "the common case",
+              "is your baseline",
+              "full trace vs",
+              "risk justifies it"
             ]
           },
           "semanticDensity": {
@@ -165,8 +174,9 @@
         "version": "1.0.0",
         "createdAt": "2026-04-26T02:27:57.821Z",
         "isDefault": true,
-        "updatedAt": "2026-06-19T05:32:17.753Z",
-        "description": "Brisbane site voice — 20 resources (starters, guides, articles, case studies). Every account uses this as the base profile.",
+        "updatedAt": "2026-06-19T06:09:34.028Z",
+        "description": "Brisbane site voice — 42 resources (starters, guides, articles, case studies). Every account uses this as the base profile.",
+        "sourceDocument": "brisbane-corpus:v=1;count=42;starters=16;caseStudies=4",
         "corpusLastBuiltAt": "2026-04-26T05:24:28.767Z",
         "corpusResourceIds": [
           "professional-services-client-management-systems-1769301663783",
@@ -188,14 +198,35 @@
           "case-study-retail-inventory-ecommerce",
           "case-study-gallery-semantic-search",
           "case-study-healthcare-patient-management",
-          "case-study-professional-services-database"
+          "case-study-professional-services-database",
+          "topic-guide-professional-services-client-management-systems",
+          "topic-guide-professional-services-document-automation",
+          "topic-guide-professional-services-billing-time-tracking",
+          "topic-guide-professional-services-practice-management",
+          "topic-guide-retail-inventory-pos",
+          "topic-guide-retail-e-commerce",
+          "topic-guide-retail-customer-systems",
+          "topic-guide-healthcare-patient-management",
+          "topic-guide-healthcare-compliance",
+          "topic-guide-healthcare-appointments",
+          "topic-guide-hospitality-booking",
+          "topic-guide-hospitality-pos-integration",
+          "topic-guide-hospitality-automation",
+          "topic-guide-construction-overview",
+          "topic-guide-construction-job-costing-variations",
+          "topic-guide-construction-site-compliance",
+          "topic-guide-finance-overview",
+          "topic-guide-finance-client-reporting",
+          "topic-guide-finance-workflow-compliance",
+          "topic-guide-manufacturing-overview",
+          "topic-guide-manufacturing-shop-floor-tracking",
+          "topic-guide-manufacturing-quality-traceability"
         ],
         "corpusIndexedCount": 16,
-        "corpusResourceCount": 16,
-        "sourceDocument": "brisbane-corpus:v=1;count=20;starters=16;caseStudies=4"
+        "corpusResourceCount": 16
       }
     }
   ],
-  "lastUpdated": "2026-06-19T05:32:18.274Z",
+  "lastUpdated": "2026-06-19T06:09:34.095Z",
   "defaultProfileId": "profile_1777170477821_6894gji22"
 }

@@ -37,6 +37,7 @@ if (-not $hookUrl) {
 [Environment]::SetEnvironmentVariable("CLOUDFLARE_PAGES_DEPLOY_HOOK_URL", $hookUrl, "User")
 $env:CLOUDFLARE_PAGES_DEPLOY_HOOK_URL = $hookUrl
 
+Write-Host "Hook URL format: https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/<hook_id>" -ForegroundColor DarkGray
 Write-Host "Saved CLOUDFLARE_PAGES_DEPLOY_HOOK_URL to user env." -ForegroundColor Green
 Write-Host "Sync to worker: npm run sync:edge-worker-secrets" -ForegroundColor Yellow
-Write-Host "Deploy worker: npm run deploy:edge-worker" -ForegroundColor Yellow
+Write-Host "Deploy: push to main (GitHub Actions deploy-edge-worker.yml)" -ForegroundColor Yellow
