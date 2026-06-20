@@ -3100,11 +3100,19 @@
     background: var(--portal-surface);
     border-radius: var(--border-radius);
     border: 1px solid var(--portal-border-light);
-    display: flex;
-    flex-direction: column;
-    min-width: 0; /* Prevent grid overflow */
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    min-width: 0;
+    min-height: min(560px, 60vh);
     overflow: hidden;
-    overflow: hidden;
+  }
+
+  .workspace-empty-state,
+  .resource-detail-panel {
+    grid-row: 1;
+    grid-column: 1;
+    min-height: 0;
   }
 
   .workspace-empty-state {
@@ -3116,6 +3124,10 @@
     padding: var(--space-2xl);
     text-align: center;
     color: var(--portal-text-secondary);
+  }
+
+  .workspace-empty-state.hidden {
+    display: none !important;
   }
 
   .workspace-empty-state svg {

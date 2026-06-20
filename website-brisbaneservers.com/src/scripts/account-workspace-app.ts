@@ -1971,13 +1971,10 @@ export function bootAccountWorkspaceDashboard(): void {
     const detailPanel = document.getElementById('resource-detail-panel');
     
     if (emptyState) {
-      emptyState.style.opacity = '0';
-      emptyState.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        emptyState.classList.add('hidden');
-        emptyState.style.opacity = '';
-        emptyState.style.transform = '';
-      }, 200);
+      emptyState.classList.add('hidden');
+      emptyState.style.display = 'none';
+      emptyState.style.opacity = '';
+      emptyState.style.transform = '';
     }
     
     if (detailPanel) {
@@ -2051,7 +2048,10 @@ export function bootAccountWorkspaceDashboard(): void {
     const emptyState = document.getElementById('workspace-empty-state');
     const detailPanel = document.getElementById('resource-detail-panel');
     
-    if (emptyState) emptyState.classList.remove('hidden');
+    if (emptyState) {
+      emptyState.classList.remove('hidden');
+      emptyState.style.display = '';
+    }
     if (detailPanel) detailPanel.classList.add('hidden');
     
     document.querySelectorAll('.tree-resource-item').forEach(item => {
@@ -4047,68 +4047,111 @@ export function bootAccountWorkspaceDashboard(): void {
   }
 
   function renderNeuralTree(characteristics: any): string {
-    const nodes: Array<{ id: string; label: string; level: number; parent?: string; value?: any }> = [
-      { id: 'root', label: 'Voice Profile', level: 0 }
-    ];
+    type TreeNode = { id: string; label: string; level: number; parent?: string; value?: unknown };
+    const nodes: TreeNode[] = [{ id: 'root', label: 'Voice Profile', level: 0 }];
 
-    // Level 1 nodes
     const level1Nodes = [
       { id: 'tone', label: 'Tone', parent: 'root' },
       { id: 'linguistic', label: 'Linguistic', parent: 'root' },
       { id: 'structural', label: 'Structural', parent: 'root' },
       { id: 'domain', label: 'Domain', parent: 'root' },
-      { id: 'markers', label: 'Voice Markers', parent: 'root' }
+      { id: 'markers', label: 'Voice Markers', parent: 'root' },
     ];
 
-    level1Nodes.forEach(node => {
+    level1Nodes.forEach((node) => {
       nodes.push({ ...node, level: 1 });
     });
 
-    // Level 2 nodes - Tone characteristics
     if (characteristics.tone) {
       Object.entries(characteristics.tone).forEach(([key, value]) => {
         nodes.push({ id: `tone-${key}`, label: key.replace(/_/g, ' '), level: 2, parent: 'tone', value });
       });
     }
 
-    // Level 2 nodes - Linguistic patterns
     if (characteristics.linguisticPatterns) {
-      Object.keys(characteristics.linguisticPatterns).forEach(key => {
-        nodes.push({ id: `linguistic-${key}`, label: key.replace(/([A-Z])/g, ' $1').trim(), level: 2, parent: 'linguistic' });
+      Object.keys(characteristics.linguisticPatterns).forEach((key) => {
+        nodes.push({
+          id: `linguistic-${key}`,
+          label: key.replace(/([A-Z])/g, ' $1').trim(),
+          level: 2,
+          parent: 'linguistic',
+        });
       });
     }
 
-    // Level 2 nodes - Structural patterns
     if (characteristics.structuralPatterns) {
-      Object.keys(characteristics.structuralPatterns).forEach(key => {
-        nodes.push({ id: `structural-${key}`, label: key.replace(/([A-Z])/g, ' $1').trim(), level: 2, parent: 'structural' });
+      Object.keys(characteristics.structuralPatterns).forEach((key) => {
+        nodes.push({
+          id: `structural-${key}`,
+          label: key.replace(/([A-Z])/g, ' $1').trim(),
+          level: 2,
+          parent: 'structural',
+        });
       });
     }
 
-    // Level 2 nodes - Domain knowledge
     if (characteristics.domainKnowledge) {
-      Object.keys(characteristics.domainKnowledge).forEach(key => {
+      Object.keys(characteristics.domainKnowledge).forEach((key) => {
         const items = characteristics.domainKnowledge[key] || [];
-        nodes.push({ id: `domain-${key}`, label: key.replace(/([A-Z])/g, ' $1').trim(), level: 2, parent: 'domain', value: items.length });
+        nodes.push({
+          id: `domain-${key}`,
+          label: key.replace(/([A-Z])/g, ' $1').trim(),
+          level: 2,
+          parent: 'domain',
+          value: items.length,
+        });
       });
     }
 
-    // Level 2 nodes - Voice markers
     if (characteristics.voiceMarkers) {
-      Object.keys(characteristics.voiceMarkers).forEach(key => {
+      Object.keys(characteristics.voiceMarkers).forEach((key) => {
         const items = characteristics.voiceMarkers[key] || [];
-        nodes.push({ id: `marker-${key}`, label: key.replace(/([A-Z])/g, ' $1').trim(), level: 2, parent: 'markers', value: items.length });
+        nodes.push({
+          id: `marker-${key}`,
+          label: key.replace(/([A-Z])/g, ' $1').trim(),
+          level: 2,
+          parent: 'markers',
+          value: items.length,
+        });
       });
     }
 
-    // Calculate positions with better spacing
-    const levelSpacing = 180;
-    const nodeSpacing = 100;
-    const startX = 100;
-    const startY = 80;
+    const positions = new Map<string, { x: number; y: number }>();
+    const levelSpacing = 200;
+    const leafSpacing = 52;
+    const padding = 56;
+    let leafIndex = 0;
+
+    const childrenOf = (parentId: string) =>
+      nodes.filter((n) => n.parent === parentId).sort((a, b) => a.id.localeCompare(b.id));
+
+    function layoutSubtree(nodeId: string, depth: number): number {
+      const children = childrenOf(nodeId);
+      const x = padding + depth * levelSpacing;
+
+      if (children.length === 0) {
+        const y = padding + leafIndex * leafSpacing;
+        leafIndex += 1;
+        positions.set(nodeId, { x, y });
+        return y;
+      }
+
+      const childYs = children.map((child) => layoutSubtree(child.id, depth + 1));
+      const y = childYs.reduce((sum, value) => sum + value, 0) / childYs.length;
+      positions.set(nodeId, { x, y });
+      return y;
+    }
+
+    layoutSubtree('root', 0);
+
+    const coords = [...positions.values()];
+    const minY = Math.min(...coords.map((p) => p.y)) - 40;
+    const maxY = Math.max(...coords.map((p) => p.y)) + 56;
+    const width = padding * 2 + 3 * levelSpacing;
+    const height = maxY - minY + padding;
 
     return `
-      <svg class="neural-tree-svg" viewBox="0 0 900 700">
+      <svg class="neural-tree-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" style="stop-color:var(--primary-color);stop-opacity:1" />
@@ -4122,43 +4165,43 @@ export function bootAccountWorkspaceDashboard(): void {
             </feMerge>
           </filter>
         </defs>
-        ${nodes.map(node => {
-          const x = startX + node.level * levelSpacing;
-          const sameLevelNodes = nodes.filter(n => n.level === node.level && n.id <= node.id);
-          const y = startY + (sameLevelNodes.length - 1) * nodeSpacing;
-          const parentNode = node.parent ? nodes.find(n => n.id === node.parent) : null;
-          
-          if (parentNode) {
-            const px = startX + parentNode.level * levelSpacing;
-            const parentSameLevel = nodes.filter(n => n.level === parentNode.level && n.id <= parentNode.id);
-            const py = startY + (parentSameLevel.length - 1) * nodeSpacing;
-            return `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="var(--primary-color)" stroke-width="2" opacity="0.4" class="tree-line"/>`;
-          }
-          return '';
-        }).join('')}
-        ${nodes.map(node => {
-          const x = startX + node.level * levelSpacing;
-          const sameLevelNodes = nodes.filter(n => n.level === node.level && n.id <= node.id);
-          const y = startY + (sameLevelNodes.length - 1) * nodeSpacing;
-          const radius = node.level === 0 ? 22 : node.level === 1 ? 16 : 12;
-          const fillColor = node.level === 0 ? 'url(#nodeGradient)' : 
-                           node.level === 1 ? 'var(--primary-light)' : 
-                           'var(--surface-elevated)';
-          const valueText = node.value !== undefined ? ` (${node.value})` : '';
-          
-          return `
+        ${nodes
+          .map((node) => {
+            if (!node.parent) return '';
+            const from = positions.get(node.parent);
+            const to = positions.get(node.id);
+            if (!from || !to) return '';
+            return `<line x1="${from.x}" y1="${from.y - minY + padding / 2}" x2="${to.x}" y2="${to.y - minY + padding / 2}" stroke="var(--primary-color)" stroke-width="2" opacity="0.4" class="tree-line"/>`;
+          })
+          .join('')}
+        ${nodes
+          .map((node) => {
+            const pos = positions.get(node.id);
+            if (!pos) return '';
+            const y = pos.y - minY + padding / 2;
+            const radius = node.level === 0 ? 22 : node.level === 1 ? 16 : 12;
+            const fillColor =
+              node.level === 0
+                ? 'url(#nodeGradient)'
+                : node.level === 1
+                  ? 'var(--primary-light)'
+                  : 'var(--surface-elevated)';
+            const valueText = node.value !== undefined ? ` (${node.value})` : '';
+
+            return `
             <g class="tree-node" data-node-id="${node.id}">
-              <circle cx="${x}" cy="${y}" r="${radius}" 
+              <circle cx="${pos.x}" cy="${y}" r="${radius}" 
                 fill="${fillColor}" 
                 stroke="var(--primary-color)" 
                 stroke-width="${node.level === 0 ? 3 : 2}"
                 filter="${node.level === 0 ? 'url(#glow)' : 'none'}"/>
-              <text x="${x}" y="${y + (node.level === 0 ? 45 : 35)}" text-anchor="middle" font-size="${node.level === 0 ? 14 : node.level === 1 ? 12 : 10}" fill="var(--text-primary)" font-weight="${node.level === 0 ? '600' : '400'}">
+              <text x="${pos.x}" y="${y + (node.level === 0 ? 45 : 35)}" text-anchor="middle" font-size="${node.level === 0 ? 14 : node.level === 1 ? 12 : 10}" fill="var(--text-primary)" font-weight="${node.level === 0 ? '600' : '400'}">
                 ${node.label}${valueText}
               </text>
             </g>
           `;
-        }).join('')}
+          })
+          .join('')}
       </svg>
     `;
   }
