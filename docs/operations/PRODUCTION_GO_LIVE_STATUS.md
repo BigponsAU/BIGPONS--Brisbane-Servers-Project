@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-19 — topic guides in corpus, WebGL voice map, Pages deploy hook on worker
+**Last synced:** 2026-06-22 — resources search fix, desktop nav dropdown restore
+
+### 2026-06-22 — resources search + nav dropdowns
+
+- **Resources search** — index loads before first keystroke; browse hints, industry chips, and normalized result URLs on `/resources`.
+- **Desktop nav** — mega menu chevrons restored; CSS `:hover` fallback; pointer path into panels fixed (no dead-zone gap).
+- **Deploy** — pushed `de160d6` → Cloudflare Pages production **success** (~1 min build). `npm run verify:production` **PASS**.
 
 ### 2026-06-19 (b) — guides, 3D map, publish hook
 
