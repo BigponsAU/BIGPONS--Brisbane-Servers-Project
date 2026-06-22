@@ -1,4 +1,5 @@
 ---
+import { industries } from '../data/industries';
 import { valueProposition } from '../data/value-proposition';
 
 const { searchLabel, searchPlaceholder } = valueProposition.resources;
@@ -26,5 +27,19 @@ const { searchLabel, searchPlaceholder } = valueProposition.resources;
     aria-label="Search results"
   >
     <!-- Search results will appear here -->
+  </div>
+  <p class="search-scope-hint">
+    Search industry hubs, topic guides, case studies, and published resources — or pick an industry:
+  </p>
+  <div class="search-browse-chips" aria-label="Browse by industry">
+    {industries.map((industry) => (
+      <button
+        type="button"
+        class="search-browse-chip"
+        data-search-term={industry.slug}
+      >
+        {industry.name}
+      </button>
+    ))}
   </div>
 </div>

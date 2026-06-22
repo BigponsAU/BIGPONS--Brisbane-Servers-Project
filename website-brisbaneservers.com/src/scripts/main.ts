@@ -208,13 +208,11 @@ function initializeInquireNavLinks(): void {
 }
 
 // ===== DROPDOWN MENU KEYBOARD NAVIGATION =====
+const NAV_DROPDOWN_CLOSE_DELAY_MS = 120;
+
 function initializeDropdownMenus(): void {
     const dropdownToggles = document.querySelectorAll('.nav-dropdown-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-
-    navMenu?.addEventListener('mouseleave', () => {
-        closeDesktopNavDropdowns();
-    });
+    const closeTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
 
     document.addEventListener('pointerdown', (e: PointerEvent) => {
         const target = e.target as HTMLElement;
@@ -230,11 +228,37 @@ function initializeDropdownMenus(): void {
         const parent = toggleElement.closest('.nav-dropdown') as HTMLElement;
         
         if (!dropdown || !parent) return;
+
+        const clearCloseTimer = (): void => {
+            const timer = closeTimers.get(parent);
+            if (timer) {
+                clearTimeout(timer);
+                closeTimers.delete(parent);
+            }
+        };
+
+        const scheduleClose = (): void => {
+            clearCloseTimer();
+            closeTimers.set(
+                parent,
+                setTimeout(() => {
+                    if (parent.matches(':hover') || parent.contains(document.activeElement)) return;
+                    closeDropdown(toggleElement, dropdown);
+                }, NAV_DROPDOWN_CLOSE_DELAY_MS),
+            );
+        };
         
         // Mouse events — exclusive: only one mega menu open at a time
         parent.addEventListener('mouseenter', () => {
+            clearCloseTimer();
             closeDesktopNavDropdowns(parent);
             openDropdown(toggleElement, dropdown);
+        });
+
+        parent.addEventListener('mouseleave', (e: MouseEvent) => {
+            const related = e.relatedTarget as Node | null;
+            if (related && parent.contains(related)) return;
+            scheduleClose();
         });
         
         // Keyboard events
@@ -291,7 +315,9 @@ function initializeDropdownMenus(): void {
         
         // Focus management
         parent.addEventListener('focusin', () => {
+            clearCloseTimer();
             if (parent.matches(':focus-within')) {
+                closeDesktopNavDropdowns(parent);
                 openDropdown(toggleElement, dropdown);
             }
         });
@@ -442,26 +468,37 @@ class SemanticSearch {
     
     async init(): Promise<void> {
         if (!this.searchInput || !this.searchResults) return;
-        
-        // Load search index from JSON file
-        await this.loadSearchIndex();
-        
-        // Build search index from page content (fallback)
-        this.buildSearchIndex();
-        
-        // Listen for input
+
+        // Attach listeners before async index load so the first keystroke is not lost.
         this.searchInput.addEventListener('input', (e: Event) => {
             const target = e.target as HTMLInputElement;
             this.handleSearch(target.value);
         });
-        
-        // Close results on outside click
+
+        this.searchInput.addEventListener('focus', () => {
+            const query = this.searchInput?.value.trim() ?? '';
+            if (!query) {
+                this.displayBrowseHints();
+            }
+        });
+
         document.addEventListener('click', (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (!target.closest('.search-bar')) {
                 this.searchResults?.classList.remove('active');
+                this.searchInput?.setAttribute('aria-expanded', 'false');
             }
         });
+
+        await this.loadSearchIndex();
+        this.buildSearchIndex();
+
+        const currentQuery = this.searchInput.value.trim();
+        if (currentQuery) {
+            this.handleSearch(currentQuery);
+        } else if (document.activeElement === this.searchInput) {
+            this.displayBrowseHints();
+        }
     }
     
     async loadSearchIndex(): Promise<void> {
@@ -518,9 +555,13 @@ class SemanticSearch {
         if (!this.searchInput || !this.searchResults) return;
         
         if (!query.trim()) {
-            this.searchResults.classList.remove('active');
+            if (document.activeElement === this.searchInput) {
+                this.displayBrowseHints();
+            } else {
+                this.searchResults.classList.remove('active');
+                this.searchInput.setAttribute('aria-expanded', 'false');
+            }
             this.searchInputWrapper?.classList.remove('loading');
-            this.searchInput.setAttribute('aria-expanded', 'false');
             return;
         }
         
@@ -544,7 +585,7 @@ class SemanticSearch {
         const queryWords = this.extractKeywords(query);
         const scoredResults: SearchIndexItem[] = [];
         
-        const indexToSearch = this.loadedIndex && this.loadedIndex.length > 0 ? this.loadedIndex : this.searchIndex;
+        const indexToSearch = this.getActiveIndex();
         
         indexToSearch.forEach(item => {
             let score = 0;
@@ -572,12 +613,54 @@ class SemanticSearch {
             .slice(0, 8);
     }
     
+    displayBrowseHints(): void {
+        if (!this.searchResults || !this.searchInput) return;
+
+        const index = this.getActiveIndex();
+        const hubs = index
+            .filter((item) => item.id?.endsWith('-index'))
+            .slice(0, 8);
+
+        this.searchInput.setAttribute('aria-expanded', hubs.length > 0 ? 'true' : 'false');
+        this.searchResults.classList.add('active');
+        this.searchResults.setAttribute('aria-label', 'Browse searchable content');
+
+        if (hubs.length === 0) {
+            this.searchResults.innerHTML =
+                '<div class="search-result-item search-result-hint" role="status">Loading searchable industries and guides…</div>';
+            return;
+        }
+
+        const hubItems = hubs.map((hub, index) => {
+            const url = this.normalizeSearchUrl(hub.url);
+            const industry = hub.industry
+                ? `<span class="search-result-industry">${this.escapeHtml(this.formatIndustry(hub.industry))}</span>`
+                : '';
+            return `
+                <a href="${url}" class="search-result-item" role="option" aria-selected="false" tabindex="0" id="search-hint-${index}">
+                    <div class="search-result-title">${this.escapeHtml(hub.title)}</div>
+                    ${industry}
+                    <div class="search-result-description">${this.escapeHtml((hub.description || '').substring(0, 120))}…</div>
+                </a>
+            `;
+        }).join('');
+
+        this.searchResults.innerHTML = `
+            <div class="search-result-item search-result-hint" role="presentation">
+                Browse industry hubs, topic guides, case studies, and published resources
+            </div>
+            ${hubItems}
+        `;
+    }
+
     displayResults(results: SearchIndexItem[]): void {
         if (!this.searchResults || !this.searchInput) return;
         
         if (results.length === 0) {
-            this.searchResults.innerHTML = '<div class="search-result-item" role="option" aria-selected="false">No results found</div>';
-            this.searchInput.setAttribute('aria-expanded', 'false');
+            this.searchResults.innerHTML =
+                '<div class="search-result-item search-result-empty" role="status">No results found. Try an industry name, topic, or keyword from the chips below.</div>';
+            this.searchResults.classList.add('active');
+            this.searchInput.setAttribute('aria-expanded', 'true');
             return;
         }
         
@@ -585,13 +668,17 @@ class SemanticSearch {
         this.searchResults.setAttribute('aria-label', `${results.length} search results`);
         
         this.searchResults.innerHTML = results.map((result, index) => {
-            const url = result.url || '#';
-            const industry = result.industry ? `<span class="search-result-industry">${this.formatIndustry(result.industry)}</span>` : '';
+            const url = this.normalizeSearchUrl(result.url);
+            const industry = result.industry ? `<span class="search-result-industry">${this.escapeHtml(this.formatIndustry(result.industry))}</span>` : '';
+            const description = (result.description || '').trim();
+            const descriptionHtml = description
+                ? `<div class="search-result-description">${this.escapeHtml(description.substring(0, 120))}${description.length > 120 ? '…' : ''}</div>`
+                : '';
             return `
                 <a href="${url}" class="search-result-item" role="option" aria-selected="false" tabindex="0" id="search-result-${index}">
                     <div class="search-result-title">${this.escapeHtml(result.title)}</div>
                     ${industry}
-                    <div class="search-result-description">${this.escapeHtml((result.description || '').substring(0, 120))}...</div>
+                    ${descriptionHtml}
                 </a>
             `;
         }).join('');
@@ -629,6 +716,18 @@ class SemanticSearch {
         });
     }
     
+    getActiveIndex(): SearchIndexItem[] {
+        return this.loadedIndex && this.loadedIndex.length > 0 ? this.loadedIndex : this.searchIndex;
+    }
+
+    normalizeSearchUrl(url: string | undefined): string {
+        if (!url || url === '#') return '#';
+        if (/^https?:\/\//i.test(url)) return url;
+        let path = url.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
+        if (!path.startsWith('/')) path = `/${path}`;
+        return path;
+    }
+
     escapeHtml(text: string): string {
         const div = document.createElement('div');
         div.textContent = text;
@@ -660,6 +759,22 @@ function initSemanticSearchLazy(): void {
         started = true;
         new SemanticSearch();
     };
+
+    const applyChipSearch = (term: string): void => {
+        if (!searchInput || !term) return;
+        searchInput.value = term;
+        searchInput.focus();
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    document.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            boot();
+            const term = chip.getAttribute('data-search-term') ?? '';
+            requestAnimationFrame(() => applyChipSearch(term));
+        });
+    });
 
     searchInput.addEventListener('focus', boot, { once: true });
     searchInput.addEventListener('pointerdown', boot, { once: true });
