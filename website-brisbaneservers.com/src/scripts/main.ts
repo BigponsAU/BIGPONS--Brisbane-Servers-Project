@@ -482,6 +482,17 @@ class SemanticSearch {
             }
         });
 
+        document.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                const term = chip.getAttribute('data-search-term') ?? '';
+                if (!this.searchInput || !term) return;
+                this.searchInput.value = term;
+                this.searchInput.focus();
+                this.handleSearch(term);
+            });
+        });
+
         document.addEventListener('click', (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (!target.closest('.search-bar')) {
@@ -544,9 +555,9 @@ class SemanticSearch {
     
     extractKeywords(text: string): string[] {
         const words = text.toLowerCase()
-            .replace(/[^\w\s]/g, ' ')
+            .replace(/[^\w\s-]/g, ' ')
             .split(/\s+/)
-            .filter(word => word.length > 3);
+            .filter((word) => word.length >= 2);
         
         return [...new Set(words)];
     }
@@ -582,6 +593,7 @@ class SemanticSearch {
     search(query: string): SearchIndexItem[] {
         if (!query.trim()) return [];
         
+        const normalizedQuery = query.toLowerCase().trim().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
         const queryWords = this.extractKeywords(query);
         const scoredResults: SearchIndexItem[] = [];
         
@@ -592,7 +604,13 @@ class SemanticSearch {
             const title = (item.title || '').toLowerCase();
             const description = (item.description || '').toLowerCase();
             const keywords = item.keywords || [];
-            const searchText = (title + ' ' + description + ' ' + keywords.join(' ')).toLowerCase();
+            const industry = (item.industry || '').toLowerCase();
+            const topics = (item.topics || []).join(' ').toLowerCase();
+            const searchText = (title + ' ' + description + ' ' + keywords.join(' ') + ' ' + industry + ' ' + topics).toLowerCase();
+
+            if (normalizedQuery.length >= 2 && searchText.includes(normalizedQuery)) {
+                score += 12;
+            }
             
             queryWords.forEach(queryWord => {
                 if (title.includes(queryWord)) score += 10;
@@ -748,42 +766,11 @@ class SemanticSearch {
     }
 }
 
-// Initialize search only when the user engages (avoids fetch + DOM scan on every page).
-function initSemanticSearchLazy(): void {
-    const searchInput = document.querySelector('.search-input') as HTMLInputElement | null;
-    if (!searchInput) return;
-
-    let started = false;
-    const boot = (): void => {
-        if (started) return;
-        started = true;
-        new SemanticSearch();
-    };
-
-    const applyChipSearch = (term: string): void => {
-        if (!searchInput || !term) return;
-        searchInput.value = term;
-        searchInput.focus();
-        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
-    document.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
-        chip.addEventListener('click', (e) => {
-            e.preventDefault();
-            boot();
-            const term = chip.getAttribute('data-search-term') ?? '';
-            requestAnimationFrame(() => applyChipSearch(term));
-        });
-    });
-
-    searchInput.addEventListener('focus', boot, { once: true });
-    searchInput.addEventListener('pointerdown', boot, { once: true });
-    searchInput.addEventListener('input', boot, { once: true });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     if (isAccountUtilityPage()) return;
-    initSemanticSearchLazy();
+    if (document.querySelector('.search-bar')) {
+        new SemanticSearch();
+    }
 });
 
 // ===== FORM HANDLING =====

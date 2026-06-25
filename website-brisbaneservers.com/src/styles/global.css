@@ -1954,6 +1954,11 @@ section.hero .hero-subtitle .semantic-child,
     z-index: 5;
 }
 
+.search-input-group {
+    position: relative;
+    z-index: 2;
+}
+
 .search-input-wrapper {
     position: relative;
     display: flex;

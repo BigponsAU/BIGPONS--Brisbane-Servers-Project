@@ -278,7 +278,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <SemanticText text="Leaders are expected to modernise systems, strengthen security, and evaluate AI while still running daily operations. Without grounded guidance, market noise can become costly missteps and stalled initiatives." semanticLevel="normal" isChild={true} />
         </p>
         
-        <CardGrid layout="grid" columns={3} progressive>
+        <CardGrid layout="grid" columns={3}>
           <Card
             title="Resource constraints"
             description="Running operations leaves limited time for research, feasibility checks, and vendor evaluation, so decision support must be focused."
@@ -295,10 +295,6 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
             icon="fas fa-search"
           />
         </CardGrid>
-        
-        <div class="load-more-btn">
-          <button data-expand-cards>Show More Examples</button>
-        </div>
         
         <SearchBar />
       </div>

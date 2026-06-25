@@ -6,27 +6,29 @@ const { searchLabel, searchPlaceholder } = valueProposition.resources;
 ---
 
 <div class="search-bar" role="search" aria-label={searchLabel}>
-  <div class="search-input-wrapper">
-    <i class="fas fa-search search-icon" aria-hidden="true"></i>
-    <label for="search-input" class="sr-only">{searchLabel}</label>
-    <input
-      type="text"
-      id="search-input"
-      class="search-input"
-      placeholder={searchPlaceholder}
-      aria-label={searchLabel}
-      aria-autocomplete="list"
-      aria-controls="search-results"
-      aria-expanded="false"
-    />
-  </div>
-  <div
-    class="search-results"
-    id="search-results"
-    role="listbox"
-    aria-label="Search results"
-  >
-    <!-- Search results will appear here -->
+  <div class="search-input-group">
+    <div class="search-input-wrapper">
+      <i class="fas fa-search search-icon" aria-hidden="true"></i>
+      <label for="search-input" class="sr-only">{searchLabel}</label>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder={searchPlaceholder}
+        aria-label={searchLabel}
+        aria-autocomplete="list"
+        aria-controls="search-results"
+        aria-expanded="false"
+      />
+    </div>
+    <div
+      class="search-results"
+      id="search-results"
+      role="listbox"
+      aria-label="Search results"
+    >
+      <!-- Search results will appear here -->
+    </div>
   </div>
   <p class="search-scope-hint">
     Search industry hubs, topic guides, case studies, and published resources — or pick an industry:
