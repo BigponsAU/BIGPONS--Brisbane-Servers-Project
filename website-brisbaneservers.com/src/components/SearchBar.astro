@@ -5,13 +5,16 @@ import { valueProposition } from '../data/value-proposition';
 const { searchLabel, searchPlaceholder } = valueProposition.resources;
 ---
 
-<div class="search-bar" role="search" aria-label={searchLabel}>
-  <div class="search-input-group">
+<div class="search-bar" aria-label={searchLabel}>
+  <form class="search-input-group" role="search" autocomplete="off">
     <div class="search-input-wrapper">
-      <i class="fas fa-search search-icon" aria-hidden="true"></i>
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
       <label for="search-input" class="sr-only">{searchLabel}</label>
       <input
-        type="text"
+        type="search"
         id="search-input"
         class="search-input"
         placeholder={searchPlaceholder}
@@ -19,6 +22,8 @@ const { searchLabel, searchPlaceholder } = valueProposition.resources;
         aria-autocomplete="list"
         aria-controls="search-results"
         aria-expanded="false"
+        enterkeyhint="search"
+        autocomplete="off"
       />
     </div>
     <div
@@ -29,7 +34,7 @@ const { searchLabel, searchPlaceholder } = valueProposition.resources;
     >
       <!-- Search results will appear here -->
     </div>
-  </div>
+  </form>
   <p class="search-scope-hint">
     Search industry hubs, topic guides, case studies, and published resources — or pick an industry:
   </p>

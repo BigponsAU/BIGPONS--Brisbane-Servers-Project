@@ -449,47 +449,80 @@ interface SearchIndexItem {
 }
 
 class SemanticSearch {
+    private searchRoot: HTMLElement | null;
     private searchInput: HTMLInputElement | null;
     private searchResults: HTMLElement | null;
     private searchInputWrapper: HTMLElement | null;
     private searchIndex: SearchIndexItem[];
     private loadedIndex: SearchIndexItem[] | null;
     private searchIndexPath: string;
+    private searchDebounce: ReturnType<typeof setTimeout> | null;
     
     constructor() {
-        this.searchInput = document.querySelector('.search-input') as HTMLInputElement | null;
-        this.searchResults = document.querySelector('.search-results') as HTMLElement | null;
-        this.searchInputWrapper = document.querySelector('.search-input-wrapper') as HTMLElement | null;
+        this.searchRoot = document.querySelector('.search-bar') as HTMLElement | null;
+        this.searchInput = this.searchRoot?.querySelector('.search-input') as HTMLInputElement | null;
+        this.searchResults = this.searchRoot?.querySelector('.search-results') as HTMLElement | null;
+        this.searchInputWrapper = this.searchRoot?.querySelector('.search-input-wrapper') as HTMLElement | null;
         this.searchIndex = [];
         this.loadedIndex = null;
         this.searchIndexPath = '/search-index.json';
+        this.searchDebounce = null;
         this.init();
     }
     
     async init(): Promise<void> {
-        if (!this.searchInput || !this.searchResults) return;
+        if (!this.searchInput || !this.searchResults || !this.searchRoot) return;
+
+        const searchForm = this.searchInput.closest('.search-input-group') as HTMLFormElement | null;
+        searchForm?.addEventListener('submit', (e: Event) => {
+            e.preventDefault();
+            this.runSearch(this.searchInput?.value ?? '', true);
+        });
 
         // Attach listeners before async index load so the first keystroke is not lost.
         this.searchInput.addEventListener('input', (e: Event) => {
             const target = e.target as HTMLInputElement;
-            this.handleSearch(target.value);
+            this.runSearch(target.value);
+        });
+
+        this.searchInput.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.runSearch(this.searchInput?.value ?? '', true);
+                const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
+                firstLink?.focus();
+            } else if (e.key === 'ArrowDown') {
+                if (!this.searchResults?.classList.contains('active')) {
+                    this.runSearch(this.searchInput?.value ?? '', true);
+                }
+                const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
+                if (firstLink) {
+                    e.preventDefault();
+                    firstLink.focus();
+                }
+            } else if (e.key === 'Escape') {
+                this.searchResults?.classList.remove('active');
+                this.searchInput?.setAttribute('aria-expanded', 'false');
+            }
         });
 
         this.searchInput.addEventListener('focus', () => {
             const query = this.searchInput?.value.trim() ?? '';
             if (!query) {
                 this.displayBrowseHints();
+            } else {
+                this.runSearch(query, true);
             }
         });
 
-        document.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
+        this.searchRoot.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
             chip.addEventListener('click', (e) => {
                 e.preventDefault();
                 const term = chip.getAttribute('data-search-term') ?? '';
                 if (!this.searchInput || !term) return;
                 this.searchInput.value = term;
                 this.searchInput.focus();
-                this.handleSearch(term);
+                this.runSearch(term, true);
             });
         });
 
@@ -506,7 +539,7 @@ class SemanticSearch {
 
         const currentQuery = this.searchInput.value.trim();
         if (currentQuery) {
-            this.handleSearch(currentQuery);
+            this.runSearch(currentQuery, true);
         } else if (document.activeElement === this.searchInput) {
             this.displayBrowseHints();
         }
@@ -562,32 +595,46 @@ class SemanticSearch {
         return [...new Set(words)];
     }
     
-    handleSearch(query: string): void {
+    runSearch(query: string, immediate = false): void {
         if (!this.searchInput || !this.searchResults) return;
-        
-        if (!query.trim()) {
-            if (document.activeElement === this.searchInput) {
-                this.displayBrowseHints();
-            } else {
-                this.searchResults.classList.remove('active');
-                this.searchInput.setAttribute('aria-expanded', 'false');
-            }
-            this.searchInputWrapper?.classList.remove('loading');
-            return;
+
+        if (this.searchDebounce) {
+            clearTimeout(this.searchDebounce);
+            this.searchDebounce = null;
         }
-        
-        this.searchInputWrapper?.classList.add('loading');
-        this.searchInput.setAttribute('aria-busy', 'true');
-        
-        setTimeout(() => {
+
+        const execute = (): void => {
+            if (!query.trim()) {
+                if (document.activeElement === this.searchInput) {
+                    this.displayBrowseHints();
+                } else {
+                    this.searchResults!.classList.remove('active');
+                    this.searchInput!.setAttribute('aria-expanded', 'false');
+                }
+                this.searchInputWrapper?.classList.remove('loading');
+                return;
+            }
+
+            this.searchInputWrapper?.classList.add('loading');
+            this.searchInput!.setAttribute('aria-busy', 'true');
+
             const results = this.search(query);
             this.displayResults(results);
-            if (this.searchResults) {
-                this.searchResults.classList.add('active');
-            }
+            this.searchResults!.classList.add('active');
             this.searchInputWrapper?.classList.remove('loading');
-            this.searchInput?.setAttribute('aria-busy', 'false');
-        }, 300);
+            this.searchInput!.setAttribute('aria-busy', 'false');
+        };
+
+        if (immediate) {
+            execute();
+            return;
+        }
+
+        this.searchDebounce = setTimeout(execute, 120);
+    }
+    
+    handleSearch(query: string): void {
+        this.runSearch(query);
     }
     
     search(query: string): SearchIndexItem[] {
@@ -611,6 +658,14 @@ class SemanticSearch {
             if (normalizedQuery.length >= 2 && searchText.includes(normalizedQuery)) {
                 score += 12;
             }
+
+            if (normalizedQuery.length >= 4) {
+                const prefix = normalizedQuery.slice(0, 4);
+                const tokens = searchText.split(/[\s\-_/]+/);
+                if (tokens.some((token) => token.startsWith(prefix))) {
+                    score += 9;
+                }
+            }
             
             queryWords.forEach(queryWord => {
                 if (title.includes(queryWord)) score += 10;
@@ -619,6 +674,10 @@ class SemanticSearch {
                 if (item.industry && item.industry.toLowerCase().includes(queryWord)) score += 5;
                 if (description.includes(queryWord)) score += 2;
                 if (searchText.includes(queryWord)) score += 1;
+                if (queryWord.length >= 4) {
+                    const prefix = queryWord.slice(0, 4);
+                    if (searchText.split(/[\s\-_/]+/).some((token) => token.startsWith(prefix))) score += 6;
+                }
             });
             
             if (score > 0) {
@@ -684,8 +743,13 @@ class SemanticSearch {
         
         this.searchInput.setAttribute('aria-expanded', 'true');
         this.searchResults.setAttribute('aria-label', `${results.length} search results`);
-        
-        this.searchResults.innerHTML = results.map((result, index) => {
+
+        const queryLabel = this.escapeHtml(this.searchInput.value.trim());
+        const header = queryLabel
+            ? `<div class="search-result-item search-result-hint" role="presentation">${results.length} result${results.length === 1 ? '' : 's'} for “${queryLabel}”</div>`
+            : '';
+
+        this.searchResults.innerHTML = header + results.map((result, index) => {
             const url = this.normalizeSearchUrl(result.url);
             const industry = result.industry ? `<span class="search-result-industry">${this.escapeHtml(this.formatIndustry(result.industry))}</span>` : '';
             const description = (result.description || '').trim();
