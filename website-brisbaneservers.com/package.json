@@ -34,6 +34,8 @@
     "verify:cloudflare-token-perms": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-cloudflare-token-perms.ps1",
     "configure:neon-database": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-neon-database.ps1",
     "configure:inference-workers-ai": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-inference-workers-ai.ps1",
+    "configure:inference-nvidia": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-inference-nvidia.ps1",
+    "seed:inference-meta-starter": "npx tsx scripts/seed-inference-meta-starter.ts",
     "configure:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-edge-worker.ps1",
     "configure:hyperdrive": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-hyperdrive.ps1",
     "setup:edge-production": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-edge-production.ps1",

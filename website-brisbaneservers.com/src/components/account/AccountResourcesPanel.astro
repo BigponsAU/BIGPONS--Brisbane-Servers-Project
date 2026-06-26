@@ -5,6 +5,15 @@ import { industries } from '../../data/industries';
                 <div class="admin-content">
 
                   <!-- Resources Panel Content -->
+          <section class="admin-section" data-require-role="client" aria-label="Contributor resources note">
+            <div class="card profile-guidance-card">
+              <p class="section-subtitle" style="margin: 0;">
+                As a <strong>contributor</strong>, you can browse resources and starter blocks from Overview.
+                Upload, generate, and improve require <strong>editor</strong> workspace access — use
+                <strong>Request workspace access</strong> on your account home if you need those tools.
+              </p>
+            </div>
+          </section>
           <section class="admin-section" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
             <div class="section-header">
               <div>
@@ -23,7 +32,7 @@ import { industries } from '../../data/industries';
             </div>
           </section>
           <!-- Resource Upload Section -->
-          <section class="admin-section admin-section-collapsible" aria-labelledby="upload-resource-heading">
+          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="upload-resource-heading">
             <div class="section-header">
               <h2 id="upload-resource-heading">Upload Resource</h2>
               <button type="button" class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)">
@@ -78,7 +87,7 @@ import { industries } from '../../data/industries';
           </section>
 
           <!-- Create from content (paste / type, no file) -->
-          <section class="admin-section admin-section-collapsible" aria-labelledby="create-from-content-heading">
+          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="create-from-content-heading">
             <div class="section-header">
               <h2 id="create-from-content-heading">Create from Content</h2>
               <button type="button" class="section-toggle" aria-expanded="false" aria-controls="create-from-content-content" onclick="toggleSection('create-from-content-content', this)">
@@ -127,7 +136,7 @@ import { industries } from '../../data/industries';
           </section>
 
           <!-- Resource Generation Section -->
-          <section class="admin-section admin-section-collapsible" aria-labelledby="generate-resource-heading">
+          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="generate-resource-heading">
             <div class="section-header">
               <h2 id="generate-resource-heading">Generate New Resource</h2>
               <button type="button" class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">

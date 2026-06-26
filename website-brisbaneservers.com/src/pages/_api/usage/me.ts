@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
 import { getUserUsageSummary } from '../../../lib/inference/usage-ledger';
-import { getInferenceProvider, isWorkersAIConfigured } from '../../../lib/inference/workers-ai-client';
+import { getInferenceProvider } from '../../../lib/inference/inference-provider';
+import { getNvidiaModelId, isNvidiaConfigured } from '../../../lib/inference/nvidia-ai-client';
+import { isWorkersAIConfigured } from '../../../lib/inference/workers-ai-client';
 
 /**
  * Daily AI usage summary for portal meter.
@@ -23,6 +25,8 @@ export const GET: APIRoute = async ({ request }) => {
         success: true,
         provider: getInferenceProvider(),
         workersAiConfigured: isWorkersAIConfigured(),
+        nvidiaConfigured: isNvidiaConfigured(),
+        nvidiaModel: isNvidiaConfigured() ? getNvidiaModelId() : undefined,
         daily: summary,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

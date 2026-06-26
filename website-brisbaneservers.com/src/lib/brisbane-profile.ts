@@ -11,6 +11,7 @@ import { resourcesForSiteVoiceCorpus } from './resource-voice-profile';
 import { runIndexPipeline } from './semantic/pipeline';
 import { syncCaseStudiesToResources } from './case-study-corpus';
 import { syncTopicGuidesToResources } from './topic-guide-corpus';
+import { syncInferenceMetaStarterToResources } from './inference-meta-starter-corpus';
 
 export const BRISBANE_PROFILE_NAME = 'Brisbane';
 export const BRISBANE_PROFILE_TAG = 'brisbane-user-default';
@@ -139,6 +140,7 @@ export async function ensureBrisbaneProfile(
 
 export interface BootstrapVoiceCorpusResult {
   brisbane: EnsureBrisbaneProfileResult;
+  inferenceMetaStarter: { added: boolean; updated: boolean };
   caseStudies: { added: number; updated: number; totalCaseStudies: number };
   topicGuides: { added: number; updated: number; totalGuides: number };
   indexed: number;
@@ -156,7 +158,8 @@ export async function bootstrapVoiceCorpus(
 ): Promise<BootstrapVoiceCorpusResult> {
   const caseStudySync = await syncCaseStudiesToResources();
   const topicGuideSync = await syncTopicGuidesToResources(caseStudySync.resources);
-  let resources = topicGuideSync.resources;
+  const metaStarterSync = await syncInferenceMetaStarterToResources(topicGuideSync.resources);
+  let resources = metaStarterSync.resources;
   const toIndex = resourcesForVoiceMapIndex(resources);
   let indexed = 0;
   let indexFailed = 0;
@@ -186,6 +189,10 @@ export async function bootstrapVoiceCorpus(
 
   return {
     brisbane,
+    inferenceMetaStarter: {
+      added: metaStarterSync.added,
+      updated: metaStarterSync.updated,
+    },
     caseStudies: {
       added: caseStudySync.added,
       updated: caseStudySync.updated,

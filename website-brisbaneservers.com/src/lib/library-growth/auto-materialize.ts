@@ -9,6 +9,7 @@ import { materializeGrowthProposal } from './materialize';
 import { loadGrowthProposals, updateGrowthProposalStatus } from './proposals-store';
 
 export const LIBRARY_GROWTH_SYSTEM_ACTOR = 'library-growth@brisbaneservers.com';
+export const LIBRARY_GROWTH_SYSTEM_USER_ID = 'system-library-growth';
 
 export interface AutoMaterializeResult {
   attempted: number;

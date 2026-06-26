@@ -3,6 +3,11 @@
  */
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { workspaceFetch } from '../lib/client-api';
+import {
+  isAdminMailboxKey,
+  siteMailboxes,
+  type AdminMailboxKey,
+} from '../lib/site-mailboxes';
 import { getPortalAccountContext } from './account-workspace-runtime';
 
 export interface PortalAccountContext {
@@ -27,6 +32,50 @@ function escapeHtml(value: string): string {
 
 function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
+}
+
+const ADMIN_EMAIL_PREFS_KEY = 'bs-admin-email-mailboxes';
+
+function readAdminMailboxSelect(id: string, fallback: AdminMailboxKey): AdminMailboxKey {
+  const el = document.getElementById(id) as HTMLSelectElement | null;
+  const value = el?.value ?? fallback;
+  return isAdminMailboxKey(value) ? value : fallback;
+}
+
+function restoreAdminEmailPrefs(): void {
+  try {
+    const raw = sessionStorage.getItem(ADMIN_EMAIL_PREFS_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { from?: string; to?: string };
+    const fromEl = document.getElementById('admin-email-from') as HTMLSelectElement | null;
+    const toEl = document.getElementById('admin-email-to') as HTMLSelectElement | null;
+    if (fromEl && parsed.from && isAdminMailboxKey(parsed.from)) fromEl.value = parsed.from;
+    if (toEl && parsed.to && isAdminMailboxKey(parsed.to)) toEl.value = parsed.to;
+  } catch {
+    /* ignore */
+  }
+}
+
+function persistAdminEmailPrefs(from: AdminMailboxKey, to: AdminMailboxKey): void {
+  try {
+    sessionStorage.setItem(ADMIN_EMAIL_PREFS_KEY, JSON.stringify({ from, to }));
+  } catch {
+    /* ignore */
+  }
+}
+
+function bindAdminEmailPrefs(): void {
+  restoreAdminEmailPrefs();
+  const fromEl = document.getElementById('admin-email-from');
+  const toEl = document.getElementById('admin-email-to');
+  const save = () => {
+    persistAdminEmailPrefs(
+      readAdminMailboxSelect('admin-email-from', 'support'),
+      readAdminMailboxSelect('admin-email-to', 'bigpons'),
+    );
+  };
+  fromEl?.addEventListener('change', save);
+  toEl?.addEventListener('change', save);
 }
 
 function sessionRequiredMessage(container: HTMLElement | null, message: string): void {
@@ -479,7 +528,14 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
     if (message) message.textContent = 'Sign in again to email the hosting checklist.';
     return;
   }
-  if (message) message.textContent = 'Sending checklist email…';
+
+  const fromMailbox = readAdminMailboxSelect('admin-email-from', 'support');
+  const toMailbox = readAdminMailboxSelect('admin-email-to', 'bigpons');
+  persistAdminEmailPrefs(fromMailbox, toMailbox);
+
+  if (message) {
+    message.textContent = `Sending checklist from ${siteMailboxes[fromMailbox]} to ${siteMailboxes[toMailbox]}…`;
+  }
 
   try {
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/email-hosting-checklist`, {
@@ -487,7 +543,7 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email: 'bigpons@brisbaneservers.com' }),
+      body: JSON.stringify({ fromMailbox, toMailbox }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -495,7 +551,9 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
       return;
     }
     if (message) {
-      message.textContent = `Checklist emailed to ${data.emailedTo ?? 'bigpons@brisbaneservers.com'}.`;
+      const fromLabel = data.emailedFrom ?? siteMailboxes[fromMailbox];
+      const toLabel = data.emailedTo ?? siteMailboxes[toMailbox];
+      message.textContent = `Checklist sent from ${fromLabel} to ${toLabel}.`;
     }
   } catch {
     if (message) message.textContent = 'Could not send checklist email.';
@@ -503,6 +561,8 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
 }
 
 export function bindPortalAccountExtensions(resolveCtx: () => PortalAccountContext): void {
+  bindAdminEmailPrefs();
+
   document.getElementById('passkey-login-btn')?.addEventListener('click', () => {
     const ctx = resolveCtx();
     const email = (document.getElementById('email') as HTMLInputElement | null)?.value?.trim();

@@ -41,3 +41,30 @@ export function buildInferenceUserPrompt(params: {
   ];
   return parts.filter(Boolean).join('\n');
 }
+
+export function buildImproveUserPrompt(params: {
+  title: string;
+  industry: string;
+  topic: string;
+  originalContent: string;
+  ragContextText?: string;
+}): string {
+  const parts = [
+    `Improve this resource article while preserving factual intent and structure.`,
+    `Title: ${params.title}`,
+    `Industry: ${params.industry}`,
+    `Topic: ${params.topic}`,
+  ];
+  if (params.ragContextText?.trim()) {
+    parts.push('', 'Related knowledge base context:', params.ragContextText.trim());
+  }
+  parts.push(
+    '',
+    '---',
+    'Current article:',
+    params.originalContent,
+    '',
+    'Return the full improved article (markdown body only). Add clarity, evidence-led framing, and actionable detail where supported by the context — do not invent statistics or citations.'
+  );
+  return parts.join('\n');
+}

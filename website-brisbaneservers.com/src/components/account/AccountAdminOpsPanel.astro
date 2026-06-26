@@ -28,8 +28,18 @@ import { accountWorkspace } from '../../data/account-workspace';
             <p id="admin-ops-usage-meta" class="form-hint"></p>
           </div>
           <p class="form-hint">
-            Free tier: capped generations per day. SuperGrok / Cloudflare AI Gateway calls are metered before inference runs.
+            Daily caps apply to <strong>Generate</strong> and <strong>Improve</strong> before NVIDIA NIM or Workers AI runs; template fallback is always free.
           </p>
+        </div>
+
+        <div class="card admin-ops-card" data-min-role="admin">
+          <h3 class="card-title">Inference providers</h3>
+          <p class="section-subtitle">
+            Primary: <strong>NVIDIA NIM</strong> (Developer Program, <code>NVIDIA_API_KEY</code> on edge worker).
+            Fallback: <strong>Cloudflare Workers AI</strong> via the <code>[ai]</code> binding.
+            See <code>docs/operations/INFERENCE_WORKERS_AI.md</code>.
+          </p>
+          <p class="form-hint">Configure locally: <code>npm run configure:inference-nvidia</code> then <code>npm run sync:edge-worker-secrets</code>.</p>
         </div>
 
         <div class="card admin-ops-card" data-min-role="admin">
@@ -52,23 +62,22 @@ import { accountWorkspace } from '../../data/account-workspace';
         </div>
 
         <div class="card admin-ops-card" data-min-role="admin">
-          <h3 class="card-title">Enable Workers AI</h3>
+          <h3 class="card-title">Enable inference on edge worker</h3>
           <ol class="section-subtitle" style="margin-left: 1.25rem;">
-            <li>Cloudflare dashboard → copy Account ID</li>
-            <li>API token with Workers AI permission</li>
-            <li>Worker already has Workers AI binding — test Generate in Resources panel</li>
-            <li>Deploy API: push to <code>main</code> (GitHub Actions)</li>
+            <li><code>npm run configure:inference-nvidia</code> — save <code>NVIDIA_API_KEY</code></li>
+            <li><code>npm run sync:edge-worker-secrets</code> — push secrets to Cloudflare Worker</li>
+            <li><code>npm run deploy:edge-worker</code> — deploy <code>INFERENCE_PROVIDER=nvidia</code> vars</li>
+            <li>Test <strong>Generate</strong> and <strong>Improve</strong> in Resources; check usage meter above</li>
           </ol>
         </div>
 
         <div class="card admin-ops-card" data-require-role="super-admin">
-          <h3 class="card-title">Free AI — Cloudflare Workers AI</h3>
+          <h3 class="card-title">Workers AI fallback</h3>
           <p class="section-subtitle">
-            No Grok subscription needed. ~10k neurons/day free on Cloudflare Workers AI (Llama 3.1 8B).
-            Set <code>CLOUDFLARE_ACCOUNT_ID</code> + <code>CLOUDFLARE_API_TOKEN</code> on the API host.
-            See <code>docs/operations/INFERENCE_WORKERS_AI.md</code>.
+            Edge Worker <code>[ai]</code> binding (~10k neurons/day free). Used when NVIDIA is unavailable or rate-limited.
+            No Grok subscription required.
           </p>
-          <p class="form-hint">When unset, generation uses the template engine (always free).</p>
+          <p class="form-hint">When both NVIDIA and Workers AI are unavailable, generation uses the template engine (always free).</p>
         </div>
 
         <div class="card admin-ops-card" data-require-role="super-admin">

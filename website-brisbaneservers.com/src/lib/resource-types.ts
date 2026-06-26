@@ -36,6 +36,9 @@ export interface Resource {
     voiceProfileResolution?: VoiceProfileResolutionKind;
     /** Set when created via library growth (case study proposals). */
     growthKind?: 'case_study';
+    /** Last successful inference path for this resource body. */
+    inferenceMode?: 'nvidia' | 'workers-ai' | 'template';
+    inferenceModelId?: string | null;
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;

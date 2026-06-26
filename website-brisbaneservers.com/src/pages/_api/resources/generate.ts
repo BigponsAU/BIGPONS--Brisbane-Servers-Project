@@ -17,6 +17,7 @@ import {
   resolveResourceVoiceProfile
 } from '../../../lib/resource-voice-profile';
 import { generateResourceBody } from '../../../lib/inference/resource-generate';
+import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 
 /**
  * Generate a new resource
@@ -150,13 +151,14 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.generatedAt = new Date().toISOString();
       existingResource.generatedBy = authResult.user.email;
       existingResource.version = (existingResource.version || 1) + 1;
-      existingResource.metadata = {
+      existingResource.metadata = mergeInferenceMetadata(existingResource.metadata, {
         wordCount: extrapolatedContent.split(/\s+/).length,
-        semanticLevel: 'high',
         voiceScore: voiceValidation.score || 0,
         voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution
-      };
+        voiceProfileResolution: resolved.resolution,
+        inferenceMode: generated.inferenceMode,
+        modelId: generated.modelId,
+      }) as import('../../../lib/resource-types').Resource['metadata'];
 
       await saveResources(resources);
 
@@ -208,13 +210,14 @@ export const POST: APIRoute = async ({ request }) => {
       generatedBy: authResult.user.email,
       version: 1,
       status: 'draft',
-      metadata: {
+      metadata: mergeInferenceMetadata(undefined, {
         wordCount: extrapolatedContent.split(/\s+/).length,
-        semanticLevel: 'high',
         voiceScore: voiceValidation.score || 0,
         voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution
-      }
+        voiceProfileResolution: resolved.resolution,
+        inferenceMode: generated.inferenceMode,
+        modelId: generated.modelId,
+      }) as import('../../../lib/resource-types').Resource['metadata'],
     };
 
     resources.push(resource);

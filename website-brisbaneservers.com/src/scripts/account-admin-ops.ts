@@ -10,6 +10,8 @@ interface UsageMeResponse {
   error?: string;
   provider?: string;
   workersAiConfigured?: boolean;
+  nvidiaConfigured?: boolean;
+  nvidiaModel?: string;
   daily?: { cap: number; used: number; remaining: number; bonus?: number };
 }
 
@@ -159,10 +161,18 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
 
     if (metaEl) {
       const provider = data.provider ?? 'template';
-      const workersNote = data.workersAiConfigured
-        ? 'Workers AI is configured.'
-        : 'Workers AI not configured — using template engine.';
-      metaEl.textContent = `Provider: ${provider}. ${workersNote} Resets at midnight UTC.`;
+      const parts: string[] = [`Active provider: ${provider}.`];
+      if (data.nvidiaConfigured) {
+        parts.push(`NVIDIA NIM${data.nvidiaModel ? ` (${data.nvidiaModel})` : ''} configured.`);
+      }
+      if (data.workersAiConfigured) {
+        parts.push('Workers AI fallback available.');
+      }
+      if (!data.nvidiaConfigured && !data.workersAiConfigured) {
+        parts.push('No external LLM — template engine only.');
+      }
+      parts.push('Generate and Improve share the same daily cap. Resets midnight UTC.');
+      metaEl.textContent = parts.join(' ');
     }
   } catch {
     summaryEl.textContent = 'Could not reach the API to load usage.';

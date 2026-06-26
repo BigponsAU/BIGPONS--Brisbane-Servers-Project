@@ -12,8 +12,9 @@ workers_dev = true
 [vars]
 PUBLIC_SITE_URL = "https://brisbaneservers.com"
 AUTH_EMAIL_REPLY_TO = "connect@brisbaneservers.com"
-INFERENCE_PROVIDER = "workers-ai"
+INFERENCE_PROVIDER = "nvidia"
 WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+NVIDIA_MODEL = "stepfun-ai/step-3.7-flash"
 
 [ai]
 binding = "AI"
@@ -27,7 +28,7 @@ binding = "HYPERDRIVE"
 id = "10f7ed61ff194130946a299a4aaf38e1"
 
 # Secrets (wrangler secret put): RESEND_API_KEY, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
-# Optional: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, CRON_SECRET, AUTH_EMAIL_FROM
+# Optional: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, CRON_SECRET, AUTH_EMAIL_FROM, NVIDIA_API_KEY
 
 [alias]
 "@voice-framework" = "../../../voice-framework"

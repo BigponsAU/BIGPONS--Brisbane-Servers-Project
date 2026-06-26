@@ -21,6 +21,11 @@ import {
 } from './case-study-drafts';
 import { getGrowthMaterializeBlockReason } from './dedup';
 import type { GrowthProposal } from './types';
+import { generateResourceBody } from '~/lib/inference/resource-generate';
+import { mergeInferenceMetadata } from '~/lib/inference/inference-metadata';
+import {
+  LIBRARY_GROWTH_SYSTEM_USER_ID,
+} from './auto-materialize';
 
 export interface MaterializeResult {
   resource: Resource;
@@ -72,21 +77,22 @@ export async function materializeGrowthProposal(
     ? `Knowledge base context:\n${rag.contextText}\n\n---\n${seedPrefix} Topic: ${proposal.topic}. Industry: ${proposal.industry}. ${proposal.rationale}`
     : `${seedPrefix} Topic: ${proposal.topic}. Industry: ${proposal.industry}.`;
 
-  const generatedContent = textGenerator.generateText(seedText, {
-    length: 'long',
-    includeExamples: true,
-    includeStructure: true,
-    style: 'descriptive',
+  const generated = await generateResourceBody({
+    seedText,
+    industry: proposal.industry,
+    topic: proposal.topic,
+    title: proposal.title,
+    userId: LIBRARY_GROWTH_SYSTEM_USER_ID,
+    userRole: 'admin',
+    resolved,
+    textGenerator,
+    extrapolator,
+    voiceMatcher,
+    reason: 'inference_generate',
   });
 
-  const body = extrapolator.extrapolate(generatedContent, {
-    expansionLevel: 'moderate',
-    addExamples: true,
-    addDetails: true,
-  });
-
-  const voiceValidation = voiceMatcher.validateVoice(body);
-  const voiceScore = voiceValidation.score ?? 0;
+  const body = generated.content;
+  const voiceScore = generated.voiceScore;
 
   const description = generateResourceCatalogDescription({
     voiceProfile: resolved.profile,
@@ -115,13 +121,14 @@ export async function materializeGrowthProposal(
     existing.generatedBy = actorEmail;
     existing.version = (existing.version ?? 1) + 1;
     existing.status = shouldPublish ? 'published' : existing.status === 'published' ? 'published' : 'draft';
-    existing.metadata = {
+    existing.metadata = mergeInferenceMetadata(existing.metadata, {
       wordCount: body.split(/\s+/).length,
-      semanticLevel: 'high',
       voiceScore,
       voiceProfileId: resolved.voiceProfileId,
       voiceProfileResolution: resolved.resolution,
-    };
+      inferenceMode: generated.inferenceMode,
+      modelId: generated.modelId,
+    }) as Resource['metadata'];
     resource = existing;
   } else {
     resource = {
@@ -135,14 +142,15 @@ export async function materializeGrowthProposal(
       generatedBy: actorEmail,
       version: 1,
       status: shouldPublish ? 'published' : 'draft',
-      metadata: {
+      metadata: mergeInferenceMetadata(undefined, {
         wordCount: body.split(/\s+/).length,
-        semanticLevel: 'high',
         voiceScore,
         voiceProfileId: resolved.voiceProfileId,
         voiceProfileResolution: resolved.resolution,
-        ...(proposal.kind === 'case_study' ? { growthKind: 'case_study' as const } : {}),
-      },
+        inferenceMode: generated.inferenceMode,
+        modelId: generated.modelId,
+        growthKind: proposal.kind === 'case_study' ? 'case_study' : undefined,
+      }) as Resource['metadata'],
     };
     resources.push(resource);
   }

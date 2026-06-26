@@ -17,6 +17,8 @@ export interface WorkerEnv {
   CLOUDFLARE_API_TOKEN?: string;
   INFERENCE_PROVIDER?: string;
   WORKERS_AI_MODEL?: string;
+  NVIDIA_API_KEY?: string;
+  NVIDIA_MODEL?: string;
   CONTACT_QUEUE?: Queue;
   HYPERDRIVE?: HyperdriveBinding;
   AI?: Ai;

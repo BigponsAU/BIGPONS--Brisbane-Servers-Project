@@ -14,9 +14,9 @@ import {
   unitsForGenerate,
   type UsageReason,
 } from './usage-ledger';
-import { completeWithWorkersAI, getInferenceProvider } from './workers-ai-client';
+import { completeInference, getInferenceProvider } from './inference-provider';
 
-export type InferenceMode = 'workers-ai' | 'template';
+export type InferenceMode = 'nvidia' | 'workers-ai' | 'template';
 
 export interface GenerateBodyParams {
   seedText: string;
@@ -64,7 +64,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
   const provider = getInferenceProvider();
   const reason = params.reason ?? 'inference_generate';
 
-  if (provider === 'workers-ai') {
+  if (provider === 'nvidia' || provider === 'workers-ai') {
     const estimatedUnits = unitsForGenerate(params.seedText.length + 2000);
     const cap = await checkUsageCap(params.userId, params.userRole, estimatedUnits);
     if (!cap.ok) {
@@ -81,7 +81,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
           title: params.title,
           userBrief: params.userBrief,
         });
-        const ai = await completeWithWorkersAI({ system, user, maxTokens: 1800 });
+        const ai = await completeInference({ system, user, maxTokens: 1800 });
         const validation = params.voiceMatcher.validateVoice(ai.text);
         const score = validation.score ?? 0;
 
@@ -94,7 +94,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
           });
           return {
             content: ai.text,
-            inferenceMode: 'workers-ai',
+            inferenceMode: ai.provider,
             modelId: ai.modelId,
             voiceScore: score,
             voiceValid: validation.isValid ?? score >= 0.6,
@@ -102,7 +102,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
         }
         console.warn(`[inference] voice score ${score} below threshold; template fallback`);
       } catch (err) {
-        console.warn('[inference] Workers AI failed; template fallback', err);
+        console.warn(`[inference] ${provider} failed; template fallback`, err);
       }
     }
   }

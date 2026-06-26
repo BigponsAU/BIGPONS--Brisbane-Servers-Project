@@ -15,6 +15,10 @@ async function main(): Promise<void> {
   console.log('  Created:', result.brisbane.created);
   console.log('  Corpus resources:', result.brisbane.corpusCount);
   console.log(
+    'Inference meta starter:',
+    result.inferenceMetaStarter.added ? 'added' : result.inferenceMetaStarter.updated ? 'updated' : 'unchanged'
+  );
+  console.log(
     'Case studies in corpus:',
     result.caseStudies.totalCaseStudies,
     `(added ${result.caseStudies.added}, updated ${result.caseStudies.updated})`

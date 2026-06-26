@@ -7,6 +7,9 @@ import {
   type ProfileData,
 } from '../../../lib/profiles-api';
 import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
+import { computeProfileCardStats } from '../../../lib/profile-stats';
+import { loadResources } from '../../../lib/resources-api';
+import { syncInferenceMetaStarterToResources } from '../../../lib/inference-meta-starter-corpus';
 
 /**
  * Get all voice profiles
@@ -35,7 +38,12 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     console.log('[API] GET /api/profiles - Loading profiles');
 
+    await syncInferenceMetaStarterToResources().catch((err) => {
+      console.warn('[API] GET /api/profiles - inference meta starter sync skipped:', err);
+    });
+
     let profilesData = await loadProfilesData();
+    const resources = await loadResources();
 
     const storedMetas = profilesData.profiles.map((p) => p.metadata);
     if (!findBrisbaneProfileMeta(storedMetas)) {
@@ -57,21 +65,37 @@ export const GET: APIRoute = async ({ request }) => {
     let profiles: any[] = [];
     
     if (profilesData.profiles.length > 0) {
-      profiles = profilesData.profiles.map((p: ProfileData) => ({
-        id: p.metadata.id,
-        name: p.metadata.name,
-        description: p.metadata.description,
-        version: p.metadata.version,
-        tags: p.metadata.tags || [],
-        isDefault: p.metadata.isDefault || profilesData.defaultProfileId === p.metadata.id,
-        archived: p.metadata.archived || false,
-        createdAt: p.metadata.createdAt,
-        updatedAt: p.metadata.updatedAt,
-        sourceDocument: p.metadata.sourceDocument,
-        corpusResourceIds: p.metadata.corpusResourceIds,
-        voiceName: p.profile?.voiceName,
-        characteristics: p.profile?.characteristics
-      }));
+      profiles = profilesData.profiles.map((p: ProfileData) => {
+        const base = {
+          id: p.metadata.id,
+          name: p.metadata.name,
+          description: p.metadata.description,
+          version: p.metadata.version,
+          tags: p.metadata.tags || [],
+          isDefault: p.metadata.isDefault || profilesData.defaultProfileId === p.metadata.id,
+          archived: p.metadata.archived || false,
+          createdAt: p.metadata.createdAt,
+          updatedAt: p.metadata.updatedAt,
+          sourceDocument: p.metadata.sourceDocument,
+          corpusResourceIds: p.metadata.corpusResourceIds,
+          corpusResourceCount: p.metadata.corpusResourceCount,
+          corpusIndexedCount: p.metadata.corpusIndexedCount,
+          voiceName: p.profile?.voiceName,
+          characteristics: p.profile?.characteristics,
+        };
+        return {
+          ...base,
+          stats: computeProfileCardStats(
+            {
+              id: p.metadata.id,
+              corpusResourceIds: p.metadata.corpusResourceIds,
+              corpusResourceCount: p.metadata.corpusResourceCount,
+              corpusIndexedCount: p.metadata.corpusIndexedCount,
+            },
+            resources
+          ),
+        };
+      });
     }
     
     const hasStoredDefault = Boolean(profilesData.defaultProfileId);
@@ -80,7 +104,7 @@ export const GET: APIRoute = async ({ request }) => {
       (p) => p.id === 'default' || p.voiceName === defaultProfile.voiceName,
     );
     if (!defaultExists) {
-      profiles.unshift({
+      const bundledBase = {
         id: 'default',
         name: (defaultProfile.voiceName as string) || 'Default Voice Profile',
         description: 'Bundled fallback from voice-profile.json (used when no storage default matches).',
@@ -92,6 +116,10 @@ export const GET: APIRoute = async ({ request }) => {
         sourceDocument: defaultProfile.sourceDocument,
         voiceName: defaultProfile.voiceName,
         characteristics: defaultProfile.characteristics,
+      };
+      profiles.unshift({
+        ...bundledBase,
+        stats: computeProfileCardStats({ id: 'default' }, resources),
       });
     }
 

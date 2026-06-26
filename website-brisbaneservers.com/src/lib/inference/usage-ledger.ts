@@ -11,7 +11,10 @@ export function getUsageLedgerFile(): string {
   return path.join(voiceFrameworkStorageDir(), 'usage-ledger.json');
 }
 
-export type UsageReason = 'inference_generate' | 'inference_improve';
+export type UsageReason =
+  | 'inference_generate'
+  | 'inference_improve'
+  | 'inference_process';
 
 export interface UsageLedgerEntry {
   id: string;

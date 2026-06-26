@@ -15,6 +15,8 @@ import {
 } from '../../../lib/resource-voice-profile';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { validateResourceSourceText } from '../../../lib/resource-submission-guard';
+import { enhanceIngestedContent } from '../../../lib/inference/resource-ingest-inference';
+import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 
 function classifyUploadedFile(
   file: File,
@@ -136,28 +138,37 @@ export const POST: APIRoute = async ({ request }) => {
       issues: string[];
       strengths: string[];
     } = { score: 0, isValid: false, issues: [], strengths: [] };
+    let inferencePayload: { mode: string; modelId: string | null } | undefined;
 
     if (autoProcess) {
-      const { TextGenerator, VoiceMatcher, Extrapolator } = await import('@voice-framework');
-      const textGenerator = new TextGenerator(resolved.profile);
+      const { extrapolator } = await getVoiceFramework();
+      const { VoiceMatcher } = await import('@voice-framework');
       const voiceMatcher = new VoiceMatcher(resolved.profile);
-      const extrapolator = new Extrapolator(resolved.profile);
 
-      const seedText = `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
-      const generatedContent = textGenerator.generateText(seedText, {
-        length: 'long',
-        includeExamples: true,
-        includeStructure: true,
-        style: 'descriptive'
+      const enhanced = await enhanceIngestedContent({
+        content,
+        title: resourceTitle,
+        industry,
+        topic,
+        userId: authResult.user.id,
+        userRole: authResult.user.role,
+        resolved,
+        extrapolator,
+        voiceMatcher,
       });
 
-      processedContent = extrapolator.extrapolate(content + '\n\n' + generatedContent, {
-        expansionLevel: 'moderate',
-        addExamples: true,
-        addDetails: true
-      });
-
+      processedContent = enhanced.content;
       voiceValidation = voiceMatcher.validateVoice(processedContent);
+      voiceValidation = {
+        score: voiceValidation.score ?? enhanced.voiceScore,
+        isValid: voiceValidation.isValid ?? enhanced.voiceValid,
+        issues: voiceValidation.issues || [],
+        strengths: voiceValidation.strengths || [],
+      };
+      inferencePayload = {
+        mode: enhanced.inferenceMode,
+        modelId: enhanced.modelId ?? null,
+      };
     }
 
     const description = generateResourceCatalogDescription({
@@ -189,13 +200,18 @@ export const POST: APIRoute = async ({ request }) => {
       if (autoPublish) {
         existingResource.status = 'published';
       }
-      existingResource.metadata = {
+      existingResource.metadata = mergeInferenceMetadata(existingResource.metadata, {
         wordCount: processedContent.split(/\s+/).length,
-        semanticLevel: 'high',
         voiceScore: voiceValidation.score || 0,
         voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution
-      };
+        voiceProfileResolution: resolved.resolution,
+        ...(inferencePayload
+          ? {
+              inferenceMode: inferencePayload.mode as 'nvidia' | 'workers-ai' | 'template',
+              modelId: inferencePayload.modelId ?? undefined,
+            }
+          : {}),
+      }) as Resource['metadata'];
       existingResource.processingStatus = classified.processingStatus;
       existingResource.sourceRef = {
         kind: 'upload',
@@ -226,6 +242,7 @@ export const POST: APIRoute = async ({ request }) => {
             profileId: resolved.voiceProfileId ?? null
           },
           voiceValidation,
+          inference: inferencePayload,
           success: true,
           processed: autoProcess,
           updated: true,
@@ -256,13 +273,18 @@ export const POST: APIRoute = async ({ request }) => {
         filename: file.name,
         mimeType: file.type || undefined
       },
-      metadata: {
+      metadata: mergeInferenceMetadata(undefined, {
         wordCount: processedContent.split(/\s+/).length,
-        semanticLevel: 'high',
         voiceScore: voiceValidation.score || 0,
         voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution
-      }
+        voiceProfileResolution: resolved.resolution,
+        ...(inferencePayload
+          ? {
+              inferenceMode: inferencePayload.mode as 'nvidia' | 'workers-ai' | 'template',
+              modelId: inferencePayload.modelId ?? undefined,
+            }
+          : {}),
+      }) as Resource['metadata'],
     };
 
     resources.push(resource);
@@ -289,6 +311,7 @@ export const POST: APIRoute = async ({ request }) => {
             profileId: resolved.voiceProfileId ?? null
           },
           voiceValidation,
+          inference: inferencePayload,
           success: true,
           processed: autoProcess
         }),

@@ -22,8 +22,9 @@ export function bindWorkerRuntime(env: WorkerEnv): void {
   // Flat /tmp paths — Workers unenv has no fs.mkdir; /tmp already exists.
   process.env.VOICE_STORAGE_DIR = '/tmp';
   process.env.PUBLIC_SITE_URL = env.PUBLIC_SITE_URL ?? 'https://brisbaneservers.com';
-  process.env.INFERENCE_PROVIDER = env.INFERENCE_PROVIDER ?? 'workers-ai';
+  process.env.INFERENCE_PROVIDER = env.INFERENCE_PROVIDER ?? 'nvidia';
   process.env.WORKERS_AI_MODEL = env.WORKERS_AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct';
+  process.env.NVIDIA_MODEL = env.NVIDIA_MODEL ?? 'stepfun-ai/step-3.7-flash';
 
   const secretKeys = [
     'JWT_SECRET',
@@ -40,6 +41,7 @@ export function bindWorkerRuntime(env: WorkerEnv): void {
     'CLOUDFLARE_ACCOUNT_ID',
     'CLOUDFLARE_API_TOKEN',
     'CLOUDFLARE_ZONE_ID',
+    'NVIDIA_API_KEY',
   ] as const;
 
   for (const key of secretKeys) {

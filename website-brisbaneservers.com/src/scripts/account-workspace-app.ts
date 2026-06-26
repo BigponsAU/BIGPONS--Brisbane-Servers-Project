@@ -793,12 +793,6 @@ export function bootAccountWorkspaceDashboard(): void {
     grid.innerHTML = '<div class="starter-blocks-loading">Loading starter blocks...</div>';
 
     try {
-      const cachedStarterBlocks = currentResources.filter((r: any) => r.isStarterBlock === true);
-      if (cachedStarterBlocks.length) {
-        renderStarterBlocksGrid(cachedStarterBlocks);
-        return;
-      }
-
       const starterBlocks = await fetchStarterBlocksList();
       renderStarterBlocksGrid(starterBlocks);
     } catch (error) {
@@ -1056,9 +1050,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
       if (response.ok && data.success) {
           const voiceScore = data.voiceValidation?.score || 0;
-          const scoreText = voiceScore ? ` Voice Score: ${Math.round(voiceScore * 100)}%` : '';
+          const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+        const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+        const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
         const updateText = data.updated ? ' (updated existing resource)' : '';
-        const message = `Resource ${data.updated ? 'updated' : 'generated'} successfully!${updateText}${scoreText}`;
+        const message = `Resource ${data.updated ? 'updated' : 'generated'}${inferenceMode}${modelHint}.${updateText}${scoreText}`;
         
         if (statusDiv) {
           statusDiv.textContent = message;
@@ -1309,6 +1305,8 @@ export function bootAccountWorkspaceDashboard(): void {
             const voiceScore = resource.metadata?.voiceScore || 0;
             const voiceScoreClass = voiceScore >= 0.8 ? 'voice-score-high' : voiceScore >= 0.6 ? 'voice-score-medium' : 'voice-score-low';
             const voiceScoreText = voiceScore ? `${Math.round(voiceScore * 100)}%` : 'N/A';
+            const inferenceBadge = formatInferenceBadge(resource.metadata);
+            const canEdit = workspaceUser && hasWorkspaceCapability(workspaceUser, 'editor');
           
             // Safe date parsing
             let dateText = 'Unknown';
@@ -1372,6 +1370,7 @@ export function bootAccountWorkspaceDashboard(): void {
               </button>`);
             }
             
+            if (canEdit) {
             secondaryActions.push(`<button class="btn" onclick="improveResource('${escapeHtml(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -1379,6 +1378,7 @@ export function bootAccountWorkspaceDashboard(): void {
               </svg>
               Improve
             </button>`);
+            }
             
             if (resource.status !== 'archived') {
               secondaryActions.push(`<button class="btn" onclick="archiveResource('${escapeHtml(resource.id)}')">
@@ -1444,6 +1444,7 @@ export function bootAccountWorkspaceDashboard(): void {
                   ${voiceScoreText}
                 </span>
               ` : ''}
+              ${inferenceBadge}
             </div>
             <div class="resource-meta">
               <span class="resource-meta-item">
@@ -2013,6 +2014,7 @@ export function bootAccountWorkspaceDashboard(): void {
         <span><strong>Date:</strong> ${date}</span>
         ${resource.metadata?.wordCount ? `<span><strong>Words:</strong> ${resource.metadata.wordCount}</span>` : ''}
         ${resource.metadata?.voiceScore ? `<span><strong>Voice Score:</strong> ${Math.round(resource.metadata.voiceScore * 100)}%</span>` : ''}
+        ${resource.metadata?.inferenceMode ? `<span><strong>Inference:</strong> ${escapeHtml(resource.metadata.inferenceMode)}${resource.metadata.inferenceModelId ? ` (${escapeHtml(String(resource.metadata.inferenceModelId))})` : ''}</span>` : ''}
       `;
     }
     
@@ -2034,7 +2036,7 @@ export function bootAccountWorkspaceDashboard(): void {
           <button class="btn btn-secondary" onclick="previewResource('${escapeHtml(resource.id)}')">Preview</button>
           ${resource.status === 'draft' ? `<button class="btn btn-success" onclick="publishResource('${escapeHtml(resource.id)}')">Publish</button>` : ''}
           ${resource.status === 'published' ? `<button class="btn btn-warning" onclick="unpublishResource('${escapeHtml(resource.id)}')">Unpublish</button>` : ''}
-          <button class="btn btn-secondary" onclick="improveResource('${escapeHtml(resource.id)}')">Improve</button>
+          ${workspaceUser && hasWorkspaceCapability(workspaceUser, 'editor') ? `<button class="btn btn-secondary" onclick="improveResource('${escapeHtml(resource.id)}')">Improve</button>` : ''}
           ${resource.status !== 'archived' ? `<button class="btn btn-secondary" onclick="archiveResource('${escapeHtml(resource.id)}')">Archive</button>` : ''}
           <button class="btn btn-danger" onclick="deleteResource('${escapeHtml(resource.id)}')">Delete</button>
         </div>
@@ -2581,7 +2583,7 @@ export function bootAccountWorkspaceDashboard(): void {
   });
 
   (window as any).improveResource = async (id: string) => {
-    if (!confirm('Improve this resource using voice framework? This may take a moment.')) return;
+    if (!confirm('Improve this resource using voice profile + RAG + inference? This may take a moment.')) return;
     
     // Find the button and show loading state
     const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
@@ -2607,8 +2609,10 @@ export function bootAccountWorkspaceDashboard(): void {
       const data = await response.json();
       if (response.ok && data.success) {
         const voiceScore = data.voiceValidation?.score || 0;
-        const scoreText = voiceScore ? ` Voice Score: ${Math.round(voiceScore * 100)}%` : '';
-        showNotification(`Resource improved successfully!${scoreText}`, 'success');
+        const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+        const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+        const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
+        showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}`, 'success');
         console.log('[Portal] Resource improved successfully');
         setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
       } else {
@@ -2857,9 +2861,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
       if (response.ok && data.success) {
           const voiceScore = data.voiceValidation?.score || 0;
-          const scoreText = voiceScore ? ` Voice Score: ${Math.round(voiceScore * 100)}%` : '';
+          const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+        const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+        const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
         const updateText = data.updated ? ' (updated existing resource, duplicate prevented)' : '';
-        const message = `Resource ${data.updated ? 'updated' : 'uploaded'} successfully!${updateText}${scoreText}`;
+        const message = `Resource ${data.updated ? 'updated' : 'uploaded'}${inferenceMode}${modelHint}.${updateText}${scoreText}`;
         
         if (statusDiv) {
           statusDiv.textContent = message;
@@ -2963,8 +2969,10 @@ export function bootAccountWorkspaceDashboard(): void {
       const data = await response.json();
       if (response.ok && data.success) {
         const voiceScore = data.voiceValidation?.score ?? 0;
-        const scoreText = voiceScore ? ` Voice Score: ${Math.round(voiceScore * 100)}%` : '';
-        const message = `Resource created from content!${scoreText}`;
+        const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+        const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+        const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
+        const message = `Resource created from content${inferenceMode}${modelHint}.${scoreText}`;
         if (statusDiv) { statusDiv.textContent = message; statusDiv.className = 'status-message success'; }
         showNotification(message, 'success');
         form.reset();
@@ -3334,6 +3342,103 @@ export function bootAccountWorkspaceDashboard(): void {
     }
   }
 
+  function formatInferenceBadge(metadata: Record<string, unknown> | undefined): string {
+    const mode = metadata?.inferenceMode as string | undefined;
+    if (!mode) return '';
+    const model = metadata?.inferenceModelId as string | null | undefined;
+    let label = mode;
+    if (model && model !== 'voice-framework-template') {
+      const short = String(model).includes('/') ? String(model).split('/').pop() : model;
+      label = `${mode} · ${short}`;
+    }
+    return `<span class="badge badge-draft inference-badge" title="Last inference: ${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+  }
+
+  (window as any).useProfileForGenerate = function(profileId: string): void {
+    if (profileId === 'default') {
+      showNotification('Bundled default is used via Auto. Build BIGPONS or pick a saved profile.', 'info');
+      return;
+    }
+    const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+    if (sel) sel.value = profileId;
+    navigateToPanel('resources');
+    setTimeout(() => {
+      const genSection = document.getElementById('generate-resource-content');
+      const genToggle = document.querySelector('[aria-controls="generate-resource-content"]') as HTMLButtonElement | null;
+      if (genSection) genSection.style.display = '';
+      if (genToggle) genToggle.setAttribute('aria-expanded', 'true');
+      genSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showNotification('Voice profile selected for Generate.', 'success');
+    }, 200);
+  };
+
+  // Profile card rendering (shared by loadProfiles + filterProfiles)
+  function renderProfileToneChips(characteristics: Record<string, unknown> | null | undefined): string {
+    const tone = characteristics?.tone as Record<string, string> | undefined;
+    if (!tone) {
+      return '<span class="profile-tone-chip profile-tone-chip--muted">Tone pending</span>';
+    }
+    const chips: string[] = [];
+    if (tone.formality) chips.push(`formality: ${tone.formality}`);
+    if (tone.technicality) chips.push(`technicality: ${tone.technicality}`);
+    if (tone.precision) chips.push(`precision: ${tone.precision}`);
+    if (chips.length === 0) {
+      return '<span class="profile-tone-chip profile-tone-chip--muted">Tone pending</span>';
+    }
+    return chips.map((c) => `<span class="profile-tone-chip">${escapeHtml(c)}</span>`).join('');
+  }
+
+  function renderProfileCardV1(profile: Record<string, unknown>): string {
+    const isDefault = Boolean(profile.isDefault);
+    const isArchived = Boolean(profile.archived);
+    const cardClass =
+      'profile-card-v1' + (isArchived ? ' archived' : '') + (isDefault ? ' active' : '');
+    const badgeClass = isDefault ? 'badge-published' : isArchived ? 'badge-archived' : 'badge-draft';
+    const badgeText = isDefault ? 'Default' : isArchived ? 'Archived' : 'Active';
+    const stats = (profile.stats as Record<string, unknown>) || {};
+    const avgScore =
+      typeof stats.avgVoiceScore === 'number'
+        ? `${Math.round(stats.avgVoiceScore * 100)}%`
+        : '—';
+    const corpusCount =
+      stats.corpusResourceCount ??
+      (Array.isArray(profile.corpusResourceIds) ? profile.corpusResourceIds.length : 0);
+    const linkedCount = stats.linkedResourceCount ?? 0;
+    const desc = typeof profile.description === 'string' ? profile.description : '';
+    const pid = escapeHtml(String(profile.id));
+
+    return (
+      `<article class="${cardClass}" data-profile-id="${pid}" data-archived="${isArchived}" role="button" tabindex="0" aria-label="Voice profile ${escapeHtml(String(profile.name || 'Unnamed'))}" onclick="selectProfile('${pid}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProfile('${pid}');}">` +
+      `<div class="profile-card-v1__header">` +
+      `<div><h3 class="profile-card-v1__title">${escapeHtml(String(profile.name || 'Unnamed Profile'))}</h3>` +
+      `<p class="profile-card-v1__voice">${escapeHtml(String(profile.voiceName || 'Voice'))}</p></div>` +
+      `<span class="profile-item-badge ${badgeClass}">${badgeText}</span>` +
+      `</div>` +
+      (desc ? `<p class="profile-card-v1__desc">${escapeHtml(desc)}</p>` : '') +
+      `<div class="profile-card-v1__tone">${renderProfileToneChips(profile.characteristics as Record<string, unknown>)}</div>` +
+      `<div class="profile-card-v1__stats">` +
+      `<div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Corpus</span><span class="profile-card-v1__stat-value">${corpusCount}</span></div>` +
+      `<div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Linked</span><span class="profile-card-v1__stat-value">${linkedCount}</span></div>` +
+      `<div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Avg voice</span><span class="profile-card-v1__stat-value">${avgScore}</span></div>` +
+      `</div>` +
+      `<div class="profile-card-v1__footer">` +
+      (profile.id !== 'default' && !isDefault
+        ? `<button type="button" class="btn btn-success btn-sm" onclick="event.stopPropagation(); setDefaultProfile('${pid}', true)">Set default</button> `
+        : '') +
+      `<button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation(); useProfileForGenerate('${pid}')">Generate with</button> ` +
+      `<button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); viewProfile('${pid}')">View details</button>` +
+      `</div>` +
+      `</article>`
+    );
+  }
+
+  function renderProfileCardsGrid(profiles: Record<string, unknown>[]): void {
+    const listDiv = document.getElementById('profiles-list');
+    if (!listDiv) return;
+    listDiv.className = 'profiles-list profile-cards-grid';
+    listDiv.innerHTML = profiles.map((profile) => renderProfileCardV1(profile)).join('');
+  }
+
   // Load Voice Profiles
   async function loadProfiles(): Promise<void> {
     const listDiv = document.getElementById('profiles-list');
@@ -3435,144 +3540,20 @@ export function bootAccountWorkspaceDashboard(): void {
         return;
       }
 
-      // Store profiles globally for filtering (already set above)
-      
-      // Helper function to render profile ring preview SVG string
-      function renderProfileRingPreviewSVG(profileId: string, characteristics: any): string {
-        if (!characteristics || !characteristics.tone) {
-          return '<svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>';
-        }
-        
-        const tone = characteristics.tone;
-        const radius = 25;
-        const center = 30;
-        const formalValue = tone.formal !== undefined ? tone.formal : 0;
-        const dashArray = (formalValue / 100) * 2 * Math.PI * radius;
-        const fullCircle = 2 * Math.PI * radius;
-        const circleElement = formalValue > 0 ? '<circle cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="var(--portal-primary)" stroke-width="3" stroke-dasharray="' + dashArray + ' ' + fullCircle + '" transform="rotate(-90 ' + center + ' ' + center + ')" opacity="0.6"/>' : '';
-        
-        return '<svg width="60" height="60" viewBox="0 0 60 60">' +
-          '<circle cx="' + center + '" cy="' + center + '" r="' + radius + '" fill="none" stroke="var(--portal-border-light)" stroke-width="2"/>' +
-          circleElement +
-          '</svg>';
-      }
-      
-      // Use helm layout for 2-12 profiles, grid for more
-      const useHelmLayout = profiles.length >= 2 && profiles.length <= 12;
-      
-      if (useHelmLayout) {
-        // Calculate radial positions
-        const centerX = 50; // percentage
-        const centerY = 50; // percentage
-        const radius = 35; // percentage from center
-        const angleStep = (2 * Math.PI) / profiles.length;
-        
-        let html = '<div class="profiles-helm">';
-        html += `<div class="profiles-helm-center">
-          <div class="profiles-helm-center-label">Profiles</div>
-          <div class="profiles-helm-center-count">${profiles.length}</div>
-        </div>`;
-        
-        profiles.forEach((profile: any, index: number) => {
-          const angle = index * angleStep - Math.PI / 2; // Start from top
-          const x = centerX + radius * Math.cos(angle);
-          const y = centerY + radius * Math.sin(angle);
-          
-          const isDefault = profile.isDefault;
-          const isArchived = profile.archived;
-          const profileClass = 'profile-item' + (isArchived ? ' archived' : '') + (isDefault ? ' active' : '');
-          const badgeClass = isDefault ? 'badge-published' : isArchived ? 'badge-archived' : 'badge-draft';
-          const badgeText = isDefault ? 'Default' : isArchived ? 'Archived' : 'Active';
-          const profileCharacteristics = profile.characteristics ? profile.characteristics : null;
-          const previewSVG = renderProfileRingPreviewSVG(profile.id, profileCharacteristics);
-          
-          html += '<div class="' + profileClass + '" ' +
-                 'data-profile-id="' + escapeHtml(profile.id) + '" ' +
-                 'data-archived="' + (isArchived || false) + '" ' +
-                 'style="left: ' + x + '%; top: ' + y + '%; transform: translate(-50%, -50%);" ' +
-                 'onclick="selectProfile(\'' + escapeHtml(profile.id) + '\')">' +
-                 '<div class="profile-item-content">' +
-                 '<div class="profile-item-preview">' +
-                 previewSVG +
-                 '</div>' +
-                 '<div class="profile-item-name">' + escapeHtml(profile.name || 'Unnamed Profile') + '</div>' +
-                 '<span class="profile-item-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                 '</div>' +
-                 '</div>';
-        });
-        
-        html += '</div>';
-        listDiv.className = 'profiles-list';
-        listDiv.innerHTML = html;
-        
-        // Animate profiles in
-        setTimeout(() => {
-          listDiv.querySelectorAll('.profile-item').forEach((item: Element, index: number) => {
-            (item as HTMLElement).style.opacity = '0';
-            (item as HTMLElement).style.transform = 'scale(0.8)';
-            setTimeout(() => {
-              (item as HTMLElement).style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-              (item as HTMLElement).style.opacity = '1';
-              (item as HTMLElement).style.transform = 'scale(1)';
-            }, index * 50);
-          });
-        }, 50);
-      } else {
-        // Grid layout for many profiles
-        listDiv.className = 'profiles-list grid-layout';
-        listDiv.innerHTML = profiles.map((profile: any) => {
-          const isDefault = profile.isDefault;
-          const isArchived = profile.archived;
-          const profileClass = 'profile-item' + (isArchived ? ' archived' : '') + (isDefault ? ' active' : '');
-          const badgeClass = isDefault ? 'badge-published' : isArchived ? 'badge-archived' : 'badge-draft';
-          const badgeText = isDefault ? 'Default' : isArchived ? 'Archived' : 'Active';
-          const profileCharacteristics = profile.characteristics ? profile.characteristics : null;
-          const previewSVG = renderProfileRingPreviewSVG(profile.id, profileCharacteristics);
-          
-          return '<div class="' + profileClass + '" ' +
-                 'data-profile-id="' + escapeHtml(profile.id) + '" ' +
-                 'data-archived="' + (isArchived || false) + '" ' +
-                 'onclick="selectProfile(\'' + escapeHtml(profile.id) + '\')">' +
-                 '<div class="profile-item-content">' +
-                 '<div class="profile-item-preview">' +
-                 previewSVG +
-                 '</div>' +
-                 '<div class="profile-item-name">' + escapeHtml(profile.name || 'Unnamed Profile') + '</div>' +
-                 '<span class="profile-item-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                 '</div>' +
-                 '</div>';
-        }).join('');
-        
-        // Animate grid profiles in
-        setTimeout(() => {
-          listDiv.querySelectorAll('.profile-item').forEach((item: Element, index: number) => {
-            (item as HTMLElement).style.opacity = '0';
-            (item as HTMLElement).style.transform = 'translateY(20px)';
-            setTimeout(() => {
-              (item as HTMLElement).style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-              (item as HTMLElement).style.opacity = '1';
-              (item as HTMLElement).style.transform = 'translateY(0)';
-            }, index * 30);
-          });
-        }, 50);
-      }
-      
-      // Add selectProfile function
+      // Profile cards v1 grid
+      renderProfileCardsGrid(profiles);
+
       (window as any).selectProfile = function(profileId: string) {
-        // Remove active class from all profiles
-        document.querySelectorAll('.profile-item').forEach(item => {
+        document.querySelectorAll('.profile-card-v1, .profile-item').forEach((item) => {
           item.classList.remove('active');
         });
-        
-        // Add active class to selected profile
-        const selectedItem = document.querySelector(`[data-profile-id="${escapeHtml(profileId)}"]`);
+        const selectedItem = document.querySelector(`[data-profile-id="${CSS.escape(profileId)}"]`);
         if (selectedItem) {
           selectedItem.classList.add('active');
-          // Open profile details modal
           viewProfile(profileId);
         }
       };
-      
+
       return;
     } catch (error) {
       console.error('[Portal] Error loading profiles:', error);
@@ -4373,6 +4354,16 @@ export function bootAccountWorkspaceDashboard(): void {
             })
             .join('');
           const corpusMore = corpusIds.length > 32 ? `<li style="color: var(--text-secondary);">…and ${corpusIds.length - 32} more</li>` : '';
+          const stats = profile.stats || {};
+          const statsSection = `<div style="margin-bottom: var(--space-lg); padding: var(--space-md); background: var(--portal-surface-elevated); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
+                  <h3 style="margin-bottom: var(--space-sm);">Profile reference (read-only)</h3>
+                  <div class="profile-card-v1__stats" style="border-top: none; padding-top: 0;">
+                    <div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Corpus</span><span class="profile-card-v1__stat-value">${stats.corpusResourceCount ?? corpusIds.length ?? 0}</span></div>
+                    <div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Linked resources</span><span class="profile-card-v1__stat-value">${stats.linkedResourceCount ?? 0}</span></div>
+                    <div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Avg voice score</span><span class="profile-card-v1__stat-value">${typeof stats.avgVoiceScore === 'number' ? Math.round(stats.avgVoiceScore * 100) + '%' : '—'}</span></div>
+                  </div>
+                  <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--space-sm); margin-bottom: 0;">Pick this profile in Resources → voice profile dropdown, or set as default for Auto resolution.</p>
+                </div>`;
           const corpusSection =
             corpusIds.length > 0
               ? `<div style="margin-bottom: var(--space-lg); padding: var(--space-md); background: var(--portal-surface-elevated); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
@@ -4411,6 +4402,7 @@ export function bootAccountWorkspaceDashboard(): void {
                     <p><strong>Archived:</strong> ${profile.archived ? 'Yes' : 'No'}</p>
                   </div>
                 </div>
+                ${statsSection}
                 ${corpusSection}
               </div>
               <div class="modal-footer" style="display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center;">
@@ -4587,56 +4579,8 @@ export function bootAccountWorkspaceDashboard(): void {
       return;
     }
 
-    listDiv.innerHTML = filteredProfiles.map((profile: any) => {
-      const isDefault = profile.isDefault ? '<span class="badge badge-published">Default</span>' : '';
-      const isArchived = profile.archived ? '<span class="badge badge-archived">Archived</span>' : '';
-      const createdAt = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A';
-      const profileClass = profile.archived ? 'profile-item archived' : 'profile-item';
-      
-      return `
-        <div class="${profileClass}" data-profile-id="${escapeHtml(profile.id)}" data-archived="${profile.archived || false}">
-          <div class="profile-header">
-            <h3 class="profile-name">${escapeHtml(profile.name || 'Unnamed Profile')}</h3>
-            <div style="display: flex; gap: var(--space-xs);">
-              ${isDefault}
-              ${isArchived}
-            </div>
-          </div>
-          <div class="profile-meta">
-            <span>Version: ${escapeHtml(profile.version || 'N/A')}</span>
-            <span>Created: ${createdAt}</span>
-            ${profile.tags && profile.tags.length > 0 ? `<span>Tags: ${profile.tags.join(', ')}</span>` : ''}
-          </div>
-          ${profile.description ? `<div class="profile-description">${escapeHtml(profile.description)}</div>` : ''}
-          ${profile.characteristics ? `
-            <div class="profile-visualization-preview" style="margin: var(--space-md) 0; padding: var(--space-md); background: var(--surface-elevated); border-radius: var(--border-radius);">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
-                <div class="profile-ring-preview" data-profile-id="${escapeHtml(profile.id)}"></div>
-              </div>
-            </div>
-          ` : ''}
-          <div class="resource-actions">
-            <button class="btn btn-secondary btn-sm" onclick="viewProfile('${escapeHtml(profile.id)}')">View Details</button>
-            ${profile.id !== 'default' && !profile.isDefault ? `<button class="btn btn-success btn-sm" onclick="setDefaultProfile('${escapeHtml(profile.id)}')">Set as Default</button>` : ''}
-            ${profile.id === 'default'
-              ? ''
-              : profile.archived
-              ? `<button class="btn btn-warning btn-sm" onclick="unarchiveProfile('${escapeHtml(profile.id)}', this)">Unarchive</button>`
-              : `<button class="btn btn-secondary btn-sm" onclick="archiveProfile('${escapeHtml(profile.id)}', this)">Archive</button>`
-            }
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Re-render visualizations
-    setTimeout(() => {
-      filteredProfiles.forEach((profile: any) => {
-        if (profile.characteristics) {
-          renderProfileRingPreview(profile.id, profile.characteristics);
-        }
-      });
-    }, 100);
+    listDiv.className = 'profiles-list profile-cards-grid';
+    listDiv.innerHTML = filteredProfiles.map((profile: Record<string, unknown>) => renderProfileCardV1(profile)).join('');
   };
 
   // Set Default Profile (persists defaultProfileId + isDefault flags in voice-framework/storage/profiles.json)

@@ -10,13 +10,18 @@ import { loadResources, saveResources } from '../../../../lib/resources-api';
 import { buildRagContext } from '../../../../lib/semantic/rag';
 import { runIndexPipeline } from '../../../../lib/semantic/pipeline';
 import { isDevelopmentMode } from '../../../../utils/runtime-env';
+import {
+  generateResourceCatalogDescription,
+  resolveResourceVoiceProfile,
+} from '../../../../lib/resource-voice-profile';
+import { improveResourceBody } from '../../../../lib/inference/resource-improve';
+import { mergeInferenceMetadata } from '../../../../lib/inference/inference-metadata';
 
 /**
  * Improve/regenerate resource content
  * POST /api/resources/:id/improve
  */
 export const POST: APIRoute = async ({ params, request }) => {
-  // Check authentication
   const authResult = await requireEditor(request);
   if ('error' in authResult) {
     return new Response(
@@ -65,15 +70,18 @@ export const POST: APIRoute = async ({ params, request }) => {
       );
     }
 
-    const { extrapolator, voiceMatcher } = await getVoiceFramework();
+    const { profileManager, profileBuilder, extrapolator, voiceMatcher } = await getVoiceFramework();
+    const resolved = await resolveResourceVoiceProfile({
+      requestedProfileId: resource.metadata?.voiceProfileId,
+      profileManager,
+      profileBuilder,
+      resources,
+    });
 
     const rag = await buildRagContext(resource.content.slice(0, 1500), {
       topK: 6,
       resourceId: resource.id
     });
-    const baseForExtrapolation = rag.contextText
-      ? `${rag.contextText}\n\n---\nOriginal:\n${resource.content}`
-      : resource.content;
 
     if (isDevelopmentMode()) {
       console.log(
@@ -81,27 +89,39 @@ export const POST: APIRoute = async ({ params, request }) => {
       );
     }
 
-    // Improve content using extrapolator
-    const improvedContent = extrapolator.extrapolate(baseForExtrapolation, {
-      expansionLevel: 'moderate',
-      addExamples: true,
-      addDetails: true
+    const improved = await improveResourceBody({
+      resource,
+      ragContextText: rag.contextText,
+      userId: authResult.user.id,
+      userRole: authResult.user.role,
+      resolved,
+      extrapolator,
+      voiceMatcher,
     });
 
-    const voiceValidation = voiceMatcher.validateVoice(improvedContent);
-    
-    // Update resource
+    const voiceValidation = voiceMatcher.validateVoice(improved.content);
+    const description = generateResourceCatalogDescription({
+      voiceProfile: resolved.profile,
+      title: resource.title,
+      industry: resource.industry,
+      topicLabel: resource.topic,
+      bodyExcerpt: improved.content,
+    });
+
     const index = resources.findIndex(r => r.id === id);
     resources[index] = {
       ...resources[index],
-      content: improvedContent,
-      description: improvedContent.substring(0, 200) + '...',
+      content: improved.content,
+      description,
       version: resources[index].version + 1,
-      metadata: {
-        ...resources[index].metadata,
-        wordCount: improvedContent.split(/\s+/).length,
-        voiceScore: voiceValidation.score || 0
-      }
+      metadata: mergeInferenceMetadata(resources[index].metadata, {
+        wordCount: improved.content.split(/\s+/).length,
+        voiceScore: improved.voiceScore,
+        voiceProfileId: resolved.voiceProfileId ?? resources[index].metadata?.voiceProfileId,
+        voiceProfileResolution: resolved.resolution,
+        inferenceMode: improved.inferenceMode,
+        modelId: improved.modelId,
+      }) as import('../../../../lib/resource-types').Resource['metadata'],
     };
 
     await saveResources(resources);
@@ -113,10 +133,18 @@ export const POST: APIRoute = async ({ params, request }) => {
     return new Response(
       JSON.stringify({
         resource: resources[index],
+        voiceProfile: {
+          resolution: resolved.resolution,
+          profileId: resolved.voiceProfileId ?? null,
+        },
         rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+        inference: {
+          mode: improved.inferenceMode,
+          modelId: improved.modelId ?? null,
+        },
         voiceValidation: {
-          score: voiceValidation.score || 0,
-          isValid: voiceValidation.isValid || false,
+          score: voiceValidation.score ?? improved.voiceScore,
+          isValid: voiceValidation.isValid ?? improved.voiceValid,
           issues: voiceValidation.issues || [],
           strengths: voiceValidation.strengths || []
         },

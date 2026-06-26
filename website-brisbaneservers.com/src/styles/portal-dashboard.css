@@ -1147,3 +1147,59 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   padding: var(--space-sm) 0;
   border-top: 1px solid var(--border);
 }
+
+.account-workspace-shell .admin-email-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .admin-email-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+}
+
+.account-workspace-shell .admin-email-options__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 11rem;
+}
+
+.account-workspace-shell .admin-email-options__label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.account-workspace-shell .admin-email-options__select {
+  min-width: 11rem;
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 720px) {
+  .account-workspace-shell .admin-email-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-workspace-shell .admin-email-options {
+    width: 100%;
+  }
+
+  .account-workspace-shell .admin-email-options__field,
+  .account-workspace-shell .admin-email-options__select {
+    width: 100%;
+    min-width: 0;
+  }
+}

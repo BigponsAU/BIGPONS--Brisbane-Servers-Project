@@ -37,14 +37,6 @@ export function isWorkersAIConfigured(): boolean {
   );
 }
 
-export function getInferenceProvider(): 'workers-ai' | 'template' {
-  const p = getRuntimeEnv('INFERENCE_PROVIDER')?.trim().toLowerCase();
-  if (p === 'template' || p === 'off' || p === 'none') return 'template';
-  if (p === 'workers-ai' && isWorkersAIConfigured()) return 'workers-ai';
-  if (isWorkersAIConfigured()) return 'workers-ai';
-  return 'template';
-}
-
 export async function completeWithWorkersAI(
   params: WorkersAICompleteParams
 ): Promise<WorkersAICompleteResult> {
