@@ -11,7 +11,7 @@ function errorMessage(error: unknown): string {
   return String(error);
 }
 
-function isUnenvFsError(error: unknown): boolean {
+export function isUnenvFsError(error: unknown): boolean {
   const msg = errorMessage(error);
   return msg.includes('[unenv]') || msg.includes('not implemented');
 }

@@ -5,7 +5,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { pid, platform } from 'node:process';
-import { ensureDirExists } from '@voice-framework/utils/fs-safe';
+import { ensureDirExists, isLimitedFsRuntime } from '@voice-framework/utils/fs-safe';
 import { getSharedPool, usePostgres } from './db/pg-pool';
 import { getRuntimeEnv } from '../utils/runtime-env';
 
@@ -145,7 +145,9 @@ export async function saveCorpusJson<T>(
   if (usePostgres()) {
     await saveToPostgres(key, data);
   }
-  await writeJsonFileAtomic(filePath, data);
+  if (!shouldSkipFileMirror() && !isLimitedFsRuntime()) {
+    await writeJsonFileAtomic(filePath, data);
+  }
 }
 
 /** After legacy code writes a file directly, import into Postgres. */
@@ -174,6 +176,9 @@ export async function materializeCorpusToEphemeralFile<T>(
   filePath: string,
   defaultValue: T,
 ): Promise<void> {
+  if (isLimitedFsRuntime()) {
+    return;
+  }
   const data = await readCorpusJson(key, filePath, defaultValue);
   await ensureDirExists(path.dirname(filePath));
   await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');

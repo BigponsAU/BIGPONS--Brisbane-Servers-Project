@@ -41,31 +41,22 @@ function isEdgeWorkerRuntime(): boolean {
   }
 }
 
-const EMPTY_PROFILES_DATA = {
-  profiles: [],
-  version: '1.0.0',
-  lastUpdated: new Date().toISOString(),
-};
-
-const EMPTY_TEXT_STORAGE_DATA = {
-  samples: [],
-  principles: [],
-  archivedPrinciples: [],
-  relationships: [],
-  version: '1.0.0',
-  lastUpdated: new Date().toISOString(),
-};
-
 /**
- * Persist profiles.json mirror into Postgres corpus (edge worker uses /tmp for ProfileManager).
+ * Persist ProfileManager state into Postgres corpus (edge: no filesystem mirror).
  */
-export async function syncVoiceProfilesToCorpus(): Promise<void> {
+export async function syncVoiceProfilesToCorpus(manager?: ProfileManager): Promise<void> {
   const { usePostgres } = await import('../lib/db/pg-pool');
   if (!usePostgres()) return;
+  const { saveProfilesData } = await import('../lib/profiles-api');
+
+  if (manager) {
+    await saveProfilesData(manager.serializeForCorpus() as unknown as import('../lib/profiles-api').ProfilesData);
+    return;
+  }
+
   const storageDir = voiceFrameworkStorageDir();
   const profilesPath = path.join(storageDir, 'profiles.json');
   const { promises: fs } = await import('fs');
-  const { saveProfilesData } = await import('../lib/profiles-api');
   try {
     const raw = await fs.readFile(profilesPath, 'utf-8');
     const data = JSON.parse(raw);
@@ -104,31 +95,29 @@ export async function initializeVoiceFramework() {
     const storageDir = voiceFrameworkStorageDir();
     const profilesPath = path.join(storageDir, 'profiles.json');
     const textStoragePath = path.join(storageDir, 'text-storage.json');
-    const { CORPUS_DOC_KEYS, exportCorpusToFile, materializeCorpusToEphemeralFile } = await import(
-      '../lib/corpus-store'
-    );
+    const { CORPUS_DOC_KEYS, exportCorpusToFile } = await import('../lib/corpus-store');
+
+    profileManager = new ProfileManager(profilesPath);
+    textStorage = new TextStorage(textStoragePath);
 
     if (isEdgeWorkerRuntime()) {
-      await materializeCorpusToEphemeralFile(CORPUS_DOC_KEYS.PROFILES, profilesPath, EMPTY_PROFILES_DATA);
-      await materializeCorpusToEphemeralFile(
-        CORPUS_DOC_KEYS.TEXT_STORAGE,
-        textStoragePath,
-        EMPTY_TEXT_STORAGE_DATA,
-      );
+      const { loadProfilesData } = await import('../lib/profiles-api');
+      const { loadTextStorageData } = await import('../lib/text-storage-api');
+      profileManager.hydrateFromStoredJson(await loadProfilesData() as unknown as Parameters<ProfileManager['hydrateFromStoredJson']>[0]);
+      textStorage.hydrateFromStoredJson(await loadTextStorageData() as unknown as Record<string, unknown>);
     } else {
       await exportCorpusToFile(CORPUS_DOC_KEYS.PROFILES, profilesPath);
       await exportCorpusToFile(CORPUS_DOC_KEYS.TEXT_STORAGE, textStoragePath);
     }
 
-    textStorage = new TextStorage(textStoragePath);
     textStorage.setOnAfterSave(() => syncVoiceTextStorageToCorpus());
-    profileManager = new ProfileManager(profilesPath);
-    profileManager.setOnAfterSave(() => syncVoiceProfilesToCorpus());
-    profileBuilder = new ProfileBuilder();
-    documentProcessor = new DocumentProcessor(textStorage);
+    profileManager.setOnAfterSave(() => syncVoiceProfilesToCorpus(profileManager!));
 
     await textStorage.initialize();
     await profileManager.initialize();
+
+    profileBuilder = new ProfileBuilder();
+    documentProcessor = new DocumentProcessor(textStorage);
 
     initialized = true;
     console.log('✅ Voice framework initialized');

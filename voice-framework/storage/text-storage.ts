@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { ensureDirExists } from '../utils/fs-safe';
+import { ensureDirExists, isLimitedFsRuntime, isUnenvFsError } from '../utils/fs-safe';
 
 export interface TextSample {
   id: string;
@@ -83,7 +83,38 @@ export class TextStorage {
   /**
    * Initialize storage - load existing data or create new
    */
+  hydrateFromStoredJson(doc: Record<string, unknown>): void {
+    const samples = Array.isArray(doc.samples) ? doc.samples : [];
+    const principles = Array.isArray(doc.principles) ? doc.principles : [];
+    const archivedPrinciples = Array.isArray(doc.archivedPrinciples) ? doc.archivedPrinciples : [];
+    const relationships = Array.isArray(doc.relationships) ? doc.relationships : [];
+    this.data = {
+      samples: samples.map((s: TextSample) => ({
+        ...s,
+        createdAt: new Date(s.createdAt),
+        updatedAt: new Date(s.updatedAt),
+      })),
+      principles: principles.map((p: SemanticPrinciple) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+      })),
+      archivedPrinciples: archivedPrinciples.map((p: ArchivedPrincipleRecord) => ({
+        ...p,
+        archivedAt: new Date(p.archivedAt),
+      })),
+      relationships: relationships.map((r: SemanticRelationship) => ({
+        ...r,
+        createdAt: new Date(r.createdAt),
+      })),
+      version: typeof doc.version === 'string' ? doc.version : '1.0.0',
+      lastUpdated: doc.lastUpdated ? new Date(String(doc.lastUpdated)) : new Date(),
+    };
+  }
+
   async initialize(): Promise<void> {
+    if (isLimitedFsRuntime()) {
+      return;
+    }
     try {
       const dir = path.dirname(this.storagePath);
       await ensureDirExists(dir);
@@ -117,11 +148,14 @@ export class TextStorage {
       } catch (error: unknown) {
         if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
           // File doesn't exist, use default empty data
+        } else if (isUnenvFsError(error)) {
+          /* edge runtime */
         } else {
           throw error;
         }
       }
     } catch (error) {
+      if (isUnenvFsError(error)) return;
       throw new Error(`Failed to initialize text storage: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
@@ -132,12 +166,18 @@ export class TextStorage {
   private async save(): Promise<void> {
     try {
       this.data.lastUpdated = new Date();
-      await ensureDirExists(path.dirname(this.storagePath));
-      await fs.writeFile(this.storagePath, JSON.stringify(this.data, null, 2), 'utf-8');
+      if (!isLimitedFsRuntime()) {
+        await ensureDirExists(path.dirname(this.storagePath));
+        await fs.writeFile(this.storagePath, JSON.stringify(this.data, null, 2), 'utf-8');
+      }
       if (this.onAfterSave) {
         await this.onAfterSave();
       }
     } catch (error) {
+      if (isUnenvFsError(error) && this.onAfterSave) {
+        await this.onAfterSave();
+        return;
+      }
       throw new Error(`Failed to save text storage: ${error instanceof Error ? error.message : String(error)}`);
     }
   }

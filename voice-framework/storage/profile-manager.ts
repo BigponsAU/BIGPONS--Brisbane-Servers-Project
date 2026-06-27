@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { ensureDirExists } from '../utils/fs-safe';
+import { ensureDirExists, isLimitedFsRuntime, isUnenvFsError } from '../utils/fs-safe';
 import type { VoiceProfile } from '../models/voice-profile';
 import { ToneAnalyzer } from '../analyzers/tone-analyzer';
 import { PatternExtractor } from '../analyzers/pattern-extractor';
@@ -66,7 +66,51 @@ export class ProfileManager {
   /**
    * Initialize profile manager - load existing profiles
    */
+  /**
+   * Load from Postgres corpus JSON (edge worker — no filesystem).
+   */
+  hydrateFromStoredJson(doc: {
+    profiles?: Array<{ metadata: ProfileMetadata | Record<string, unknown>; profile: VoiceProfile }>;
+    defaultProfileId?: string;
+    version?: string;
+    lastUpdated?: string;
+  }): void {
+    this.data = {
+      profiles: (doc.profiles ?? []).map((p) => ({
+        metadata: {
+          ...(p.metadata as ProfileMetadata),
+          createdAt: new Date(String((p.metadata as ProfileMetadata).createdAt)),
+          updatedAt: new Date(String((p.metadata as ProfileMetadata).updatedAt)),
+        },
+        profile: p.profile,
+      })),
+      defaultProfileId: doc.defaultProfileId,
+      version: doc.version ?? '1.0.0',
+      lastUpdated: doc.lastUpdated ? new Date(doc.lastUpdated) : new Date(),
+    };
+  }
+
+  /** Serialize for Postgres corpus_documents (ISO date strings). */
+  serializeForCorpus(): Record<string, unknown> {
+    return {
+      profiles: this.data.profiles.map((p) => ({
+        metadata: {
+          ...p.metadata,
+          createdAt: p.metadata.createdAt.toISOString(),
+          updatedAt: p.metadata.updatedAt.toISOString(),
+        },
+        profile: p.profile,
+      })),
+      defaultProfileId: this.data.defaultProfileId,
+      version: this.data.version,
+      lastUpdated: this.data.lastUpdated.toISOString(),
+    };
+  }
+
   async initialize(): Promise<void> {
+    if (isLimitedFsRuntime()) {
+      return;
+    }
     try {
       const dir = path.dirname(this.profilesPath);
       await ensureDirExists(dir);
@@ -89,11 +133,14 @@ export class ProfileManager {
       } catch (error: unknown) {
         if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
           // File doesn't exist, use default empty data
+        } else if (isUnenvFsError(error)) {
+          /* edge runtime — corpus hydrate handles data */
         } else {
           throw error;
         }
       }
     } catch (error) {
+      if (isUnenvFsError(error)) return;
       throw new Error(`Failed to initialize profile manager: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
@@ -104,12 +151,18 @@ export class ProfileManager {
   private async save(): Promise<void> {
     try {
       this.data.lastUpdated = new Date();
-      await ensureDirExists(path.dirname(this.profilesPath));
-      await fs.writeFile(this.profilesPath, JSON.stringify(this.data, null, 2), 'utf-8');
+      if (!isLimitedFsRuntime()) {
+        await ensureDirExists(path.dirname(this.profilesPath));
+        await fs.writeFile(this.profilesPath, JSON.stringify(this.data, null, 2), 'utf-8');
+      }
       if (this.onAfterSave) {
         await this.onAfterSave();
       }
     } catch (error) {
+      if (isUnenvFsError(error) && this.onAfterSave) {
+        await this.onAfterSave();
+        return;
+      }
       throw new Error(`Failed to save profiles: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
