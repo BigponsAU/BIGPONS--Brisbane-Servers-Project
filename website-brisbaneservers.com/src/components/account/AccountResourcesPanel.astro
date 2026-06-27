@@ -31,6 +31,69 @@ import { industries } from '../../data/industries';
               </div>
             </div>
           </section>
+          <!-- Document OCR & voice rewrite -->
+          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="document-workspace-heading">
+            <div class="section-header">
+              <h2 id="document-workspace-heading">Documents — OCR &amp; rewrite</h2>
+              <button type="button" class="section-toggle" aria-expanded="false" aria-controls="document-workspace-content" onclick="toggleSection('document-workspace-content', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </button>
+            </div>
+            <div id="document-workspace-content" class="section-content" style="display: none;">
+              <div class="card document-workspace-card">
+                <p class="section-subtitle" style="margin-bottom: var(--space-md);">
+                  Drag and drop PDF, Word (.docx), images, or text files. Text is extracted locally or via NVIDIA vision OCR, then rewritten in your voice profile while preserving headings, lists, and section structure — not logos or brand styling in the original file.
+                  <strong id="document-token-hint" style="display: block; margin-top: var(--space-sm);">
+                    Uses community tokens — loading costs…
+                  </strong>
+                </p>
+                <div id="document-drop-zone" class="document-drop-zone" tabindex="0" role="button" aria-label="Drop a document file here or click to browse">
+                  <p class="document-drop-zone-title">Drop file here</p>
+                  <p class="document-drop-zone-hint">PDF, DOCX, TXT, MD, HTML, PNG, JPG, WEBP — up to 12MB</p>
+                  <input type="file" id="document-file-input" class="sr-only" accept=".txt,.md,.html,.htm,.docx,.pdf,.png,.jpg,.jpeg,.webp,.gif" />
+                </div>
+                <div id="document-file-meta" class="document-file-meta" aria-live="polite"></div>
+                <div class="form-group">
+                  <label for="document-title-input">Document title (optional)</label>
+                  <input type="text" id="document-title-input" placeholder="Defaults to filename" />
+                </div>
+                <div class="form-group">
+                  <label for="document-extracted-text">Extracted / rewritten text</label>
+                  <textarea id="document-extracted-text" rows="12" placeholder="Extract a file to populate this area, or paste text directly…" style="width: 100%; resize: vertical; font-family: var(--font-mono, monospace); font-size: 0.9rem;"></textarea>
+                </div>
+                <div class="form-row document-workspace-actions">
+                  <button type="button" class="btn btn-secondary" id="document-extract-btn">Extract text</button>
+                  <button type="button" class="btn btn-primary" id="document-rewrite-btn">Rewrite (preserve structure)</button>
+                </div>
+                <hr style="margin: var(--space-lg) 0; border: none; border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.08));" />
+                <p class="section-subtitle" style="margin-bottom: var(--space-md);">Optional: save rewritten content as a resource (skips second AI pass if you already rewrote above).</p>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="document-industry">Industry</label>
+                    <select id="document-industry">
+                      <option value="">Select Industry...</option>
+                      {industries.map(industry => (
+                        <option value={industry.slug}>{industry.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="document-topic">Topic</label>
+                    <input type="text" id="document-topic" placeholder="e.g., Client Management Systems" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="document-auto-publish" /> Auto-publish resource
+                  </label>
+                </div>
+                <button type="button" class="btn btn-primary" id="document-create-resource-btn">Create resource from document</button>
+                <div id="document-status" class="status-message" role="status" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
           <!-- Resource Upload Section -->
           <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="upload-resource-heading">
             <div class="section-header">
@@ -46,9 +109,9 @@ import { industries } from '../../data/industries';
               <form id="upload-resource-form" class="resource-form" method="post" action="#" aria-label="Resource upload form" enctype="multipart/form-data">
                 <div class="form-group">
                   <label for="upload-file">Upload File</label>
-                  <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.doc,.docx" />
+                  <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.docx,.pdf,.png,.jpg,.jpeg,.webp" />
                   <small style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">
-                    Supported: Text, Markdown, HTML files. Empty tests, very short paste-ins, or obvious noise are rejected before processing.
+                    Supported: Text, Markdown, HTML, PDF, Word (.docx), and images. PDFs and scans use NVIDIA vision OCR on the edge worker when needed.
                   </small>
                 </div>
                 <div class="form-row">
@@ -73,6 +136,11 @@ import { industries } from '../../data/industries';
                 <div class="form-group">
                   <label>
                     <input type="checkbox" id="upload-auto-process" checked /> Process through voice framework synchronously
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="upload-preserve-structure" /> Preserve document structure (rewrite prose only — for PDF/DOCX uploads)
                   </label>
                 </div>
                 <div class="form-group">

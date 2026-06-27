@@ -14,7 +14,8 @@ export function getUsageLedgerFile(): string {
 export type UsageReason =
   | 'inference_generate'
   | 'inference_improve'
-  | 'inference_process';
+  | 'inference_process'
+  | 'inference_document_rewrite';
 
 export interface UsageLedgerEntry {
   id: string;

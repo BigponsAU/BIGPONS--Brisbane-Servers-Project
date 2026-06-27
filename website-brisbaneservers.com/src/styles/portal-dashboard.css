@@ -1255,3 +1255,44 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
     min-width: 0;
   }
 }
+
+/* Document OCR & rewrite workspace */
+.account-workspace-shell .document-drop-zone {
+  border: 2px dashed var(--border-subtle, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-xl, 2rem);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  margin-bottom: var(--space-md, 1rem);
+}
+
+.account-workspace-shell .document-drop-zone:hover,
+.account-workspace-shell .document-drop-zone:focus-visible,
+.account-workspace-shell .document-drop-zone.document-drop-zone--active {
+  border-color: var(--accent-primary, #5b9cff);
+  background: rgba(91, 156, 255, 0.06);
+  outline: none;
+}
+
+.account-workspace-shell .document-drop-zone-title {
+  margin: 0 0 var(--space-xs, 0.25rem);
+  font-weight: 600;
+}
+
+.account-workspace-shell .document-drop-zone-hint {
+  margin: 0;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .document-file-meta {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md, 1rem);
+}
+
+.account-workspace-shell .document-workspace-actions {
+  gap: var(--space-sm, 0.5rem);
+  flex-wrap: wrap;
+}

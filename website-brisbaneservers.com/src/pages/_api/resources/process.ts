@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { content, industry, topic, title, autoPublish, profileId } = body;
+    const { content, industry, topic, title, autoPublish, profileId, skipEnhance } = body;
 
     if (!content || !industry || !topic) {
       return new Response(
@@ -82,25 +82,43 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const voiceMatcher = new VoiceMatcher(resolved.profile);
-    const enhanced = await enhanceIngestedContent({
-      content: String(content),
-      title: resourceTitle,
-      industry,
-      topic,
-      userId: authResult.user.id,
-      userRole: authResult.user.role,
-      resolved,
-      extrapolator,
-      voiceMatcher,
-    });
+    const bodyText = String(content);
+    let finalContent = bodyText;
+    let inferenceMode = 'none';
+    let modelId: string | null = null;
+    let voiceScore = 0;
+    let voiceValid = false;
 
-    const voiceValidation = voiceMatcher.validateVoice(enhanced.content);
+    if (skipEnhance !== true) {
+      const enhanced = await enhanceIngestedContent({
+        content: bodyText,
+        title: resourceTitle,
+        industry,
+        topic,
+        userId: authResult.user.id,
+        userRole: authResult.user.role,
+        resolved,
+        extrapolator,
+        voiceMatcher,
+      });
+      finalContent = enhanced.content;
+      inferenceMode = enhanced.inferenceMode;
+      modelId = enhanced.modelId ?? null;
+      voiceScore = enhanced.voiceScore;
+      voiceValid = enhanced.voiceValid;
+    } else {
+      const validation = voiceMatcher.validateVoice(bodyText);
+      voiceScore = validation.score ?? 0;
+      voiceValid = validation.isValid ?? false;
+    }
+
+    const voiceValidation = voiceMatcher.validateVoice(finalContent);
     const description = generateResourceCatalogDescription({
       voiceProfile: resolved.profile,
       title: resourceTitle,
       industry,
       topicLabel: topic,
-      bodyExcerpt: enhanced.content,
+      bodyExcerpt: finalContent,
     });
 
     const user = authResult.user;
@@ -108,18 +126,22 @@ export const POST: APIRoute = async ({ request }) => {
       industry,
       topic,
       title: resourceTitle,
-      body: enhanced.content,
+      body: finalContent,
       description,
       generatedBy: user.email,
       ownerId: user.id,
       shouldPublish,
       metadata: mergeInferenceMetadata(undefined, {
-        wordCount: enhanced.content.split(/\s+/).length,
-        voiceScore: enhanced.voiceScore,
+        wordCount: finalContent.split(/\s+/).length,
+        voiceScore: voiceScore || voiceValidation.score || 0,
         voiceProfileId: resolved.voiceProfileId,
         voiceProfileResolution: resolved.resolution,
-        inferenceMode: enhanced.inferenceMode,
-        modelId: enhanced.modelId,
+        ...(skipEnhance !== true
+          ? {
+              inferenceMode: inferenceMode as 'nvidia' | 'workers-ai' | 'template',
+              modelId: modelId ?? undefined,
+            }
+          : {}),
       }) as import('../../../lib/resource-types').Resource['metadata'],
     });
 
@@ -144,12 +166,12 @@ export const POST: APIRoute = async ({ request }) => {
           profileId: resolved.voiceProfileId ?? null,
         },
         inference: {
-          mode: enhanced.inferenceMode,
-          modelId: enhanced.modelId ?? null,
+          mode: inferenceMode,
+          modelId,
         },
         voiceValidation: {
-          score: voiceValidation.score ?? enhanced.voiceScore,
-          isValid: voiceValidation.isValid ?? enhanced.voiceValid,
+          score: voiceValidation.score ?? voiceScore,
+          isValid: voiceValidation.isValid ?? voiceValid,
           issues: voiceValidation.issues || [],
           strengths: voiceValidation.strengths || [],
         },

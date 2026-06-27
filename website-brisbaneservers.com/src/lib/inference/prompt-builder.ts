@@ -68,3 +68,30 @@ export function buildImproveUserPrompt(params: {
   );
   return parts.join('\n');
 }
+
+export function buildDocumentRewriteSystemPrompt(profile: VoiceProfile): string {
+  return [
+    buildInferenceSystemPrompt(profile),
+    'You rewrite existing documents in the target voice while preserving document structure.',
+    'CRITICAL rules:',
+    '- Keep every heading level (# ## ###), list type, table layout (markdown tables), block quote, and section order.',
+    '- Do NOT alter logos, letterhead, footer boilerplate, company legal names, or brand colour/style references.',
+    '- Rewrite informational prose only — facts may be clarified but not invented.',
+    '- Return markdown body only; no preamble.',
+  ].join('\n');
+}
+
+export function buildDocumentRewriteUserPrompt(params: {
+  originalContent: string;
+  title?: string;
+}): string {
+  return [
+    params.title ? `Document title: ${params.title}` : '',
+    'Rewrite the document below in the target voice. Preserve structure exactly; change wording only.',
+    '',
+    '---',
+    params.originalContent,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}

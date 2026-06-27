@@ -15,6 +15,7 @@ AUTH_EMAIL_REPLY_TO = "connect@brisbaneservers.com"
 INFERENCE_PROVIDER = "nvidia"
 WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 NVIDIA_MODEL = "stepfun-ai/step-3.7-flash"
+NVIDIA_VISION_MODEL = "moonshotai/kimi-k2.6"
 
 [ai]
 binding = "AI"

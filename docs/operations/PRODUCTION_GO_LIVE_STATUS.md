@@ -2,7 +2,15 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-26 — inference pipeline + dashboard deploy
+**Last synced:** 2026-06-26 — document OCR pipeline + inference
+
+### 2026-06-26 — Document OCR & voice rewrite (pending deploy)
+
+- **API** — `POST /api/documents/extract` (PDF, DOCX, images → text via local parse + NVIDIA vision), `POST /api/documents/rewrite` (structure-preserving voice rewrite).
+- **Upload** — `/api/resources/upload` now uses `extractDocument()`; optional `preserveStructure` for prose-only rewrite.
+- **Dashboard** — Resources panel **Documents — OCR & rewrite** (drag-drop, extract, rewrite, create resource).
+- **Worker vars** — `NVIDIA_VISION_MODEL=moonshotai/kimi-k2.6` in `wrangler.toml`; set on live worker via MCP after merge/deploy.
+- **Deploy** — push to `main` for Pages + edge worker; requires `NVIDIA_API_KEY` on worker for scanned PDFs/images.
 
 ### 2026-06-26 — Inference pipeline (production)
 

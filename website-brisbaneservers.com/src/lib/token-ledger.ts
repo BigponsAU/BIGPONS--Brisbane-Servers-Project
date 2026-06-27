@@ -9,7 +9,9 @@ export type TokenReason =
   | 'moderation_adjustment'
   | 'admin_grant'
   | 'admin_revoke'
-  | 'redemption';
+  | 'redemption'
+  | 'document_extract'
+  | 'document_rewrite';
 
 export interface TokenLedgerEntry {
   id: string;

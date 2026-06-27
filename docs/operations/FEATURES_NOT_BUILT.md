@@ -1,6 +1,6 @@
 # Features intentionally not built (yet)
 
-**Last updated:** 2026-06-19
+**Last updated:** 2026-06-26
 
 This document records product and platform capabilities that are **deliberately out of scope** for the current production line, with reasoning. UI copy that mentions these items (e.g. Admin Ops cards) is informational — not a bug.
 
@@ -27,7 +27,8 @@ This document records product and platform capabilities that are **deliberately 
 | **3D voice topology canvas** | **Live** | WebGL orbit (`3D view`) plus 2D flat and isometric depth on Voice Map. |
 | **Topic guides in API corpus** | **Live** | All industry/topic guides sync to Neon on bootstrap (`topic-guide-*` resources). |
 | **Legacy voice-framework Docker dashboard** (Render port 3001) | **Retired** | Replaced by Voice Lab, Voice Map, and admin panels in `/account`. Separate cold-start host duplicated portal features. |
-| **PDF OCR** for image-only PDFs | On hold | Text-based PDFs work; scanned PDFs return a placeholder — deferred unless needed. |
+| **PDF OCR & document rewrite** | **Live (v1)** | Dashboard **Documents — OCR & rewrite**: extract PDF/DOCX/images via local parse + NVIDIA vision (`moonshotai/kimi-k2.6`); structure-preserving voice rewrite (markdown skeleton, not binary styling). Legacy upload path also uses extract. |
+| **Binary format preservation** (Word/PDF fonts, logos) | Not planned (v1) | Edge Workers cannot round-trip DOCX/PDF layout without external conversion services; v1 outputs markdown structure + voice rewrite. |
 | **Single automated “article → publish” pipeline** | By design | Markdown/CMS articles and API-backed resources are both valid inputs. Auto-publishing through voice analysis without human review would bypass moderation and site-section review workflows. |
 
 ---
@@ -80,6 +81,6 @@ Suggested order after portal and edge are stable:
 1. **PayID grant admin UI** — if manual top-ups become frequent.
 2. **Stripe subscription** past daily AI cap — when billing product slice is ready.
 3. **Stripe** — if subscription revenue is prioritised over manual PayID.
-4. **PDF OCR** — if upload volume of scanned PDFs justifies model cost.
+4. **Binary DOCX/PDF round-trip** — if customers need original fonts/logos preserved in-file (not markdown structure).
 
 Deploying repo changes to production (Worker + Pages) is tracked in [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md) — intentionally batched separately from infra cleanup.

@@ -25,6 +25,7 @@ export function bindWorkerRuntime(env: WorkerEnv): void {
   process.env.INFERENCE_PROVIDER = env.INFERENCE_PROVIDER ?? 'nvidia';
   process.env.WORKERS_AI_MODEL = env.WORKERS_AI_MODEL ?? '@cf/meta/llama-3.1-8b-instruct';
   process.env.NVIDIA_MODEL = env.NVIDIA_MODEL ?? 'stepfun-ai/step-3.7-flash';
+  process.env.NVIDIA_VISION_MODEL = env.NVIDIA_VISION_MODEL ?? 'moonshotai/kimi-k2.6';
 
   const secretKeys = [
     'JWT_SECRET',

@@ -17,25 +17,19 @@ import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { validateResourceSourceText } from '../../../lib/resource-submission-guard';
 import { enhanceIngestedContent } from '../../../lib/inference/resource-ingest-inference';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
+import { extractDocument } from '../../../lib/documents/extract-document';
+import { rewriteDocumentPreservingStructure } from '../../../lib/documents/voice-document-rewrite';
+import {
+  ensureExtractTokenBalance,
+  spendDocumentTokens,
+  tokenCostForExtractMethod,
+} from '../../../lib/documents/document-token-guard';
+import { DOCUMENT_TOKEN_COSTS } from '../../../data/document-token-costs';
 
-function classifyUploadedFile(
-  file: File,
-  textContent: string
-): { processingStatus: ProcessingStatus; text: string } {
-  const name = file.name.toLowerCase();
-  const isPdf = name.endsWith('.pdf') || file.type === 'application/pdf';
-  if (!isPdf) {
-    return { processingStatus: 'ready', text: textContent };
-  }
-  const looksBinary = textContent.includes('\0') || (textContent.trim().length < 32 && /[^\x20-\x7E\n\r\t]/.test(textContent));
-  if (looksBinary) {
-    return {
-      processingStatus: 'ocr',
-      text:
-        '[PDF appears image-only or binary — OCR required. Replace this placeholder after extraction or use text-based PDF.]'
-    };
-  }
-  return { processingStatus: 'ready', text: textContent };
+function mapExtractStatus(status: 'ready' | 'ocr' | 'failed'): ProcessingStatus {
+  if (status === 'ready') return 'ready';
+  if (status === 'ocr') return 'ocr';
+  return 'failed';
 }
 
 /**
@@ -84,6 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
     const title = formData.get('title') as string | null;
     const autoProcess = formData.get('autoProcess') !== 'false';
     const autoPublish = formData.get('autoPublish') === 'true';
+    const preserveStructure = formData.get('preserveStructure') === 'true';
     
     if (!industry || !topic) {
       return new Response(
@@ -99,10 +94,94 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Read file content
-    const raw = await file.text();
-    const classified = classifyUploadedFile(file, raw);
-    const content = classified.text;
+    // Extract text (PDF, DOCX, images via NVIDIA vision, plain text locally)
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const extractPreflight = await ensureExtractTokenBalance({
+      userId: authResult.user.id,
+      role: authResult.user.role,
+      fileName: file.name,
+      mimeType: file.type,
+    });
+    if (!extractPreflight.ok) {
+      return new Response(
+        JSON.stringify({
+          error: extractPreflight.error,
+          code: extractPreflight.code,
+          success: false,
+          tokens: { required: extractPreflight.cost, balance: extractPreflight.balance },
+        }),
+        { status: 402, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const extracted = await extractDocument({
+      fileName: file.name,
+      mimeType: file.type,
+      bytes,
+    });
+
+    if (extracted.processingStatus === 'failed' || extracted.text.trim().length < 32) {
+      return new Response(
+        JSON.stringify({
+          error:
+            extracted.warning ||
+            'Could not extract enough text from this file. Try a text-based PDF or configure NVIDIA vision OCR.',
+          code: 'EXTRACTION_FAILED',
+          success: false,
+          extraction: extracted,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const content = extracted.text;
+    const classified = { processingStatus: mapExtractStatus(extracted.processingStatus), text: content };
+
+    const extractTokenCost = tokenCostForExtractMethod(extracted.method);
+    const extractSpend = await spendDocumentTokens({
+      userId: authResult.user.id,
+      role: authResult.user.role,
+      cost: extractTokenCost,
+      reason: 'document_extract',
+    });
+    if (!extractSpend.ok) {
+      return new Response(
+        JSON.stringify({
+          error: extractSpend.error,
+          code: extractSpend.code,
+          success: false,
+          tokens: { required: extractSpend.cost, balance: extractSpend.balance },
+        }),
+        { status: 402, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let structureRewriteSpend: Awaited<ReturnType<typeof spendDocumentTokens>> | null = null;
+    if (autoProcess && preserveStructure) {
+      structureRewriteSpend = await spendDocumentTokens({
+        userId: authResult.user.id,
+        role: authResult.user.role,
+        cost: DOCUMENT_TOKEN_COSTS.rewrite,
+        reason: 'document_rewrite',
+      });
+      if (!structureRewriteSpend.ok) {
+        return new Response(
+          JSON.stringify({
+            error: structureRewriteSpend.error,
+            code: structureRewriteSpend.code,
+            success: false,
+            tokens: {
+              required: structureRewriteSpend.cost,
+              balance: structureRewriteSpend.balance,
+            },
+          }),
+          { status: 402, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
     const sourceGuard = validateResourceSourceText(content);
     if (!sourceGuard.ok) {
       return new Response(
@@ -145,30 +224,52 @@ export const POST: APIRoute = async ({ request }) => {
       const { VoiceMatcher } = await import('@voice-framework');
       const voiceMatcher = new VoiceMatcher(resolved.profile);
 
-      const enhanced = await enhanceIngestedContent({
-        content,
-        title: resourceTitle,
-        industry,
-        topic,
-        userId: authResult.user.id,
-        userRole: authResult.user.role,
-        resolved,
-        extrapolator,
-        voiceMatcher,
-      });
+      if (preserveStructure) {
+        const rewritten = await rewriteDocumentPreservingStructure({
+          content,
+          title: resourceTitle,
+          profile: resolved.profile,
+          voiceMatcher,
+          userId: authResult.user.id,
+          userRole: authResult.user.role,
+        });
+        processedContent = rewritten.content;
+        voiceValidation = {
+          score: rewritten.voiceScore,
+          isValid: rewritten.voiceValid,
+          issues: [],
+          strengths: [],
+        };
+        inferencePayload = {
+          mode: rewritten.inferenceMode,
+          modelId: rewritten.modelId,
+        };
+      } else {
+        const enhanced = await enhanceIngestedContent({
+          content,
+          title: resourceTitle,
+          industry,
+          topic,
+          userId: authResult.user.id,
+          userRole: authResult.user.role,
+          resolved,
+          extrapolator,
+          voiceMatcher,
+        });
 
-      processedContent = enhanced.content;
-      voiceValidation = voiceMatcher.validateVoice(processedContent);
-      voiceValidation = {
-        score: voiceValidation.score ?? enhanced.voiceScore,
-        isValid: voiceValidation.isValid ?? enhanced.voiceValid,
-        issues: voiceValidation.issues || [],
-        strengths: voiceValidation.strengths || [],
-      };
-      inferencePayload = {
-        mode: enhanced.inferenceMode,
-        modelId: enhanced.modelId ?? null,
-      };
+        processedContent = enhanced.content;
+        voiceValidation = voiceMatcher.validateVoice(processedContent);
+        voiceValidation = {
+          score: voiceValidation.score ?? enhanced.voiceScore,
+          isValid: voiceValidation.isValid ?? enhanced.voiceValid,
+          issues: voiceValidation.issues || [],
+          strengths: voiceValidation.strengths || [],
+        };
+        inferencePayload = {
+          mode: enhanced.inferenceMode,
+          modelId: enhanced.modelId ?? null,
+        };
+      }
     }
 
     const description = generateResourceCatalogDescription({
@@ -243,6 +344,12 @@ export const POST: APIRoute = async ({ request }) => {
           },
           voiceValidation,
           inference: inferencePayload,
+          extraction: {
+            method: extracted.method,
+            charCount: extracted.charCount,
+            visionModelId: extracted.visionModelId,
+            warning: extracted.warning,
+          },
           success: true,
           processed: autoProcess,
           updated: true,
@@ -312,6 +419,12 @@ export const POST: APIRoute = async ({ request }) => {
           },
           voiceValidation,
           inference: inferencePayload,
+          extraction: {
+            method: extracted.method,
+            charCount: extracted.charCount,
+            visionModelId: extracted.visionModelId,
+            warning: extracted.warning,
+          },
           success: true,
           processed: autoProcess
         }),

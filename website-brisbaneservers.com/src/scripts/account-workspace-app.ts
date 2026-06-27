@@ -2776,6 +2776,240 @@ export function bootAccountWorkspaceDashboard(): void {
     }
   }
 
+  function initDocumentWorkspace(): void {
+    const dropZone = document.getElementById('document-drop-zone');
+    const fileInput = document.getElementById('document-file-input') as HTMLInputElement | null;
+    const fileMeta = document.getElementById('document-file-meta');
+    const statusDiv = document.getElementById('document-status');
+    const tokenHint = document.getElementById('document-token-hint');
+    const extractedEl = document.getElementById('document-extracted-text') as HTMLTextAreaElement | null;
+    let selectedFile: File | null = null;
+    let documentTokenState: {
+      balance: number;
+      waived: boolean;
+      costs: { extractLocal: number; extractVision: number; rewrite: number };
+    } | null = null;
+
+    const formatTokenHint = () => {
+      if (!tokenHint || !documentTokenState) return;
+      const { balance, waived, costs } = documentTokenState;
+      if (waived) {
+        tokenHint.textContent =
+          'Admin workspace — document tools do not deduct tokens for your account.';
+        return;
+      }
+      tokenHint.textContent =
+        `Your balance: ${balance} tokens · Extract ${costs.extractLocal} (local) / ${costs.extractVision} (PDF·image OCR) · Rewrite ${costs.rewrite}. Earn tokens via approved contributions.`;
+    };
+
+    const refreshDocumentTokenHint = async (balanceOverride?: number) => {
+      try {
+        const res = await workspaceFetch(`${getVoiceApiUrl()}/documents/costs`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          documentTokenState = {
+            balance: balanceOverride ?? Number(data.balance ?? 0),
+            waived: Boolean(data.waived),
+            costs: data.costs,
+          };
+          formatTokenHint();
+          const balanceEl = document.getElementById('client-token-balance');
+          if (balanceEl && balanceOverride != null) balanceEl.textContent = String(balanceOverride);
+        }
+      } catch {
+        if (tokenHint) tokenHint.textContent = 'Could not load token costs — sign in as editor.';
+      }
+    };
+
+    const documentApiError = (data: { error?: string; code?: string; tokens?: { required?: number; balance?: number } }) => {
+      if (data.code === 'INSUFFICIENT_BALANCE') {
+        const need = data.tokens?.required;
+        const bal = data.tokens?.balance;
+        const detail = need != null && bal != null ? ` Need ${need}, you have ${bal}.` : '';
+        return `${data.error || 'Insufficient tokens.'}${detail} Contribute to earn tokens.`;
+      }
+      return data.error || 'Request failed';
+    };
+
+    void refreshDocumentTokenHint();
+
+    const setStatus = (message: string, kind: 'info' | 'success' | 'error' = 'info') => {
+      if (!statusDiv) return;
+      statusDiv.textContent = message;
+      statusDiv.className = kind === 'success' ? 'status-message success' : kind === 'error' ? 'status-message error' : 'status-message';
+    };
+
+    const setFile = (file: File) => {
+      selectedFile = file;
+      if (fileMeta) {
+        fileMeta.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+      }
+      const titleInput = document.getElementById('document-title-input') as HTMLInputElement | null;
+      if (titleInput && !titleInput.value.trim()) {
+        titleInput.value = file.name.replace(/\.[^/.]+$/, '');
+      }
+    };
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    dropZone?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput?.click();
+      }
+    });
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files?.[0];
+      if (f) setFile(f);
+    });
+
+    for (const evt of ['dragenter', 'dragover'] as const) {
+      dropZone?.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('document-drop-zone--active');
+      });
+    }
+    for (const evt of ['dragleave', 'drop'] as const) {
+      dropZone?.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('document-drop-zone--active');
+      });
+    }
+    dropZone?.addEventListener('drop', (e) => {
+      const f = e.dataTransfer?.files?.[0];
+      if (f) setFile(f);
+    });
+
+    document.getElementById('document-extract-btn')?.addEventListener('click', async () => {
+      if (!selectedFile) {
+        setStatus('Choose or drop a file first.', 'error');
+        showNotification('Choose or drop a file first.', 'warning');
+        return;
+      }
+      if (selectedFile.size > 12 * 1024 * 1024) {
+        setStatus('File exceeds 12MB limit.', 'error');
+        return;
+      }
+      setStatus('Extracting text (local parse or NVIDIA vision OCR)…');
+      const btn = document.getElementById('document-extract-btn') as HTMLButtonElement | null;
+      if (btn) btn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        const res = await workspaceFetch(`${getVoiceApiUrl()}/documents/extract`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(documentApiError(data));
+        }
+        const ex = data.extraction;
+        if (extractedEl) extractedEl.value = ex.text || '';
+        const methodHint = ex.method ? ` (${ex.method}${ex.visionModelId ? ` · ${ex.visionModelId}` : ''})` : '';
+        const spent = data.tokens?.spent ? ` · ${data.tokens.spent} token(s) spent` : '';
+        setStatus(`Extracted ${ex.charCount ?? 0} characters${methodHint}${spent}.`, 'success');
+        showNotification('Document text extracted.', 'success');
+        if (typeof data.tokens?.balance === 'number') await refreshDocumentTokenHint(data.tokens.balance);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Extraction failed';
+        setStatus(msg, 'error');
+        showNotification(msg, 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    document.getElementById('document-rewrite-btn')?.addEventListener('click', async () => {
+      const content = extractedEl?.value?.trim() || '';
+      if (content.length < 32) {
+        setStatus('Extract or paste at least 32 characters before rewriting.', 'error');
+        return;
+      }
+      setStatus('Rewriting in voice profile (structure preserved)…');
+      const btn = document.getElementById('document-rewrite-btn') as HTMLButtonElement | null;
+      if (btn) btn.disabled = true;
+      try {
+        const title = (document.getElementById('document-title-input') as HTMLInputElement | null)?.value.trim();
+        const profileId = getWorkspaceVoiceProfileIdForApi();
+        const res = await workspaceFetch(`${getVoiceApiUrl()}/documents/rewrite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content,
+            title: title || undefined,
+            profileId: profileId || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(documentApiError(data));
+        }
+        if (extractedEl) extractedEl.value = data.rewritten?.content || content;
+        const score = data.rewritten?.voiceScore ? Math.round(data.rewritten.voiceScore * 100) : null;
+        const mode = data.rewritten?.inference?.mode || '';
+        const spent = data.tokens?.spent ? ` · ${data.tokens.spent} token(s) spent` : '';
+        setStatus(`Rewrite complete${mode ? ` via ${mode}` : ''}${score != null ? ` · voice ${score}%` : ''}${spent}.`, 'success');
+        showNotification('Document rewritten in voice profile.', 'success');
+        if (typeof data.tokens?.balance === 'number') await refreshDocumentTokenHint(data.tokens.balance);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Rewrite failed';
+        setStatus(msg, 'error');
+        showNotification(msg, 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    document.getElementById('document-create-resource-btn')?.addEventListener('click', async () => {
+      const content = extractedEl?.value?.trim() || '';
+      const industry = (document.getElementById('document-industry') as HTMLSelectElement | null)?.value;
+      const topic = (document.getElementById('document-topic') as HTMLInputElement | null)?.value.trim();
+      if (!content || content.length < 32) {
+        setStatus('Extract or rewrite document text first (min 32 characters).', 'error');
+        return;
+      }
+      if (!industry || !topic) {
+        setStatus('Industry and topic are required to create a resource.', 'error');
+        return;
+      }
+      setStatus('Creating resource…');
+      const btn = document.getElementById('document-create-resource-btn') as HTMLButtonElement | null;
+      if (btn) btn.disabled = true;
+      try {
+        const title = (document.getElementById('document-title-input') as HTMLInputElement | null)?.value.trim();
+        const profileId = getWorkspaceVoiceProfileIdForApi();
+        const res = await workspaceFetch(`${getVoiceApiUrl()}/resources/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content,
+            industry,
+            topic,
+            title: title || undefined,
+            autoPublish: (document.getElementById('document-auto-publish') as HTMLInputElement | null)?.checked === true,
+            skipEnhance: true,
+            profileId: profileId || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(documentApiError(data));
+        }
+        setStatus(`Resource created: ${data.resource?.title || topic}.`, 'success');
+        showNotification('Resource created from document.', 'success');
+        setTimeout(() => {
+          loadResources();
+          loadDashboardData();
+        }, 400);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Create resource failed';
+        setStatus(msg, 'error');
+        showNotification(msg, 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+  }
+
+  initDocumentWorkspace();
+
   // Upload Resource Handler
   document.getElementById('upload-resource-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -2810,19 +3044,19 @@ export function bootAccountWorkspaceDashboard(): void {
         return;
       }
 
-      // Validate file size (max 10MB)
+      // Validate file size (max 12MB — matches edge extract limit)
       const file = fileInput.files[0];
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      const maxSize = 12 * 1024 * 1024;
       if (file.size > maxSize) {
         if (statusDiv) {
-          statusDiv.textContent = 'File size exceeds 10MB limit.';
+          statusDiv.textContent = 'File size exceeds 12MB limit.';
           statusDiv.className = 'status-message error';
         }
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Upload & Process Resource';
         }
-        showNotification('File size exceeds 10MB limit.', 'error');
+        showNotification('File size exceeds 12MB limit.', 'error');
         return;
       }
 
@@ -2834,6 +3068,9 @@ export function bootAccountWorkspaceDashboard(): void {
       if (title) uploadFormData.append('title', title);
       uploadFormData.append('autoProcess', (document.getElementById('upload-auto-process') as HTMLInputElement)?.checked ? 'true' : 'false');
       uploadFormData.append('autoPublish', (document.getElementById('upload-auto-publish') as HTMLInputElement)?.checked ? 'true' : 'false');
+      if ((document.getElementById('upload-preserve-structure') as HTMLInputElement)?.checked) {
+        uploadFormData.append('preserveStructure', 'true');
+      }
       const uploadProfileId = getWorkspaceVoiceProfileIdForApi();
       if (uploadProfileId) uploadFormData.append('profileId', uploadProfileId);
 
@@ -2882,7 +3119,9 @@ export function bootAccountWorkspaceDashboard(): void {
           loadDashboardData();
         }, 500);
       } else {
-        const errorMsg = data.error || `Upload failed (${response.status} ${response.statusText})`;
+        const errorMsg = data.code === 'INSUFFICIENT_BALANCE'
+          ? `${data.error || 'Insufficient tokens.'}${data.tokens?.required != null ? ` Need ${data.tokens.required}, you have ${data.tokens.balance ?? 0}.` : ''}`
+          : (data.error || `Upload failed (${response.status} ${response.statusText})`);
         if (statusDiv) {
           statusDiv.textContent = errorMsg;
           statusDiv.className = 'status-message error';
@@ -2907,7 +3146,7 @@ export function bootAccountWorkspaceDashboard(): void {
         } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
           errorMsg = 'You do not have permission to upload resources.';
         } else if (errorMsg.includes('413') || errorMsg.includes('Payload Too Large')) {
-          errorMsg = 'File is too large. Maximum size is 10MB.';
+          errorMsg = 'File is too large. Maximum size is 12MB.';
         }
       }
       

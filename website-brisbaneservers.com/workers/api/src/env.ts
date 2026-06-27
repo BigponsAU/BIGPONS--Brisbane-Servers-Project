@@ -19,6 +19,7 @@ export interface WorkerEnv {
   WORKERS_AI_MODEL?: string;
   NVIDIA_API_KEY?: string;
   NVIDIA_MODEL?: string;
+  NVIDIA_VISION_MODEL?: string;
   CONTACT_QUEUE?: Queue;
   HYPERDRIVE?: HyperdriveBinding;
   AI?: Ai;
