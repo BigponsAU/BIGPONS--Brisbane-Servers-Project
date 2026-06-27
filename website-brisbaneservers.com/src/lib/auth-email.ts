@@ -7,6 +7,8 @@ interface AuthEmailPayload {
   subject: string;
   text: string;
   html: string;
+  /** Full RFC From header or bare address; defaults to AUTH_EMAIL_FROM / support@ */
+  from?: string;
   replyTo?: string;
 }
 
@@ -55,13 +57,18 @@ function getReplyToAddress(): string {
   return String(getRuntimeEnv('AUTH_EMAIL_REPLY_TO', siteMailboxes.connect) ?? siteMailboxes.connect);
 }
 
+function resolveFromAddress(override?: string): string {
+  const trimmed = override?.trim();
+  return trimmed || getFromAddress();
+}
+
 async function sendViaResend(payload: AuthEmailPayload): Promise<void> {
   const apiKey = getResendApiKey();
   if (!apiKey) {
     throw new Error('RESEND_API_KEY is not set');
   }
 
-  const from = getFromAddress();
+  const from = resolveFromAddress(payload.from);
   const replyTo = payload.replyTo?.trim() || getReplyToAddress();
 
   const response = await fetch('https://api.resend.com/emails', {
@@ -88,7 +95,7 @@ async function sendViaResend(payload: AuthEmailPayload): Promise<void> {
 
 export async function sendAuthEmail(payload: AuthEmailPayload): Promise<AuthEmailResult> {
   const replyTo = payload.replyTo?.trim() || getReplyToAddress();
-  const from = getFromAddress();
+  const from = resolveFromAddress(payload.from);
 
   if (getResendApiKey()) {
     await sendViaResend(payload);

@@ -2,7 +2,21 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-22 — resources search fix, desktop nav dropdown restore
+**Last synced:** 2026-06-26 — inference pipeline + dashboard deploy
+
+### 2026-06-26 — Inference pipeline (production)
+
+- **Edge worker** `dcf403f` → `189311a` — `INFERENCE_PROVIDER=nvidia`, `NVIDIA_MODEL=stepfun-ai/step-3.7-flash`; Workers AI fallback when `NVIDIA_API_KEY` unset.
+- **Pages** `189311a` — profile cards, inference badges, generate/improve/upload UX live on `https://brisbaneservers.com/account`.
+- **NVIDIA secret** — not yet on worker; run `website-brisbaneservers.com/scripts/configure-inference-nvidia.ps1` then `sync-secrets-to-edge-worker.ps1` (rotate any keys pasted in chat).
+- **Meta starter** — syncs on authenticated `GET /api/profiles` or `GET /api/resources/starter-blocks`.
+
+### 2026-06-26 — Cloudflare Security Insights
+
+- **email.brisbaneservers.com** — removed legacy GoDaddy CNAME (`emaildot.godaddy.com`); subdomain had broken TLS/HSTS and is unused (site uses Cloudflare Email Routing + Resend).
+- **send.brisbaneservers.com SPF** — updated Resend MAIL FROM records to `v=spf1 mx include:amazonses.com -all` (root + `send.mail`); fixes Cloudflare SPF insight without removing required Resend MX.
+- **security.txt** — added `public/.well-known/security.txt` on Pages (deploy to clear insight).
+- **AI Labyrinth** — optional dashboard action under Security → AI Crawl Control (not DNS).
 
 ### 2026-06-22 — resources search + nav dropdowns
 

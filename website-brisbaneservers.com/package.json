@@ -41,6 +41,7 @@
     "setup:edge-production": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-edge-production.ps1",
     "deploy:edge-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-via-ci.ps1",
     "sync:edge-worker-secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-secrets-to-edge-worker.ps1",
+    "sync:nvidia-secret": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-secrets-to-edge-worker.ps1 -Only NVIDIA_API_KEY",
     "configure:hosting": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/configure-hosting.ps1",
     "reset:cloudflare-mcp-oauth": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/reset-cloudflare-mcp-oauth.ps1",
     "connect:cloudflare-mcp-oauth": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/connect-cloudflare-mcp-oauth.ps1",

@@ -1148,6 +1148,58 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   border-top: 1px solid var(--border);
 }
 
+.account-workspace-shell .admin-ops-search-corpus {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .search-corpus-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .search-corpus-identity-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.account-workspace-shell .search-corpus-identity-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary-color), #6366f1);
+  transition: width 0.35s ease;
+}
+
+.account-workspace-shell .search-corpus-pillar {
+  padding: var(--space-sm) 0;
+  border-top: 1px solid var(--border);
+}
+
+.account-workspace-shell .search-corpus-pillar h4 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .search-corpus-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.account-workspace-shell .search-corpus-keyword {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(10, 116, 218, 0.1);
+  color: var(--primary-color);
+}
+
 .account-workspace-shell .admin-email-actions {
   display: flex;
   flex-wrap: wrap;

@@ -26,6 +26,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/resources', loadModule: () => import('../src/pages/_api/resources/index') },
   { path: '/api/resources/public', loadModule: () => import('../src/pages/_api/resources/public') },
   { path: '/api/resources/related', loadModule: () => import('../src/pages/_api/resources/related') },
+  { path: '/api/resources/search', loadModule: () => import('../src/pages/_api/resources/search') },
   { path: '/api/resources/starter-blocks', loadModule: () => import('../src/pages/_api/resources/starter-blocks') },
   { path: '/api/resources/from-starter-block', loadModule: () => import('../src/pages/_api/resources/from-starter-block') },
   { path: '/api/resources/generate', loadModule: () => import('../src/pages/_api/resources/generate') },
@@ -57,6 +58,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/admin/pipeline-config', loadModule: () => import('../src/pages/_api/admin/pipeline-config') },
   { path: '/api/admin/reindex-resource', loadModule: () => import('../src/pages/_api/admin/reindex-resource') },
   { path: '/api/admin/vectors-summary', loadModule: () => import('../src/pages/_api/admin/vectors-summary') },
+  { path: '/api/admin/search-corpus', loadModule: () => import('../src/pages/_api/admin/search-corpus') },
   { path: '/api/cron/provision-admin', loadModule: () => import('../src/pages/_api/cron/provision-admin') },
   { path: '/api/cron/library-growth', loadModule: () => import('../src/pages/_api/cron/library-growth') },
 

@@ -1,11 +1,13 @@
 ---
 import { industries } from '../data/industries';
 import { valueProposition } from '../data/value-proposition';
+import { getPublicApiBaseUrl } from '../lib/api-config';
 
 const { searchLabel, searchPlaceholder } = valueProposition.resources;
+const publicApiBaseUrl = getPublicApiBaseUrl();
 ---
 
-<div class="search-bar" aria-label={searchLabel}>
+<div class="search-bar" aria-label={searchLabel} data-public-api-url={publicApiBaseUrl}>
   <form class="search-input-group" role="search" autocomplete="off">
     <div class="search-input-wrapper">
       <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

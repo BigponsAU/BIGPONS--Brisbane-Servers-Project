@@ -1,0 +1,6 @@
+Contact: mailto:connect@brisbaneservers.com
+Contact: mailto:support@brisbaneservers.com
+Expires: 2027-06-26T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://brisbaneservers.com/.well-known/security.txt
+Policy: https://brisbaneservers.com/privacy

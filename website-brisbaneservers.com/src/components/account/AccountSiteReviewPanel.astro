@@ -1,3 +1,6 @@
+---
+import { adminMailboxKeys, adminMailboxLabels, siteMailboxes } from '../../lib/site-mailboxes';
+---
               <div id="site-review-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Site review" style="display: none;">
                 <div class="admin-content">
                   <section class="admin-section" aria-labelledby="site-review-heading">
@@ -16,7 +19,29 @@
                         <h2 id="hosting-status-heading">Hosting &amp; environment</h2>
                         <p class="section-subtitle">Check which production variables are configured on the API host (names only — never secret values).</p>
                       </div>
-                      <div class="section-header__actions">
+                      <div class="section-header__actions admin-email-actions">
+                        <div class="admin-email-options" role="group" aria-label="Email sender and recipient">
+                          <label class="admin-email-options__field" for="admin-email-from">
+                            <span class="admin-email-options__label">From</span>
+                            <select id="admin-email-from" class="form-select admin-email-options__select">
+                              {adminMailboxKeys.map((key) => (
+                                <option value={key} selected={key === 'support'}>
+                                  {adminMailboxLabels[key]} ({siteMailboxes[key]})
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label class="admin-email-options__field" for="admin-email-to">
+                            <span class="admin-email-options__label">To</span>
+                            <select id="admin-email-to" class="form-select admin-email-options__select">
+                              {adminMailboxKeys.map((key) => (
+                                <option value={key} selected={key === 'bigpons'}>
+                                  {adminMailboxLabels[key]} ({siteMailboxes[key]})
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
                         <button id="refresh-hosting-status-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
                         <button id="email-hosting-checklist-btn" type="button" class="btn btn-primary btn-sm">Email checklist</button>
                       </div>

@@ -179,6 +179,91 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
   }
 
   await loadTokenRedemptionQueue(accountCtx);
+  await loadSearchCorpusPanel(accountCtx);
+}
+
+interface SearchCorpusResponse {
+  success: boolean;
+  error?: string;
+  semanticIndex?: { chunkCount: number; resourceIds: number; embeddingModels?: Record<string, number> };
+  embedding?: { modelId: string; provider: string; dimensions: number };
+  proposition?: {
+    pillars: Array<{ id: string; label: string; keywords: string[]; keywordCount: number }>;
+    allKeywords: string[];
+    identityStrength: number;
+    identityLabel: string;
+  };
+  pipeline?: { publicSearchPath: string; ragPath: string; storage: string };
+}
+
+export async function loadSearchCorpusPanel(ctx?: PortalAccountContext): Promise<void> {
+  const container = document.getElementById('admin-ops-search-corpus');
+  if (!container) return;
+
+  const accountCtx = ctx ?? (getPortalAccountContext() as unknown as PortalAccountContext);
+  if (!hasSession(accountCtx)) {
+    container.innerHTML = '<p class="form-hint">Sign in as admin to view search corpus.</p>';
+    return;
+  }
+
+  container.innerHTML = '<p class="form-hint">Loading search &amp; RAG corpus…</p>';
+
+  try {
+    const res = await workspaceFetch(`${accountCtx.apiBaseUrl}/admin/search-corpus`);
+    const data = (await res.json()) as SearchCorpusResponse;
+    if (!res.ok || !data.success || !data.proposition) {
+      container.innerHTML = `<p class="form-hint">${escapeHtml(data.error || 'Could not load search corpus.')}</p>`;
+      return;
+    }
+
+    const chunks = data.semanticIndex?.chunkCount ?? 0;
+    const resources = data.semanticIndex?.resourceIds ?? 0;
+    const model = data.embedding?.modelId ?? '—';
+    const provider = data.embedding?.provider ?? '—';
+    const dim = data.embedding?.dimensions ?? '—';
+    const strength = data.proposition.identityStrength;
+    const label = data.proposition.identityLabel;
+
+    const pillars = data.proposition.pillars
+      .map(
+        (p) => `
+      <div class="search-corpus-pillar">
+        <h4>${escapeHtml(p.label)} <span class="form-hint">(${p.keywordCount} keywords)</span></h4>
+        <div class="search-corpus-keywords">
+          ${p.keywords
+            .slice(0, 14)
+            .map((kw) => `<span class="search-corpus-keyword">${escapeHtml(kw)}</span>`)
+            .join('')}
+          ${p.keywords.length > 14 ? `<span class="form-hint">+${p.keywords.length - 14} more</span>` : ''}
+        </div>
+      </div>`
+      )
+      .join('');
+
+    container.innerHTML = `
+      <div class="search-corpus-stat-row">
+        <span><strong>Semantic chunks:</strong> ${chunks}</span>
+        <span><strong>Indexed resources:</strong> ${resources}</span>
+        <span><strong>Embedding:</strong> ${escapeHtml(model)} (${escapeHtml(provider)}, ${dim}d)</span>
+      </div>
+      <div>
+        <p class="section-subtitle" style="margin-bottom: 0.35rem;">
+          <strong>Proposition identity strength:</strong> ${strength}% — ${escapeHtml(label)}
+        </p>
+        <div class="search-corpus-identity-bar" role="meter" aria-valuenow="${strength}" aria-valuemin="0" aria-valuemax="100" aria-label="Proposition identity alignment">
+          <div class="search-corpus-identity-bar__fill" style="width: ${strength}%"></div>
+        </div>
+        <p class="form-hint">Cosine alignment between value-proposition embedding and corpus vector centroid.</p>
+      </div>
+      <div>
+        <h4 class="card-title" style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">Identity pillars &amp; keywords</h4>
+        ${pillars}
+      </div>
+      <p class="form-hint">Storage: ${escapeHtml(data.pipeline?.storage ?? 'Neon')} · Public: <code>${escapeHtml(data.pipeline?.publicSearchPath ?? '/api/resources/search')}</code></p>
+    `;
+  } catch {
+    container.innerHTML = '<p class="form-hint">Could not reach the API.</p>';
+  }
 }
 
 export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void {
@@ -187,5 +272,8 @@ export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void 
   });
   document.getElementById('refresh-admin-ops-token-queue')?.addEventListener('click', () => {
     void loadTokenRedemptionQueue(resolveCtx());
+  });
+  document.getElementById('refresh-admin-ops-search-corpus')?.addEventListener('click', () => {
+    void loadSearchCorpusPanel(resolveCtx());
   });
 }

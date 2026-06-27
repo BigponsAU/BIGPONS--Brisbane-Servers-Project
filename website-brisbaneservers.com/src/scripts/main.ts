@@ -446,6 +446,22 @@ interface SearchIndexItem {
     keywords?: string[];
     element?: Element;
     score?: number;
+    strength?: number;
+    matchSource?: 'semantic' | 'keyword' | 'hybrid';
+    matchedKeywords?: string[];
+}
+
+interface RemoteSearchHit {
+    id: string;
+    title: string;
+    description: string;
+    url: string;
+    industry?: string;
+    topic?: string;
+    score: number;
+    strength: number;
+    matchSource: 'semantic' | 'keyword' | 'hybrid';
+    matchedKeywords?: string[];
 }
 
 class SemanticSearch {
@@ -457,6 +473,8 @@ class SemanticSearch {
     private loadedIndex: SearchIndexItem[] | null;
     private searchIndexPath: string;
     private searchDebounce: ReturnType<typeof setTimeout> | null;
+    private apiBaseUrl: string;
+    private semanticAbort: AbortController | null;
     
     constructor() {
         this.searchRoot = document.querySelector('.search-bar') as HTMLElement | null;
@@ -467,6 +485,8 @@ class SemanticSearch {
         this.loadedIndex = null;
         this.searchIndexPath = '/search-index.json';
         this.searchDebounce = null;
+        this.apiBaseUrl = (this.searchRoot?.dataset.publicApiUrl ?? '').replace(/\/+$/, '');
+        this.semanticAbort = null;
         this.init();
     }
     
@@ -603,7 +623,7 @@ class SemanticSearch {
             this.searchDebounce = null;
         }
 
-        const execute = (): void => {
+        const execute = async (): Promise<void> => {
             if (!query.trim()) {
                 if (document.activeElement === this.searchInput) {
                     this.displayBrowseHints();
@@ -618,7 +638,16 @@ class SemanticSearch {
             this.searchInputWrapper?.classList.add('loading');
             this.searchInput!.setAttribute('aria-busy', 'true');
 
-            const results = this.search(query);
+            let results = this.search(query);
+            if (this.apiBaseUrl && query.trim().length >= 3) {
+                try {
+                    const remote = await this.fetchSemanticResults(query.trim());
+                    results = this.mergeResults(results, remote);
+                } catch {
+                    /* keep keyword index results */
+                }
+            }
+
             this.displayResults(results);
             this.searchResults!.classList.add('active');
             this.searchInputWrapper?.classList.remove('loading');
@@ -689,6 +718,87 @@ class SemanticSearch {
             .sort((a, b) => (b.score || 0) - (a.score || 0))
             .slice(0, 8);
     }
+
+    async fetchSemanticResults(query: string): Promise<RemoteSearchHit[]> {
+        if (!this.apiBaseUrl) return [];
+        this.semanticAbort?.abort();
+        this.semanticAbort = new AbortController();
+        const url = `${this.apiBaseUrl}/resources/search?q=${encodeURIComponent(query)}&limit=8`;
+        const res = await fetch(url, {
+            signal: this.semanticAbort.signal,
+            credentials: 'omit',
+        });
+        if (!res.ok) return [];
+        const data = (await res.json()) as { success?: boolean; results?: RemoteSearchHit[] };
+        return Array.isArray(data.results) ? data.results : [];
+    }
+
+    mergeResults(local: SearchIndexItem[], remote: RemoteSearchHit[]): SearchIndexItem[] {
+        const byKey = new Map<string, SearchIndexItem>();
+
+        const keyFor = (item: { id?: string; url?: string }) =>
+            item.id || this.normalizeSearchUrl(item.url);
+
+        for (const item of local) {
+            byKey.set(keyFor(item), { ...item, matchSource: item.matchSource ?? 'keyword' });
+        }
+
+        for (const hit of remote) {
+            const key = keyFor(hit);
+            const existing = byKey.get(key);
+            const remoteItem: SearchIndexItem = {
+                id: hit.id,
+                title: hit.title,
+                description: hit.description,
+                url: hit.url,
+                industry: hit.industry,
+                topics: hit.topic ? [hit.topic] : undefined,
+                score: hit.score,
+                strength: hit.strength,
+                matchSource: hit.matchSource,
+                matchedKeywords: hit.matchedKeywords,
+            };
+
+            if (!existing) {
+                byKey.set(key, remoteItem);
+                continue;
+            }
+
+            const mergedScore = Math.max(existing.score ?? 0, hit.score);
+            const matchSource: SearchIndexItem['matchSource'] =
+                existing.matchSource && existing.matchSource !== hit.matchSource
+                    ? 'hybrid'
+                    : hit.matchSource;
+
+            byKey.set(key, {
+                ...existing,
+                ...remoteItem,
+                score: mergedScore,
+                strength: Math.max(existing.strength ?? 0, hit.strength),
+                matchSource,
+                matchedKeywords: [
+                    ...new Set([...(existing.matchedKeywords ?? []), ...(hit.matchedKeywords ?? [])]),
+                ],
+            });
+        }
+
+        return [...byKey.values()]
+            .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+            .slice(0, 8);
+    }
+
+    formatMatchBadge(item: SearchIndexItem): string {
+        if (!item.matchSource || item.matchSource === 'keyword') return '';
+        const label =
+            item.matchSource === 'hybrid'
+                ? 'RAG + keyword'
+                : 'Semantic match';
+        const strength =
+            typeof item.strength === 'number' && item.strength > 0
+                ? ` · ${item.strength}%`
+                : '';
+        return `<span class="search-result-match-badge" title="Retrieved from semantic index">${this.escapeHtml(label)}${strength}</span>`;
+    }
     
     displayBrowseHints(): void {
         if (!this.searchResults || !this.searchInput) return;
@@ -752,15 +862,27 @@ class SemanticSearch {
         this.searchResults.innerHTML = header + results.map((result, index) => {
             const url = this.normalizeSearchUrl(result.url);
             const industry = result.industry ? `<span class="search-result-industry">${this.escapeHtml(this.formatIndustry(result.industry))}</span>` : '';
+            const matchBadge = this.formatMatchBadge(result);
             const description = (result.description || '').trim();
             const descriptionHtml = description
                 ? `<div class="search-result-description">${this.escapeHtml(description.substring(0, 120))}${description.length > 120 ? '…' : ''}</div>`
                 : '';
+            const keywordHint =
+                result.matchedKeywords && result.matchedKeywords.length > 0
+                    ? `<div class="search-result-keywords">${result.matchedKeywords
+                          .slice(0, 4)
+                          .map((k) => `<span class="search-result-keyword">${this.escapeHtml(k)}</span>`)
+                          .join('')}</div>`
+                    : '';
             return `
                 <a href="${url}" class="search-result-item" role="option" aria-selected="false" tabindex="0" id="search-result-${index}">
-                    <div class="search-result-title">${this.escapeHtml(result.title)}</div>
+                    <div class="search-result-title-row">
+                        <div class="search-result-title">${this.escapeHtml(result.title)}</div>
+                        ${matchBadge}
+                    </div>
                     ${industry}
                     ${descriptionHtml}
+                    ${keywordHint}
                 </a>
             `;
         }).join('');

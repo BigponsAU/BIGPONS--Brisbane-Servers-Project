@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "lastUpdated": "2026-06-18",
+  "lastUpdated": "2026-06-26",
   "items": [
     {
       "id": "professional-services-index",
@@ -432,6 +432,397 @@
         "professional services: spreadsheet to database — case study",
         "professional-services",
         "professional-services-database"
+      ]
+    },
+    {
+      "id": "professional-services-client-management-systems-1769301663783",
+      "title": "Client Management Systems for Professional Services",
+      "description": "Centralized client information, matter tracking, communication logs, and relationship management.",
+      "url": "resources/item/professional-services-client-management-systems-1769301663783/index.html",
+      "industry": "professional-services",
+      "topics": [
+        "client-management-systems"
+      ],
+      "keywords": [
+        "Client Management Systems for Professional Services",
+        "professional-services",
+        "client-management-systems",
+        "Centralized",
+        "client",
+        "information,",
+        "matter",
+        "tracking,",
+        "communication",
+        "logs,",
+        "and"
+      ]
+    },
+    {
+      "id": "professional-services-document-automation-1769301663783",
+      "title": "Document Automation for Professional Services",
+      "description": "Automating repetitive document generation, templates, version control, and collaboration.",
+      "url": "resources/item/professional-services-document-automation-1769301663783/index.html",
+      "industry": "professional-services",
+      "topics": [
+        "document-automation"
+      ],
+      "keywords": [
+        "Document Automation for Professional Services",
+        "professional-services",
+        "document-automation",
+        "Automating",
+        "repetitive",
+        "document",
+        "generation,",
+        "templates,",
+        "version",
+        "control,",
+        "and"
+      ]
+    },
+    {
+      "id": "professional-services-billing-time-tracking-1769301663783",
+      "title": "Billing & Time Tracking for Professional Services",
+      "description": "Accurate time capture, automated invoicing, payment processing, and financial reporting.",
+      "url": "resources/item/professional-services-billing-time-tracking-1769301663783/index.html",
+      "industry": "professional-services",
+      "topics": [
+        "billing-time-tracking"
+      ],
+      "keywords": [
+        "Billing & Time Tracking for Professional Services",
+        "professional-services",
+        "billing-time-tracking",
+        "Accurate",
+        "time",
+        "capture,",
+        "automated",
+        "invoicing,",
+        "payment",
+        "processing,",
+        "and"
+      ]
+    },
+    {
+      "id": "professional-services-practice-management-1769301663783",
+      "title": "Practice Management for Professional Services",
+      "description": "Integrated practice management covering workflows, team collaboration, deadlines, compliance, and business intelligence.",
+      "url": "resources/item/professional-services-practice-management-1769301663783/index.html",
+      "industry": "professional-services",
+      "topics": [
+        "practice-management"
+      ],
+      "keywords": [
+        "Practice Management for Professional Services",
+        "professional-services",
+        "practice-management",
+        "Integrated",
+        "practice",
+        "management",
+        "covering",
+        "workflows,",
+        "team",
+        "collaboration,",
+        "deadlines,"
+      ]
+    },
+    {
+      "id": "retail-inventory-pos-1769301663783",
+      "title": "Inventory & POS Systems for Retail & E-commerce",
+      "description": "This document describes Inventory & POS Systems for Retail & E-commerce Stock tracking, automated reordering, POS integration, sales reporting. ## Overview Inventory & POS Systems is a critical com...",
+      "url": "resources/item/retail-inventory-pos-1769301663783/index.html",
+      "industry": "retail",
+      "topics": [
+        "inventory-pos"
+      ],
+      "keywords": [
+        "Inventory & POS Systems for Retail & E-commerce",
+        "retail",
+        "inventory-pos",
+        "This",
+        "document",
+        "describes",
+        "Inventory",
+        "&",
+        "POS",
+        "Systems",
+        "for"
+      ]
+    },
+    {
+      "id": "retail-e-commerce-1769301663783",
+      "title": "E-commerce Integration for Retail & E-commerce",
+      "description": "Online store setup, product management, payment processing, order fulfillment.",
+      "url": "resources/item/retail-e-commerce-1769301663783/index.html",
+      "industry": "retail",
+      "topics": [
+        "e-commerce"
+      ],
+      "keywords": [
+        "E-commerce Integration for Retail & E-commerce",
+        "retail",
+        "e-commerce",
+        "Online",
+        "store",
+        "setup,",
+        "product",
+        "management,",
+        "payment",
+        "processing,",
+        "order"
+      ]
+    },
+    {
+      "id": "retail-customer-systems-1769301663783",
+      "title": "Customer Systems for Retail & E-commerce",
+      "description": "Customer relationship management, loyalty programs, customer analytics, retention strategies.",
+      "url": "resources/item/retail-customer-systems-1769301663783/index.html",
+      "industry": "retail",
+      "topics": [
+        "customer-systems"
+      ],
+      "keywords": [
+        "Customer Systems for Retail & E-commerce",
+        "retail",
+        "customer-systems",
+        "Customer",
+        "relationship",
+        "management,",
+        "loyalty",
+        "programs,",
+        "customer",
+        "analytics,",
+        "retention"
+      ]
+    },
+    {
+      "id": "healthcare-patient-management-1769301663783",
+      "title": "Patient Management Systems for Healthcare & Medical Practices",
+      "description": "Electronic health records, patient information management, medical history tracking.",
+      "url": "resources/item/healthcare-patient-management-1769301663783/index.html",
+      "industry": "healthcare",
+      "topics": [
+        "patient-management"
+      ],
+      "keywords": [
+        "Patient Management Systems for Healthcare & Medical Practices",
+        "healthcare",
+        "patient-management",
+        "Electronic",
+        "health",
+        "records,",
+        "patient",
+        "information",
+        "management,",
+        "medical",
+        "history"
+      ]
+    },
+    {
+      "id": "healthcare-compliance-1769301663783",
+      "title": "Compliance & Security for Healthcare & Medical Practices",
+      "description": "Privacy compliance, secure data storage, access controls, audit trails.",
+      "url": "resources/item/healthcare-compliance-1769301663783/index.html",
+      "industry": "healthcare",
+      "topics": [
+        "compliance"
+      ],
+      "keywords": [
+        "Compliance & Security for Healthcare & Medical Practices",
+        "healthcare",
+        "compliance",
+        "Privacy",
+        "compliance,",
+        "secure",
+        "data",
+        "storage,",
+        "access",
+        "controls,",
+        "audit"
+      ]
+    },
+    {
+      "id": "healthcare-appointments-1769301663783",
+      "title": "Appointment Management for Healthcare & Medical Practices",
+      "description": "This document describes Appointment Management for Healthcare & Medical Practices Automated scheduling, patient reminders, calendar integration, waiting list management. ## Overview Appointment Man...",
+      "url": "resources/item/healthcare-appointments-1769301663783/index.html",
+      "industry": "healthcare",
+      "topics": [
+        "appointments"
+      ],
+      "keywords": [
+        "Appointment Management for Healthcare & Medical Practices",
+        "healthcare",
+        "appointments",
+        "This",
+        "document",
+        "describes",
+        "Appointment",
+        "Management",
+        "for",
+        "Healthcare",
+        "&"
+      ]
+    },
+    {
+      "id": "hospitality-booking-1769301663783",
+      "title": "Booking & Reservation Systems for Hospitality & Tourism",
+      "description": "Online booking platforms, reservation management, table management, accommodation bookings.",
+      "url": "resources/item/hospitality-booking-1769301663783/index.html",
+      "industry": "hospitality",
+      "topics": [
+        "booking"
+      ],
+      "keywords": [
+        "Booking & Reservation Systems for Hospitality & Tourism",
+        "hospitality",
+        "booking",
+        "Online",
+        "booking",
+        "platforms,",
+        "reservation",
+        "management,",
+        "table",
+        "management,",
+        "accommodation"
+      ]
+    },
+    {
+      "id": "hospitality-pos-integration-1769301663783",
+      "title": "POS Integration for Hospitality & Tourism",
+      "description": "Point-of-sale system integration, payment processing, inventory tracking, sales reporting.",
+      "url": "resources/item/hospitality-pos-integration-1769301663783/index.html",
+      "industry": "hospitality",
+      "topics": [
+        "pos-integration"
+      ],
+      "keywords": [
+        "POS Integration for Hospitality & Tourism",
+        "hospitality",
+        "pos-integration",
+        "Point-of-sale",
+        "system",
+        "integration,",
+        "payment",
+        "processing,",
+        "inventory",
+        "tracking,",
+        "sales"
+      ]
+    },
+    {
+      "id": "hospitality-automation-1769301663783",
+      "title": "Automation & Efficiency for Hospitality & Tourism",
+      "description": "Automating repetitive tasks: customer communications, inventory alerts, reporting, staff scheduling.",
+      "url": "resources/item/hospitality-automation-1769301663783/index.html",
+      "industry": "hospitality",
+      "topics": [
+        "automation"
+      ],
+      "keywords": [
+        "Automation & Efficiency for Hospitality & Tourism",
+        "hospitality",
+        "automation",
+        "Automating",
+        "repetitive",
+        "tasks:",
+        "customer",
+        "communications,",
+        "inventory",
+        "alerts,",
+        "reporting,"
+      ]
+    },
+    {
+      "id": "construction-overview-1769301663783",
+      "title": "Construction & Trades - Technology Solutions Overview",
+      "description": "This document describes Construction & Trades Overview for Construction & Trades Project management, job tracking, quoting systems, and compliance for construction companies, tradespeople, and contra...",
+      "url": "resources/item/construction-overview-1769301663783/index.html",
+      "industry": "construction",
+      "topics": [
+        "overview"
+      ],
+      "keywords": [
+        "Construction & Trades - Technology Solutions Overview",
+        "construction",
+        "overview",
+        "This",
+        "document",
+        "describes",
+        "Construction",
+        "&",
+        "Trades",
+        "Overview",
+        "for"
+      ]
+    },
+    {
+      "id": "finance-overview-1769301663783",
+      "title": "Finance & Accounting - Technology Solutions Overview",
+      "description": "This document describes Finance & Accounting Overview for Finance & Accounting Financial management systems, compliance, reporting, and automation for accounting practices, financial advisory firms, ...",
+      "url": "resources/item/finance-overview-1769301663783/index.html",
+      "industry": "finance",
+      "topics": [
+        "overview"
+      ],
+      "keywords": [
+        "Finance & Accounting - Technology Solutions Overview",
+        "finance",
+        "overview",
+        "This",
+        "document",
+        "describes",
+        "Finance",
+        "&",
+        "Accounting",
+        "Overview",
+        "for"
+      ]
+    },
+    {
+      "id": "manufacturing-overview-1769301663783",
+      "title": "Manufacturing & Production - Technology Solutions Overview",
+      "description": "This document describes Manufacturing & Production Overview for Manufacturing & Production Production tracking, quality control, inventory management, and supply chain systems for manufacturers. ## ...",
+      "url": "resources/item/manufacturing-overview-1769301663783/index.html",
+      "industry": "manufacturing",
+      "topics": [
+        "overview"
+      ],
+      "keywords": [
+        "Manufacturing & Production - Technology Solutions Overview",
+        "manufacturing",
+        "overview",
+        "This",
+        "document",
+        "describes",
+        "Manufacturing",
+        "&",
+        "Production",
+        "Overview",
+        "for"
+      ]
+    },
+    {
+      "id": "starter-inference-on-resources",
+      "title": "Inference on Resources — voice, RAG, and generation",
+      "description": "How voice profiling, semantic retrieval, and inference (NVIDIA / Workers AI) work together in the Brisbane Servers resource workspace.",
+      "url": "resources/item/starter-inference-on-resources/index.html",
+      "industry": "platform",
+      "topics": [
+        "inference-on-resources"
+      ],
+      "keywords": [
+        "Inference on Resources — voice, RAG, and generation",
+        "platform",
+        "inference-on-resources",
+        "How",
+        "voice",
+        "profiling,",
+        "semantic",
+        "retrieval,",
+        "and",
+        "inference",
+        "(NVIDIA"
       ]
     }
   ]

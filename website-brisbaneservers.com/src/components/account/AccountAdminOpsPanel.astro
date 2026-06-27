@@ -33,7 +33,19 @@ import { accountWorkspace } from '../../data/account-workspace';
         </div>
 
         <div class="card admin-ops-card" data-min-role="admin">
-          <h3 class="card-title">Inference providers</h3>
+          <div class="admin-ops-usage-header">
+            <h3 class="card-title">Search &amp; RAG corpus</h3>
+            <button type="button" id="refresh-admin-ops-search-corpus" class="btn btn-secondary btn-sm">Refresh</button>
+          </div>
+          <p class="form-hint">
+            Public search bars on the marketing site call <code>GET /api/resources/search</code> (semantic chunks + proposition keywords).
+          </p>
+          <div id="admin-ops-search-corpus" class="admin-ops-search-corpus" aria-live="polite">
+            <p class="form-hint">Loading corpus identity…</p>
+          </div>
+        </div>
+
+        <div class="card admin-ops-card" data-min-role="admin">
           <p class="section-subtitle">
             Primary: <strong>NVIDIA NIM</strong> (Developer Program, <code>NVIDIA_API_KEY</code> on edge worker).
             Fallback: <strong>Cloudflare Workers AI</strong> via the <code>[ai]</code> binding.

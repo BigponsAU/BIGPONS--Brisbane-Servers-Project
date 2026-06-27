@@ -18,6 +18,7 @@ const ACRONYMS = [
 
 const PROPER_NOUNS = [
   'BIGPONS',
+  'Brisbane Servers',
   'Brisbane',
   'Australia',
   'Australian',

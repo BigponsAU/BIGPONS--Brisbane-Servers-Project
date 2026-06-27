@@ -2,11 +2,24 @@ import type { APIRoute } from 'astro';
 import { requireAdmin } from '~/utils/auth';
 import { sendAuthEmail } from '~/lib/auth-email';
 import { buildHostingEnvChecklist, formatHostingEnvChecklistEmail } from '~/lib/hosting-env-checklist';
+import {
+  formatBrisbaneServersFrom,
+  isAdminMailboxKey,
+  resolveAdminMailboxAddress,
+  siteMailboxes,
+} from '~/lib/site-mailboxes';
 import { getRuntimeEnv } from '~/utils/runtime-env';
+
+type ChecklistEmailBody = {
+  email?: string;
+  toMailbox?: string;
+  fromMailbox?: string;
+};
 
 /**
  * POST /api/admin/email-hosting-checklist
- * Emails env checklist (names + status only) to admin. Body: { email?: string }
+ * Emails env checklist (names + status only) to admin.
+ * Body: { email?: string, toMailbox?: 'bigpons'|'support'|'connect', fromMailbox?: same }
  */
 export const POST: APIRoute = async ({ request }) => {
   const authResult = await requireAdmin(request);
@@ -17,15 +30,37 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  let targetEmail = (getRuntimeEnv('ADMIN_EMAIL') ?? 'bigpons@brisbaneservers.com').trim().toLowerCase();
-  try {
-    const body = (await request.json().catch(() => ({}))) as { email?: string };
-    if (typeof body.email === 'string' && body.email.includes('@')) {
-      targetEmail = body.email.trim().toLowerCase();
-    }
-  } catch {
-    /* use default */
+  const body = (await request.json().catch(() => ({}))) as ChecklistEmailBody;
+
+  let targetEmail = resolveAdminMailboxAddress(
+    typeof body.toMailbox === 'string' ? body.toMailbox : undefined,
+    'bigpons',
+  )
+    .trim()
+    .toLowerCase();
+
+  const adminEmail = getRuntimeEnv('ADMIN_EMAIL')?.trim().toLowerCase();
+  if (!body.toMailbox && adminEmail) {
+    targetEmail = adminEmail;
   }
+
+  if (typeof body.email === 'string' && body.email.includes('@')) {
+    const custom = body.email.trim().toLowerCase();
+    const allowed = new Set<string>([
+      siteMailboxes.bigpons,
+      siteMailboxes.support,
+      siteMailboxes.connect,
+      ...(adminEmail ? [adminEmail] : []),
+    ]);
+    if (allowed.has(custom)) {
+      targetEmail = custom;
+    }
+  }
+
+  const fromMailbox = typeof body.fromMailbox === 'string' && isAdminMailboxKey(body.fromMailbox)
+    ? body.fromMailbox
+    : 'support';
+  const fromAddress = formatBrisbaneServersFrom(siteMailboxes[fromMailbox]);
 
   const checklist = buildHostingEnvChecklist();
   const missingRequired = checklist.filter((item) => item.required && !item.configured);
@@ -33,6 +68,8 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     await sendAuthEmail({
       to: targetEmail,
+      from: fromAddress,
+      replyTo: siteMailboxes.connect,
       subject: 'Brisbane Servers — production environment checklist',
       text: formatHostingEnvChecklistEmail(),
       html: `<pre style="font-family:ui-monospace,monospace;white-space:pre-wrap">${formatHostingEnvChecklistEmail()
@@ -51,6 +88,8 @@ export const POST: APIRoute = async ({ request }) => {
     JSON.stringify({
       success: true,
       emailedTo: targetEmail,
+      emailedFrom: fromAddress,
+      fromMailbox,
       missingRequired: missingRequired.map((item) => item.key),
       ready: missingRequired.length === 0,
     }),
