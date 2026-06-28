@@ -4,6 +4,7 @@
 import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
 import { resolveInquiryScrollTarget } from '../lib/inquiry-nav';
 import { resolveContentPath } from '../lib/site-path';
+import { bootMarketingScrollLayers } from './marketing-scroll-layers';
 
 function isAccountUtilityPage(): boolean {
   return document.body?.dataset.pageId === 'account';
@@ -1106,6 +1107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.search-bar').forEach((root) => {
         new SemanticSearch(root as HTMLElement);
     });
+    bootMarketingScrollLayers();
 });
 
 // ===== FORM HANDLING =====

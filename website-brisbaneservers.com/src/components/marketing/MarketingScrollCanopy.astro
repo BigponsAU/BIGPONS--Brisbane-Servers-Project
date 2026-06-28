@@ -1,0 +1,42 @@
+---
+/** Fixed-depth parallax layers — content scrolls over this canopy. */
+---
+
+<div class="scroll-layer-canopy" data-scroll-canopy aria-hidden="true">
+  <div class="scroll-layer-canopy__plane scroll-layer-canopy__plane--deep" data-parallax-rate="0.14">
+    <svg class="scroll-layer-canopy__mesh" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="scroll-canopy-a" cx="22%" cy="18%" r="42%">
+          <stop stop-color="rgba(10, 116, 218, 0.22)" />
+          <stop offset="1" stop-color="rgba(10, 116, 218, 0)" />
+        </radialGradient>
+        <radialGradient id="scroll-canopy-b" cx="78%" cy="62%" r="38%">
+          <stop stop-color="rgba(139, 92, 246, 0.16)" />
+          <stop offset="1" stop-color="rgba(139, 92, 246, 0)" />
+        </radialGradient>
+      </defs>
+      <rect width="1440" height="900" fill="url(#scroll-canopy-a)" />
+      <rect width="1440" height="900" fill="url(#scroll-canopy-b)" />
+    </svg>
+  </div>
+  <div class="scroll-layer-canopy__plane scroll-layer-canopy__plane--grid" data-parallax-rate="0.28">
+    <svg class="scroll-layer-canopy__grid" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="scroll-canopy-phi" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M0 24h48M24 0v48" stroke="rgba(10, 116, 218, 0.07)" stroke-width="1" />
+          <circle cx="24" cy="24" r="1.5" fill="rgba(10, 116, 218, 0.12)" />
+        </pattern>
+      </defs>
+      <rect width="1440" height="900" fill="url(#scroll-canopy-phi)" opacity="0.85" />
+    </svg>
+  </div>
+  <div class="scroll-layer-canopy__plane scroll-layer-canopy__plane--rails" data-parallax-rate="0.42">
+    <svg class="scroll-layer-canopy__rails" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="80" x2="1440" y2="80" stroke="rgba(10, 116, 218, 0.1)" stroke-width="1" />
+      <line x1="0" y1="160" x2="1440" y2="160" stroke="rgba(139, 92, 246, 0.08)" stroke-width="1" />
+      <line x1="0" y1="240" x2="1440" y2="240" stroke="rgba(10, 116, 218, 0.06)" stroke-width="1" />
+      <circle cx="720" cy="160" r="4" fill="rgba(10, 116, 218, 0.2)" />
+      <circle cx="720" cy="160" r="10" stroke="rgba(10, 116, 218, 0.12)" stroke-width="1" fill="none" />
+    </svg>
+  </div>
+</div>

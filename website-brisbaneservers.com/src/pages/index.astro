@@ -10,6 +10,7 @@ import InquiryForm from '../components/InquiryForm.astro';
 import SemanticText from '../components/SemanticText.astro';
 import SectionIntro from '../components/SectionIntro.astro';
 import HomeInterconnectionRig from '../components/HomeInterconnectionRig.astro';
+import MarketingScrollCanopy from '../components/marketing/MarketingScrollCanopy.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
 import ClientSitesShowcase from '../components/ClientSitesShowcase.astro';
 import { industries } from '../data/industries';
@@ -50,7 +51,9 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
 
     <!-- Unified home section shell + interconnection spine (visual layer; reusable rig pattern) -->
     <HomeInterconnectionRig>
-    <div class="home-sections-shell">
+    <div class="home-sections-shell marketing-scroll-shell">
+    <MarketingScrollCanopy />
+    <div class="marketing-scroll-shell__stage">
 
     <!-- Services Overview Section -->
     <section id="services-overview" class="section section-tartan-accent home-band--strategy" data-interconnection-node data-interconnection-band="strategy">
@@ -371,6 +374,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="home-inquiry-interconnection home-band--inquiry" data-interconnection-node data-interconnection-band="inquiry">
         <InquiryForm id="inquiry-section" />
       </div>
+    </div>
     </div>
     <!-- /home-sections-shell -->
     </HomeInterconnectionRig>

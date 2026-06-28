@@ -31,12 +31,18 @@
   background: transparent;
 }
 
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent {
+  background: transparent;
+}
+
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent,
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd),
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(even),
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent.section-home-band--surface,
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent.section-home-band--primary-light,
-.site-main--marketing .marketing-page-bands > .inquiry-section {
+.site-main--marketing .marketing-page-bands > .inquiry-section,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section {
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -45,12 +51,16 @@
 
 /* Search dropdown is position:absolute — must not clip inside tartan bands */
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar),
-.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar) > .container {
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar) > .container,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:has(.search-bar),
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:has(.search-bar) > .container {
   overflow: visible;
 }
 
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent::before,
-.site-main--marketing .marketing-page-bands > .inquiry-section::before {
+.site-main--marketing .marketing-page-bands > .inquiry-section::before,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent::before,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -61,7 +71,8 @@
   pointer-events: none;
 }
 
-.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd)::before {
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(odd)::before,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:nth-of-type(odd)::before {
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.7) 0%,
@@ -70,7 +81,8 @@
   );
 }
 
-.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(even)::before {
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:nth-of-type(even)::before,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:nth-of-type(even)::before {
   background: linear-gradient(
     180deg,
     rgba(var(--primary-color-rgb), 0.05) 0%,
@@ -79,7 +91,8 @@
   );
 }
 
-.site-main--marketing .marketing-page-bands > .inquiry-section::before {
+.site-main--marketing .marketing-page-bands > .inquiry-section::before,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section::before {
   background: linear-gradient(
     180deg,
     rgba(var(--primary-color-rgb), 0.05) 0%,
@@ -89,7 +102,9 @@
 }
 
 .site-main--marketing .marketing-page-bands > .section > .container,
-.site-main--marketing .marketing-page-bands > .inquiry-section > .container {
+.site-main--marketing .marketing-page-bands > .inquiry-section > .container,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section > .container,
+.site-main--marketing .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section > .container {
   width: 100%;
   max-width: var(--site-frame-wide);
   margin-inline: auto;

@@ -4,14 +4,26 @@
  * as the home `home-sections-shell` (hero and breadcrumbs stay outside).
  */
 import '../styles/marketing-constellation.css';
+import MarketingScrollCanopy from './marketing/MarketingScrollCanopy.astro';
 
 interface Props {
   class?: string;
+  /** Layered scroll-over parallax + stacked sections (default on marketing bands). */
+  scrollLayers?: boolean;
 }
 
-const { class: className } = Astro.props;
+const { class: className, scrollLayers = true } = Astro.props;
 ---
 
-<div class:list={['marketing-page-bands', className]}>
-  <slot />
+<div
+  class:list={[
+    'marketing-page-bands',
+    scrollLayers && 'marketing-page-bands--scroll-layers',
+    className,
+  ]}
+>
+  {scrollLayers && <MarketingScrollCanopy />}
+  <div class="marketing-page-bands__stage">
+    <slot />
+  </div>
 </div>
