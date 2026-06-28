@@ -1954,6 +1954,17 @@ section.hero .hero-subtitle .semantic-child,
     z-index: 5;
 }
 
+/* Dropdown is position:absolute — parent sections use overflow:hidden for band effects */
+.section:has(.search-bar),
+.main-home .home-sections-shell > .section.section-tartan-accent:has(.search-bar),
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar) {
+    overflow: visible;
+}
+
+.section:has(.search-bar) > .container {
+    overflow: visible;
+}
+
 .search-input-group {
     position: relative;
     z-index: 2;

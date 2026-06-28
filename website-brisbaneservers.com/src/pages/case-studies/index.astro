@@ -5,12 +5,14 @@ import SiteShell from '../../layouts/SiteShell.astro';
 import Hero from '../../components/Hero.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
+import InquiryForm from '../../components/InquiryForm.astro';
 import SectionIntro from '../../components/SectionIntro.astro';
 import MarketingPageBands from '../../components/MarketingPageBands.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { caseStudies } from '../../data/case-studies';
 import { industryHubStatus } from '../../data/site-completeness';
 import { caseStudiesHubSeo } from '../../lib/content-seo';
+import { inquiryNavHref } from '../../lib/inquiry-nav';
 import { sitePath } from '../../lib/site-path';
 import { valueProposition } from '../../data/value-proposition';
 
@@ -108,10 +110,16 @@ const { structuredData, breadcrumbs: breadcrumbItems } = caseStudiesHubSeo(
         <div class="case-studies-hub-cta">
           <a href={sitePath('/projects')} class="btn btn-secondary">Projects overview</a>
           <a href={sitePath('/resources')} class="btn btn-secondary">Resource hubs</a>
-          <a href={sitePath('/#inquiry-section')} class="btn btn-primary">Discuss your initiative</a>
+          <a href={inquiryNavHref(currentPath, sitePath)} class="btn btn-primary">Discuss your initiative</a>
         </div>
       </div>
     </section>
+
+    <InquiryForm
+      id="inquiry-section"
+      title={valueProposition.inquiry.title}
+      subtitle="Tell us what you operate and what you want to change. We will map feasible options, delivery sequencing, and relevant incentives where applicable."
+    />
   </MarketingPageBands>
 </SiteShell>
 

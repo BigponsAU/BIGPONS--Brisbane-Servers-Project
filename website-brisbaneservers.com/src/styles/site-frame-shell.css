@@ -43,6 +43,12 @@
   background: transparent;
 }
 
+/* Search dropdown is position:absolute — must not clip inside tartan bands */
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar),
+.site-main--marketing .marketing-page-bands > .section.section-tartan-accent:has(.search-bar) > .container {
+  overflow: visible;
+}
+
 .site-main--marketing .marketing-page-bands > .section.section-tartan-accent::before,
 .site-main--marketing .marketing-page-bands > .inquiry-section::before {
   content: '';

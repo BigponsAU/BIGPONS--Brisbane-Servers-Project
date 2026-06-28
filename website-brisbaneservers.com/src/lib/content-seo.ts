@@ -12,6 +12,7 @@ import {
   buildCanonicalUrl,
   type BreadcrumbItem,
 } from './seo';
+import { normalizeTopicSlug } from './resource-slug';
 
 export const HOME_CRUMB: BreadcrumbItem = { label: 'Home', href: '/' };
 export const RESOURCES_CRUMB: BreadcrumbItem = { label: 'Resources', href: '/resources' };
@@ -191,7 +192,7 @@ export function publishedResourceSeo(
       ? [{ label: industryName, href: `/resources/${resource.industry}` }]
       : []),
     ...(resource.topic && resource.industry
-      ? [{ label: topicLabel, href: `/resources/${resource.industry}/${resource.topic}` }]
+      ? [{ label: topicLabel, href: `/resources/${resource.industry}/${normalizeTopicSlug(resource.topic)}` }]
       : []),
     { label: resource.title },
   ];

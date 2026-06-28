@@ -14,6 +14,11 @@
   --constellation-margin: max(0.35rem, calc((100% - min(var(--site-frame-wide), 100%)) / 2));
 }
 
+.marketing-page-bands--constellation-spine > .section.section-tartan-accent:has(.search-bar),
+.marketing-page-bands--constellation-spine > .section.section-tartan-accent:has(.search-bar) > .container {
+  overflow: visible;
+}
+
 .section-constellation-layer {
   position: absolute;
   pointer-events: none;

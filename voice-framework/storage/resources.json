@@ -541,552 +541,580 @@
   },
   {
     "id": "topic-guide-professional-services-client-management-systems",
-    "industry": "professional-services",
-    "topic": "client-management-systems",
     "title": "Client Management Systems",
-    "description": "A single, defensible view of clients and matters reduces rework and protects relationships — essential when partners and staff cannot afford to hunt for context before every call or deadline.",
+    "topic": "client-management-systems",
+    "status": "published",
     "content": "When client and matter context lives in inboxes and ad hoc folders, partners reconstruct history before every decision — client management earns its cost by making that reconstruction unnecessary.\n\n## Operating pressure this addresses\n\nProfessional firms sell trust and responsiveness. Fragmented contact lists, duplicate records, and matter files scattered across email threads create rework: staff re-read history, partners intervene on routine lookups, and clients wait while someone “finds the file.”\nThat friction is often accepted as normal until a key person leaves and institutional memory walks out the door — then the cost becomes obvious in write-offs, missed deadlines, and client complaints.\n\n## What good looks like\n\nA defensible client and matter spine means one authoritative record per client relationship, clear matter status, communication history attached to the work — not buried in personal inboxes — and permissions that match who may see what.\n\n- New staff can orient on a matter in minutes, not days of shadowing.\n- Handoffs between team members do not reset context.\n- Reporting on pipeline, workload, and aging work is trustworthy without manual exports.\n\n## Trade-offs and sequencing\n\nFull practice-suite replacement is rarely the right first move. Many firms benefit from consolidating client and matter records, standardising intake, and integrating document locations before selecting a new “everything” platform.\nIntegration cost often exceeds licence cost — budget for data cleanup, migration validation, and a parallel run where partners can still work if the new system hiccups during cutover.\n\n- Phase 1: Single client index, matter taxonomy, and communication logging.\n- Phase 2: Document links, workflow templates, and billing hooks.\n- Phase 3: Advanced analytics, client portals, and automation where volume justifies it.\n\n## Australian context and incentives\n\nDigital transformation and business advisory grants can offset structured CRM or practice-management projects when the business case ties to measurable outcomes — reduced admin hours, faster matter opening, improved collection — not “we bought software.”\nDocument the baseline: hours spent weekly on client lookup, error rates on matter setup, and average days to invoice. Those numbers anchor grant applications and post-implementation review.\n\n## Practical next steps\n\nMap where client truth lives today: List systems (email, spreadsheets, legacy CRM, document stores) and who owns updates. Gaps become your Phase 1 scope.\nDefine matter taxonomy: Agree matter types, stages, and mandatory fields before tool selection — tools should fit your practice, not redefine it by default.\nScope integration before licences: Price data migration, document linking, and billing integration separately so total cost is visible before commitment.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 416
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-professional-services-client-management-systems::0",
       "topic-guide-professional-services-client-management-systems::1",
       "topic-guide-professional-services-client-management-systems::2"
     ],
+    "industry": "professional-services",
+    "metadata": {
+      "wordCount": 416
+    },
+    "visibility": "public",
+    "description": "A single, defensible view of clients and matters reduces rework and protects relationships — essential when partners and staff cannot afford to hunt for context before every call or deadline.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-professional-services-document-automation",
-    "industry": "professional-services",
-    "topic": "document-automation",
     "title": "Document Automation",
-    "description": "Repeatable documents should not consume senior time — controlled templates and automation recover margin on high-volume work without replacing professional judgment.",
+    "topic": "document-automation",
+    "status": "published",
     "content": "Senior time spent rebuilding near-identical documents is margin you already earned and then gave back — automation returns that time when templates and controls match how the firm actually drafts.\n\n## Operating pressure this addresses\n\nLetters, agreements, and court forms repeat with small variations. When each version is rebuilt manually, error rates rise, version control fails, and partners review low-value formatting instead of substance.\nThe inference is direct: if a document type exceeds a modest monthly volume, manual production costs more than controlled automation — even before counting partner review time.\n\n## What good looks like\n\nAutomation here means governed templates, clause libraries, merge fields tied to matter data, and approval paths — not unconstrained mail-merge that creates liability.\n\n- First drafts generated in minutes with mandatory fields enforced.\n- Version history and audit trail for who changed what.\n- Partners review substance on a known template baseline, not one-off layouts.\n\n## Trade-offs and sequencing\n\nStart with the highest-volume, lowest-risk document types — engagement letters, standard correspondence, routine filings — before automating complex agreements that need bespoke negotiation.\nTemplate maintenance is ongoing work: someone must own clause updates when law or firm policy changes. Budget that ownership or automation rots.\n\n## Value and risk balance\n\nMeasure time per document type before and after pilot. Firms that quantify hours recovered per week build a credible ROI story for partners and for any grant or investment committee.\nKeep human sign-off on client-facing outputs until error rates on generated drafts are demonstrably low — speed without control is exposure.\n\n## Practical next steps\n\nRank document types by volume and risk: Automate high-volume, standardised work first; leave bespoke negotiation manual until templates prove stable.\nAssign template ownership: Name a partner or senior associate accountable for clause libraries and periodic review — not “IT owns Word.”\nPilot one matter type end-to-end: Run intake data → generated draft → review → final PDF for a single workflow before firm-wide rollout.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 324
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-professional-services-document-automation::0",
       "topic-guide-professional-services-document-automation::1"
     ],
+    "industry": "professional-services",
+    "metadata": {
+      "wordCount": 324
+    },
+    "visibility": "public",
+    "description": "Repeatable documents should not consume senior time — controlled templates and automation recover margin on high-volume work without replacing professional judgment.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-professional-services-billing-time-tracking",
-    "industry": "professional-services",
-    "topic": "billing-time-tracking",
     "title": "Billing & Time Tracking",
-    "description": "Revenue leakage from uncaptured time and slow invoicing is measurable — systems that match how professionals actually work improve cash flow without adding admin theatre.",
+    "topic": "billing-time-tracking",
+    "status": "published",
     "content": "Uncaptured time and slow invoicing are silent revenue leaks — billing systems earn their place when capture matches how professionals work and cash collection accelerates without adding admin theatre.\n\n## Operating pressure this addresses\n\nPartners and staff postpone time entry; matters close with write-offs that were preventable; clients receive invoices long after work felt “finished.” Each pattern points to the same root cause: capture is harder than doing the work.\nWhen WIP is unreliable, forecasting and partner compensation discussions run on opinion — that is an operating risk, not just a finance inconvenience.\n\n## What good looks like\n\nTime is captured close to the work — mobile, calendar-linked, or matter-integrated — with clear narratives clients will accept. Invoicing runs on rhythm; exceptions are visible early.\n\n- WIP aging visible by matter and responsible lawyer.\n- Standard narratives and billing rules reduce partner rework on invoices.\n- Trust accounting and compliance requirements met without parallel spreadsheets.\n\n## Trade-offs and sequencing\n\nChanging billing software without fixing capture habits fails. Train for “same day or next morning” entry before debating feature lists.\nFor fixed-fee matters, time may still be tracked internally for profitability even if clients never see hourly lines — agree that policy up front.\n\n## Australian practice considerations\n\nTrust accounting rules and GST treatment must be validated with your accountant before migration. A billing cutover during tax season or trust audit windows is an own goal.\nPayment portals and automated reminders can shorten debtor days — model current average days-to-pay and set a target improvement for the business case.\n\n## Practical next steps\n\nAudit WIP leakage: Sample closed matters: compare narrative time entered vs. work performed. Patterns show whether the problem is capture, policy, or tooling.\nSet capture norms before tool change: Agree daily entry standard and partner enforcement — software follows behaviour, not the reverse.\nModel cash impact: Estimate revenue recovered from 5–10% better capture and 10–15 days faster collection — that funds the project.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 325
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-professional-services-billing-time-tracking::0",
       "topic-guide-professional-services-billing-time-tracking::1"
     ],
+    "industry": "professional-services",
+    "metadata": {
+      "wordCount": 325
+    },
+    "visibility": "public",
+    "description": "Revenue leakage from uncaptured time and slow invoicing is measurable — systems that match how professionals actually work improve cash flow without adding admin theatre.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-professional-services-practice-management",
-    "industry": "professional-services",
-    "topic": "practice-management",
     "title": "Practice Management",
-    "description": "Workflows, deadlines, and compliance sit on one integrated spine when practice management is scoped to how the firm operates — not imposed as a generic legal-tech catalogue.",
+    "topic": "practice-management",
+    "status": "published",
     "content": "Practice management is the spine that connects clients, documents, time, and deadlines — worth investing when fragmentation is costing you matters, margin, or regulatory confidence.\n\n## Operating pressure this addresses\n\nFirms outgrow bolt-on tools: CRM here, documents there, billing elsewhere, deadlines in Outlook. Staff become the integration layer — copying data, chasing status, and missing conflicts because systems do not talk.\nAt scale, that fragmentation shows up as missed limitation dates, duplicate client records, and inability to answer “what is our capacity next month?” without a manual war room.\n\n## What good looks like\n\nIntegrated practice management ties matter lifecycle, responsibilities, documents, time, and billing on one spine — with reporting partners trust for resourcing and profitability.\n\n- Conflict checks and intake are systematic, not heroic memory.\n- Workflow templates enforce who does what by matter stage.\n- Leadership sees pipeline, utilisation, and risk concentrations without exporting five reports.\n\n## Trade-offs and sequencing\n\nSuite selection is a multi-year decision — pilot with one practice group or matter type before firm-wide mandate.\nChange management is the dominant cost: partners must agree data standards and stop supporting shadow spreadsheets.\n\n## Implementation reality\n\nRun parallel operations for at least one billing cycle where feasible. Cutover weekends alone rarely suffice for firms with trust accounting complexity.\nVendor demos show happy paths — insist on scenarios from your messiest matter types and trust reporting requirements.\n\n## Practical next steps\n\nDocument integration pain points: List duplicate entry locations and failure modes (missed dates, billing errors) — these become acceptance criteria for any platform.\nPilot with one group: Choose a cooperative team with representative matter complexity; measure admin hours and error rates before scaling.\nNegotiate rollout, not just licence: Include migration validation, training hours, and post-go-live support in scope — not as optional change orders.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 298
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-professional-services-practice-management::0",
       "topic-guide-professional-services-practice-management::1"
     ],
+    "industry": "professional-services",
+    "metadata": {
+      "wordCount": 298
+    },
+    "visibility": "public",
+    "description": "Workflows, deadlines, and compliance sit on one integrated spine when practice management is scoped to how the firm operates — not imposed as a generic legal-tech catalogue.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-retail-inventory-pos",
-    "industry": "retail",
-    "topic": "inventory-pos",
     "title": "Inventory & POS Systems",
-    "description": "Accurate stock and till data are prerequisites for confident trading — integration and reorder logic earn their place when oversell and emergency freight stop being normal.",
+    "topic": "inventory-pos",
+    "status": "published",
     "content": "When the till and the shelf disagree, you are either overselling, over-ordering, or both — inventory and POS integration exists to make stock truth as reliable as your cash drawer.\n\n## Operating pressure this addresses\n\nRetail margin dies in the gaps: sell-through you did not record, stock you thought you had, shrink you cannot explain. Spreadsheets and end-of-day counts are tolerable at one site; they break when you add staff rotations, promotions, or a second channel.\nThe necessity is measurable: every oversell forces an apology or emergency supplier run; every phantom SKU ties up cash in dead stock.\n\n## What good looks like\n\nOne stock position per SKU (or variant) updated from sales and receipts, with reorder rules you trust and shrink visible by category — not discovered at stocktake.\n\n- Daily reconciliation between POS totals and payment deposits.\n- Receiving workflows that update on-hand before product hits the floor.\n- Reporting that separates margin by category and location without manual pivot tables.\n\n## Trade-offs and sequencing\n\nFix product master data and barcode discipline before buying advanced analytics — garbage SKUs make any system lie confidently.\nCloud POS with offline mode matters for Australian sites with patchy connectivity; verify failover before peak season.\n\n## Australian retail context\n\nSmall business technology grants and state retail recovery programs occasionally fund POS modernisation when tied to job creation or measurable efficiency — document baseline shrink and admin hours for applications.\nGST and EFTPOS settlement timing should match how your accounting package expects imports — scope integration with Xero/MYOB early.\n\n## Practical next steps\n\nReconcile one week brutally: Match POS sales, refunds, and on-hand for top SKUs manually — variances show where integration must focus.\nClean the catalogue: Merge duplicate SKUs and fix barcodes before migration — migration amplifies mess at scale.\nPhase by location or channel: Run one store or channel on the new stack while keeping fallback — cutover during quiet trading, not Christmas week.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 323
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-retail-inventory-pos::0",
       "topic-guide-retail-inventory-pos::1"
     ],
+    "industry": "retail",
+    "metadata": {
+      "wordCount": 323
+    },
+    "visibility": "public",
+    "description": "Accurate stock and till data are prerequisites for confident trading — integration and reorder logic earn their place when oversell and emergency freight stop being normal.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-retail-e-commerce",
-    "industry": "retail",
-    "topic": "e-commerce",
     "title": "E-commerce Integration",
-    "description": "Growing online without a second shadow inventory requires catalogue, payment, and fulfilment scoped to how you already sell — sequenced so channel expansion does not break the store.",
+    "topic": "e-commerce",
+    "status": "published",
     "content": "Selling online without sharing stock and fulfilment logic with the store creates a second business you cannot see — e-commerce integration is how channels reinforce each other instead of fighting.\n\n## Operating pressure this addresses\n\nA standalone web store with manual stock updates will oversell popular lines and strand capital in web-only inventory. Staff lose trust in the website when customers arrive for click-and-collect that was never reserved.\nCustomers expect accurate availability, sensible shipping or pickup windows, and consistent pricing — failures here are brand damage, not “IT issues.”\n\n## What good looks like\n\nUnified catalogue, shared inventory pool (or clear rules for channel allocation), automated order routing to pick/pack or store, and payments reconciled without re-keying.\n\n- Click-and-collect and ship-from-store workflows staff can execute without phone calls to the warehouse.\n- Promotions that respect margin guardrails across channels.\n- Returns handled once, reflected everywhere.\n\n## Trade-offs and sequencing\n\nLaunch with a bounded catalogue and one fulfilment model before promising national next-day — complexity scales with carriers, returns, and multi-site allocation.\nPlatform choice (Shopify, WooCommerce, custom) should follow fulfilment reality, not theme aesthetics.\n\n## Growth without chaos\n\nExport readiness and Australian consumer law (refunds, pricing display) belong in scope from day one — retrofits are expensive.\nMeasure cost per order and pick time; if web volume doubles, fulfilment must not double headcount unnoticed.\n\n## Practical next steps\n\nChoose fulfilment model first: Pick-up only, single warehouse, or multi-store allocation — technology follows logistics, not the reverse.\nIntegrate stock before marketing spend: Turn on ads only when availability and order flow are proven for your top SKUs.\nDefine returns policy in systems: Encode refund rules and restock behaviour so staff and customers get the same answer.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 284
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-retail-e-commerce::0",
       "topic-guide-retail-e-commerce::1"
     ],
+    "industry": "retail",
+    "metadata": {
+      "wordCount": 284
+    },
+    "visibility": "public",
+    "description": "Growing online without a second shadow inventory requires catalogue, payment, and fulfilment scoped to how you already sell — sequenced so channel expansion does not break the store.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-retail-customer-systems",
-    "industry": "retail",
-    "topic": "customer-systems",
     "title": "Customer Systems",
-    "description": "Loyalty and CRM only justify spend when they change behaviour you can measure — repeat visits, basket size, or acquisition cost — not when they are reporting vanity.",
+    "topic": "customer-systems",
+    "status": "published",
     "content": "Loyalty and CRM only matter when they change behaviour you can measure — otherwise you are paying to email people who would have bought anyway.\n\n## Operating pressure this addresses\n\nAcquisition costs rise; repeat customers subsidise growth. Without identifiable customers and offer logic tied to margin, promotions become blanket discounts that train everyone to wait for sales.\nGeneric CRM rollouts fail when staff never log interactions and data stays incomplete — the system becomes a mailing list, not a decision tool.\n\n## What good looks like\n\nKnown customers with consent-based contact, segments based on purchase patterns (not guesswork), and campaigns you can attribute to incremental visits or basket size.\n\n- Loyalty that rewards profitable behaviour, not only frequency.\n- Staff can see customer history at POS without opening five screens.\n- Churn and reactivation triggers you act on weekly, not quarterly.\n\n## Trade-offs and sequencing\n\nStart with POS-integrated loyalty and clean email/SMS consent before advanced personalisation — Australian Spam Act compliance is non-negotiable.\nIntegrate reviews and support tickets only if someone owns follow-up; data without action is noise.\n\n## Prove value before expansion\n\nRun one campaign with a holdout group (even informal) to see if targeted offers beat blanket discounts.\nReport incremental margin, not just open rates — leadership funds what protects profit, not clicks.\n\n## Practical next steps\n\nDefine one metric that matters: Repeat visit rate, average basket, or 90-day LTV — pick one success measure before buying tools.\nFix capture at checkout: Train staff on consent and identity capture; without IDs, CRM cannot infer value.\nPilot one segment offer: Test a single win-back or VIP offer, measure redemption and margin, then expand.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 274
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-retail-customer-systems::0",
       "topic-guide-retail-customer-systems::1"
     ],
+    "industry": "retail",
+    "metadata": {
+      "wordCount": 274
+    },
+    "visibility": "public",
+    "description": "Loyalty and CRM only justify spend when they change behaviour you can measure — repeat visits, basket size, or acquisition cost — not when they are reporting vanity.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-healthcare-patient-management",
-    "industry": "healthcare",
-    "topic": "patient-management",
     "title": "Patient Management Systems",
-    "description": "Clinical and administrative staff need one coherent patient record — double-entry and after-hours catch-up are signals that the current stack is costing capacity, not just inconvenience.",
+    "topic": "patient-management",
+    "status": "published",
     "content": "Clinical staff should not spend evenings reconciling notes across systems — patient management earns investment when the record matches the consult and follows the patient across the team.\n\n## Operating pressure this addresses\n\nDouble entry between booking, clinical, and billing systems burns capacity that should be clinical. Gaps in history create safety risk and duplicate tests; patients feel it as repeated questions every visit.\nAustralian practices also face My Health Record expectations, referral loops, and insurer reporting — fragmented records make each harder than it needs to be.\n\n## What good looks like\n\nOne coherent patient record: demographics, clinical notes, documents, medications, and appointments accessible to authorised roles with audit trails.\n\n- Consult documentation completed in-session or immediately after — not batch-caught up nightly.\n- Referrals and results attached to the patient, not lost in inbox attachments.\n- Billing codes and clinical notes aligned to reduce claim rejections.\n\n## Trade-offs and sequencing\n\nSpecialty templates and workflow vary — configure for your actual consult types, not vendor defaults designed for another country.\nMigration from legacy PMS requires validation of historical records clinicians still reference — plan read-only archive access if full migration is risky.\n\n## Practice context\n\nRural and digital health grants sometimes support telehealth and record modernisation when outcomes include access and reduced admin — document minutes saved per clinician per day.\nChoose vendors with Australian hosting and support hours that match when your practice actually runs.\n\n## Practical next steps\n\nShadow three consult workflows: Record every system touch from arrival to billing — integration scope should remove duplicate touches, not add screens.\nValidate medico-legal requirements: Confirm note structure, retention, and access rules with your indemnity insurer before cutover.\nPilot with willing clinicians: Win one high-volume clinician first; their workflow proof convinces the room better than vendor slides.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 298
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-healthcare-patient-management::0",
       "topic-guide-healthcare-patient-management::1"
     ],
+    "industry": "healthcare",
+    "metadata": {
+      "wordCount": 298
+    },
+    "visibility": "public",
+    "description": "Clinical and administrative staff need one coherent patient record — double-entry and after-hours catch-up are signals that the current stack is costing capacity, not just inconvenience.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-healthcare-compliance",
-    "industry": "healthcare",
-    "topic": "compliance",
     "title": "Compliance & Security",
-    "description": "Privacy, retention, and access control belong in the architecture conversation from the first scope line — retrofitting compliance after build is the expensive path Australian practices cannot afford.",
+    "topic": "compliance",
+    "status": "published",
     "content": "Privacy and security failures in healthcare are existential — compliance is cheaper when designed into systems than when paid for as an emergency retrofit after an incident.\n\n## Operating pressure this addresses\n\nThe Privacy Act and APPs apply to patient information regardless of practice size. Staff sharing records informally, weak access controls, or unclear retention destroy trust and attract regulatory attention.\nRansomware targeting healthcare is common because records are valuable and downtime hurts patients — “we are too small” is not a control strategy.\n\n## What good looks like\n\nRole-based access, encryption in transit and at rest, logging of who viewed what, backup you have tested restoring, and policies staff can follow without a law degree.\n\n- Unique credentials per user; no shared clinic logins.\n- Offboarding removes access same day.\n- Incident response steps documented and rehearsed lightly once per year.\n\n## Trade-offs and sequencing\n\nQuick wins: MFA on email and PMS, patched workstations, and backup restore test. Larger projects: network segmentation and vendor risk reviews.\nOver-collection of patient data creates liability — collect what you use, delete what you do not need on schedule.\n\n## Australian obligations\n\nNotifiable Data Breaches scheme means you must assess and report eligible breaches — know your process before you need it at 9pm on a Friday.\nIf using overseas subprocessors, document cross-border disclosure analysis — cloud convenience does not remove accountability.\n\n## Practical next steps\n\nRun an access review: List who can export bulk patient data; remove unnecessary admin rights.\nTest a restore: Actually recover a file from backup this quarter — untested backup is hope, not control.\nDocument breach steps: One-page playbook: contain, assess NDB eligibility, notify — with named roles.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 280
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-healthcare-compliance::0",
       "topic-guide-healthcare-compliance::1"
     ],
+    "industry": "healthcare",
+    "metadata": {
+      "wordCount": 280
+    },
+    "visibility": "public",
+    "description": "Privacy, retention, and access control belong in the architecture conversation from the first scope line — retrofitting compliance after build is the expensive path Australian practices cannot afford.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-healthcare-appointments",
-    "industry": "healthcare",
-    "topic": "appointments",
     "title": "Appointment Management",
-    "description": "No-shows and manual scheduling consume chair time — reminders, waitlists, and calendar discipline are often the fastest win before larger clinical system change.",
+    "topic": "appointments",
+    "status": "published",
     "content": "Empty chairs and long phone queues are the same problem — appointment systems pay off when patients self-serve reliably and the schedule reflects real chair time.\n\n## Operating pressure this addresses\n\nReception bears the load when booking is phone-only: hold music, double bookings, and reminder calls staff could spend on in-room care. No-shows without automated follow-up are revenue and access lost twice.\nOnline booking that ignores procedure length or practitioner preference creates chaos downstream — patients blame the practice, not the software.\n\n## What good looks like\n\nTemplates per appointment type, waitlist backfill, SMS/email reminders with easy confirm/cancel, and two-way sync so online and phone bookings cannot collide.\n\n- Reduced no-show rate with measured before/after.\n- Shorter phone time for routine reschedules.\n- Utilisation visible by practitioner and session type.\n\n## Trade-offs and sequencing\n\nStart with reminders and waitlist on existing PMS if full online booking is contentious — often 80% of benefit for 20% of change.\nExpose only appointment types you can honour; hiding complex consults behind “call us” is valid triage.\n\n## Patient access angle\n\nAfter-hours booking and telehealth slots improve access narratives for grant or accreditation storytelling — measure reduced phone abandonment and filled cancelled slots.\n\n## Practical next steps\n\nMeasure no-shows and phone volume: Baseline for four weeks — proves ROI of reminders and online booking.\nConfigure duration rules: Map appointment types to real chair time including turnover — schedule truth prevents daily firefighting.\nEnable self-serve cancel/reschedule: Patients fix their own timing; reception handles exceptions, not every change.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 252
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-healthcare-appointments::0",
       "topic-guide-healthcare-appointments::1"
     ],
+    "industry": "healthcare",
+    "metadata": {
+      "wordCount": 252
+    },
+    "visibility": "public",
+    "description": "No-shows and manual scheduling consume chair time — reminders, waitlists, and calendar discipline are often the fastest win before larger clinical system change.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-hospitality-booking",
-    "industry": "hospitality",
-    "topic": "booking",
     "title": "Booking & Reservation Systems",
-    "description": "Double-bookings and front-of-house firefighting erode guest experience — reliable booking flow is the basis for staffing and revenue decisions, not an add-on brochure feature.",
+    "topic": "booking",
+    "status": "published",
     "content": "Double-booked tables and phone-only reservations burn goodwill before service starts — booking systems justify spend when the floor plan and guest promises stay in sync.\n\n## Operating pressure this addresses\n\nCovers are perishable inventory. A empty table at 7:30pm cannot be sold twice; an overbooked Friday costs comps, stress, and reviews. Managers should not be the human API between Google, phone, walk-ins, and the floor plan.\nAccommodation adds channel manager complexity — OTAs, direct web, and front desk must agree on inventory or you honour rates you did not intend.\n\n## What good looks like\n\nReal-time availability, deposits where no-shows hurt, automated confirmations, and service-period rules (turn times, combos, functions) encoded — not remembered by one veteran host.\n\n- Waitlist that texts when tables turn.\n- Function and event holds that do not disappear from a notebook.\n- Reporting on covers, no-shows, and channel mix.\n\n## Trade-offs and sequencing\n\nIntegrate booking with POS or at least export guest lists for busy services — otherwise kitchen and floor still fly blind.\nDeposits and cancellation policies must match consumer law and your brand tone — technology enforces what you document.\n\n## Hospitality context\n\nTourism and small business programs occasionally fund digital booking and channel tools post-disruption — tie applications to measurable cover utilisation and labour saved on phones.\n\n## Practical next steps\n\nAudit one peak service: Count booking sources and conflicts — shows where integration must land first.\nSet turn-time rules: Encode realistic seating duration per party size — stops optimistic overbooking.\nTurn on deposits where pain is highest: Functions and peak Saturdays first; measure no-show delta before rolling everywhere.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 268
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-hospitality-booking::0",
       "topic-guide-hospitality-booking::1"
     ],
+    "industry": "hospitality",
+    "metadata": {
+      "wordCount": 268
+    },
+    "visibility": "public",
+    "description": "Double-bookings and front-of-house firefighting erode guest experience — reliable booking flow is the basis for staffing and revenue decisions, not an add-on brochure feature.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-hospitality-pos-integration",
-    "industry": "hospitality",
-    "topic": "pos-integration",
     "title": "POS Integration",
-    "description": "Menu, payments, and inventory that reconcile daily make margin visible per service period — essential when labour and supply costs move weekly.",
+    "topic": "pos-integration",
+    "status": "published",
     "content": "If menu, payments, and stock do not reconcile daily, you are flying blind on margin — POS integration makes the shift handover a fact, not a debate.\n\n## Operating pressure this addresses\n\nHospitality COGS move with weather, events, and supply shocks. Without item-level sales tied to recipes or purchase data, “we feel busy” replaces gross profit clarity. Tip pooling and surcharge rules add payroll complexity when POS and roster systems disagree.\n\n## What good looks like\n\nMenu engineering with stable PLU structure, integrated EFTPOS, kitchen routing where needed, and end-of-day reports that match bank deposits without a 45-minute reconciliation argument.\n\n- Modifier and combo pricing consistent across terminals.\n- Void and discount reasons captured for fraud and training signals.\n- Labour % viewed against actual sales, not projected.\n\n## Trade-offs and sequencing\n\nMatch POS depth to venue type — a cafe does not need enterprise table management; a full-service venue does.\nOffline mode and surge support matter for festivals and stadium adjacency sites.\n\n## Cash and compliance\n\nSingle Touch Payroll and award interpretation still need payroll expertise — POS exports wages components; they do not replace HR advice.\nSurcharge display rules must be clear on receipts — compliance protects against chargeback disputes.\n\n## Practical next steps\n\nReconcile tills to bank for one week: Document variances by terminal and shift — integration scope targets real leaks.\nStandardise menu data: Fix PLUs and modifiers before adding delivery aggregators — aggregators amplify mess.\nConnect roster to sales hours: Compare rostered hours to sales by hour block; adjust staffing patterns with data.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 258
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-hospitality-pos-integration::0",
       "topic-guide-hospitality-pos-integration::1"
     ],
+    "industry": "hospitality",
+    "metadata": {
+      "wordCount": 258
+    },
+    "visibility": "public",
+    "description": "Menu, payments, and inventory that reconcile daily make margin visible per service period — essential when labour and supply costs move weekly.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-hospitality-automation",
-    "industry": "hospitality",
-    "topic": "automation",
     "title": "Automation & Efficiency",
-    "description": "Communications, alerts, and reporting that run without constant supervision free managers for service quality — scoped so automation supports the floor instead of fighting it.",
+    "topic": "automation",
+    "status": "published",
     "content": "Automation in hospitality should buy back floor and kitchen attention — not add screens. If staff ignore alerts, the automation failed.\n\n## Operating pressure this addresses\n\nOwners and managers repeat the same messages: roster changes, function confirmations, low-stock warnings, review responses. Labour is tight; wasting shift time on copy-paste communication is margin you cannot recover.\nAutomation that fights service rhythm — buzzing kitchens with low-value alerts — gets disabled and distrusted.\n\n## What good looks like\n\nTriggered messages guests actually want, inventory alerts tied to par levels, scheduled reports to owners, and roster reminders that reduce no-show shifts — each with an owner who tunes rules monthly.\n\n- Post-visit feedback requests timed after payment, not before dessert.\n- Supplier reorder prompts from usage, not calendar guesses.\n- Daily flash report to owner phone without opening five apps.\n\n## Trade-offs and sequencing\n\nAutomate high-volume, low-risk comms first; keep complaints and VIP handling human.\nIntegrate only systems you will maintain — zombie Zapier chains become secret infrastructure.\n\n## Prove labour returned\n\nTrack manager hours spent on admin pre/post automation — that hours-saved figure funds the next integration.\n\n## Practical next steps\n\nList top ten repetitive tasks: Rank by weekly frequency and error cost — automate the top two only.\nAssign an automation owner: One person reviews triggers monthly; orphan automations rot.\nMeasure guest response: Opt-out and complaint rates on SMS/email — stop campaigns that annoy regulars.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 234
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-hospitality-automation::0",
       "topic-guide-hospitality-automation::1"
     ],
+    "industry": "hospitality",
+    "metadata": {
+      "wordCount": 234
+    },
+    "visibility": "public",
+    "description": "Communications, alerts, and reporting that run without constant supervision free managers for service quality — scoped so automation supports the floor instead of fighting it.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-construction-overview",
-    "industry": "construction",
-    "topic": "overview",
     "title": "Construction & Trades — industry overview",
-    "description": "Jobs run on quotes, site coordination, and compliance evidence — when status lives in messages and spreadsheets, margin and safety both suffer. This hub frames technology as job control and visibility, with scope and costs agreed before major platform spend.",
+    "topic": "overview",
+    "status": "published",
     "content": "Construction margin is won or lost on job visibility — when quotes, variations, and site reality live in separate threads, technology spend must buy control, not another login nobody uses.\n\n## Why technology matters on the job\n\nFixed-price and trade businesses bleed when variations are late, photos sit on personal phones, and supervisors reconstruct progress for invoicing. Compliance evidence for safety and licensing becomes archaeology when auditors call.\nThe inference: systems that tie quote → job → costs → invoice reduce dispute and accelerate cash — generic office software rarely spans the site-to-accounts gap.\n\n## Priority capabilities\n\nFocus spend where leakage is provable:\n\n- Job costing with live committed costs vs. quote.\n- Variation capture with client approval trails.\n- Site diaries, photos, and SWMS accessible by job.\n- Subcontractor compliance pack on file before mobilisation.\n\n## Sequencing that works\n\nStart with job register and document control before mobile apps for every tradesperson — leadership needs one truth before the field multiplies inputs.\nIntegrate accounting only after job codes and cost categories are disciplined — otherwise you automate mess.\n\n## Australian programs\n\nManufacturing and business grants sometimes cover operational technology when tied to productivity metrics — document rework hours and variation dispute frequency for credible applications.\n\n## Practical next steps\n\nPick one job type to model: Run quote-to-invoice on paper for your messiest job type — gaps define requirements.\nStandardise job codes: Agree cost categories with your accountant before software selection.\nScope mobile after office truth: Site apps follow stable job records — not the other way around.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 258
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-construction-overview::0",
       "topic-guide-construction-overview::1"
     ],
+    "industry": "construction",
+    "metadata": {
+      "wordCount": 258
+    },
+    "visibility": "public",
+    "description": "Jobs run on quotes, site coordination, and compliance evidence — when status lives in messages and spreadsheets, margin and safety both suffer. This hub frames technology as job control and visibility, with scope and costs agreed before major platform spend.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-construction-job-costing-variations",
-    "industry": "construction",
-    "topic": "job-costing-variations",
     "title": "Job Costing & Variations",
-    "description": "Quote-to-invoice control when variations and committed costs must stay visible — margin is decided before the final claim, not in a spreadsheet after the fact.",
+    "topic": "job-costing-variations",
+    "status": "published",
     "content": "Margin on fixed-price work is decided in variations and job costing — when committed costs live in spreadsheets and site photos, you find out too late whether the job paid.\n\n## Operating pressure this addresses\n\nTrades and builders lose money when variations are verbal, materials are bought off-job, and supervisors reconstruct progress for invoicing. Disputes start when the client’s memory of scope differs from yours.\nThe inference: one job register with live committed costs vs. quote is the minimum control before mobile apps or fancy dashboards.\n\n## What good looks like\n\nEvery active job shows quote, variations approved in writing, committed costs, and % complete you trust — without exporting to Excel every Friday.\n\n- Variation register with client approval trail and revised contract value.\n- Cost codes aligned with your accountant’s chart of accounts.\n- Progress claims tied to measurable milestones, not gut feel.\n\n## Sequencing that works\n\nModel one messy job type on paper before selecting software — gaps define requirements better than vendor demos.\nIntegrate accounting only after job codes are disciplined; otherwise you automate confusion.\n\n## Practical next steps\n\nQuote-to-invoice on paper: Walk one recent job from quote through variations to final invoice — note every re-key and dispute point.\nAgree cost categories: Align job cost codes with your bookkeeper before shortlisting platforms.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 217
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-construction-job-costing-variations::0",
       "topic-guide-construction-job-costing-variations::1"
     ],
+    "industry": "construction",
+    "metadata": {
+      "wordCount": 217
+    },
+    "visibility": "public",
+    "description": "Quote-to-invoice control when variations and committed costs must stay visible — margin is decided before the final claim, not in a spreadsheet after the fact.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-construction-site-compliance",
-    "industry": "construction",
-    "topic": "site-compliance",
     "title": "Site Compliance & Diaries",
-    "description": "SWMS, inductions, and site evidence linked to the job — so principal contractors and auditors get answers in minutes, not archaeology.",
+    "topic": "site-compliance",
+    "status": "published",
     "content": "Safety and licensing evidence cannot live on personal phones — auditors and principal contractors expect job-linked SWMS, inductions, and photos when they ask, not a week later.\n\n## Operating pressure this addresses\n\nSite diaries, toolbox talks, and subcontractor insurances scatter across WhatsApp and email. When a principal contractor or regulator requests records, reconstruction burns senior time and risks gaps.\n\n## What good looks like\n\nCompliance pack per job: SWMS, inductions, insurance certificates, and key site photos retrievable by job code in minutes.\n\n- Subcontractor compliance checked before mobilisation, not after.\n- Daily diary entries with weather, crew, and incidents — even brief.\n- Photo tags linked to job and location, not camera roll scroll.\n\n## Trade-offs\n\nStart with document control and checklists before rolling apps to every tradesperson — leadership needs one truth first.\nFree-form chat is not a system of record; route approvals through named workflows.\n\n## Practical next steps\n\nAudit last principal request: List every document you had to find for the last compliance chase — that is your minimum feature set.\nStandardise naming: Job folder template: SWMS, insurances, variations, photos — same structure every job.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 188
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-construction-site-compliance::0",
       "topic-guide-construction-site-compliance::1"
     ],
+    "industry": "construction",
+    "metadata": {
+      "wordCount": 188
+    },
+    "visibility": "public",
+    "description": "SWMS, inductions, and site evidence linked to the job — so principal contractors and auditors get answers in minutes, not archaeology.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-finance-overview",
-    "industry": "finance",
-    "topic": "overview",
     "title": "Finance & Accounting — industry overview",
-    "description": "Reporting cycles, audit trails, and client confidentiality set the bar — manual reconciliation and fragmented ledgers consume capacity that should go to advice and growth. Resources connect financial operations to automation and controls you can defend to clients and regulators.",
+    "topic": "overview",
+    "status": "published",
     "content": "Accounting and advisory firms sell trust and timeliness — fragmented ledgers and manual client packs erode both; technology should shorten close cycles and deepen client transparency.\n\n## Operating pressure\n\nStaff chase source documents; partners re-key between systems; clients ask for “live” numbers you cannot produce without heroics. Automation without control increases professional risk if review trails are weak.\n\n## Priority capabilities\n\nInvest where partners and clients feel the pain:\n\n- Automated bank feeds with exception-based review.\n- Client portals for document upload and queries.\n- Standardised management reporting packs.\n- Workflow for BAS, tax, and audit with clear sign-off.\n\n## Sequencing\n\nFix chart of accounts and client onboarding checklists before buying analytics dashboards.\nPilot portals with five cooperative clients — learn support load before firm-wide launch.\n\n## Client value story\n\nClients fund advisory when they see faster closes and proactive alerts — price technology as capacity for higher-value work, not headcount replacement without conversation.\n\n## Practical next steps\n\nMap the close checklist: Time each step for three clients — automation targets the longest repetitive blocks.\nDefine portal boundaries: What clients may upload vs. what staff must validate — scope reduces liability.\nIntegrate practice management and ledger: Single client spine beats duplicate CRM and accounting contacts.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 205
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-finance-overview::0",
       "topic-guide-finance-overview::1"
     ],
+    "industry": "finance",
+    "metadata": {
+      "wordCount": 205
+    },
+    "visibility": "public",
+    "description": "Reporting cycles, audit trails, and client confidentiality set the bar — manual reconciliation and fragmented ledgers consume capacity that should go to advice and growth. Resources connect financial operations to automation and controls you can defend to clients and regulators.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-finance-client-reporting",
-    "industry": "finance",
-    "topic": "client-reporting",
     "title": "Client Reporting Packs",
-    "description": "Standardised management reporting without monthly rebuilds — partners review exceptions, not formulas.",
+    "topic": "client-reporting",
+    "status": "published",
     "content": "Advisory firms sell clarity — when management packs are rebuilt manually each month, partners trade judgment for spreadsheet heroics and clients wait longer for answers.\n\n## Operating pressure this addresses\n\nStaff chase source documents; partners re-key between systems; clients ask for “live” numbers you cannot produce without weekend work. Weak review trails increase professional risk when automation outpaces control.\n\n## What good looks like\n\nStandardised reporting packs generated from reconciled ledgers, with exceptions flagged for partner review — not rebuilt from scratch.\n\n- Chart of accounts and tracking categories stable across clients where possible.\n- Client portals for document upload and query — fewer email threads.\n- Versioned packs with sign-off before send.\n\n## Sequencing that works\n\nAutomate bank feeds and exception review before client-facing dashboards — pretty charts on dirty data destroy trust.\nPick one client segment (e.g. SME trading) and perfect the pack before templating firm-wide.\n\n## Practical next steps\n\nTime one close cycle: Measure hours per client for last month-end — largest buckets define automation priority.\nTemplate one pack: Freeze a partner-approved SME pack as the reference; diff all others against it.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 185
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-finance-client-reporting::0",
       "topic-guide-finance-client-reporting::1"
     ],
+    "industry": "finance",
+    "metadata": {
+      "wordCount": 185
+    },
+    "visibility": "public",
+    "description": "Standardised management reporting without monthly rebuilds — partners review exceptions, not formulas.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-finance-workflow-compliance",
-    "industry": "finance",
-    "topic": "workflow-compliance",
     "title": "Workflow & Compliance",
-    "description": "BAS, tax, and audit jobs with visible sign-off — named owners and timestamps you can defend.",
+    "topic": "workflow-compliance",
+    "status": "published",
     "content": "BAS, tax, and audit workflows need visible sign-off — opaque inboxes and shared logins fail when the ATO or reviewer asks who approved what and when.\n\n## Operating pressure this addresses\n\nDeadline season compresses judgment into hours. Without workflow states, work queues hide overload until something lodges late or without review.\n\n## What good looks like\n\nEach job moves through defined states (prepare → review → lodge) with named owners and timestamps — recoverable in an audit.\n\n- Segregation between preparer and reviewer on material items.\n- Checklists for BAS/tax tied to job type, not memory.\n- Secure client credentials — no shared passwords in spreadsheets.\n\n## Trade-offs\n\nWorkflow software fails if partners bypass it — leadership must lodge from the system, not email PDFs.\nStart with high-risk job types (complex GST, trust distributions) before every micro-engagement.\n\n## Practical next steps\n\nMap one lodgement: Trace last BAS from client docs to lodge — every handoff is a workflow step candidate.\nDefine review gates: List what must be partner-reviewed vs. manager-reviewed — encode in checklists.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 174
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-finance-workflow-compliance::0"
     ],
+    "industry": "finance",
+    "metadata": {
+      "wordCount": 174
+    },
+    "visibility": "public",
+    "description": "BAS, tax, and audit jobs with visible sign-off — named owners and timestamps you can defend.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-manufacturing-overview",
-    "industry": "manufacturing",
-    "topic": "overview",
     "title": "Manufacturing & Production — industry overview",
-    "description": "Throughput, quality signals, and supply timing determine competitiveness — when production data lags the floor, planning guesses and rework follow. Guides tie shop-floor reality to tracking and integration with trade-offs visible up front.",
+    "topic": "overview",
+    "status": "published",
     "content": "Manufacturers compete on throughput and defect cost — when floor data lags reality, planning optimises fiction; technology must connect shop floor to schedule and supply.\n\n## Operating pressure\n\nSpreadsheet schedules break when a machine goes down or a rush order arrives. Quality issues discovered at dispatch are expensive; traceability requests from customers expose weak batch records.\n\n## Priority capabilities\n\nConnect floor signal to planning and quality:\n\n- Real-time or near-real-time production counts by work centre.\n- Bill of materials and routings you trust.\n- Inventory by location with scan discipline.\n- Non-conformance and traceability for critical SKUs.\n\n## Sequencing\n\nInstrument one line or cell before plant-wide MES — prove signal quality and operator adherence.\nAlign engineering change process with BOM updates — systems cannot fix undocumented shop changes.\n\n## Australian manufacturing support\n\nModern manufacturing and regional grants often fund IoT, MES, and training when tied to output or waste reduction — baseline scrap and overtime hours before applying.\n\n## Practical next steps\n\nMeasure OEE on one line: Even manual sampling beats no baseline — shows where sensors pay off.\nValidate BOM accuracy: Engineering sign-off on routings before ERP go-live.\nPilot traceability on one SKU: Prove lot tracking for your most regulated or valuable product first.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 205
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-manufacturing-overview::0",
       "topic-guide-manufacturing-overview::1"
     ],
+    "industry": "manufacturing",
+    "metadata": {
+      "wordCount": 205
+    },
+    "visibility": "public",
+    "description": "Throughput, quality signals, and supply timing determine competitiveness — when production data lags the floor, planning guesses and rework follow. Guides tie shop-floor reality to tracking and integration with trade-offs visible up front.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-manufacturing-shop-floor-tracking",
-    "industry": "manufacturing",
-    "topic": "shop-floor-tracking",
     "title": "Shop Floor Tracking",
-    "description": "WIP and downtime visible before the customer calls — schedules grounded in what the floor actually did.",
+    "topic": "shop-floor-tracking",
+    "status": "published",
     "content": "Planning guesses when production reality lags the office — shop-floor tracking exists so schedule, WIP, and downtime are visible before rework and missed dispatch dates.\n\n## Operating pressure this addresses\n\nSpreadsheet schedules diverge from the floor by midday. Supervisors know which orders are stuck; the office finds out when a customer calls. Labour and machine time are too expensive to reconcile blindly at month-end.\n\n## What good looks like\n\nOrders show status (queued, in progress, hold, complete) with reason codes for downtime — trusted enough for daily production meetings.\n\n- Routings or work centres reflect how product actually moves, not idealised flow.\n- Scrap and rework logged against order or batch.\n- Hand-off to dispatch without re-keying quantities.\n\n## Sequencing that works\n\nDigitise one product family or line before the whole plant — prove signal quality where volume is highest.\nFix unit of measure and BOM accuracy before MES dashboards — bad BOMs make any system lie confidently.\n\n## Practical next steps\n\nWalk one hot order: Follow today’s urgent order across stations — note every undocumented wait and rework.\nDefine reason codes: Agree five downtime/scrap codes operators will actually use — start small.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 193
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-manufacturing-shop-floor-tracking::0",
       "topic-guide-manufacturing-shop-floor-tracking::1"
     ],
+    "industry": "manufacturing",
+    "metadata": {
+      "wordCount": 193
+    },
+    "visibility": "public",
+    "description": "WIP and downtime visible before the customer calls — schedules grounded in what the floor actually did.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   },
   {
     "id": "topic-guide-manufacturing-quality-traceability",
-    "industry": "manufacturing",
-    "topic": "quality-traceability",
     "title": "Quality & Traceability",
-    "description": "Batch genealogy for recalls and audits — answer which customers got which lot without paper travellers.",
+    "topic": "quality-traceability",
+    "status": "published",
     "content": "Recalls and customer audits demand batch traceability — if lot numbers live on paper travellers, you cannot answer “which customers got this material?” fast enough.\n\n## Operating pressure this addresses\n\nQuality issues without traceability force broad holds or risky ship decisions. Regulated or food-adjacent customers increasingly expect genealogy from raw material to dispatch.\n\n## What good looks like\n\nForward and backward trace for lots/batches in minutes: supplier lot → WIP → finished goods → customer shipment.\n\n- Receiving tied to supplier certificates where required.\n- Non-conformance workflow with disposition (scrap, rework, concession).\n- Calibration and maintenance records for critical equipment.\n\n## Trade-offs\n\nFull genealogy on every SKU may be overkill — scope traceability to regulated lines or top revenue products first.\nOperator burden kills adoption — barcode or station UI must be faster than paper for the common case.\n\n## Practical next steps\n\nSimulate a recall: Pick a recent batch and time how long it takes to list affected customers — that is your baseline.\nScope critical SKUs: Mark products that require full trace vs. aggregate tracking — implement depth where risk justifies it.",
-    "generatedAt": "2024-06-01T00:00:00.000Z",
-    "generatedBy": "system-seed",
     "ownerId": "system",
     "version": 1,
-    "status": "published",
-    "visibility": "public",
-    "isStarterBlock": false,
-    "metadata": {
-      "wordCount": 184
-    },
-    "processingStatus": "ready",
     "chunkIds": [
       "topic-guide-manufacturing-quality-traceability::0",
       "topic-guide-manufacturing-quality-traceability::1"
     ],
+    "industry": "manufacturing",
+    "metadata": {
+      "wordCount": 184
+    },
+    "visibility": "public",
+    "description": "Batch genealogy for recalls and audits — answer which customers got which lot without paper travellers.",
+    "generatedAt": "2024-06-01T00:00:00.000Z",
+    "generatedBy": "system-seed",
     "embeddingModel": "hash-fallback-v1",
-    "embeddingVersion": 1
+    "isStarterBlock": false,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
+  },
+  {
+    "id": "starter-inference-on-resources",
+    "title": "Inference on Resources — voice, RAG, and generation",
+    "topic": "inference-on-resources",
+    "status": "published",
+    "content": "# Inference on Resources\n\nThis starter block explains how Brisbane Servers combines **voice profiling**, **retrieval (RAG)**, and **inference** in the account workspace. It is written to be indexed, retrieved, and improved like any other resource — so the corpus can describe its own pipeline.\n\n## Mental model\n\n- **Voice profile** is the conductor — tone, terminology, and structure derived from published resources and starters (including BIGPONS / Brisbane default).\n- **RAG** is the librarian — embeddings search the semantic index and inject relevant chunks into the prompt before generation or improve.\n- **Inference** is the writer — NVIDIA NIM (Developer Program) or Cloudflare Workers AI produces the body; template generators remain the fallback.\n- **VoiceMatcher** is the editor — output must meet a minimum voice score or the system falls back to template expansion.\n- **The corpus** is the memory — each published or starter resource is chunked, embedded, and available for the next retrieval cycle.\n\nWhen this document (and related ops notes) live in the corpus, future generates can cite how the platform works — a self-describing loop.\n\n## Generate flow\n\n1. Editor calls **POST /api/resources/generate** with industry, topic, and optional profile selection.\n2. **resolveResourceVoiceProfile** picks the active profile (requested → default → library-derived → bundled).\n3. **buildRagContext** embeds the task query and retrieves top chunks from the semantic index.\n4. **buildInferenceSystemPrompt** and **buildInferenceUserPrompt** combine profile + RAG seed + task.\n5. **completeInference** calls NVIDIA or Workers AI; on cap, error, or low voice score → template path.\n6. **generateResourceCatalogDescription** writes the hub card blurb in profile voice.\n7. **runIndexPipeline** re-embeds the new resource so RAG stays current.\n\n## Improve flow\n\n1. Editor calls **POST /api/resources/:id/improve** on an existing resource.\n2. RAG retrieves related chunks (preferring the same resource when indexed).\n3. **improveResourceBody** uses the same inference stack with an improve-specific user prompt.\n4. Voice validation and usage caps mirror Generate; response includes inference.mode and modelId in the JSON payload.\n\n## Voice profiles in the dashboard\n\nSaved profiles store characteristics (formality, technicality, precision, vocabulary, markers). Profile cards summarise tone and corpus linkage so editors can pick a reference voice for Generate without memorising schema fields.\n\n## Purpose vs voice\n\n**Project purpose** (2032 network implementation, evidence on Resources) governs *what* we document. **Voice framework** governs *how* we write. Inference connects both: grounded retrieval plus profile-conditioned generation.\n\n## Getting started as an editor\n\n1. Open **Workspace → Resources** and choose a voice profile (or Auto).\n2. Generate from industry/topic or start from this starter block.\n3. Use **Improve** to refine drafts; check voice score in the response.\n4. Publish when ready — public resources strengthen BIGPONS and RAG for everyone.\n\n## Evidence and limits\n\n- Daily inference caps apply per role (see **GET /api/usage/me**).\n- NVIDIA hosted NIM is for development and prototyping under the Developer Program; Workers AI and template paths provide fallback.\n- Embeddings may use OpenAI or a hash fallback — retrieval quality improves when real embeddings are configured.\n\nThis starter is idempotent: safe to sync repeatedly; content updates when the seed definition changes.",
+    "version": 1,
+    "chunkIds": [
+      "starter-inference-on-resources::0",
+      "starter-inference-on-resources::1",
+      "starter-inference-on-resources::2",
+      "starter-inference-on-resources::3"
+    ],
+    "industry": "platform",
+    "metadata": {
+      "wordCount": 506,
+      "voiceScore": 0.85,
+      "semanticLevel": "high"
+    },
+    "visibility": "starter",
+    "description": "How voice profiling, semantic retrieval, and inference (NVIDIA / Workers AI) work together in the Brisbane Servers resource workspace.",
+    "generatedAt": "2026-06-26T00:00:00.000Z",
+    "generatedBy": "system-seed",
+    "embeddingModel": "hash-fallback-v1",
+    "isStarterBlock": true,
+    "embeddingVersion": 1,
+    "processingStatus": "ready"
   }
 ]

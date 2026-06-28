@@ -6,6 +6,7 @@
 import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
 import { getSemanticIndexFile } from '../storage-paths';
 import type { Resource } from '../resource-types';
+import { isPublicResource } from '../resource-types';
 import { createEmbeddingClient } from './embedding-client';
 import { DEFAULT_EMBEDDING_VERSION } from './embedding-version';
 import { chunkResource } from './chunker';
@@ -76,7 +77,7 @@ export async function searchSimilar(
   const publishedSet = new Set<string>();
   if (publishedOnly && resources) {
     for (const r of resources) {
-      if (r.status === 'published' && (r.visibility === undefined || r.visibility === 'public')) {
+      if (isPublicResource(r)) {
         publishedSet.add(r.id);
       }
     }

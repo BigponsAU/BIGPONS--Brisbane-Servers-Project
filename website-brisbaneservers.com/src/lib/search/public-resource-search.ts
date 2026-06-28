@@ -3,6 +3,7 @@
  */
 import { loadResources, isPublicResource } from '../resources-api';
 import type { Resource } from '../resource-types';
+import { isIndexableResource } from '../content-registry';
 import { normalizeTopicSlug } from '../resource-slug';
 import { createEmbeddingClient } from '../semantic/embedding-client';
 import { searchSimilar } from '../semantic/chunk-index';
@@ -12,6 +13,8 @@ import {
   matchPropositionKeywords,
   propositionKeywordScore,
 } from './proposition-corpus';
+import { getPublicSearchResultUrl } from './search-result-url';
+import { searchStaticCaseStudies } from './public-case-study-search';
 
 export type PublicSearchMatchSource = 'semantic' | 'keyword' | 'hybrid';
 
@@ -26,10 +29,6 @@ export interface PublicSearchResult {
   strength: number;
   matchSource: PublicSearchMatchSource;
   matchedKeywords: string[];
-}
-
-function resourceUrl(resource: Resource): string {
-  return `resources/item/${resource.id}/index.html`;
 }
 
 function cosine(a: number[], b: number[]): number {
@@ -74,6 +73,9 @@ export async function searchPublicResources(query: string, limit = 8): Promise<{
 
   const resources = await loadResources();
   const published = resources.filter(isPublicResource);
+  const searchableResources = published.filter(
+    (resource) => isIndexableResource(resource) || getPublicSearchResultUrl(resource),
+  );
   const propositionKeywords = matchPropositionKeywords(trimmed);
   const client = createEmbeddingClient();
   const [queryEmb, identityEmb] = await client.embed([trimmed, getPropositionIdentityText()]);
@@ -95,7 +97,9 @@ export async function searchPublicResources(query: string, limit = 8): Promise<{
 
   const results: PublicSearchResult[] = [];
 
-  for (const resource of published) {
+  for (const resource of searchableResources) {
+    const resultUrl = getPublicSearchResultUrl(resource);
+    if (!resultUrl) continue;
     const semanticHit = byResource.get(resource.id);
     const textBlob = `${resource.title} ${resource.description} ${resource.content.slice(0, 600)}`;
     const kwScore = propositionKeywordScore(trimmed, textBlob);
@@ -128,7 +132,7 @@ export async function searchPublicResources(query: string, limit = 8): Promise<{
       id: resource.id,
       title: resource.title,
       description: resource.description,
-      url: resourceUrl(resource),
+      url: resultUrl,
       industry: resource.industry,
       topic: normalizeTopicSlug(resource.topic),
       score: combined,
@@ -140,8 +144,18 @@ export async function searchPublicResources(query: string, limit = 8): Promise<{
 
   results.sort((a, b) => b.score - a.score);
 
+  const caseStudyHits = searchStaticCaseStudies(trimmed, limit);
+  const byKey = new Map<string, PublicSearchResult>();
+  for (const hit of [...results, ...caseStudyHits]) {
+    const key = hit.url || hit.id;
+    const existing = byKey.get(key);
+    if (!existing || hit.score > existing.score) {
+      byKey.set(key, hit);
+    }
+  }
+
   return {
-    results: results.slice(0, limit),
+    results: [...byKey.values()].sort((a, b) => b.score - a.score).slice(0, limit),
     embeddingModel: client.modelId,
     embeddingProvider: client.provider,
     embeddingDim: EMBEDDING_DIM,

@@ -5546,17 +5546,6 @@ export function bootAccountWorkspaceDashboard(): void {
   `;
   document.head.appendChild(style);
 
-  // Enhanced form validation for upload
-  document.getElementById('upload-resource-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const fileInput = document.getElementById('upload-file') as HTMLInputElement;
-    if (!fileInput?.files?.[0]) {
-      showNotification('Please select a file to upload.', 'warning');
-      fileInput?.focus();
-      return false;
-    }
-  });
-
   // Enhanced form validation for generate
   document.getElementById('generate-resource-form')?.addEventListener('submit', (e) => {
     const industry = (document.getElementById('resource-industry') as HTMLSelectElement)?.value;

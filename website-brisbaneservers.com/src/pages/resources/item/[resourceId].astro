@@ -10,6 +10,7 @@ import { getPageDescriptor } from '~/lib/page-descriptors';
 import { publishedResourcePageTitle, publishedResourceSeo } from '~/lib/content-seo';
 import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/public-published-resources';
 import { sitePath } from '~/lib/site-path';
+import { normalizeTopicSlug } from '~/lib/resource-slug';
 
 export async function getStaticPaths() {
   const resources = (await getPublishedResourcesForPage()).filter(isIndexableResource);
@@ -91,7 +92,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
       )}
 
       <div style="margin-top: var(--space-2xl);">
-        <a href={sitePath(`/resources/${resource.industry}/${resource.topic}`)} class="btn btn-secondary">
+        <a href={sitePath(`/resources/${resource.industry}/${normalizeTopicSlug(resource.topic)}`)} class="btn btn-secondary">
           ← Back to {topic?.name ?? resource.topic} resources
         </a>
       </div>

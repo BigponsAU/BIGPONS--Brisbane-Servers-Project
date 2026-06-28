@@ -25,6 +25,7 @@ import {
   tokenCostForExtractMethod,
 } from '../../../lib/documents/document-token-guard';
 import { DOCUMENT_TOKEN_COSTS } from '../../../data/document-token-costs';
+import { schedulePublicSurfaceUpdate } from '../../../lib/publish-public-surfaces';
 
 function mapExtractStatus(status: 'ready' | 'ocr' | 'failed'): ProcessingStatus {
   if (status === 'ready') return 'ready';
@@ -291,6 +292,8 @@ export const POST: APIRoute = async ({ request }) => {
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[API] Found existing resource for ${industry}/${topic}, updating instead of creating duplicate`);
       }
+
+      const beforeSnapshot: Resource = { ...existingResource };
       
       existingResource.title = resourceTitle;
       existingResource.description = description;
@@ -328,6 +331,8 @@ export const POST: APIRoute = async ({ request }) => {
         resources[exi] = indexedEx;
         await saveResources(resources);
       }
+
+      schedulePublicSurfaceUpdate(beforeSnapshot, indexedEx, 'resource-upload-update');
 
       const duration = Date.now() - startTime;
       // Log in development only
@@ -403,6 +408,12 @@ export const POST: APIRoute = async ({ request }) => {
       resources[nj] = indexedNew;
       await saveResources(resources);
     }
+
+    schedulePublicSurfaceUpdate(
+      { ...indexedNew, status: 'draft' },
+      indexedNew,
+      'resource-upload-publish',
+    );
 
     const duration = Date.now() - startTime;
     // Log in development only

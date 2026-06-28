@@ -269,10 +269,10 @@ function checkCSSVariables(): ValidationResult {
 }
 
 /**
- * Validate static content SEO fields (case studies, industries, topics).
+ * Validate static content SEO fields (case studies, industries, topics, published resources).
  */
-function checkContentSeo(): ValidationResult {
-  const result = runContentSeoValidation();
+async function checkContentSeo(): Promise<ValidationResult> {
+  const result = await runContentSeoValidation();
   return {
     name: 'Content SEO',
     passed: result.passed,
@@ -353,7 +353,7 @@ function checkHostedApiForStaticDeploy(): ValidationResult {
 /**
  * Run all validation checks
  */
-function runChecks(): void {
+async function runChecks(): Promise<void> {
   console.log('🔍 Running pre-build validation checks...\n');
 
   results.push(checkTypeScript());
@@ -361,7 +361,7 @@ function runChecks(): void {
   results.push(checkDependencies());
   results.push(checkViewportMeta());
   results.push(checkCSSVariables());
-  results.push(checkContentSeo());
+  results.push(await checkContentSeo());
   results.push(checkHostedApiForStaticDeploy());
 
   // Print results
@@ -395,6 +395,6 @@ function runChecks(): void {
 }
 
 // Run checks
-runChecks();
+void runChecks();
 
 

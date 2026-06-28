@@ -12,6 +12,7 @@ import { validateResourceSourceText } from '../../../lib/resource-submission-gua
 import { enhanceIngestedContent } from '../../../lib/inference/resource-ingest-inference';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
+import { schedulePublicSurfaceUpdate } from '../../../lib/publish-public-surfaces';
 
 /**
  * Process content directly (without file upload)
@@ -154,6 +155,8 @@ export const POST: APIRoute = async ({ request }) => {
       resources[ri] = indexed;
       await saveResources(resources);
     }
+
+    schedulePublicSurfaceUpdate({ ...indexed, status: 'draft' }, indexed, 'resource-process-publish');
 
     const duration = Date.now() - startTime;
     console.log(`[API] POST /api/resources/process - Success (${duration}ms)`);

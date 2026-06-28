@@ -11,7 +11,11 @@ export function sitePath(path: string): string {
   const pathOnly = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
   const trimmed = pathOnly.replace(/^\//, '').replace(/\/+$/, '');
 
-  if (!trimmed) return `${SITE_BASE}${hash}`.replace(/\/#/, '#') || SITE_BASE;
+  if (!trimmed) {
+    if (!hash) return SITE_BASE;
+    const base = SITE_BASE.replace(/\/$/, '');
+    return base ? `${base}${hash}` : `/${hash}`;
+  }
   return `${SITE_BASE}${trimmed}${hash}`;
 }
 
@@ -29,4 +33,21 @@ export function stripSiteBase(pathname: string): string {
     return rest || '/';
   }
   return pathname;
+}
+
+/** Normalize search-index / content URLs to site-root paths (strip .html, apply BASE_URL). */
+export function resolveContentPath(url: string | undefined, base: string = SITE_BASE): string {
+  if (!url || url === '#') return '#';
+  if (/^https?:\/\//i.test(url)) return url;
+
+  let path = url.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
+  if (!path.startsWith('/')) path = `/${path}`;
+
+  const trimmedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  if (trimmedBase && trimmedBase !== '' && trimmedBase !== '/') {
+    if (!path.startsWith(trimmedBase)) {
+      return `${trimmedBase}${path}`;
+    }
+  }
+  return path;
 }

@@ -134,6 +134,35 @@ export function validateCaseStudySeo(study: CaseStudy, seenSlugs: Set<string>): 
   return issues;
 }
 
+export function validatePublishedResourceSeo(resource: Resource): ContentSeoIssue[] {
+  if (!isIndexableResource(resource)) {
+    return [];
+  }
+
+  const id = `resource:${resource.id}`;
+  const issues: ContentSeoIssue[] = [];
+
+  if (!resource.title?.trim()) {
+    issues.push({ id, message: 'Missing title', severity: 'error' });
+  }
+  if (!resource.description?.trim()) {
+    issues.push({ id, message: 'Missing meta description', severity: 'warning' });
+  }
+  if ((resource.content ?? '').split(/\s+/).filter(Boolean).length < 80) {
+    issues.push({ id, message: 'Content is very short for an indexable public page', severity: 'warning' });
+  }
+
+  return issues;
+}
+
+export function validatePublishedResourcesSeo(resources: Resource[]): ContentSeoIssue[] {
+  const issues: ContentSeoIssue[] = [];
+  for (const resource of resources) {
+    issues.push(...validatePublishedResourceSeo(resource));
+  }
+  return issues;
+}
+
 export function validateStaticContentSeo(): ContentSeoIssue[] {
   const issues: ContentSeoIssue[] = [];
   const caseStudySlugs = new Set<string>();

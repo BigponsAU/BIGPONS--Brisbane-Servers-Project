@@ -204,6 +204,50 @@
   border: 1px solid transparent;
 }
 
+.site-shell--marketing.account-workspace-shell .sidebar-nav-item::before,
+.site-shell--marketing.account-workspace-shell .sidebar-nav-item::after,
+.site-shell--portal .sidebar-nav-item::before,
+.site-shell--portal .sidebar-nav-item::after {
+  display: none;
+}
+
+.site-shell--marketing.account-workspace-shell .admin-section-collapsible .section-toggle[aria-expanded='false'] ~ .section-content,
+.site-shell--portal .admin-section-collapsible .section-toggle[aria-expanded='false'] ~ .section-content {
+  display: none !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+}
+
+/* Flatten legacy portal chrome — decorative pseudo-elements clip or misalign in grid layout */
+.site-shell--marketing.account-workspace-shell .admin-section::before,
+.site-shell--marketing.account-workspace-shell .admin-section::after,
+.site-shell--portal .admin-section::before,
+.site-shell--portal .admin-section::after,
+.site-shell--marketing.account-workspace-shell .admin-section h2::before,
+.site-shell--portal .admin-section h2::before,
+.site-shell--marketing.account-workspace-shell .section-header::after,
+.site-shell--portal .section-header::after,
+.site-shell--marketing.account-workspace-shell .section-toggle::before,
+.site-shell--portal .section-toggle::before,
+.site-shell--marketing.account-workspace-shell .admin-portal .form-group label::before,
+.site-shell--portal .admin-portal .form-group label::before {
+  display: none;
+}
+
+.site-shell--marketing.account-workspace-shell .admin-section:hover,
+.site-shell--portal .admin-section:hover {
+  transform: none;
+}
+
+.site-shell--marketing.account-workspace-shell .resource-item:has(.resource-actions-more.active),
+.site-shell--portal .resource-item:has(.resource-actions-more.active) {
+  overflow: visible;
+  z-index: 2;
+}
+
 .site-shell--marketing.account-workspace-shell .sidebar-nav-item:hover,
 .site-shell--portal .sidebar-nav-item:hover {
   background: var(--primary-light);

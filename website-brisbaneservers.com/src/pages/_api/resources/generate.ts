@@ -11,6 +11,7 @@ import {
 } from '../../../lib/resources-api';
 import { buildRagContext } from '../../../lib/semantic/rag';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
+import { schedulePublicSurfaceUpdate } from '../../../lib/publish-public-surfaces';
 import { isDevelopmentMode } from '../../../utils/runtime-env';
 import {
   generateResourceCatalogDescription,
@@ -144,6 +145,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (existingResource) {
       // Update existing resource instead of creating duplicate
       console.log(`[API] Found existing resource for ${industry}/${topic}, updating instead of creating duplicate`);
+
+      const beforeSnapshot: Resource = { ...existingResource };
       
       existingResource.title = resourceTitle;
       existingResource.description = description;
@@ -168,6 +171,8 @@ export const POST: APIRoute = async ({ request }) => {
         resources[ri] = indexed;
         await saveResources(resources);
       }
+
+      schedulePublicSurfaceUpdate(beforeSnapshot, indexed, 'resource-generate-update');
 
       const duration = Date.now() - startTime;
       console.log(`[API] POST /api/resources/generate - Updated existing resource (${duration}ms)`);
@@ -229,6 +234,8 @@ export const POST: APIRoute = async ({ request }) => {
       resources[rj] = indexedNew;
       await saveResources(resources);
     }
+
+    schedulePublicSurfaceUpdate({ ...indexedNew, status: 'draft' }, indexedNew, 'resource-generate-create');
 
     const duration = Date.now() - startTime;
     console.log(`[API] POST /api/resources/generate - Success (${duration}ms)`);

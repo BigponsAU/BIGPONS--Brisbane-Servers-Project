@@ -3,6 +3,7 @@
 
 import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
 import { resolveInquiryScrollTarget } from '../lib/inquiry-nav';
+import { resolveContentPath } from '../lib/site-path';
 
 function isAccountUtilityPage(): boolean {
   return document.body?.dataset.pageId === 'account';
@@ -474,6 +475,7 @@ class SemanticSearch {
     private searchIndexPath: string;
     private searchDebounce: ReturnType<typeof setTimeout> | null;
     private apiBaseUrl: string;
+    private siteBase: string;
     private semanticAbort: AbortController | null;
     
     constructor() {
@@ -483,9 +485,10 @@ class SemanticSearch {
         this.searchInputWrapper = this.searchRoot?.querySelector('.search-input-wrapper') as HTMLElement | null;
         this.searchIndex = [];
         this.loadedIndex = null;
-        this.searchIndexPath = '/search-index.json';
+        this.searchIndexPath = this.searchRoot?.dataset.searchIndexPath ?? '/search-index.json';
         this.searchDebounce = null;
         this.apiBaseUrl = (this.searchRoot?.dataset.publicApiUrl ?? '').replace(/\/+$/, '');
+        this.siteBase = document.body?.dataset.siteBase ?? '/';
         this.semanticAbort = null;
         this.init();
     }
@@ -496,24 +499,22 @@ class SemanticSearch {
         const searchForm = this.searchInput.closest('.search-input-group') as HTMLFormElement | null;
         searchForm?.addEventListener('submit', (e: Event) => {
             e.preventDefault();
-            this.runSearch(this.searchInput?.value ?? '', true);
+            void this.submitSearch();
         });
 
         // Attach listeners before async index load so the first keystroke is not lost.
         this.searchInput.addEventListener('input', (e: Event) => {
             const target = e.target as HTMLInputElement;
-            this.runSearch(target.value);
+            void this.runSearch(target.value);
         });
 
         this.searchInput.addEventListener('keydown', (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                this.runSearch(this.searchInput?.value ?? '', true);
-                const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
-                firstLink?.focus();
+                void this.submitSearch();
             } else if (e.key === 'ArrowDown') {
                 if (!this.searchResults?.classList.contains('active')) {
-                    this.runSearch(this.searchInput?.value ?? '', true);
+                    void this.runSearch(this.searchInput?.value ?? '', true);
                 }
                 const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
                 if (firstLink) {
@@ -531,7 +532,7 @@ class SemanticSearch {
             if (!query) {
                 this.displayBrowseHints();
             } else {
-                this.runSearch(query, true);
+                void this.runSearch(query, true);
             }
         });
 
@@ -542,7 +543,7 @@ class SemanticSearch {
                 if (!this.searchInput || !term) return;
                 this.searchInput.value = term;
                 this.searchInput.focus();
-                this.runSearch(term, true);
+                void this.runSearch(term, true);
             });
         });
 
@@ -559,7 +560,7 @@ class SemanticSearch {
 
         const currentQuery = this.searchInput.value.trim();
         if (currentQuery) {
-            this.runSearch(currentQuery, true);
+            void this.runSearch(currentQuery, true);
         } else if (document.activeElement === this.searchInput) {
             this.displayBrowseHints();
         }
@@ -615,8 +616,8 @@ class SemanticSearch {
         return [...new Set(words)];
     }
     
-    runSearch(query: string, immediate = false): void {
-        if (!this.searchInput || !this.searchResults) return;
+    runSearch(query: string, immediate = false): Promise<void> {
+        if (!this.searchInput || !this.searchResults) return Promise.resolve();
 
         if (this.searchDebounce) {
             clearTimeout(this.searchDebounce);
@@ -639,7 +640,7 @@ class SemanticSearch {
             this.searchInput!.setAttribute('aria-busy', 'true');
 
             let results = this.search(query);
-            if (this.apiBaseUrl && query.trim().length >= 3) {
+            if (this.apiBaseUrl && query.trim().length >= 2) {
                 try {
                     const remote = await this.fetchSemanticResults(query.trim());
                     results = this.mergeResults(results, remote);
@@ -655,15 +656,35 @@ class SemanticSearch {
         };
 
         if (immediate) {
-            execute();
-            return;
+            return execute();
         }
 
-        this.searchDebounce = setTimeout(execute, 120);
+        return new Promise((resolve) => {
+            this.searchDebounce = setTimeout(() => {
+                void execute().then(resolve);
+            }, 120);
+        });
+    }
+
+    async submitSearch(): Promise<void> {
+        const query = this.searchInput?.value ?? '';
+        await this.runSearch(query, true);
+        const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
+        if (firstLink?.href && !this.isPlaceholderSearchUrl(firstLink.href)) {
+            window.location.assign(firstLink.href);
+            return;
+        }
+        firstLink?.focus();
+    }
+
+    isPlaceholderSearchUrl(href: string): boolean {
+        const normalized = href.split('#')[0].replace(/\/$/, '') || '/';
+        const current = window.location.href.split('#')[0].replace(/\/$/, '') || '/';
+        return normalized === current && !href.includes('#');
     }
     
     handleSearch(query: string): void {
-        this.runSearch(query);
+        void this.runSearch(query);
     }
     
     search(query: string): SearchIndexItem[] {
@@ -925,11 +946,7 @@ class SemanticSearch {
     }
 
     normalizeSearchUrl(url: string | undefined): string {
-        if (!url || url === '#') return '#';
-        if (/^https?:\/\//i.test(url)) return url;
-        let path = url.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
-        if (!path.startsWith('/')) path = `/${path}`;
-        return path;
+        return resolveContentPath(url, this.siteBase);
     }
 
     escapeHtml(text: string): string {
@@ -969,6 +986,7 @@ function applySecureFormDefaults(): void {
         'form.resource-form',
         '#edit-resource-form',
         'form.login-form',
+        '.search-input-group',
     ];
 
     selectors.forEach((selector) => {
