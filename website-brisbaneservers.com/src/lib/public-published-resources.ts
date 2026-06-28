@@ -32,7 +32,17 @@ function useGitCorpusForCatalog(): boolean {
 }
 
 function isPrerenderBuildPhase(): boolean {
-  return import.meta.env.PRERENDER === true;
+  if (import.meta.env.PRERENDER === true) {
+    return true;
+  }
+  // getStaticPaths() runs during `astro build` before PRERENDER is set on all paths.
+  if (!import.meta.env.PROD || !import.meta.env.SSR) {
+    return false;
+  }
+  if (typeof process === 'undefined') {
+    return false;
+  }
+  return process.env.EDGE_WORKER !== '1';
 }
 
 function usesRemotePublicApi(): boolean {
@@ -118,6 +128,13 @@ async function getBuildTimePublicCache(): Promise<Resource[]> {
 export async function getPublishedResourcesForPage(
   filters: PublishedListFilters = {},
 ): Promise<Resource[]> {
+  if (isPrerenderBuildPhase()) {
+    const gitCorpus = await loadGitCorpusResources();
+    if (gitCorpus.length > 0) {
+      return filterLocal(gitCorpus, filters);
+    }
+  }
+
   if (useGitCorpusForCatalog()) {
     const all = await loadResourcesLocal();
     return filterLocal(all, filters);
@@ -144,6 +161,14 @@ export async function getPublishedResourcesForPage(
 }
 
 export async function getPublishedResourceById(id: string): Promise<Resource | null> {
+  if (isPrerenderBuildPhase()) {
+    const gitCorpus = await loadGitCorpusResources();
+    if (gitCorpus.length > 0) {
+      const r = gitCorpus.find((x) => x.id === id);
+      return r && isPublicResource(r) ? r : null;
+    }
+  }
+
   if (useGitCorpusForCatalog()) {
     const all = await loadResourcesLocal();
     const r = all.find((x) => x.id === id);
