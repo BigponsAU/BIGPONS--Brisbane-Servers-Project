@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,7 +10,7 @@ describe('loadGitCorpusResources', () => {
   beforeEach(async () => {
     tempDir = await mkdtemp(path.join(os.tmpdir(), 'git-corpus-'));
     vi.resetModules();
-    vi.stubEnv('VOICE_STORAGE_DIR', tempDir);
+    vi.stubEnv('VOICE_STORAGE_DIR', path.join(tempDir, 'storage'));
   });
 
   afterEach(async () => {
@@ -33,7 +33,8 @@ describe('loadGitCorpusResources', () => {
         generatedAt: '2026-06-28T00:00:00.000Z',
       },
     ];
-    await writeFile(path.join(tempDir, 'resources.json'), JSON.stringify(sample));
+    await mkdir(path.join(tempDir, 'storage'), { recursive: true });
+    await writeFile(path.join(tempDir, 'storage', 'resources.json'), JSON.stringify(sample));
 
     const { loadGitCorpusResources } = await import('../src/lib/git-corpus');
     const loaded = await loadGitCorpusResources();

@@ -9,29 +9,22 @@ import type { Resource } from './resource-types';
 import { getResourcesFile } from './storage-paths';
 
 function resolveGitCorpusFile(): string {
-  const candidates: string[] = [];
-
   const storageOverride = process.env.VOICE_STORAGE_DIR?.trim();
   if (storageOverride) {
-    candidates.push(path.join(path.resolve(storageOverride), 'resources.json'));
+    return path.join(path.resolve(storageOverride), 'resources.json');
   }
 
   const monorepoRoot = process.env.MONOREPO_ROOT?.trim();
   if (monorepoRoot) {
-    candidates.push(path.join(path.resolve(monorepoRoot), 'voice-framework', 'storage', 'resources.json'));
+    return path.join(path.resolve(monorepoRoot), 'voice-framework', 'storage', 'resources.json');
   }
 
-  // Pages CI cwd is website-brisbaneservers.com; bundled import.meta.url paths are unreliable.
-  candidates.push(path.resolve(process.cwd(), '..', 'voice-framework', 'storage', 'resources.json'));
-  candidates.push(getResourcesFile());
-
-  for (const candidate of candidates) {
-    if (existsSync(candidate)) {
-      return candidate;
-    }
+  const fromCwd = path.resolve(process.cwd(), '..', 'voice-framework', 'storage', 'resources.json');
+  if (existsSync(fromCwd)) {
+    return fromCwd;
   }
 
-  return candidates[candidates.length - 1]!;
+  return getResourcesFile();
 }
 
 export async function loadGitCorpusResources(): Promise<Resource[]> {
