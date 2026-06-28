@@ -44,15 +44,18 @@ async function main(): Promise<void> {
   const existing = JSON.parse(existingRaw) as Resource[];
   const publishedIds = new Set(published.map((r) => r.id));
 
+  // API wins on id collision; keep git-tracked published resources not yet in Neon/API.
   const merged = [
     ...published,
-    ...existing.filter((r) => !publishedIds.has(r.id) && r.status !== 'published'),
+    ...existing.filter((r) => !publishedIds.has(r.id)),
   ];
 
   await fs.mkdir(path.dirname(resourcesFile), { recursive: true });
   await fs.writeFile(resourcesFile, JSON.stringify(merged, null, 2), 'utf-8');
 
-  console.log(`Wrote ${published.length} published + ${merged.length - published.length} non-published drafts → ${resourcesFile}`);
+  console.log(
+    `Wrote ${published.length} from API + ${merged.length - published.length} retained from git → ${resourcesFile}`,
+  );
   console.log('Commit voice-framework/storage/resources.json then push (Pages build will skip API when PAGES_BUILD_USE_GIT_CORPUS=1).');
 }
 

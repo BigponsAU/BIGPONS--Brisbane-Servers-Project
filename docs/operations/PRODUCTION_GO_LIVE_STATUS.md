@@ -2,9 +2,16 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-26 — document OCR pipeline + inference
+**Last synced:** 2026-06-28 — Pages resource prerender pipeline
 
-### 2026-06-26 — Document OCR & voice rewrite (pending deploy)
+### 2026-06-28 — Pages static resource detail pages
+
+- **Pages production env** — confirmed via Cloudflare API: `PAGES_BUILD_EXPORT_ON_BUILD=1`, `PAGES_BUILD_USE_GIT_CORPUS=1`, `PUBLIC_RESOURCES_LIVE=1`, API base URLs set.
+- **Build fix** — prerender reads `voice-framework/storage/resources.json` directly (no `DATABASE_URL` on Pages CI).
+- **Prebuild** — one `GET /api/resources/public` export before Astro build; indexable resources prerender to `/resources/item/{id}/`.
+- **Note** — live API currently returns **0** published resources; detail pages appear after publish + deploy hook / push rebuild.
+
+### 2026-06-26 — document OCR pipeline + inference
 
 - **API** — `POST /api/documents/extract` (PDF, DOCX, images → text via local parse + NVIDIA vision), `POST /api/documents/rewrite` (structure-preserving voice rewrite).
 - **Upload** — `/api/resources/upload` now uses `extractDocument()`; optional `preserveStructure` for prose-only rewrite.

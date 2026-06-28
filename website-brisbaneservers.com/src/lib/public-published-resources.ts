@@ -12,6 +12,7 @@ import type { Resource } from './resource-types';
 import { isPublicResource } from './resource-types';
 import { normalizeTopicSlug } from './resource-slug';
 import { readRuntimeEnv } from '../utils/runtime-env';
+import { loadGitCorpusResources } from './git-corpus';
 
 /** When "1", Astro build reads voice-framework/storage/resources.json — no API/Neon egress. */
 function pagesBuildUsesGitCorpus(): boolean {
@@ -39,7 +40,11 @@ function usesRemotePublicApi(): boolean {
 }
 
 async function loadResourcesLocal(): Promise<Resource[]> {
-  if (import.meta.env.PROD && usesRemotePublicApi() && !useGitCorpusForCatalog()) {
+  if (useGitCorpusForCatalog()) {
+    return loadGitCorpusResources();
+  }
+
+  if (import.meta.env.PROD && usesRemotePublicApi()) {
     return [];
   }
   const { loadResources } = await import('./resources-api');
