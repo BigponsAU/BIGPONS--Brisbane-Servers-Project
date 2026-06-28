@@ -23,10 +23,7 @@ export function getPublicSearchResultPath(resource: Resource): string | null {
   }
 
   if (resource.metadata?.growthKind === 'case_study') {
-    const slug =
-      typeof resource.metadata?.caseStudySlug === 'string' && resource.metadata.caseStudySlug.trim()
-        ? resource.metadata.caseStudySlug.trim()
-        : slugifyTitle(resource.title);
+    const slug = slugifyTitle(resource.title);
     if (slug) {
       return `/case-studies/${slug}`;
     }
