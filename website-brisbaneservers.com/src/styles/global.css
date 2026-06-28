@@ -2064,6 +2064,8 @@ section.hero .hero-subtitle .semantic-child,
     transition: var(--transition);
 }
 
+/* Anchor chips override in marketing-page-polish.css */
+
 .search-browse-chip:hover,
 .search-browse-chip:focus-visible {
     border-color: var(--primary-color);

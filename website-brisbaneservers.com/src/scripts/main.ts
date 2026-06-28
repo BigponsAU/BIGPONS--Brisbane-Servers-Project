@@ -473,7 +473,7 @@ interface RemoteSearchHit {
 }
 
 class SemanticSearch {
-    private searchRoot: HTMLElement | null;
+    private searchRoot: HTMLElement;
     private searchInput: HTMLInputElement | null;
     private searchResults: HTMLElement | null;
     private searchInputWrapper: HTMLElement | null;
@@ -484,24 +484,28 @@ class SemanticSearch {
     private apiBaseUrl: string;
     private siteBase: string;
     private semanticAbort: AbortController | null;
+    private indexReady: boolean;
+    private indexLoadPromise: Promise<void>;
     
-    constructor() {
-        this.searchRoot = document.querySelector('.search-bar') as HTMLElement | null;
-        this.searchInput = this.searchRoot?.querySelector('.search-input') as HTMLInputElement | null;
-        this.searchResults = this.searchRoot?.querySelector('.search-results') as HTMLElement | null;
-        this.searchInputWrapper = this.searchRoot?.querySelector('.search-input-wrapper') as HTMLElement | null;
+    constructor(searchRoot: HTMLElement) {
+        this.searchRoot = searchRoot;
+        this.searchInput = searchRoot.querySelector('.search-input') as HTMLInputElement | null;
+        this.searchResults = searchRoot.querySelector('.search-results') as HTMLElement | null;
+        this.searchInputWrapper = searchRoot.querySelector('.search-input-wrapper') as HTMLElement | null;
         this.searchIndex = [];
         this.loadedIndex = null;
-        this.searchIndexPath = this.searchRoot?.dataset.searchIndexPath ?? '/search-index.json';
+        this.searchIndexPath = searchRoot.dataset.searchIndexPath ?? '/search-index.json';
         this.searchDebounce = null;
-        this.apiBaseUrl = (this.searchRoot?.dataset.publicApiUrl ?? '').replace(/\/+$/, '');
+        this.apiBaseUrl = (searchRoot.dataset.publicApiUrl ?? '').replace(/\/+$/, '');
         this.siteBase = document.body?.dataset.siteBase ?? '/';
         this.semanticAbort = null;
-        this.init();
+        this.indexReady = false;
+        this.indexLoadPromise = this.loadSearchIndex();
+        void this.init();
     }
     
     async init(): Promise<void> {
-        if (!this.searchInput || !this.searchResults || !this.searchRoot) return;
+        if (!this.searchInput || !this.searchResults) return;
 
         const searchForm = this.searchInput.closest('.search-input-group') as HTMLFormElement | null;
         searchForm?.addEventListener('submit', (e: Event) => {
@@ -537,32 +541,21 @@ class SemanticSearch {
         this.searchInput.addEventListener('focus', () => {
             const query = this.searchInput?.value.trim() ?? '';
             if (!query) {
-                this.displayBrowseHints();
+                void this.ensureIndexReady().then(() => this.displayBrowseHints());
             } else {
                 void this.runSearch(query, true);
             }
         });
 
-        this.searchRoot.querySelectorAll<HTMLElement>('.search-browse-chip[data-search-term]').forEach((chip) => {
-            chip.addEventListener('click', (e) => {
-                e.preventDefault();
-                const term = chip.getAttribute('data-search-term') ?? '';
-                if (!this.searchInput || !term) return;
-                this.searchInput.value = term;
-                this.searchInput.focus();
-                void this.runSearch(term, true);
-            });
-        });
-
         document.addEventListener('click', (e: MouseEvent) => {
             const target = e.target as HTMLElement;
-            if (!target.closest('.search-bar')) {
+            if (!this.searchRoot.contains(target)) {
                 this.searchResults?.classList.remove('active');
                 this.searchInput?.setAttribute('aria-expanded', 'false');
             }
         });
 
-        await this.loadSearchIndex();
+        await this.ensureIndexReady();
         this.buildSearchIndex();
 
         const currentQuery = this.searchInput.value.trim();
@@ -573,20 +566,33 @@ class SemanticSearch {
         }
     }
     
+    async ensureIndexReady(): Promise<void> {
+        await this.indexLoadPromise;
+    }
+
+    showIndexLoading(): void {
+        if (!this.searchResults || !this.searchInput) return;
+        this.searchInput.setAttribute('aria-expanded', 'true');
+        this.searchResults.classList.add('active');
+        this.searchResults.innerHTML =
+            '<div class="search-result-item search-result-hint search-result-hint--refine" role="status">Loading search index…</div>';
+    }
+    
     async loadSearchIndex(): Promise<void> {
         try {
             const response = await fetch(this.searchIndexPath);
             if (response.ok) {
                 const data = await response.json();
                 this.loadedIndex = Array.isArray(data?.items) ? data.items : [];
-                console.log('Search index loaded:', this.loadedIndex?.length ?? 0, 'items');
             } else {
                 console.warn('Search index not available (status:', response.status, '), using page content fallback');
+                this.loadedIndex = [];
             }
         } catch (error) {
             console.warn('Could not load search-index.json, using page content:', error);
-            // Graceful degradation: continue with page content search
             this.loadedIndex = [];
+        } finally {
+            this.indexReady = true;
         }
     }
     
@@ -636,6 +642,7 @@ class SemanticSearch {
 
             if (!trimmed) {
                 if (document.activeElement === this.searchInput) {
+                    await this.ensureIndexReady();
                     this.displayBrowseHints();
                 } else {
                     this.searchResults!.classList.remove('active');
@@ -644,6 +651,11 @@ class SemanticSearch {
                 this.searchInputWrapper?.classList.remove('loading');
                 return;
             }
+
+            if (!this.indexReady) {
+                this.showIndexLoading();
+            }
+            await this.ensureIndexReady();
 
             if (trimmed.length < SEARCH_MIN_CHARS) {
                 this.displayMinLengthHint(trimmed.length);
@@ -682,14 +694,61 @@ class SemanticSearch {
     }
 
     async submitSearch(): Promise<void> {
-        const query = this.searchInput?.value ?? '';
+        const query = (this.searchInput?.value ?? '').trim();
+        if (!query) {
+            await this.ensureIndexReady();
+            this.displayBrowseHints();
+            this.searchInput?.focus();
+            return;
+        }
+
         await this.runSearch(query, true);
-        const firstLink = this.searchResults?.querySelector('a.search-result-item') as HTMLAnchorElement | null;
+
+        const firstLink = this.searchResults?.querySelector(
+            'a.search-result-item[href]:not([href="#"])',
+        ) as HTMLAnchorElement | null;
+
         if (firstLink?.href && !this.isPlaceholderSearchUrl(firstLink.href)) {
             window.location.assign(firstLink.href);
             return;
         }
+
+        const fallback = this.resolveSearchFallback(query);
+        if (fallback) {
+            window.location.assign(fallback);
+            return;
+        }
+
+        this.searchResults?.classList.add('active');
+        this.searchInput?.setAttribute('aria-expanded', 'true');
         firstLink?.focus();
+    }
+
+    resolveSearchFallback(query: string): string | null {
+        const trimmed = query.trim().toLowerCase();
+        if (trimmed.length < SEARCH_MIN_CHARS) return null;
+
+        const index = this.getActiveIndex();
+        const top = this.search(trimmed)[0];
+        if (top?.url) {
+            const url = this.normalizeSearchUrl(top.url);
+            if (url && url !== '#') return url;
+        }
+
+        const slugGuess = trimmed.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        const hub = index.find(
+            (item) =>
+                item.id?.endsWith('-index') &&
+                (item.industry === slugGuess ||
+                    item.url?.includes(`/${slugGuess}/`) ||
+                    item.title.toLowerCase().includes(trimmed)),
+        );
+        if (hub?.url) {
+            const url = this.normalizeSearchUrl(hub.url);
+            if (url && url !== '#') return url;
+        }
+
+        return resolveContentPath('resources/', this.siteBase);
     }
 
     isPlaceholderSearchUrl(href: string): boolean {
@@ -851,8 +910,8 @@ class SemanticSearch {
         const remaining = SEARCH_MIN_CHARS - typedLength;
         const refineCopy =
             remaining === 1
-                ? '<strong>Refining your query.</strong> One more character unlocks intelligent suggestions — including close spellings such as “proffesional”.'
-                : '<strong>Keep typing.</strong> Suggestions activate at three characters, with spelling-tolerant matching built in.';
+                ? '<strong>Refining your query.</strong> One more character unlocks ranked suggestions across our resource index.'
+                : '<strong>Keep typing.</strong> Suggestions appear from three characters, with spelling-tolerant matching.';
         this.searchInput.setAttribute('aria-expanded', 'true');
         this.searchResults.classList.add('active');
         this.searchResults.innerHTML = `
@@ -1044,9 +1103,9 @@ class SemanticSearch {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (isAccountUtilityPage()) return;
-    if (document.querySelector('.search-bar')) {
-        new SemanticSearch();
-    }
+    document.querySelectorAll('.search-bar').forEach((root) => {
+        new SemanticSearch(root as HTMLElement);
+    });
 });
 
 // ===== FORM HANDLING =====

@@ -8,19 +8,27 @@ import { sitePath } from '../lib/site-path';
 const { searchLabel, searchPlaceholder } = valueProposition.resources;
 const publicApiBaseUrl = getPublicApiBaseUrl();
 const searchIndexPath = sitePath('/search-index.json');
+const inputId = 'site-search-input';
 ---
 
-<div class="search-bar" aria-label={searchLabel} data-public-api-url={publicApiBaseUrl} data-search-index-path={searchIndexPath}>
+<link rel="preload" href={searchIndexPath} as="fetch" crossorigin="anonymous" />
+
+<div
+  class="search-bar search-bar-panel"
+  aria-label={searchLabel}
+  data-public-api-url={publicApiBaseUrl}
+  data-search-index-path={searchIndexPath}
+>
   <form class="search-input-group" role="search" autocomplete="off" action="javascript:void(0)">
     <div class="search-input-wrapper">
       <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <circle cx="11" cy="11" r="8"></circle>
         <path d="M21 21l-4.35-4.35"></path>
       </svg>
-      <label for="search-input" class="sr-only">{searchLabel}</label>
+      <label for={inputId} class="sr-only">{searchLabel}</label>
       <input
         type="search"
-        id="search-input"
+        id={inputId}
         class="search-input"
         placeholder={searchPlaceholder}
         aria-label={searchLabel}
@@ -30,6 +38,12 @@ const searchIndexPath = sitePath('/search-index.json');
         enterkeyhint="search"
         autocomplete="off"
       />
+      <button type="submit" class="search-submit-btn" aria-label="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+          <path d="M5 12h14"></path>
+          <path d="M13 6l6 6-6 6"></path>
+        </svg>
+      </button>
     </div>
     <div
       class="search-results"
@@ -37,7 +51,6 @@ const searchIndexPath = sitePath('/search-index.json');
       role="listbox"
       aria-label="Search results"
     >
-      <!-- Search results will appear here -->
     </div>
   </form>
   <div class="search-scope-hint">
@@ -45,24 +58,27 @@ const searchIndexPath = sitePath('/search-index.json');
       class="search-capabilities"
       compact={true}
       items={[
-        { glyph: 'semantic-search', label: 'Semantic suggestions', detail: 'From three characters onward' },
+        { glyph: 'semantic-search', label: 'Semantic suggestions', detail: 'Ranked from three characters' },
         { glyph: 'spelling-tolerant', label: 'Spelling-tolerant', detail: 'Close variants still match' },
-        { glyph: 'industry-index', label: 'Industry index', detail: 'Or choose a sector below' },
+        { glyph: 'industry-index', label: 'Industry index', detail: 'Browse sectors below' },
       ]}
     />
     <p class="search-scope-hint__lead">
-      Intelligent search across industry hubs, guides, case studies, and published resources — including deliberate misspellings such as “proffesional”.
+      Search industry hubs, topic guides, case studies, and published resources. Press Enter to open the best match.
     </p>
   </div>
-  <div class="search-browse-chips" aria-label="Browse by industry">
+  <nav class="search-browse-chips" aria-label="Browse by industry">
     {industries.map((industry) => (
-      <button
-        type="button"
+      <a
+        href={sitePath(`/resources/${industry.slug}/`)}
         class="search-browse-chip"
-        data-search-term={industry.slug}
       >
-        {industry.name}
-      </button>
+        <span>{industry.name}</span>
+        <svg class="search-browse-chip__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 12h14"></path>
+          <path d="M13 6l6 6-6 6"></path>
+        </svg>
+      </a>
     ))}
-  </div>
+  </nav>
 </div>
