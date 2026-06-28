@@ -2,6 +2,7 @@
 import { industries } from '../data/industries';
 import { valueProposition } from '../data/value-proposition';
 import { getPublicApiBaseUrl } from '../lib/api-config';
+import MarketingCapabilityRow from './marketing/MarketingCapabilityRow.astro';
 import { sitePath } from '../lib/site-path';
 
 const { searchLabel, searchPlaceholder } = valueProposition.resources;
@@ -39,9 +40,20 @@ const searchIndexPath = sitePath('/search-index.json');
       <!-- Search results will appear here -->
     </div>
   </form>
-  <p class="search-scope-hint">
-    Search industry hubs, topic guides, case studies, and published resources — or pick an industry:
-  </p>
+  <div class="search-scope-hint">
+    <MarketingCapabilityRow
+      class="search-capabilities"
+      compact={true}
+      items={[
+        { glyph: 'semantic-search', label: 'Semantic suggestions', detail: 'From three characters onward' },
+        { glyph: 'spelling-tolerant', label: 'Spelling-tolerant', detail: 'Close variants still match' },
+        { glyph: 'industry-index', label: 'Industry index', detail: 'Or choose a sector below' },
+      ]}
+    />
+    <p class="search-scope-hint__lead">
+      Intelligent search across industry hubs, guides, case studies, and published resources — including deliberate misspellings such as “proffesional”.
+    </p>
+  </div>
   <div class="search-browse-chips" aria-label="Browse by industry">
     {industries.map((industry) => (
       <button

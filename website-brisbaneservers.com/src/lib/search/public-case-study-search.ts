@@ -4,6 +4,7 @@
  */
 import { caseStudies } from '../../data/case-studies';
 import type { PublicSearchResult } from './public-resource-search';
+import { classifyQueryTokenMatch, collectSearchTokens, queryTokensFromText, SEARCH_MIN_CHARS } from './fuzzy-text';
 
 function studySearchText(study: (typeof caseStudies)[number]): string {
   return [
@@ -26,22 +27,33 @@ function studySearchText(study: (typeof caseStudies)[number]): string {
 
 export function searchStaticCaseStudies(query: string, limit = 4): PublicSearchResult[] {
   const normalized = query.trim().toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (normalized.length < 2) return [];
+  if (normalized.length < SEARCH_MIN_CHARS) return [];
 
-  const queryWords = normalized.split(/\s+/).filter((w) => w.length >= 2);
+  const queryWords = queryTokensFromText(query);
   const scored: PublicSearchResult[] = [];
 
   for (const study of caseStudies) {
     const text = studySearchText(study);
+    const tokens = collectSearchTokens(text);
     let score = 0;
+    const matchedKeywords: string[] = [];
 
-    if (normalized.length >= 2 && text.includes(normalized)) {
+    if (normalized.length >= SEARCH_MIN_CHARS && text.includes(normalized)) {
       score += 0.55;
     }
 
     for (const word of queryWords) {
-      if (study.slug.includes(word)) score += 0.35;
-      if (text.includes(word)) score += 0.12;
+      let wordScore = 0;
+      for (const token of tokens) {
+        const kind = classifyQueryTokenMatch(word, token);
+        if (kind === 'none') continue;
+        matchedKeywords.push(token);
+        if (kind === 'exact') wordScore = Math.max(wordScore, 0.2);
+        else if (kind === 'prefix') wordScore = Math.max(wordScore, 0.16);
+        else wordScore = Math.max(wordScore, 0.14);
+      }
+      if (study.slug.includes(word)) wordScore = Math.max(wordScore, 0.35);
+      score += wordScore;
     }
 
     if (score <= 0) continue;
@@ -55,7 +67,7 @@ export function searchStaticCaseStudies(query: string, limit = 4): PublicSearchR
       score: Math.min(1, score),
       strength: Math.round(Math.min(100, score * 100)),
       matchSource: 'keyword',
-      matchedKeywords: queryWords.filter((w) => text.includes(w)).slice(0, 6),
+      matchedKeywords: [...new Set(matchedKeywords)].slice(0, 6),
     });
   }
 

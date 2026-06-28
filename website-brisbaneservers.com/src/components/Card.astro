@@ -1,6 +1,8 @@
 ---
 import { sitePath } from '../lib/site-path';
 import SemanticText from './SemanticText.astro';
+import FeatureGlyph from './marketing/FeatureGlyph.astro';
+import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 /**
  * Card Component Props
@@ -9,6 +11,7 @@ import SemanticText from './SemanticText.astro';
  * @property {string} title - The card title text (required)
  * @property {string} description - The card description text (required)
  * @property {string} [icon] - Font Awesome icon class (e.g., 'fas fa-check')
+ * @property {FeatureGlyphName} [featureGlyph] - Inline SVG glyph (preferred on marketing pages)
  * @property {string} [href] - Optional link URL. If provided, card becomes a link
  * @property {string} [actionLabel] - Visible CTA on link cards (default: "View details")
  * @property {string} [industry] - Industry filter category for filtering
@@ -21,6 +24,7 @@ interface Props {
   title: string;
   description: string;
   icon?: string;
+  featureGlyph?: FeatureGlyphName;
   href?: string;
   /** Shown on link cards as a button-like affordance (default: View details) */
   actionLabel?: string;
@@ -35,6 +39,7 @@ const {
   title = 'Card Title', 
   description = '', 
   icon, 
+  featureGlyph,
   href,
   actionLabel = 'View details',
   industry,
@@ -66,9 +71,13 @@ const resolvedHref =
   role={href ? undefined : 'article'}
   aria-label={href ? `${title}. ${description}` : undefined}
 >
-  {icon && (
-    <div class="card-icon" aria-hidden="true">
-      <i class={icon}></i>
+  {(featureGlyph || icon) && (
+    <div class:list={['card-icon', featureGlyph && 'card-icon--glyph']} aria-hidden="true">
+      {featureGlyph ? (
+        <FeatureGlyph name={featureGlyph} size={22} />
+      ) : (
+        <i class={icon}></i>
+      )}
     </div>
   )}
   <h3 class="card-title">

@@ -1,0 +1,165 @@
+/* SVG feature glyphs — marketing pages */
+
+.feature-glyph {
+    display: block;
+    flex-shrink: 0;
+    color: var(--primary-dark, var(--primary-color));
+}
+
+.marketing-capability-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md) var(--space-xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.marketing-capability-row__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    max-width: 16rem;
+    text-align: left;
+}
+
+.marketing-capability-row__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--phi-radius-atypical-a, 0.65rem);
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.16);
+    flex-shrink: 0;
+}
+
+.marketing-capability-row__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.marketing-capability-row__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.marketing-capability-row__detail {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.marketing-capability-row--compact {
+    gap: var(--space-sm) var(--space-lg);
+}
+
+.marketing-capability-row--compact .marketing-capability-row__icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.marketing-capability-row--compact .marketing-capability-row__detail {
+    display: none;
+}
+
+.search-capabilities {
+    margin: var(--space-md) auto var(--space-sm);
+    max-width: 42rem;
+}
+
+.search-scope-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.search-scope-hint__lead {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.55;
+    max-width: 36rem;
+}
+
+.section-intro-flourish {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+    color: var(--primary-color);
+}
+
+.section-intro--center .section-intro-flourish {
+    justify-content: center;
+}
+
+.section-intro-flourish__svg {
+    width: min(7.5rem, 40vw);
+    height: auto;
+}
+
+.marketing-main-rail {
+    pointer-events: none;
+    user-select: none;
+    line-height: 0;
+    margin: 0 calc(-1 * var(--space-lg, 1rem));
+    opacity: 0.85;
+}
+
+.marketing-main-rail__svg {
+    display: block;
+    width: 100%;
+    height: 1.75rem;
+}
+
+.card-icon--glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm);
+}
+
+.card-icon--glyph .feature-glyph {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.search-result-hint--refine {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
+}
+
+.search-hint-glyph {
+    flex-shrink: 0;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-top: 0.1rem;
+    color: var(--primary-color);
+}
+
+.search-result-hint--refine strong {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 640px) {
+    .marketing-capability-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .marketing-capability-row__item {
+        max-width: 100%;
+    }
+}

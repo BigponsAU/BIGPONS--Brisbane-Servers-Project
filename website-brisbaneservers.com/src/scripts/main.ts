@@ -436,7 +436,13 @@ async function hydrateAccountLinks(): Promise<void> {
     }
 }
 
-// ===== SEMANTIC SEARCH FUNCTIONALITY =====
+import {
+    SEARCH_MIN_CHARS,
+    classifyQueryTokenMatch,
+    collectSearchTokens,
+    fuzzyTokenMatch,
+    normalizeFuzzyToken,
+} from '../lib/search/fuzzy-text';
 interface SearchIndexItem {
     id: string;
     title: string;
@@ -450,6 +456,7 @@ interface SearchIndexItem {
     strength?: number;
     matchSource?: 'semantic' | 'keyword' | 'hybrid';
     matchedKeywords?: string[];
+    fuzzyMatch?: boolean;
 }
 
 interface RemoteSearchHit {
@@ -625,7 +632,9 @@ class SemanticSearch {
         }
 
         const execute = async (): Promise<void> => {
-            if (!query.trim()) {
+            const trimmed = query.trim();
+
+            if (!trimmed) {
                 if (document.activeElement === this.searchInput) {
                     this.displayBrowseHints();
                 } else {
@@ -636,20 +645,26 @@ class SemanticSearch {
                 return;
             }
 
+            if (trimmed.length < SEARCH_MIN_CHARS) {
+                this.displayMinLengthHint(trimmed.length);
+                this.searchInputWrapper?.classList.remove('loading');
+                return;
+            }
+
             this.searchInputWrapper?.classList.add('loading');
             this.searchInput!.setAttribute('aria-busy', 'true');
 
             let results = this.search(query);
-            if (this.apiBaseUrl && query.trim().length >= 2) {
+            if (this.apiBaseUrl) {
                 try {
-                    const remote = await this.fetchSemanticResults(query.trim());
+                    const remote = await this.fetchSemanticResults(trimmed);
                     results = this.mergeResults(results, remote);
                 } catch {
                     /* keep keyword index results */
                 }
             }
 
-            this.displayResults(results);
+            this.displayResults(results, trimmed);
             this.searchResults!.classList.add('active');
             this.searchInputWrapper?.classList.remove('loading');
             this.searchInput!.setAttribute('aria-busy', 'false');
@@ -689,52 +704,74 @@ class SemanticSearch {
     
     search(query: string): SearchIndexItem[] {
         if (!query.trim()) return [];
-        
+
         const normalizedQuery = query.toLowerCase().trim().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
         const queryWords = this.extractKeywords(query);
         const scoredResults: SearchIndexItem[] = [];
-        
+
         const indexToSearch = this.getActiveIndex();
-        
-        indexToSearch.forEach(item => {
+
+        indexToSearch.forEach((item) => {
             let score = 0;
+            let usedFuzzy = false;
             const title = (item.title || '').toLowerCase();
             const description = (item.description || '').toLowerCase();
             const keywords = item.keywords || [];
             const industry = (item.industry || '').toLowerCase();
             const topics = (item.topics || []).join(' ').toLowerCase();
-            const searchText = (title + ' ' + description + ' ' + keywords.join(' ') + ' ' + industry + ' ' + topics).toLowerCase();
+            const searchText = `${title} ${description} ${keywords.join(' ')} ${industry} ${topics}`.toLowerCase();
+            const candidateTokens = collectSearchTokens(searchText);
 
-            if (normalizedQuery.length >= 2 && searchText.includes(normalizedQuery)) {
-                score += 12;
+            if (normalizedQuery.length >= SEARCH_MIN_CHARS && searchText.includes(normalizedQuery)) {
+                score += 14;
             }
 
-            if (normalizedQuery.length >= 4) {
-                const prefix = normalizedQuery.slice(0, 4);
-                const tokens = searchText.split(/[\s\-_/]+/);
-                if (tokens.some((token) => token.startsWith(prefix))) {
-                    score += 9;
+            if (normalizedQuery.length >= SEARCH_MIN_CHARS) {
+                const prefix = normalizedQuery.slice(0, SEARCH_MIN_CHARS);
+                if (candidateTokens.some((token) => token.startsWith(prefix))) {
+                    score += 10;
                 }
             }
-            
-            queryWords.forEach(queryWord => {
-                if (title.includes(queryWord)) score += 10;
-                if (keywords.some(kw => kw.toLowerCase().includes(queryWord))) score += 7;
-                if (item.topics && item.topics.some(topic => topic.toLowerCase().includes(queryWord))) score += 6;
-                if (item.industry && item.industry.toLowerCase().includes(queryWord)) score += 5;
-                if (description.includes(queryWord)) score += 2;
-                if (searchText.includes(queryWord)) score += 1;
-                if (queryWord.length >= 4) {
-                    const prefix = queryWord.slice(0, 4);
-                    if (searchText.split(/[\s\-_/]+/).some((token) => token.startsWith(prefix))) score += 6;
+
+            for (const queryWord of queryWords) {
+                let wordScore = 0;
+                let wordFuzzy = false;
+
+                if (title.includes(queryWord)) wordScore = Math.max(wordScore, 10);
+                if (keywords.some((kw) => kw.toLowerCase().includes(queryWord))) wordScore = Math.max(wordScore, 7);
+                if (item.topics?.some((topic) => topic.toLowerCase().includes(queryWord))) wordScore = Math.max(wordScore, 6);
+                if (item.industry && item.industry.toLowerCase().includes(queryWord)) wordScore = Math.max(wordScore, 5);
+                if (description.includes(queryWord)) wordScore = Math.max(wordScore, 2);
+
+                for (const token of candidateTokens) {
+                    const matchKind = classifyQueryTokenMatch(queryWord, token);
+                    if (matchKind === 'exact') wordScore = Math.max(wordScore, 11);
+                    else if (matchKind === 'prefix') wordScore = Math.max(wordScore, 8);
+                    else if (matchKind === 'fuzzy') {
+                        wordScore = Math.max(wordScore, 6);
+                        wordFuzzy = true;
+                    }
                 }
-            });
-            
+
+                if (queryWord.length >= SEARCH_MIN_CHARS && !wordScore) {
+                    const qNorm = normalizeFuzzyToken(queryWord);
+                    if (candidateTokens.some((token) => fuzzyTokenMatch(queryWord, token))) {
+                        wordScore = 5;
+                        wordFuzzy = true;
+                    } else if (searchText.includes(qNorm.slice(0, SEARCH_MIN_CHARS))) {
+                        wordScore = 4;
+                    }
+                }
+
+                score += wordScore;
+                if (wordFuzzy) usedFuzzy = true;
+            }
+
             if (score > 0) {
-                scoredResults.push({ ...item, score });
+                scoredResults.push({ ...item, score, fuzzyMatch: usedFuzzy });
             }
         });
-        
+
         return scoredResults
             .sort((a, b) => (b.score || 0) - (a.score || 0))
             .slice(0, 8);
@@ -808,6 +845,34 @@ class SemanticSearch {
             .slice(0, 8);
     }
 
+    displayMinLengthHint(typedLength: number): void {
+        if (!this.searchResults || !this.searchInput) return;
+
+        const remaining = SEARCH_MIN_CHARS - typedLength;
+        const refineCopy =
+            remaining === 1
+                ? '<strong>Refining your query.</strong> One more character unlocks intelligent suggestions — including close spellings such as “proffesional”.'
+                : '<strong>Keep typing.</strong> Suggestions activate at three characters, with spelling-tolerant matching built in.';
+        this.searchInput.setAttribute('aria-expanded', 'true');
+        this.searchResults.classList.add('active');
+        this.searchResults.innerHTML = `
+            <div class="search-result-item search-result-hint search-result-hint--refine" role="status">
+                <svg class="search-hint-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="10.5" cy="10.5" r="6.5" />
+                    <path d="M15.5 15.5L21 21" />
+                    <circle cx="8" cy="9" r="1" fill="currentColor" stroke="none" />
+                    <circle cx="12" cy="11" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                <span>${refineCopy}</span>
+            </div>
+        `;
+    }
+
+    formatFuzzyBadge(item: SearchIndexItem): string {
+        if (!item.fuzzyMatch) return '';
+        return `<span class="search-result-fuzzy-badge" title="Matched despite spelling variation">Close match</span>`;
+    }
+
     formatMatchBadge(item: SearchIndexItem): string {
         if (!item.matchSource || item.matchSource === 'keyword') return '';
         const label =
@@ -855,18 +920,23 @@ class SemanticSearch {
 
         this.searchResults.innerHTML = `
             <div class="search-result-item search-result-hint" role="presentation">
-                Browse industry hubs, topic guides, case studies, and published resources
+                Explore industry hubs, topic guides, case studies, and published resources
             </div>
             ${hubItems}
         `;
     }
 
-    displayResults(results: SearchIndexItem[]): void {
+    displayResults(results: SearchIndexItem[], queryLabelRaw?: string): void {
         if (!this.searchResults || !this.searchInput) return;
+
+        const queryLabel = this.escapeHtml((queryLabelRaw ?? this.searchInput.value).trim());
+        const hasFuzzy = results.some((result) => result.fuzzyMatch);
         
         if (results.length === 0) {
-            this.searchResults.innerHTML =
-                '<div class="search-result-item search-result-empty" role="status">No results found. Try an industry name, topic, or keyword from the chips below.</div>';
+            this.searchResults.innerHTML = `
+                <div class="search-result-item search-result-empty" role="status">
+                    No close matches for “${queryLabel}”. Try an industry below or adjust your terms — minor spelling variations are reconciled automatically.
+                </div>`;
             this.searchResults.classList.add('active');
             this.searchInput.setAttribute('aria-expanded', 'true');
             return;
@@ -875,15 +945,18 @@ class SemanticSearch {
         this.searchInput.setAttribute('aria-expanded', 'true');
         this.searchResults.setAttribute('aria-label', `${results.length} search results`);
 
-        const queryLabel = this.escapeHtml(this.searchInput.value.trim());
+        const fuzzyNote = hasFuzzy
+            ? `<span class="search-result-fuzzy-note">Spelling-tolerant matches included</span>`
+            : '';
         const header = queryLabel
-            ? `<div class="search-result-item search-result-hint" role="presentation">${results.length} result${results.length === 1 ? '' : 's'} for “${queryLabel}”</div>`
+            ? `<div class="search-result-item search-result-hint" role="presentation">${results.length} suggestion${results.length === 1 ? '' : 's'} for “${queryLabel}” ${fuzzyNote}</div>`
             : '';
 
         this.searchResults.innerHTML = header + results.map((result, index) => {
             const url = this.normalizeSearchUrl(result.url);
             const industry = result.industry ? `<span class="search-result-industry">${this.escapeHtml(this.formatIndustry(result.industry))}</span>` : '';
             const matchBadge = this.formatMatchBadge(result);
+            const fuzzyBadge = this.formatFuzzyBadge(result);
             const description = (result.description || '').trim();
             const descriptionHtml = description
                 ? `<div class="search-result-description">${this.escapeHtml(description.substring(0, 120))}${description.length > 120 ? '…' : ''}</div>`
@@ -899,7 +972,7 @@ class SemanticSearch {
                 <a href="${url}" class="search-result-item" role="option" aria-selected="false" tabindex="0" id="search-result-${index}">
                     <div class="search-result-title-row">
                         <div class="search-result-title">${this.escapeHtml(result.title)}</div>
-                        ${matchBadge}
+                        ${fuzzyBadge}${matchBadge}
                     </div>
                     ${industry}
                     ${descriptionHtml}

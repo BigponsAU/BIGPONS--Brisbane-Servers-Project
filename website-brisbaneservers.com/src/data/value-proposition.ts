@@ -180,7 +180,7 @@ export const valueProposition = {
     heroSubtitle:
       'Practical articles and playbooks—grants, automation, compliance-aware technology—so you can decide with context, evidence, and next actions in one place.',
     searchPlaceholder:
-      'Search resources by industry, topic, or keyword…',
+      'Search by industry, topic, or keyword — suggestions from three characters',
     searchLabel: 'Search resources',
     industryEyebrow: 'Industry hub',
     topicEyebrow: 'Topic guide',

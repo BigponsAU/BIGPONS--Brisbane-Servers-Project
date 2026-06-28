@@ -3,7 +3,7 @@ import { checkRateLimit, getClientKey } from '../../../lib/rate-limit';
 import { searchPublicResources } from '../../../lib/search/public-resource-search';
 
 const MAX_REQ_PER_MIN = 60;
-const MIN_QUERY_LEN = 2;
+const MIN_QUERY_LEN = 3;
 
 /**
  * Public hybrid search (semantic RAG + proposition keywords). Published resources only.

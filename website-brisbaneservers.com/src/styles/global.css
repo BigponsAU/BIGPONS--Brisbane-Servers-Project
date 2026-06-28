@@ -2042,11 +2042,7 @@ section.hero .hero-subtitle .semantic-child,
 }
 
 .search-scope-hint {
-    margin: var(--space-md) 0 var(--space-sm);
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    text-align: center;
-    line-height: 1.5;
+    margin: var(--space-sm) 0 var(--space-sm);
 }
 
 .search-browse-chips {
@@ -2132,6 +2128,27 @@ section.hero .hero-subtitle .semantic-child,
     background: rgba(10, 116, 218, 0.12);
     color: var(--primary-color);
     white-space: nowrap;
+}
+
+.search-result-fuzzy-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(234, 88, 12, 0.12);
+    color: #c2410c;
+    white-space: nowrap;
+}
+
+.search-result-fuzzy-note {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    font-style: italic;
 }
 
 .search-result-keywords {

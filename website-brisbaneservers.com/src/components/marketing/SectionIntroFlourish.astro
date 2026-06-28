@@ -1,0 +1,19 @@
+---
+/** φ-node rail — recurrent SVG accent above marketing section intros. */
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class:list={['section-intro-flourish', className]} aria-hidden="true">
+  <svg class="section-intro-flourish__svg" viewBox="0 0 120 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="6" x2="36" y2="6" stroke="currentColor" stroke-width="1" opacity="0.35" />
+    <circle cx="42" cy="6" r="2.5" fill="currentColor" opacity="0.5" />
+    <line x1="48" y1="6" x2="72" y2="6" stroke="currentColor" stroke-width="1" opacity="0.55" />
+    <circle cx="78" cy="6" r="3" fill="currentColor" />
+    <line x1="84" y1="6" x2="108" y2="6" stroke="currentColor" stroke-width="1" opacity="0.55" />
+    <circle cx="114" cy="6" r="2.5" fill="currentColor" opacity="0.5" />
+  </svg>
+</div>

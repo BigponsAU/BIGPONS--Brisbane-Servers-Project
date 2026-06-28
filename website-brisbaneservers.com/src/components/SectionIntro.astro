@@ -1,6 +1,7 @@
 ---
 import SemanticText from './SemanticText.astro';
 import { formatEyebrowCopy } from '../lib/copy-style';
+import SectionIntroFlourish from './marketing/SectionIntroFlourish.astro';
 
 interface Props {
   /** Situational label (topic guide, industry hub, etc.) */
@@ -11,9 +12,11 @@ interface Props {
   titleId?: string;
   center?: boolean;
   class?: string;
+  /** Show the recurrent φ-node SVG rail (default on marketing sections) */
+  showFlourish?: boolean;
 }
 
-const { eyebrow, title, byline, titleId, center = false, class: className = '' } = Astro.props;
+const { eyebrow, title, byline, titleId, center = false, class: className = '', showFlourish = true } = Astro.props;
 const eyebrowText = eyebrow ? formatEyebrowCopy(eyebrow) : undefined;
 ---
 
@@ -25,6 +28,7 @@ const eyebrowText = eyebrow ? formatEyebrowCopy(eyebrow) : undefined;
     className,
   ]}
 >
+  {showFlourish && <SectionIntroFlourish />}
   {eyebrowText && <p class="section-intro__eyebrow">{eyebrowText}</p>}
   <h2 class:list={['section-title', center && 'section-title--center']} id={titleId}>
     <SemanticText text={title} semanticLevel="high" isParent={true} />

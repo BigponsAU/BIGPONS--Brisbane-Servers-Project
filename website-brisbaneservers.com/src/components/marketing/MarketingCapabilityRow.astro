@@ -1,0 +1,32 @@
+---
+import FeatureGlyph from './FeatureGlyph.astro';
+import type { FeatureGlyphName } from '../../lib/marketing/feature-glyphs';
+
+export type CapabilityItem = {
+  glyph: FeatureGlyphName;
+  label: string;
+  detail?: string;
+};
+
+interface Props {
+  items: CapabilityItem[];
+  class?: string;
+  compact?: boolean;
+}
+
+const { items, class: className = '', compact = false } = Astro.props;
+---
+
+<ul class:list={['marketing-capability-row', compact && 'marketing-capability-row--compact', className]} aria-label="Site capabilities">
+  {items.map((item) => (
+    <li class="marketing-capability-row__item">
+      <span class="marketing-capability-row__icon" aria-hidden="true">
+        <FeatureGlyph name={item.glyph} size={compact ? 18 : 20} />
+      </span>
+      <span class="marketing-capability-row__copy">
+        <span class="marketing-capability-row__label">{item.label}</span>
+        {item.detail && <span class="marketing-capability-row__detail">{item.detail}</span>}
+      </span>
+    </li>
+  ))}
+</ul>

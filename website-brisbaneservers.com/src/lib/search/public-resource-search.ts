@@ -13,6 +13,12 @@ import {
   matchPropositionKeywords,
   propositionKeywordScore,
 } from './proposition-corpus';
+import {
+  classifyQueryTokenMatch,
+  collectSearchTokens,
+  queryTokensFromText,
+  SEARCH_MIN_CHARS,
+} from './fuzzy-text';
 import { getPublicSearchResultUrl } from './search-result-url';
 import { searchStaticCaseStudies } from './public-case-study-search';
 
@@ -103,9 +109,28 @@ export async function searchPublicResources(query: string, limit = 8): Promise<{
     const semanticHit = byResource.get(resource.id);
     const textBlob = `${resource.title} ${resource.description} ${resource.content.slice(0, 600)}`;
     const kwScore = propositionKeywordScore(trimmed, textBlob);
-    const queryTokens = trimmed.toLowerCase().split(/\s+/).filter((t) => t.length >= 2);
+    const queryTokens = queryTokensFromText(trimmed);
     const titleDesc = `${resource.title} ${resource.description}`.toLowerCase();
-    const lexicalHits = queryTokens.filter((t) => titleDesc.includes(t));
+    const titleTokens = collectSearchTokens(titleDesc);
+    const lexicalHits: string[] = [];
+
+    for (const queryToken of queryTokens) {
+      let matched = false;
+      for (const token of titleTokens) {
+        const kind = classifyQueryTokenMatch(queryToken, token);
+        if (kind === 'none') continue;
+        lexicalHits.push(token);
+        matched = true;
+        break;
+      }
+      if (!matched && queryToken.length >= SEARCH_MIN_CHARS) {
+        const fuzzyToken = titleTokens.find((token) => classifyQueryTokenMatch(queryToken, token) === 'fuzzy');
+        if (fuzzyToken) {
+          lexicalHits.push(fuzzyToken);
+        }
+      }
+    }
+
     const lexicalBoost = lexicalHits.length > 0 ? Math.min(0.35, lexicalHits.length * 0.08) : 0;
 
     let semantic = semanticHit?.semantic ?? 0;

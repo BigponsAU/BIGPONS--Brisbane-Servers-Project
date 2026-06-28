@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import MarketingMainRail from '../components/marketing/MarketingMainRail.astro';
 import type { PageDensity, PageShellVariant, PageValueProfile, PageZoomProfile } from '../lib/page-descriptors';
 
 interface Props {
@@ -60,6 +61,7 @@ const mainClassName = [
   shellVariant === 'public' ? 'site-main--marketing' : '',
   mainClass,
 ].filter(Boolean).join(' ');
+const showMarketingRail = shellVariant !== 'portal' && pageId !== 'account';
 ---
 
 <BaseLayout
@@ -79,6 +81,7 @@ const mainClassName = [
   <div class={shellClassName}>
     <Header currentPath={currentPath} />
     <main id={mainId} class={mainClassName} role="main">
+      {showMarketingRail && <MarketingMainRail />}
       <slot />
     </main>
     {showFooter && <Footer />}
