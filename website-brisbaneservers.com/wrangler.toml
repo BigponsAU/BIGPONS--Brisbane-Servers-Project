@@ -5,7 +5,7 @@
 # Build command: npm run build | Output: dist | Root: website-brisbaneservers.com
 #
 # Required env (production): PUBLIC_API_BASE_URL, PUBLIC_RESOURCES_LIVE=1
-# Optional: PAGES_BUILD_USE_GIT_CORPUS=1 (prerender only), USE_FULL_SITE_DEPLOY_HOOK=1 (legacy)
+# Build/prerender: PAGES_BUILD_EXPORT_ON_BUILD=1, PAGES_BUILD_USE_GIT_CORPUS=1 (also set in Pages dashboard)
 
 name = "brisbane-servers"
 pages_build_output_dir = "dist"
@@ -23,3 +23,4 @@ PUBLIC_API_BASE_URL = "https://api.brisbaneservers.com/api"
 INTERNAL_API_BASE_URL = "https://api.brisbaneservers.com/api"
 PUBLIC_RESOURCES_LIVE = "1"
 PAGES_BUILD_USE_GIT_CORPUS = "1"
+PAGES_BUILD_EXPORT_ON_BUILD = "1"

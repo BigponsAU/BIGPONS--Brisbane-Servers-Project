@@ -7,7 +7,8 @@ Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPAC
 ### 2026-06-28 — Pages static resource detail pages
 
 - **Pages production env** — confirmed via Cloudflare API: `PAGES_BUILD_EXPORT_ON_BUILD=1`, `PAGES_BUILD_USE_GIT_CORPUS=1`, `PUBLIC_RESOURCES_LIVE=1`, API base URLs set.
-- **Build fix** — prerender reads `voice-framework/storage/resources.json` directly (no `DATABASE_URL` on Pages CI).
+- **Build fix** — prerender reads `voice-framework/storage/resources.json` via repo-relative path (bundled `import.meta.url` broke CI corpus lookup).
+- **wrangler.toml** — `PAGES_BUILD_EXPORT_ON_BUILD=1` added to `[vars]` (Pages injects build env from wrangler, not dashboard-only vars).
 - **Prebuild** — one `GET /api/resources/public` export before Astro build; indexable resources prerender to `/resources/item/{id}/`.
 - **Note** — live API currently returns **0** published resources; detail pages appear after publish + deploy hook / push rebuild.
 
