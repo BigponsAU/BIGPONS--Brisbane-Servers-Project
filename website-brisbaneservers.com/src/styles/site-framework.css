@@ -942,10 +942,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .home-phase-indicator {
-  --phase-line-width: 100%;
+  --phase-line-width: min(100%, 22rem);
   width: 100%;
   max-width: none;
-  height: clamp(0.85rem, 1.6vw, 1.15rem);
+  height: clamp(1.1rem, 2.1vw, 1.4rem);
   margin: 0 0 clamp(0.85rem, 1.2vw, 1.15rem);
   border-radius: 0;
   background: transparent;
@@ -956,9 +956,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-sections-shell .home-phase-indicator::before {
   content: '';
   position: absolute;
-  inset: 50% 0 auto;
-  transform: translateY(-50%);
-  height: 1px;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  width: var(--phase-line-width);
+  transform: translate(-50%, -50%);
+  height: 2px;
+  border-radius: 999px;
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -967,7 +971,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     var(--phase-end) 84%,
     transparent 100%
   );
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .main-home .home-sections-shell .home-phase-indicator::after {
@@ -976,13 +980,13 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 0.55rem;
-  height: 0.55rem;
+  width: clamp(0.62rem, 1vw, 0.78rem);
+  height: clamp(0.62rem, 1vw, 0.78rem);
   border-radius: 50%;
   background: var(--phase-mid);
   box-shadow:
-    0 0 0 3px rgba(var(--phase-ring-rgb), 0.14),
-    0 0 16px rgba(var(--phase-ring-rgb), 0.28);
+    0 0 0 4px rgba(var(--phase-ring-rgb), 0.14),
+    0 0 18px rgba(var(--phase-ring-rgb), 0.32);
 }
 
 .section--hero-wash .home-phase-indicator::before {
@@ -1004,7 +1008,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .home-phase-indicator--strategy {
-  --phase-line-width: clamp(7rem, 10.8vw, 8.6rem);
+  --phase-line-width: clamp(8rem, 12vw, 10.5rem);
   --phase-start: var(--accent-teal);
   --phase-mid: var(--primary-color);
   --phase-end: var(--accent-violet);
@@ -1012,7 +1016,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .home-phase-indicator--industry {
-  --phase-line-width: clamp(5.8rem, 9vw, 7rem);
+  --phase-line-width: clamp(7.5rem, 11vw, 9.5rem);
   --phase-start: #16a34a;
   --phase-mid: var(--accent-teal);
   --phase-end: var(--primary-color);
@@ -1020,11 +1024,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .home-phase-indicator--proof {
-  --phase-line-width: clamp(4.8rem, 7.2vw, 5.9rem);
+  --phase-line-width: clamp(8rem, 14vw, 12rem);
   --phase-start: var(--primary-color);
   --phase-mid: var(--accent-violet);
   --phase-end: var(--accent-pink);
   --phase-ring-rgb: var(--accent-violet-rgb);
+}
+
+.main-home .home-sections-shell .home-phase-indicator--clients {
+  --phase-line-width: clamp(8rem, 14vw, 12rem);
+  --phase-start: var(--accent-teal);
+  --phase-mid: var(--primary-color);
+  --phase-end: var(--accent-violet);
+  --phase-ring-rgb: var(--primary-color-rgb);
 }
 
 .main-home .home-sections-shell .section .section-title {

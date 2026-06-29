@@ -95,6 +95,8 @@
     color: var(--primary-color);
     margin-bottom: var(--space-md);
     line-height: 0;
+    display: flex;
+    justify-content: center;
 }
 
 .section-accent-rail--on-dark {
@@ -103,8 +105,8 @@
 
 .section-accent-rail__svg {
     display: block;
-    width: 100%;
-    height: clamp(0.85rem, 1.6vw, 1.15rem);
+    width: min(100%, 56rem);
+    height: clamp(1.1rem, 2.1vw, 1.4rem);
 }
 
 .section-intro-flourish {

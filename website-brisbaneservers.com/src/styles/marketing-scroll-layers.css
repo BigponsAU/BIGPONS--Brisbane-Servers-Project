@@ -121,25 +121,35 @@
 }
 
 .scroll-transition-deck .section-scroll-deck-cover--exit::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(92%, 56rem);
-    height: 3px;
-    border-radius: 999px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(var(--primary-color-rgb), 0.2) 20%,
-        rgba(var(--accent-violet-rgb), 0.65) 50%,
-        rgba(var(--primary-color-rgb), 0.2) 80%,
-        transparent 100%
-    );
-    opacity: calc(0.55 + var(--deck-cover-progress, 0) * 0.45);
-    pointer-events: none;
-    z-index: 4;
+    display: none;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--exit .section-intro-flourish {
+    margin-top: 0;
+    margin-bottom: clamp(1rem, 2.2vh, 1.35rem);
+    padding-top: clamp(0.15rem, 0.4vh, 0.35rem);
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--exit .section-accent-rail {
+    margin-bottom: 0;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--exit .section-accent-rail__svg {
+    width: min(100%, 52rem);
+    height: clamp(1.15rem, 2.25vw, 1.5rem);
+}
+
+.scroll-transition-deck .section-scroll-deck-stage .home-phase-indicator {
+    margin-bottom: clamp(1rem, 2vh, 1.35rem);
+}
+
+.scroll-transition-deck .section-scroll-deck-stage.section--hero-wash .home-phase-indicator::before {
+    width: clamp(8rem, 14vw, 12rem);
+}
+
+.scroll-transition-deck .section-scroll-deck-stage.section--hero-wash .home-phase-indicator::after {
+    width: clamp(0.68rem, 1.05vw, 0.82rem);
+    height: clamp(0.68rem, 1.05vw, 0.82rem);
 }
 
 /* Proof band: full right-field backdrop behind card grid (section-level, not corner) */
