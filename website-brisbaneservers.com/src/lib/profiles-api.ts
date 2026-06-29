@@ -4,6 +4,7 @@
 
 import { voiceProfileData } from '@voice-framework';
 import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { asCorpusObject } from './corpus-payload-coerce';
 import { getProfilesFile } from './storage-paths';
 
 export interface ProfileMetadata {
@@ -45,13 +46,13 @@ function emptyProfilesData(): ProfilesData {
 
 /** Load profiles.json document (Neon first, then disk, else empty). */
 export async function loadProfilesData(): Promise<ProfilesData> {
-  const data = await readCorpusJson<ProfilesData>(
-    CORPUS_DOC_KEYS.PROFILES,
-    getProfilesFile(),
-    emptyProfilesData(),
+  const empty = emptyProfilesData();
+  const data = asCorpusObject(
+    await readCorpusJson<ProfilesData>(CORPUS_DOC_KEYS.PROFILES, getProfilesFile(), empty),
+    empty,
   );
   if (!Array.isArray(data.profiles)) {
-    return emptyProfilesData();
+    return empty;
   }
   return data;
 }

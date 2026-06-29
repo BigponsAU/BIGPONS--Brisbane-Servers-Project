@@ -19,6 +19,7 @@ import {
 } from '../../../lib/resource-voice-profile';
 import { generateResourceBody } from '../../../lib/inference/resource-generate';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
+import { canAccessResource } from '../../../lib/resource-access';
 
 /**
  * Generate a new resource
@@ -137,10 +138,14 @@ export const POST: APIRoute = async ({ request }) => {
     // Normalize topic to slug format for consistency
     const topicSlug = normalizeTopicSlug(topic);
 
-    // Check for existing resource with same industry + topic
-    const existingResource = resources.find(
-      r => r.industry === industry && topicsMatch(r.topic, topic)
+    // Check for existing resource with same industry + topic (only update if caller can access it)
+    const matchedResource = resources.find(
+      (r) => r.industry === industry && topicsMatch(r.topic, topic)
     );
+    const existingResource =
+      matchedResource && canAccessResource(authResult.user, matchedResource)
+        ? matchedResource
+        : undefined;
 
     if (existingResource) {
       // Update existing resource instead of creating duplicate
@@ -153,6 +158,12 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.content = extrapolatedContent;
       existingResource.generatedAt = new Date().toISOString();
       existingResource.generatedBy = authResult.user.email;
+      if (
+        authResult.user.role !== 'super-admin'
+        && authResult.user.role !== 'admin'
+      ) {
+        existingResource.ownerId = authResult.user.id;
+      }
       existingResource.version = (existingResource.version || 1) + 1;
       existingResource.metadata = mergeInferenceMetadata(existingResource.metadata, {
         wordCount: extrapolatedContent.split(/\s+/).length,
@@ -213,6 +224,7 @@ export const POST: APIRoute = async ({ request }) => {
       content: extrapolatedContent,
       generatedAt: new Date().toISOString(),
       generatedBy: authResult.user.email,
+      ownerId: authResult.user.id,
       version: 1,
       status: 'draft',
       metadata: mergeInferenceMetadata(undefined, {

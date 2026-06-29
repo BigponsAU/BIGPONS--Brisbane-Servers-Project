@@ -1,25 +1,37 @@
 ---
 import SectionIntro from '../SectionIntro.astro';
-import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 ---
 
-<div id="library-growth-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Library growth" style="display: none;">
-  <div class="admin-content">
-    <section class="section section-tartan-accent section-home-band--primary-light account-workspace-panel-section">
-      <SectionConstellationLayer variant="partnership" semanticKey="account-library-growth" tier="whisper" placement="top-right" />
-      <div class="bg-pattern-angular bg-pattern-light"></div>
-      <div class="container account-workspace-panel-inner">
-        <SectionIntro
-          eyebrow="Growing library"
-          title="Library growth"
-          byline="Plans topic gaps from analytics, then generates voice-aligned draft guides. Nothing goes live until you publish from Resources. Check the budget estimate before activating the schedule."
-          titleId="library-growth-heading"
-        />
+<div id="library-growth-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Library growth" style="display: none;">
+  <div class="admin-content growth-panel-shell">
+    <section class="admin-section" aria-labelledby="library-growth-heading">
+      <div class="section-header section-header--workspace">
+        <div>
+          <h2 id="library-growth-heading">Library growth</h2>
+          <p class="section-subtitle">Plans topic gaps from Insights, generates voice-aligned drafts, and queues them for review before anything goes live in Resources.</p>
+        </div>
+        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="growth-refresh-queue">Refresh queue</button>
+        </div>
+      </div>
 
-        <div class="library-growth-controls">
+      <details class="panel-guidance-details">
+        <summary>How growth cycles work</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Configure</strong> interval, proposal limits, and daily budget — then <strong>Activate schedule</strong> or <strong>Run cycle now</strong>.</p>
+          <p><strong>Proposals</strong> appear in the queue; approve to materialize drafts in Resources (or enable auto-materialize).</p>
+          <p><strong>Budget estimate</strong> updates before you arm the schedule — check Workers AI and growth unit caps.</p>
+        </div>
+      </details>
+
+      <div class="growth-workspace">
+        <aside class="growth-config-pane card" aria-label="Growth settings">
+          <h3 class="card-title">Schedule &amp; budget</h3>
           <label class="library-growth-toggle">
             <input type="checkbox" id="growth-enabled" />
-            Allow scheduled cycles (configure interval, then activate below)
+            Allow scheduled cycles
           </label>
           <p id="growth-schedule-state" class="library-growth-schedule-state" role="status" aria-live="polite"></p>
           <div class="library-growth-fields">
@@ -57,16 +69,21 @@ import SectionConstellationLayer from '../SectionConstellationLayer.astro';
             <button type="button" id="growth-save-config" class="btn btn-secondary btn-sm">Save settings</button>
             <button type="button" id="growth-arm-schedule" class="btn btn-primary btn-sm">Activate schedule</button>
             <button type="button" id="growth-pause-schedule" class="btn btn-secondary btn-sm">Pause schedule</button>
-            <button type="button" id="growth-run-cycle" class="btn btn-secondary btn-sm">Run cycle now (manual)</button>
-            <button type="button" id="growth-refresh-queue" class="btn btn-secondary btn-sm">Refresh queue</button>
+            <button type="button" id="growth-run-cycle" class="btn btn-secondary btn-sm">Run cycle now</button>
           </div>
           <p id="growth-status" class="status-message" role="status" aria-live="polite"></p>
           <p id="growth-cycle-meta" class="library-growth-meta"></p>
-        </div>
+        </aside>
 
-        <div id="growth-proposals-queue" class="growth-proposals-queue" aria-live="polite">
-          <p class="status-message">Loading growth proposals…</p>
-        </div>
+        <main class="growth-queue-pane" aria-label="Growth proposals queue">
+          <div class="growth-queue-header">
+            <h3 class="card-title">Proposal queue</h3>
+            <p id="growth-queue-summary" class="form-hint" aria-live="polite">Loading…</p>
+          </div>
+          <div id="growth-proposals-queue" class="growth-proposals-queue" aria-live="polite">
+            <p class="status-message">Loading growth proposals…</p>
+          </div>
+        </main>
       </div>
     </section>
   </div>

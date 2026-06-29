@@ -1,5 +1,5 @@
 import { hasAdminConsoleAccess } from '../lib/workspace-access';
-import { workspaceModeDefaultPanel } from '../data/account-workspace';
+import { accountWorkspace, workspaceModeDefaultPanel } from '../data/account-workspace';
 
 export type WorkspaceMode = 'creator' | 'admin';
 
@@ -44,8 +44,8 @@ export function setWorkspaceMode(mode: WorkspaceMode, navigate = true): void {
   if (subtitle) {
     subtitle.textContent =
       mode === 'admin'
-        ? 'Growth, moderation, hosting, and ops'
-        : 'Resources, profiles, and voice tools';
+        ? accountWorkspace.adminModeDescription
+        : accountWorkspace.creatorModeDescription;
   }
 
   persistMode(mode);

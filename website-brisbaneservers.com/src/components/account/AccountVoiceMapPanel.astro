@@ -1,21 +1,22 @@
 ---
 import SectionConstellationLayer from '../SectionConstellationLayer.astro';
-import { accountWorkspace, BRISBANE_PROFILE_NAME } from '../../data/account-workspace';
+import { accountWorkspace } from '../../data/account-workspace';
 ---
 
-<div id="voice-map-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Voice map" style="display: none;">
+<div id="voice-map-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Voice map" style="display: none;">
   <div class="admin-content">
     <section class="admin-section" aria-labelledby="voice-map-heading">
       <SectionConstellationLayer variant="strategy" semanticKey="account-voice-map" tier="whisper" placement="top-left" />
-      <div class="section-header">
+      <div class="section-header section-header--workspace">
         <div>
           <h2 id="voice-map-heading">{accountWorkspace.voiceMapLabel}</h2>
           <p class="section-subtitle">
-            Corpus indexed from published resources, guides, articles, and case studies. The
-            <strong>{BRISBANE_PROFILE_NAME}</strong> profile hub connects every account to this site voice.
+            Corpus topology from published resources. Pair with Voice profiles for detail and Create content for generation.
           </p>
         </div>
         <div class="section-header-actions voice-map-toolbar">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create</button>
           <select id="voice-map-view" class="form-select" aria-label="Map layer">
             <option value="corpus-resources">Resources (by industry)</option>
             <option value="corpus-chunks">Semantic chunks</option>

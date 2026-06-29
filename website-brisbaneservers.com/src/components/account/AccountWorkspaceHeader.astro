@@ -19,7 +19,7 @@ import { accountWorkspace } from '../../data/account-workspace';
         <circle cx="11" cy="11" r="8"></circle>
         <path d="M21 21l-4.35-4.35"></path>
       </svg>
-      <input type="text" id="global-search" placeholder="Search resources, profiles... (Ctrl+K)" aria-label="Global search" />
+      <input type="text" id="global-search" placeholder="Search resources… profile: voice: panel name (Ctrl+K)" aria-label="Global workspace search" />
     </div>
   </div>
   <div class="header-right">
@@ -27,15 +27,15 @@ import { accountWorkspace } from '../../data/account-workspace';
       <button type="button" id="header-workspace-mode-creator" class="workspace-mode-btn workspace-mode-btn--compact is-active" data-workspace-mode="creator" aria-pressed="true">Workspace</button>
       <button type="button" id="header-workspace-mode-admin" class="workspace-mode-btn workspace-mode-btn--compact" data-workspace-mode="admin" aria-pressed="false">Admin</button>
     </div>
-    <button id="header-info-trigger" class="btn btn-secondary btn-sm" onclick="toggleInfoCard()" aria-label="Toggle information card">
+    <button id="header-info-trigger" class="btn btn-secondary btn-sm header-info-btn" onclick="toggleInfoCard()" aria-label="Toggle information card">
       <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="16" x2="12" y2="12"></line>
         <line x1="12" y1="8" x2="12.01" y2="8"></line>
       </svg>
-      Info
+      <span class="header-info-btn__label">Info</span>
     </button>
-    <span id="user-info" class="user-info"></span>
-    <button id="logout-btn" class="btn btn-secondary btn-sm">Logout</button>
+    <span id="user-info" class="user-info header-user-info"></span>
+    <button id="logout-btn" class="btn btn-secondary btn-sm header-logout-btn">Logout</button>
   </div>
 </header>

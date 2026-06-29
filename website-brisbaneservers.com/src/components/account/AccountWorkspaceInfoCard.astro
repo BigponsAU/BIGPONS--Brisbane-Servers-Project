@@ -11,7 +11,7 @@
 
   <div class="info-card-content">
     <div class="info-card-header">
-      <h2 id="info-card-title">Information Guide</h2>
+      <h2 id="info-card-title">Workspace guide</h2>
       <button class="info-card-close" onclick="toggleInfoCard()" aria-label="Close information card">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -21,22 +21,41 @@
     </div>
     <div class="info-card-body">
       <div class="info-section">
-        <h3>Workspace modes</h3>
+        <h3>Workspace mode</h3>
         <p>
-          Use Workspace for resources, voice profiles, and analytics. Admins can switch to Admin console for
-          library growth, moderation, and user management.
+          <strong>Overview, Content, Voice</strong> — resources, analytics, voice profiles, voice lab (tone analysis +
+          Markov flow tracking), and voice map (2D, depth, 3D).
         </p>
       </div>
       <div class="info-section">
-        <h3>Resource management</h3>
+        <h3>Admin console</h3>
         <p>
-          Use the tree view to navigate resources by industry and topic. Click any resource to open it in the
-          workspace panel.
+          Admins can switch to <strong>Library</strong> (growth proposals, moderation, site review) and
+          <strong>Platform</strong> (users, ops &amp; usage). Billing top-up UI is planned — usage caps and token
+          redeem are live today.
         </p>
       </div>
       <div class="info-section">
-        <h3>Quick actions</h3>
-        <p>Generate new resources, upload files, or refine content using the voice framework integration.</p>
+        <h3>Search (Ctrl+K)</h3>
+        <p>
+          Default search filters resources. Use <code>profile:name</code> for voice profiles,
+          <code>voice:text</code> to open voice lab with sample copy, or type a panel name (e.g. <code>moderation</code>).
+        </p>
+      </div>
+      <div class="info-section">
+        <h3>Voice lab — Markov flow</h3>
+        <p>
+          Panel transitions are recorded as you navigate. Open Voice lab to see the summary, export JSON, or reset.
+          Deep function-level Markov (legacy Docker dashboard) is Phase 2.
+        </p>
+      </div>
+      <div class="info-section">
+        <h3>Feature matrix</h3>
+        <p>
+          Full completion status for every panel lives in
+          <code>docs/portal/DASHBOARD_FEATURE_MATRIX.md</code> in the repo — use it when extending the dashboard so
+          nothing is dropped during refactors.
+        </p>
       </div>
     </div>
     <div class="info-card-footer">

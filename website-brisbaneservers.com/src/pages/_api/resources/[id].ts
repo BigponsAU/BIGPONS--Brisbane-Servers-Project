@@ -12,6 +12,7 @@ import {
   type Resource
 } from '../../../lib/resources-api';
 import { canAccessResource } from '../../../lib/resource-access';
+import { getResourceActionPermissions } from '../../../lib/resource-permissions';
 import {
   schedulePublicSurfaceUpdate,
   shouldRebuildForResourceChange,
@@ -167,44 +168,88 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     const existing = resources[idx];
 
-    // Starter-block protection: only super-admin or admin can edit
-    if (existing.isStarterBlock === true) {
-      const canEdit = authResult.user.role === 'super-admin' || authResult.user.role === 'admin';
-      if (!canEdit) {
+    if (updates.restoreToWorkspace === true) {
+      const isAdmin = authResult.user.role === 'admin' || authResult.user.role === 'super-admin';
+      if (!isAdmin) {
         return new Response(
-          JSON.stringify({
-            error:
-              'Starter blocks cannot be edited. Use "Create from Starter Block" to make your own copy.',
-            code: 'STARTER_BLOCK_READ_ONLY',
-            success: false
-          }),
-          {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
+          JSON.stringify({ error: 'Admin only', code: 'FORBIDDEN', success: false }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } },
         );
       }
+      if (!existing.portalRemovedAt) {
+        return new Response(
+          JSON.stringify({ error: 'Resource is not removed from workspace', code: 'NOT_REMOVED', success: false }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      const restored = {
+        ...existing,
+        portalRemovedAt: undefined,
+        version: existing.version + 1,
+      };
+      resources[idx] = restored;
+      await saveResources(resources);
+      return new Response(JSON.stringify({ resource: restored, success: true, restored: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!canAccessResource(authResult.user, existing)) {
+      return new Response(
+        JSON.stringify({
+          error: 'Resource not found',
+          code: 'NOT_FOUND',
+          success: false
+        }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const editPermissions = getResourceActionPermissions(authResult.user, existing);
+    if (!editPermissions.edit) {
+      return new Response(
+        JSON.stringify({
+          error: editPermissions.editReason || 'You cannot edit this resource',
+          code: existing.isStarterBlock ? 'STARTER_BLOCK_READ_ONLY' : 'FORBIDDEN',
+          success: false
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const isSuperAdmin = authResult.user.role === 'super-admin';
+    const { restoreToWorkspace: _restore, ...contentUpdates } = updates as Record<string, unknown>;
+    const nextStatus = (contentUpdates.status as Resource['status']) ?? existing.status;
     resources[idx] = {
       ...existing,
-      ...updates,
+      ...contentUpdates,
       id: existing.id,
       isStarterBlock: existing.isStarterBlock,
+      portalRemovedAt: existing.portalRemovedAt,
       version: existing.version + 1,
-      industry: updates.industry ?? existing.industry,
-      topic: updates.topic ?? existing.topic,
-      ownerId: isSuperAdmin && updates.ownerId !== undefined ? updates.ownerId : existing.ownerId
+      industry: (contentUpdates.industry as string) ?? existing.industry,
+      topic: (contentUpdates.topic as string) ?? existing.topic,
+      ownerId:
+        isSuperAdmin && typeof contentUpdates.ownerId === 'string'
+          ? contentUpdates.ownerId
+          : existing.ownerId,
+      wasEverPublished: existing.wasEverPublished === true || nextStatus === 'published',
     };
 
-    if (updates.content) {
+    if (contentUpdates.content) {
       const { voiceMatcher } = await getVoiceFramework();
-      const voiceValidation = voiceMatcher.validateVoice(updates.content);
+      const voiceValidation = voiceMatcher.validateVoice(contentUpdates.content as string);
       resources[idx].metadata = {
         ...resources[idx].metadata,
         voiceScore: voiceValidation.score ?? 0,
-        wordCount: String(updates.content).split(/\s+/).length
+        wordCount: String(contentUpdates.content).split(/\s+/).length
       };
     }
 
@@ -295,37 +340,57 @@ export const DELETE: APIRoute = async ({ params, request }) => {
       );
     }
 
-    if (resource.isStarterBlock === true) {
-      const canDelete = authResult.user.role === 'super-admin' || authResult.user.role === 'admin';
-      if (!canDelete) {
-        return new Response(
-          JSON.stringify({
-            error: 'Starter blocks cannot be deleted',
-            code: 'STARTER_BLOCK_PROTECTED',
-            success: false
-          }),
-          {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      }
-    } else {
-      const canDeleteAny =
-        authResult.user.role === 'super-admin' || authResult.user.role === 'admin';
-      if (!canDeleteAny && resource.ownerId !== authResult.user.id) {
-        return new Response(
-          JSON.stringify({
-            error: 'You can only delete your own resources',
-            code: 'FORBIDDEN',
-            success: false
-          }),
-          {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      }
+    if (!canAccessResource(authResult.user, resource)) {
+      return new Response(
+        JSON.stringify({
+          error: 'Resource not found',
+          code: 'NOT_FOUND',
+          success: false
+        }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const deletePermissions = getResourceActionPermissions(authResult.user, resource);
+    if (!deletePermissions.delete) {
+      return new Response(
+        JSON.stringify({
+          error: deletePermissions.deleteReason || 'You cannot delete this resource',
+          code: resource.status === 'published' ? 'PUBLISHED_DELETE_BLOCKED' : 'FORBIDDEN',
+          success: false
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    /** Published: soft-delete from workspace — public search index + static URLs stay live. */
+    if (resource.status === 'published') {
+      const idx = resources.findIndex((r) => r.id === id);
+      resources[idx] = {
+        ...resource,
+        wasEverPublished: true,
+        portalRemovedAt: new Date().toISOString(),
+      };
+      await saveResources(resources);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          softDeleted: true,
+          message:
+            'Removed from workspace. The public page and search index are unchanged.',
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const filtered = resources.filter((r) => r.id !== id);

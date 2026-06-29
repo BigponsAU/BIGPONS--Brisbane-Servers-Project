@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from './corpus-store';
 import { voiceFrameworkStorageDir } from './monorepo-root';
 
 export const TOKEN_LEDGER_FILE = path.join(voiceFrameworkStorageDir(), 'token-ledger.json');
@@ -25,12 +25,7 @@ export interface TokenLedgerEntry {
 }
 
 export async function loadLedger(): Promise<TokenLedgerEntry[]> {
-  const entries = await readCorpusJson<TokenLedgerEntry[]>(
-    CORPUS_DOC_KEYS.TOKEN_LEDGER,
-    TOKEN_LEDGER_FILE,
-    []
-  );
-  return Array.isArray(entries) ? entries : [];
+  return readCorpusArray<TokenLedgerEntry>(CORPUS_DOC_KEYS.TOKEN_LEDGER, TOKEN_LEDGER_FILE, []);
 }
 
 export async function saveLedger(entries: TokenLedgerEntry[]): Promise<void> {

@@ -70,15 +70,18 @@ async function main(): Promise<void> {
   }
 
   const pub = await fetchJson('/resources/public');
+  const pubBody = pub.body as { success?: boolean; count?: number; resources?: unknown[] } | null;
   const pubOk =
     pub.ok &&
-    typeof pub.body === 'object' &&
-    pub.body !== null &&
-    'success' in (pub.body as object);
+    pubBody !== null &&
+    typeof pubBody === 'object' &&
+    pubBody.success === true &&
+    Array.isArray(pubBody.resources);
+  const pubCount = pubOk ? pubBody.resources!.length : 0;
   results.push({
     name: 'GET /api/resources/public',
     ok: pubOk,
-    detail: pubOk ? 'OK' : `HTTP ${pub.status}`,
+    detail: pubOk ? `${pubCount} resource(s)` : `HTTP ${pub.status}`,
   });
 
   let cronStatus = 0;

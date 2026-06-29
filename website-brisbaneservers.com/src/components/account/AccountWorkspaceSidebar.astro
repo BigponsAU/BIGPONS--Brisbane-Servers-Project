@@ -1,11 +1,15 @@
 ---
-import { accountWorkspace, workspaceNavItems } from '../../data/account-workspace';
+import {
+  accountWorkspace,
+  groupWorkspaceNavBySection,
+  workspaceNavItems,
+} from '../../data/account-workspace';
 import { sitePath } from '../../lib/site-path';
 import logo from '../../logo.png';
 import SemanticText from '../SemanticText.astro';
 
-const creatorItems = workspaceNavItems.filter((item) => item.mode === 'creator');
-const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
+const creatorNav = groupWorkspaceNavBySection(workspaceNavItems, 'creator');
+const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
 ---
 
 <aside id="portal-sidebar" class="portal-sidebar" role="navigation" aria-label="Account workspace navigation">
@@ -21,23 +25,8 @@ const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
       <span class="sidebar-site-brand-text">
         <SemanticText text="Brisbane Servers" semanticLevel="high" preserveCase />
       </span>
-      <span class="sidebar-site-brand-tagline">
-        <SemanticText text="Access to truth in technology" semanticLevel="normal" />
-      </span>
     </a>
-  </div>
-
-  <div class="sidebar-header">
-    <div class="sidebar-header-content">
-      <h2 class="sidebar-logo">{accountWorkspace.productName}</h2>
-      <p class="sidebar-subtitle" id="sidebar-mode-subtitle">{accountWorkspace.creatorModeDescription}</p>
-    </div>
-    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="true">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
+    <p class="sidebar-workspace-title">{accountWorkspace.productName}</p>
   </div>
 
   <div id="workspace-mode-switcher" class="workspace-mode-switcher" data-min-role="admin" hidden aria-hidden="true">
@@ -49,133 +38,143 @@ const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
     </button>
   </div>
 
+  <p id="sidebar-mode-subtitle" class="sidebar-mode-subtitle">{accountWorkspace.creatorModeDescription}</p>
+
   <div class="sidebar-nav-viewport">
     <nav class="sidebar-nav-tracks" id="sidebar-nav-tracks" data-workspace-mode="creator" aria-live="polite">
       <div class="sidebar-nav-track sidebar-nav-track--creator" data-track="creator">
-        <div class="nav-section">
-          <div class="nav-section-label">{accountWorkspace.creatorModeLabel}</div>
-          {
-            creatorItems.map((item, index) => (
-              <a
-                href="#"
-                class={`sidebar-nav-item${index === 0 ? ' active' : ''}`}
-                data-panel={item.panel}
-                data-min-role={item.minRole}
-                data-nav-mode="creator"
-                title={item.title}
-              >
-                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  {item.panel === 'dashboard' && (
-                    <>
-                      <rect x="3" y="3" width="7" height="7" />
-                      <rect x="14" y="3" width="7" height="7" />
-                      <rect x="14" y="14" width="7" height="7" />
-                      <rect x="3" y="14" width="7" height="7" />
-                    </>
-                  )}
-                  {item.panel === 'resources' && (
-                    <>
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </>
-                  )}
-                  {item.panel === 'profiles' && (
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                  )}
-                  {item.panel === 'analytics' && (
-                    <>
-                      <line x1="18" y1="20" x2="18" y2="10" />
-                      <line x1="12" y1="20" x2="12" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="14" />
-                    </>
-                  )}
-                  {item.panel === 'voice-lab' && (
-                    <>
-                      <path d="M9 18V5l12-2v13" />
-                      <circle cx="6" cy="18" r="3" />
-                      <circle cx="18" cy="16" r="3" />
-                    </>
-                  )}
-                  {item.panel === 'voice-map' && (
-                    <>
-                      <circle cx="12" cy="12" r="3" />
-                      <circle cx="5" cy="7" r="2" />
-                      <circle cx="19" cy="7" r="2" />
-                      <circle cx="7" cy="19" r="2" />
-                      <line x1="9.5" y1="10" x2="6.5" y2="8.5" />
-                      <line x1="14.5" y1="10" x2="17.5" y2="8.5" />
-                    </>
-                  )}
-                </svg>
-                <div class="nav-item-content">
-                  <span class="nav-label">{item.label}</span>
-                  <span class="nav-description">{item.description}</span>
-                </div>
-              </a>
-            ))
-          }
-        </div>
+        {
+          creatorNav.map((group, groupIndex) => (
+            <div class="nav-section" data-nav-section={group.section}>
+              <div class="nav-section-label">{group.label}</div>
+              {
+                group.items.map((item, index) => (
+                  <a
+                    href="#"
+                    class={`sidebar-nav-item${groupIndex === 0 && index === 0 ? ' active' : ''}`}
+                    data-panel={item.panel}
+                    data-min-role={item.minRole}
+                    data-nav-mode="creator"
+                    title={item.title}
+                  >
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      {item.panel === 'dashboard' && (
+                        <>
+                          <rect x="3" y="3" width="7" height="7" />
+                          <rect x="14" y="3" width="7" height="7" />
+                          <rect x="14" y="14" width="7" height="7" />
+                          <rect x="3" y="14" width="7" height="7" />
+                        </>
+                      )}
+                      {item.panel === 'resources' && (
+                        <>
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        </>
+                      )}
+                      {item.panel === 'profiles' && (
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                      )}
+                      {item.panel === 'analytics' && (
+                        <>
+                          <line x1="18" y1="20" x2="18" y2="10" />
+                          <line x1="12" y1="20" x2="12" y2="4" />
+                          <line x1="6" y1="20" x2="6" y2="14" />
+                        </>
+                      )}
+                      {item.panel === 'voice-lab' && (
+                        <>
+                          <path d="M9 18V5l12-2v13" />
+                          <circle cx="6" cy="18" r="3" />
+                          <circle cx="18" cy="16" r="3" />
+                        </>
+                      )}
+                      {item.panel === 'voice-map' && (
+                        <>
+                          <circle cx="12" cy="12" r="3" />
+                          <circle cx="5" cy="7" r="2" />
+                          <circle cx="19" cy="7" r="2" />
+                          <circle cx="7" cy="19" r="2" />
+                          <line x1="9.5" y1="10" x2="6.5" y2="8.5" />
+                          <line x1="14.5" y1="10" x2="17.5" y2="8.5" />
+                        </>
+                      )}
+                    </svg>
+                    <div class="nav-item-content">
+                      <span class="nav-label">{item.label}</span>
+                      <span class="nav-description">{item.description}</span>
+                    </div>
+                  </a>
+                ))
+              }
+            </div>
+          ))
+        }
       </div>
 
       <div class="sidebar-nav-track sidebar-nav-track--admin" data-track="admin">
-        <div class="nav-section">
-          <div class="nav-section-label">{accountWorkspace.adminModeLabel}</div>
-          {
-            adminItems.map((item) => (
-              <a
-                href="#"
-                class="sidebar-nav-item"
-                data-panel={item.panel}
-                data-min-role={item.minRole}
-                data-nav-mode="admin"
-                title={item.title}
-              >
-                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  {item.panel === 'library-growth' && (
-                    <>
-                      <path d="M12 2v4" />
-                      <path d="M12 18v4" />
-                      <path d="M4.93 4.93l2.83 2.83" />
-                      <path d="M16.24 16.24l2.83 2.83" />
-                      <path d="M2 12h4" />
-                      <path d="M18 12h4" />
-                    </>
-                  )}
-                  {item.panel === 'moderation' && (
-                    <>
-                      <path d="M9 11l3 3L22 4" />
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                    </>
-                  )}
-                  {item.panel === 'site-review' && (
-                    <>
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="M21 21l-4.35-4.35" />
-                    </>
-                  )}
-                  {item.panel === 'admin-users' && (
-                    <>
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </>
-                  )}
-                  {item.panel === 'admin-ops' && (
-                    <>
-                      <rect x="2" y="7" width="20" height="14" rx="2" />
-                      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-                    </>
-                  )}
-                </svg>
-                <div class="nav-item-content">
-                  <span class="nav-label">{item.label}</span>
-                  <span class="nav-description">{item.description}</span>
-                </div>
-              </a>
-            ))
-          }
-        </div>
+        {
+          adminNav.map((group) => (
+            <div class="nav-section" data-nav-section={group.section}>
+              <div class="nav-section-label">{group.label}</div>
+              {
+                group.items.map((item) => (
+                  <a
+                    href="#"
+                    class="sidebar-nav-item"
+                    data-panel={item.panel}
+                    data-min-role={item.minRole}
+                    data-nav-mode="admin"
+                    title={item.title}
+                  >
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      {item.panel === 'library-growth' && (
+                        <>
+                          <path d="M12 2v4" />
+                          <path d="M12 18v4" />
+                          <path d="M4.93 4.93l2.83 2.83" />
+                          <path d="M16.24 16.24l2.83 2.83" />
+                          <path d="M2 12h4" />
+                          <path d="M18 12h4" />
+                        </>
+                      )}
+                      {item.panel === 'moderation' && (
+                        <>
+                          <path d="M9 11l3 3L22 4" />
+                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </>
+                      )}
+                      {item.panel === 'site-review' && (
+                        <>
+                          <circle cx="11" cy="11" r="8" />
+                          <path d="M21 21l-4.35-4.35" />
+                        </>
+                      )}
+                      {item.panel === 'admin-users' && (
+                        <>
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </>
+                      )}
+                      {item.panel === 'admin-ops' && (
+                        <>
+                          <rect x="2" y="7" width="20" height="14" rx="2" />
+                          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                        </>
+                      )}
+                    </svg>
+                    <div class="nav-item-content">
+                      <span class="nav-label">{item.label}</span>
+                      <span class="nav-description">{item.description}</span>
+                    </div>
+                  </a>
+                ))
+              }
+            </div>
+          ))
+        }
       </div>
     </nav>
   </div>
@@ -186,4 +185,11 @@ const adminItems = workspaceNavItems.filter((item) => item.mode === 'admin');
     </div>
     <button id="sidebar-logout-btn" class="btn btn-secondary btn-sm btn-block">Logout</button>
   </div>
+
+  <button id="sidebar-toggle" class="sidebar-toggle sidebar-toggle--floating" aria-label="Close menu" aria-expanded="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
 </aside>

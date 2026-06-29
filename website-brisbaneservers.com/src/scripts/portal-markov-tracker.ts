@@ -5,6 +5,7 @@
 
 const STORAGE_KEY = 'bs-portal-markov-v1';
 const MAX_CHAIN = 200;
+const DEFAULT_PANEL = 'dashboard';
 
 type TransitionMap = Record<string, Record<string, number>>;
 
@@ -18,16 +19,20 @@ function loadState(): MarkovState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { current: 'overview', chain: ['overview'], transitions: {} };
+      return { current: DEFAULT_PANEL, chain: [DEFAULT_PANEL], transitions: {} };
     }
     const parsed = JSON.parse(raw) as MarkovState;
+    const current = parsed.current === 'overview' ? DEFAULT_PANEL : (parsed.current || DEFAULT_PANEL);
+    const chain = Array.isArray(parsed.chain)
+      ? parsed.chain.map((step) => (step === 'overview' ? DEFAULT_PANEL : step))
+      : [DEFAULT_PANEL];
     return {
-      current: parsed.current || 'overview',
-      chain: Array.isArray(parsed.chain) ? parsed.chain : ['overview'],
+      current,
+      chain,
       transitions: parsed.transitions || {},
     };
   } catch {
-    return { current: 'overview', chain: ['overview'], transitions: {} };
+    return { current: DEFAULT_PANEL, chain: [DEFAULT_PANEL], transitions: {} };
   }
 }
 
@@ -92,4 +97,29 @@ export function renderPortalMarkovIntoVoiceLab(): void {
   const el = document.getElementById('voice-lab-markov-summary');
   if (!el) return;
   el.textContent = getPortalMarkovSummary();
+}
+
+export function exportPortalMarkovData(): void {
+  const state = loadState();
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    ...state,
+    summary: getPortalMarkovSummary(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `portal-markov-flow-${Date.now()}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+export function resetPortalMarkovTracker(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  renderPortalMarkovIntoVoiceLab();
 }

@@ -2,7 +2,7 @@
  * Admin fulfilment queue for acknowledgement token perks (spotlight, office hours).
  */
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from './corpus-store';
 import { voiceFrameworkStorageDir } from './monorepo-root';
 
 export type TokenRedemptionQueueStatus = 'pending' | 'fulfilled' | 'cancelled';
@@ -26,12 +26,11 @@ export function getTokenRedemptionQueueFile(): string {
 }
 
 export async function loadTokenRedemptionQueue(): Promise<TokenRedemptionQueueItem[]> {
-  const rows = await readCorpusJson<TokenRedemptionQueueItem[]>(
+  return readCorpusArray<TokenRedemptionQueueItem>(
     CORPUS_DOC_KEYS.TOKEN_REDEMPTION_QUEUE,
     getTokenRedemptionQueueFile(),
-    []
+    [],
   );
-  return Array.isArray(rows) ? rows : [];
 }
 
 export async function saveTokenRedemptionQueue(rows: TokenRedemptionQueueItem[]): Promise<void> {

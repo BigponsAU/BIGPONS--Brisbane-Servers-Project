@@ -17,6 +17,7 @@ import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { validateResourceSourceText } from '../../../lib/resource-submission-guard';
 import { enhanceIngestedContent } from '../../../lib/inference/resource-ingest-inference';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
+import { canAccessResource } from '../../../lib/resource-access';
 import { extractDocument } from '../../../lib/documents/extract-document';
 import { rewriteDocumentPreservingStructure } from '../../../lib/documents/voice-document-rewrite';
 import {
@@ -281,10 +282,14 @@ export const POST: APIRoute = async ({ request }) => {
       bodyExcerpt: processedContent
     });
 
-    // Check for existing resource with same industry + topic
-    const existingResource = resources.find(
-      r => r.industry === industry && topicsMatch(r.topic, topic)
+    // Check for existing resource with same industry + topic (only update if caller can access it)
+    const matchedResource = resources.find(
+      (r) => r.industry === industry && topicsMatch(r.topic, topic)
     );
+    const existingResource =
+      matchedResource && canAccessResource(authResult.user, matchedResource)
+        ? matchedResource
+        : undefined;
 
     if (existingResource) {
       // Update existing resource instead of creating duplicate
@@ -300,6 +305,12 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.content = processedContent;
       existingResource.generatedAt = new Date().toISOString();
       existingResource.generatedBy = authResult.user.email;
+      if (
+        authResult.user.role !== 'super-admin'
+        && authResult.user.role !== 'admin'
+      ) {
+        existingResource.ownerId = authResult.user.id;
+      }
       existingResource.version = (existingResource.version || 1) + 1;
       if (autoPublish) {
         existingResource.status = 'published';
@@ -377,6 +388,7 @@ export const POST: APIRoute = async ({ request }) => {
       content: processedContent,
       generatedAt: new Date().toISOString(),
       generatedBy: authResult.user.email,
+      ownerId: authResult.user.id,
       version: 1,
       status: autoPublish ? 'published' : 'draft',
       processingStatus: classified.processingStatus,

@@ -1,5 +1,8 @@
 // @ts-nocheck — resources panel (extracted from account-workspace-app)
 import { workspaceFetch } from '../lib/client-api';
+import { normalizeIndustrySlug } from '../lib/industry-slug';
+import { getResourceActionPermissions } from '../lib/resource-permissions';
+import { industries } from '../data/industries';
 import {
   escapeHtml,
   escapeJsString,
@@ -10,6 +13,9 @@ import {
 } from './account-workspace-utils';
 import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
 import { buildResourcesListUrl } from './account-workspace-resource-api';
+import { showConfirmDialog } from './portal-confirm-dialog';
+import { mountMarkdownFields, readMarkdownFieldValue } from './workspace-markdown-field';
+import { wrapMarkdownDocument } from '../lib/markdown-render';
 import type { VoiceContextApi } from './account-workspace-voice-context';
 
 export type ResourceCreateSection = 'generate' | 'upload' | 'paste';
@@ -23,6 +29,11 @@ export type ResourcesWorkspaceDeps = {
   handleWorkspaceSessionExpired: () => Promise<void>;
   navigateToPanel: (panel: string) => void;
   voiceContext: VoiceContextApi;
+  getWorkspaceUser: () => { id?: string; role?: string } | null;
+  hasWorkspaceCapability: (
+    user: { role?: string } | null | undefined,
+    minRole: 'client' | 'viewer' | 'editor' | 'admin',
+  ) => boolean;
 };
 
 export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
@@ -38,7 +49,73 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     handleWorkspaceSessionExpired,
     navigateToPanel,
     voiceContext,
+    getWorkspaceUser,
+    hasWorkspaceCapability,
   } = deps;
+
+  let detailEditResourceId: string | null = null;
+
+  function resourcePermissions(resource: any) {
+    return getResourceActionPermissions(getWorkspaceUser(), resource);
+  }
+
+  function buildResourceActionsHtml(resource: any, context: 'detail' | 'list'): string {
+    const perms = resourcePermissions(resource);
+    const id = escapeHtml(resource.id);
+    const sm = context === 'list' ? ' btn-sm' : '';
+    const buttons: string[] = [];
+
+    if (context === 'detail') {
+      buttons.push(`<button class="btn btn-primary${sm}" onclick="viewResource('${id}')">View full</button>`);
+    }
+
+    if (perms.edit) {
+      const editHandler =
+        context === 'detail'
+          ? `editResource('${id}', 'inline')`
+          : `editResource('${id}')`;
+      buttons.push(`<button class="btn btn-secondary${sm}" onclick="${editHandler}">Edit</button>`);
+    } else if (perms.editReason && context === 'detail') {
+      buttons.push(
+        `<button class="btn btn-secondary${sm}" disabled title="${escapeHtml(perms.editReason)}">Edit</button>`,
+      );
+    }
+
+    buttons.push(`<button class="btn btn-secondary${sm}" onclick="previewResource('${id}')">Preview</button>`);
+
+    if (perms.publish) {
+      buttons.push(`<button class="btn btn-success${sm}" onclick="publishResource('${id}')">Publish</button>`);
+    }
+    if (perms.unpublish) {
+      buttons.push(`<button class="btn btn-warning${sm}" onclick="unpublishResource('${id}')">Unpublish</button>`);
+    }
+    if (perms.improve) {
+      buttons.push(`<button class="btn btn-secondary${sm}" onclick="improveResource('${id}')">Improve</button>`);
+    }
+    if (perms.archive) {
+      buttons.push(`<button class="btn btn-secondary${sm}" onclick="archiveResource('${id}')">Archive</button>`);
+    }
+    if (perms.unarchive) {
+      buttons.push(`<button class="btn btn-secondary${sm}" onclick="unarchiveResource('${id}')">Unarchive</button>`);
+    }
+    if (perms.delete) {
+      const deleteLabel = resource.status === 'published' ? 'Remove from workspace' : 'Delete';
+      buttons.push(`<button class="btn btn-danger${sm}" onclick="deleteResource('${id}')">${deleteLabel}</button>`);
+    } else if (perms.deleteReason && context === 'detail') {
+      buttons.push(
+        `<span class="resource-action-hint" title="${escapeHtml(perms.deleteReason)}">Live on site — unpublish to delete</span>`,
+      );
+    }
+
+    if (perms.restore) {
+      buttons.push(`<button class="btn btn-primary${sm}" onclick="restoreResource('${id}')">Restore to workspace</button>`);
+    }
+    if (resource.portalRemovedAt) {
+      buttons.push(`<span class="resource-action-hint badge badge-archived">Removed from workspace — public page unchanged</span>`);
+    }
+
+    return buttons.join('');
+  }
 
   const {
     getWorkspaceVoiceProfileIdForApi,
@@ -374,7 +451,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           const voiceScoreClass = voiceScore >= 0.8 ? 'voice-score-high' : voiceScore >= 0.6 ? 'voice-score-medium' : 'voice-score-low';
           const voiceScoreText = voiceScore ? `${Math.round(voiceScore * 100)}%` : 'N/A';
           const inferenceBadge = formatInferenceBadge(resource.metadata);
-          const canEdit = workspaceUser && hasWorkspaceCapability(workspaceUser, 'editor');
+          const perms = resourcePermissions(resource);
         
           // Safe date parsing
           let dateText = 'Unknown';
@@ -401,7 +478,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             View
           </button>`);
           
-          if (resource.status === 'draft') {
+          if (resource.status === 'draft' && perms.publish) {
             primaryActions.push(`<button class="btn btn-success btn-sm" onclick="publishResource('${escapeHtml(resource.id)}')" aria-label="Publish">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -411,6 +488,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           }
           
           // Secondary actions (in dropdown)
+          if (perms.edit) {
           secondaryActions.push(`<button class="btn" onclick="editResource('${escapeHtml(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -418,6 +496,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             </svg>
             Edit
           </button>`);
+          }
           
           secondaryActions.push(`<button class="btn" onclick="previewResource('${escapeHtml(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -428,7 +507,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             Preview
           </button>`);
           
-          if (resource.status === 'published') {
+          if (resource.status === 'published' && perms.unpublish) {
             secondaryActions.push(`<button class="btn" onclick="unpublishResource('${escapeHtml(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -438,7 +517,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             </button>`);
           }
           
-          if (canEdit) {
+          if (perms.improve) {
           secondaryActions.push(`<button class="btn" onclick="improveResource('${escapeHtml(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -448,7 +527,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           </button>`);
           }
           
-          if (resource.status !== 'archived') {
+          if (resource.status !== 'archived' && perms.archive) {
             secondaryActions.push(`<button class="btn" onclick="archiveResource('${escapeHtml(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="21 16 21 22 3 22 3 16"></polyline>
@@ -457,7 +536,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
               </svg>
               Archive
             </button>`);
-          } else {
+          } else if (perms.unarchive) {
             secondaryActions.push(`<button class="btn" onclick="unarchiveResource('${escapeHtml(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="5 8 10 13 19 2"></polyline>
@@ -466,6 +545,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             </button>`);
           }
           
+          if (perms.delete) {
           secondaryActions.push(`<button class="btn" onclick="deleteResource('${escapeHtml(resource.id)}')" style="color: var(--portal-error);">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
@@ -473,6 +553,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             </svg>
             Delete
           </button>`);
+          }
 
           const isStarterBlock = resource.isStarterBlock === true;
           const starterBlockBadge = isStarterBlock ? '<span class="badge badge-starter" style="background: var(--portal-primary); color: var(--portal-text-inverse);">STARTER BLOCK</span>' : '';
@@ -737,9 +818,10 @@ function buildResourceTree(resources: any[]): void {
 
   try {
     treeData = {};
-    const filteredResources = currentTreeStatusFilter
-      ? resources.filter((r: any) => r.status === currentTreeStatusFilter)
-      : resources;
+    const filteredResources =
+      currentTreeStatusFilter && currentTreeStatusFilter !== 'removed'
+        ? resources.filter((r: any) => r.status === currentTreeStatusFilter)
+        : resources;
 
     filteredResources.forEach((resource: any) => {
       const industry = treeGroupLabel(resource?.industry, 'Uncategorized');
@@ -1095,6 +1177,7 @@ function initializeCollapsibleSections() {
 
 // Load resource detail
 function loadResourceDetail(resource: any): void {
+  detailEditResourceId = null;
   const titleEl = document.getElementById('detail-title');
   const metaEl = document.getElementById('detail-meta');
   const contentEl = document.getElementById('detail-content');
@@ -1109,6 +1192,7 @@ function loadResourceDetail(resource: any): void {
       <span><strong>Industry:</strong> ${escapeHtml(resource.industry || 'N/A')}</span>
       <span><strong>Topic:</strong> ${escapeHtml(resource.topic || 'N/A')}</span>
       <span><strong>Status:</strong> <span class="badge badge-${escapeHtml(resource.status || 'draft')}">${escapeHtml((resource.status || 'draft').charAt(0).toUpperCase() + (resource.status || 'draft').slice(1))}</span></span>
+      ${resource.portalRemovedAt ? `<span><strong>Workspace:</strong> <span class="badge badge-archived">Removed</span></span>` : ''}
       <span><strong>Date:</strong> ${date}</span>
       ${resource.metadata?.wordCount ? `<span><strong>Words:</strong> ${resource.metadata.wordCount}</span>` : ''}
       ${resource.metadata?.voiceScore ? `<span><strong>Voice Score:</strong> ${Math.round(resource.metadata.voiceScore * 100)}%</span>` : ''}
@@ -1128,19 +1212,146 @@ function loadResourceDetail(resource: any): void {
           <pre style="white-space: pre-wrap; font-family: inherit; font-size: var(--text-sm); line-height: 1.6; margin: 0; color: var(--portal-text-primary);">${escapeHtml(resource.content || 'No content available')}</pre>
         </div>
       </div>
-      <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-        <button class="btn btn-primary" onclick="viewResource('${escapeHtml(resource.id)}')">View Full</button>
-        <button class="btn btn-secondary" onclick="editResource('${escapeHtml(resource.id)}')">Edit</button>
-        <button class="btn btn-secondary" onclick="previewResource('${escapeHtml(resource.id)}')">Preview</button>
-        ${resource.status === 'draft' ? `<button class="btn btn-success" onclick="publishResource('${escapeHtml(resource.id)}')">Publish</button>` : ''}
-        ${resource.status === 'published' ? `<button class="btn btn-warning" onclick="unpublishResource('${escapeHtml(resource.id)}')">Unpublish</button>` : ''}
-        ${workspaceUser && hasWorkspaceCapability(workspaceUser, 'editor') ? `<button class="btn btn-secondary" onclick="improveResource('${escapeHtml(resource.id)}')">Improve</button>` : ''}
-        ${resource.status !== 'archived' ? `<button class="btn btn-secondary" onclick="archiveResource('${escapeHtml(resource.id)}')">Archive</button>` : ''}
-        <button class="btn btn-danger" onclick="deleteResource('${escapeHtml(resource.id)}')">Delete</button>
+      <div class="resource-detail-actions" style="margin-top: var(--space-xl); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
+        ${buildResourceActionsHtml(resource, 'detail')}
       </div>
     `;
   }
 }
+
+function industrySelectOptions(selectedSlug: string): string {
+  const selected = normalizeIndustrySlug(selectedSlug);
+  return industries
+    .map(
+      (industry) =>
+        `<option value="${escapeHtml(industry.slug)}"${industry.slug === selected ? ' selected' : ''}>${escapeHtml(industry.name)}</option>`,
+    )
+    .join('');
+}
+
+function openDetailEditMode(id: string): void {
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  if (!resource) {
+    showNotification('Resource not found.', 'error');
+    return;
+  }
+
+  const perms = resourcePermissions(resource);
+  if (!perms.edit) {
+    showNotification(perms.editReason || 'You cannot edit this resource.', 'warning');
+    return;
+  }
+
+  detailEditResourceId = id;
+  const contentEl = document.getElementById('detail-content');
+  if (!contentEl) return;
+
+  const industrySlug = normalizeIndustrySlug(resource.industry);
+  contentEl.innerHTML = `
+    <form id="detail-edit-form" class="resource-detail-edit-form" action="javascript:void(0)">
+      <div class="form-group">
+        <label for="detail-edit-title">Title</label>
+        <input type="text" id="detail-edit-title" class="form-control" value="${escapeHtml(resource.title || '')}" required />
+      </div>
+      <div class="form-group">
+        <label for="detail-edit-industry">Industry</label>
+        <select id="detail-edit-industry" class="form-control" required>
+          <option value="">Select industry…</option>
+          ${industrySelectOptions(industrySlug)}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="detail-edit-topic">Topic</label>
+        <input type="text" id="detail-edit-topic" class="form-control" value="${escapeHtml(resource.topic || '')}" required />
+      </div>
+      <div class="form-group">
+        <label for="detail-edit-description">Description</label>
+        <textarea id="detail-edit-description" class="form-control" rows="3" required>${escapeHtml(resource.description || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label for="detail-edit-content">Content</label>
+        <textarea id="detail-edit-content" class="form-control resource-detail-edit-content" rows="16" required>${escapeHtml(resource.content || '')}</textarea>
+      </div>
+      <div class="resource-detail-actions" style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelDetailEdit()">Cancel</button>
+      </div>
+    </form>
+  `;
+
+  document.getElementById('detail-edit-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void saveDetailEdit(id);
+  });
+  mountMarkdownFields(contentEl);
+}
+
+async function saveDetailEdit(id: string): Promise<void> {
+  const title = (document.getElementById('detail-edit-title') as HTMLInputElement)?.value.trim();
+  const industry = (document.getElementById('detail-edit-industry') as HTMLSelectElement)?.value;
+  const topic = (document.getElementById('detail-edit-topic') as HTMLInputElement)?.value.trim();
+  const description = (document.getElementById('detail-edit-description') as HTMLTextAreaElement)?.value.trim();
+  const content = readMarkdownFieldValue('detail-edit-content');
+
+  if (!title || !industry || !topic || !description || !content) {
+    showNotification('Please fill in all required fields.', 'warning');
+    return;
+  }
+
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const submitBtn = document.querySelector('#detail-edit-form button[type="submit"]') as HTMLButtonElement;
+  const originalText = submitBtn?.textContent;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+  }
+
+  try {
+    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        industry,
+        topic,
+        description,
+        content,
+        status: resource?.status,
+      }),
+    });
+    const data = await response.json();
+    if (response.ok && data.success) {
+      showNotification('Resource updated successfully.', 'success');
+      detailEditResourceId = null;
+      await loadResources();
+      const updated = getWorkspaceResources().find((r: any) => r.id === id) || data.resource;
+      if (updated) {
+        selectedResourceId = id;
+        loadResourceDetail(updated);
+      }
+    } else {
+      showNotification(`Failed to update resource: ${data.error || 'Unknown error'}`, 'error');
+      if (submitBtn && originalText) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+  } catch (error) {
+    showNotification('Connection error. Please try again.', 'error');
+    console.error('[Portal] Detail edit error:', error);
+    if (submitBtn && originalText) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  }
+}
+
+(window as any).cancelDetailEdit = function cancelDetailEdit(): void {
+  if (!detailEditResourceId) return;
+  const resource = getWorkspaceResources().find((r: any) => r.id === detailEditResourceId);
+  detailEditResourceId = null;
+  if (resource) loadResourceDetail(resource);
+};
 
 // Close resource detail
 (window as any).closeResourceDetail = function() {
@@ -1241,6 +1452,18 @@ function loadResourceDetail(resource: any): void {
 // Filter tree by status
 (window as any).filterTreeByStatus = function(status: string) {
   currentTreeStatusFilter = status;
+
+  const typeEl = document.getElementById('resource-type-filter') as HTMLSelectElement | null;
+  if (status === 'removed') {
+    if (typeEl) typeEl.value = 'removed';
+    loadResources();
+    return;
+  }
+  if (typeEl?.value === 'removed') {
+    typeEl.value = 'user';
+    loadResources();
+    return;
+  }
   
   // Update button states
   document.querySelectorAll('.tree-filters .btn').forEach(btn => {
@@ -1379,19 +1602,38 @@ function openEditModal(id: string): void {
     return;
   }
 
+  const perms = resourcePermissions(resource);
+  if (!perms.edit) {
+    showNotification(perms.editReason || 'You cannot edit this resource.', 'warning');
+    return;
+  }
+
   const modal = document.getElementById('edit-resource-modal');
   if (!modal) return;
 
   (document.getElementById('edit-resource-id') as HTMLInputElement)!.value = resource.id;
   (document.getElementById('edit-resource-title-input') as HTMLInputElement)!.value = resource.title;
-  (document.getElementById('edit-resource-industry') as HTMLInputElement)!.value = resource.industry;
+  const industrySelect = document.getElementById('edit-resource-industry') as HTMLSelectElement;
+  if (industrySelect) {
+    industrySelect.value = normalizeIndustrySlug(resource.industry);
+  }
   (document.getElementById('edit-resource-topic') as HTMLInputElement)!.value = resource.topic;
   (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value = resource.description;
   (document.getElementById('edit-resource-content') as HTMLTextAreaElement)!.value = resource.content;
-  (document.getElementById('edit-resource-status') as HTMLSelectElement)!.value = resource.status;
+  const statusSelect = document.getElementById('edit-resource-status') as HTMLSelectElement;
+  if (statusSelect) {
+    statusSelect.value = resource.status;
+    const user = getWorkspaceUser();
+    const isAdmin = user?.role === 'admin' || user?.role === 'super-admin';
+    statusSelect.disabled = !isAdmin;
+    statusSelect.title = isAdmin
+      ? 'Change publication status'
+      : 'Use Publish / Unpublish buttons to change live status';
+  }
 
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+  mountMarkdownFields(modal);
 }
 
 function closeEditModal(): void {
@@ -1408,12 +1650,29 @@ function closeEditModal(): void {
   openViewModal(id);
 };
 
-(window as any).editResource = (id: string) => {
+(window as any).editResource = (id: string, mode?: string) => {
+  if (mode === 'inline') {
+    openDetailEditMode(id);
+    return;
+  }
   openEditModal(id);
 };
 
 (window as any).publishResource = async (id: string) => {
-  if (!confirm('Publish this resource? It will be visible on the website.')) return;
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const perms = resource ? resourcePermissions(resource) : null;
+  if (!perms?.publish) {
+    showNotification('You cannot publish this resource.', 'warning');
+    return;
+  }
+
+  const publishOk = await showConfirmDialog({
+    title: 'Publish resource',
+    message: 'Publish this resource? It will be visible on the website.',
+    confirmLabel: 'Publish',
+    variant: 'primary',
+  });
+  if (!publishOk) return;
   
   // Find the button and show loading state
   const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
@@ -1461,7 +1720,21 @@ function closeEditModal(): void {
 };
 
 (window as any).unpublishResource = async (id: string) => {
-  if (!confirm('Unpublish this resource? It will no longer be visible on the website.')) return;
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const perms = resource ? resourcePermissions(resource) : null;
+  if (!perms?.unpublish) {
+    showNotification('You cannot unpublish this resource.', 'warning');
+    return;
+  }
+
+  const unpublishOk = await showConfirmDialog({
+    title: 'Unpublish resource',
+    message: 'Unpublish this resource? It will no longer be visible on the public website.',
+    details: 'Your draft copy stays in the workspace. You can edit and publish again later.',
+    confirmLabel: 'Unpublish',
+    variant: 'primary',
+  });
+  if (!unpublishOk) return;
   
   try {
     const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
@@ -1489,7 +1762,12 @@ function closeEditModal(): void {
 };
 
 (window as any).archiveResource = async (id: string) => {
-  if (!confirm('Archive this resource? It will be hidden from normal views but can be restored later.')) return;
+  const archiveOk = await showConfirmDialog({
+    title: 'Archive resource',
+    message: 'Archive this resource? It will be hidden from normal views but can be restored later.',
+    confirmLabel: 'Archive',
+  });
+  if (!archiveOk) return;
   
   try {
     const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
@@ -1519,7 +1797,12 @@ function closeEditModal(): void {
 };
 
 (window as any).unarchiveResource = async (id: string) => {
-  if (!confirm('Unarchive this resource? It will be restored to draft status.')) return;
+  const unarchiveOk = await showConfirmDialog({
+    title: 'Unarchive resource',
+    message: 'Unarchive this resource? It will be restored to draft status.',
+    confirmLabel: 'Unarchive',
+  });
+  if (!unarchiveOk) return;
   
   try {
     const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
@@ -1552,13 +1835,16 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
   const form = e.target as HTMLFormElement;
   const formData = new FormData(form);
   const id = (document.getElementById('edit-resource-id') as HTMLInputElement)!.value;
+  const resourceBefore = getWorkspaceResources().find((r: any) => r.id === id);
+  const user = getWorkspaceUser();
+  const isAdmin = user?.role === 'admin' || user?.role === 'super-admin';
 
   // Validate form
   const title = (document.getElementById('edit-resource-title-input') as HTMLInputElement)!.value.trim();
   const industry = (document.getElementById('edit-resource-industry') as HTMLSelectElement)!.value;
   const topic = (document.getElementById('edit-resource-topic') as HTMLInputElement)!.value.trim();
   const description = (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value.trim();
-  const content = (document.getElementById('edit-resource-content') as HTMLTextAreaElement)!.value.trim();
+  const content = readMarkdownFieldValue('edit-resource-content');
 
   if (!title || !industry || !topic || !description || !content) {
     showNotification('Please fill in all required fields.', 'warning');
@@ -1585,7 +1871,9 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
         topic,
         description,
         content,
-        status: (document.getElementById('edit-resource-status') as HTMLSelectElement)!.value
+        status: isAdmin
+          ? (document.getElementById('edit-resource-status') as HTMLSelectElement)!.value
+          : resourceBefore?.status,
       })
     });
 
@@ -1628,12 +1916,16 @@ document.addEventListener('keydown', (e) => {
     
     const viewModal = document.getElementById('view-resource-modal');
     const editModal = document.getElementById('edit-resource-modal');
+    const previewModal = document.getElementById('preview-resource-modal');
     
     if (viewModal && viewModal.getAttribute('aria-hidden') === 'false') {
       closeViewModal();
     }
     if (editModal && editModal.getAttribute('aria-hidden') === 'false') {
       closeEditModal();
+    }
+    if (previewModal && previewModal.getAttribute('aria-hidden') === 'false') {
+      closePreviewModal();
     }
     
     // Close ALL modals aggressively
@@ -1680,7 +1972,26 @@ document.addEventListener('keydown', (e) => {
 });
 
 (window as any).improveResource = async (id: string) => {
-  if (!confirm('Improve this resource using voice profile + RAG + inference? This may take a moment.')) return;
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const perms = resource ? resourcePermissions(resource) : null;
+  if (!perms?.improve) {
+    showNotification(
+      resource?.status === 'published'
+        ? 'Unpublish before running Improve on a live resource.'
+        : 'You cannot improve this resource.',
+      'warning',
+    );
+    return;
+  }
+
+  const improveOk = await showConfirmDialog({
+    title: 'Improve resource',
+    message: 'Improve this resource using voice profile + RAG + inference?',
+    details: 'This may take a moment. Existing content will be rewritten.',
+    confirmLabel: 'Improve',
+    variant: 'primary',
+  });
+  if (!improveOk) return;
   
   // Find the button and show loading state
   const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
@@ -1732,7 +2043,26 @@ document.addEventListener('keydown', (e) => {
 };
 
 (window as any).deleteResource = async (id: string) => {
-  if (!confirm('Delete this resource? This action cannot be undone.')) return;
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const perms = resource ? resourcePermissions(resource) : null;
+  if (!perms?.delete) {
+    showNotification(perms?.deleteReason || 'You cannot delete this resource.', 'warning');
+    return;
+  }
+
+  const isPublishedRemove = resource?.status === 'published';
+  const deleteOk = await showConfirmDialog({
+    title: isPublishedRemove ? 'Remove from workspace' : 'Delete resource',
+    message: isPublishedRemove
+      ? 'Remove this resource from your workspace?'
+      : 'Delete this resource permanently?',
+    details: isPublishedRemove
+      ? 'The public page and search index stay live. Use Unpublish first if you need to take it off the website.'
+      : 'This action cannot be undone.',
+    confirmLabel: isPublishedRemove ? 'Remove' : 'Delete',
+    variant: 'danger',
+  });
+  if (!deleteOk) return;
   
   // Find the button and show loading state
   const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
@@ -1753,8 +2083,14 @@ document.addEventListener('keydown', (e) => {
 
     const data = await response.json();
     if (response.ok && data.success) {
-      console.log('[Portal] Resource deleted successfully');
-      showNotification('Resource deleted successfully.', 'success');
+      const message =
+        data.softDeleted === true
+          ? (data.message as string) || 'Removed from workspace. Public page unchanged.'
+          : 'Resource deleted successfully.';
+      showNotification(message, 'success');
+      if (data.softDeleted) {
+        (window as any).closeResourceDetail?.();
+      }
       setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
     } else {
       const errorMsg = data.error || 'Unknown error';
@@ -1775,7 +2111,6 @@ document.addEventListener('keydown', (e) => {
   }
 };
 
-const PORTAL_RESOURCE_VOICE_PROFILE_KEY = 'portalResourceVoiceProfileId';
 function initDocumentWorkspace(): void {
   const dropZone = document.getElementById('document-drop-zone');
   const fileInput = document.getElementById('document-file-input') as HTMLInputElement | null;
@@ -2263,7 +2598,13 @@ function clearSelection(): void {
 (window as any).bulkPublish = async () => {
   const ids = getSelectedResourceIds();
   if (ids.length === 0) return;
-  if (!confirm(`Publish ${ids.length} resource(s)?`)) return;
+  const publishOk = await showConfirmDialog({
+    title: 'Publish resources',
+    message: `Publish ${ids.length} resource(s)? They will be visible on the website.`,
+    confirmLabel: 'Publish all',
+    variant: 'primary',
+  });
+  if (!publishOk) return;
   
   try {
     const results = await Promise.all(ids.map(id => 
@@ -2296,7 +2637,13 @@ function clearSelection(): void {
 (window as any).bulkUnpublish = async () => {
   const ids = getSelectedResourceIds();
   if (ids.length === 0) return;
-  if (!confirm(`Unpublish ${ids.length} resource(s)?`)) return;
+  const unpublishOk = await showConfirmDialog({
+    title: 'Unpublish resources',
+    message: `Unpublish ${ids.length} resource(s)? They will be removed from the public website.`,
+    confirmLabel: 'Unpublish all',
+    variant: 'primary',
+  });
+  if (!unpublishOk) return;
   
   try {
     const results = await Promise.all(ids.map(id => 
@@ -2329,10 +2676,38 @@ function clearSelection(): void {
 (window as any).bulkDelete = async () => {
   const ids = getSelectedResourceIds();
   if (ids.length === 0) return;
-  if (!confirm(`Delete ${ids.length} resource(s)? This cannot be undone.`)) return;
+
+  const deletableIds = ids.filter((id) => {
+    const resource = getWorkspaceResources().find((r: any) => r.id === id);
+    return resource && resourcePermissions(resource).delete;
+  });
+
+  if (deletableIds.length === 0) {
+    showNotification(
+      'None of the selected resources can be deleted. Unpublish live resources first.',
+      'warning',
+    );
+    return;
+  }
+
+  if (deletableIds.length < ids.length) {
+    showNotification(
+      `${ids.length - deletableIds.length} live resource(s) skipped — unpublish before deleting.`,
+      'info',
+    );
+  }
+
+  const deleteOk = await showConfirmDialog({
+    title: 'Delete resources',
+    message: `Delete ${deletableIds.length} resource(s) permanently?`,
+    details: 'This cannot be undone.',
+    confirmLabel: 'Delete all',
+    variant: 'danger',
+  });
+  if (!deleteOk) return;
   
   try {
-    const results = await Promise.all(ids.map(id => 
+    const results = await Promise.all(deletableIds.map(id =>
       workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
         method: 'DELETE',
         headers: {
@@ -2358,60 +2733,89 @@ function clearSelection(): void {
 };
 
 (window as any).previewResource = (id: string) => {
+  openPreviewModal(id);
+};
+
+function openPreviewModal(id: string): void {
   const resource = getWorkspaceResources().find((r: any) => r.id === id);
   if (!resource) {
     showNotification('Resource not found.', 'error');
     return;
   }
-  
-  // Create a preview modal instead of new window
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.setAttribute('aria-hidden', 'false');
-  
+
+  const modal = document.getElementById('preview-resource-modal');
+  const titleEl = document.getElementById('preview-resource-title');
+  const bodyEl = document.getElementById('preview-resource-body');
+  const editBtn = document.getElementById('edit-from-preview-btn');
+  if (!modal || !titleEl || !bodyEl) return;
+
+  titleEl.textContent = resource.title || 'Preview';
+  editBtn?.setAttribute('onclick', `closePreviewModal(); editResource('${id}');`);
+
   const voiceScore = resource.metadata?.voiceScore || 0;
-  const voiceScoreClass = voiceScore >= 0.8 ? 'voice-score-high' : voiceScore >= 0.6 ? 'voice-score-medium' : 'voice-score-low';
   const voiceScoreText = voiceScore ? `${Math.round(voiceScore * 100)}%` : 'N/A';
-  
-  modal.innerHTML = `
-    <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
-    <div class="modal-content modal-large">
-      <div class="modal-header">
-        <h2>Preview: ${escapeHtml(resource.title)}</h2>
-        <button class="modal-close" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" aria-label="Close modal">&times;</button>
-        </div>
-      <div class="modal-body">
-        <div style="margin-bottom: var(--space-lg);">
-          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-md);">
-            <span class="badge badge-${resource.status}">${resource.status}</span>
-            <span class="voice-score ${voiceScoreClass}">
-              <svg class="voice-score-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              Voice Score: ${voiceScoreText}
-            </span>
-          </div>
-          <div style="color: var(--text-secondary); font-size: var(--text-sm);">
-            <p><strong>Industry:</strong> ${escapeHtml(resource.industry)}</p>
-            <p><strong>Topic:</strong> ${escapeHtml(resource.topic)}</p>
-            <p><strong>Version:</strong> ${resource.version}</p>
-          </div>
-        </div>
-        <div>
-          <h3 style="margin-bottom: var(--space-md);">Content</h3>
-          <div style="line-height: 1.8; color: var(--text-primary); white-space: pre-wrap; background: var(--bg-accent); padding: var(--space-lg); border-radius: var(--border-radius); max-height: 60vh; overflow-y: auto; font-family: system-ui, sans-serif;">${escapeHtml(resource.content)}</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Close</button>
-        <button class="btn btn-primary" onclick="this.closest('.modal').remove(); document.body.style.overflow = ''; editResource('${escapeHtml(id)}');">Edit</button>
-      </div>
+
+  bodyEl.innerHTML = `
+    <div class="resource-preview-meta">
+      <span class="badge badge-${escapeHtml(resource.status)}">${escapeHtml(resource.status)}</span>
+      ${resource.portalRemovedAt ? '<span class="badge badge-archived">Removed from workspace</span>' : ''}
+      <span class="voice-score">Voice score: ${voiceScoreText}</span>
     </div>
+    <p class="resource-preview-description">${escapeHtml(resource.description || '')}</p>
+    ${wrapMarkdownDocument(resource.content || '')}
   `;
-  
-  document.body.appendChild(modal);
+
+  modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+}
+
+function closePreviewModal(): void {
+  const modal = document.getElementById('preview-resource-modal');
+  if (modal) {
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+}
+
+(window as any).closePreviewModal = closePreviewModal;
+
+(window as any).restoreResource = async (id: string) => {
+  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const perms = resource ? resourcePermissions(resource) : null;
+  if (!perms?.restore) {
+    showNotification('You cannot restore this resource.', 'warning');
+    return;
+  }
+
+  const restoreOk = await showConfirmDialog({
+    title: 'Restore to workspace',
+    message: 'Show this resource again in the workspace tree?',
+    details: 'The public page and search index are unchanged.',
+    confirmLabel: 'Restore',
+    variant: 'primary',
+  });
+  if (!restoreOk) return;
+
+  try {
+    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restoreToWorkspace: true }),
+    });
+    const data = await response.json();
+    if (response.ok && data.success) {
+      showNotification('Resource restored to workspace.', 'success');
+      const typeEl = document.getElementById('resource-type-filter') as HTMLSelectElement | null;
+      if (typeEl?.value === 'removed') typeEl.value = 'user';
+      currentTreeStatusFilter = '';
+      await loadResources({ revealResourceId: id });
+    } else {
+      showNotification(data.error || 'Failed to restore resource.', 'error');
+    }
+  } catch (error) {
+    showNotification('Connection error. Please try again.', 'error');
+    console.error('[Portal] Restore error:', error);
+  }
 };
 
 // Deduplicate Resources Handler
@@ -2419,7 +2823,14 @@ document.getElementById('deduplicate-resources-btn')?.addEventListener('click', 
   const btn = document.getElementById('deduplicate-resources-btn') as HTMLButtonElement;
   if (!btn) return;
   
-  if (!confirm('This will remove duplicate resources (same industry + topic). The best version of each will be kept. Continue?')) {
+  const dedupeOk = await showConfirmDialog({
+    title: 'Deduplicate resources',
+    message: 'Remove duplicate resources (same industry + topic)?',
+    details: 'The best version of each duplicate group will be kept.',
+    confirmLabel: 'Deduplicate',
+    variant: 'primary',
+  });
+  if (!dedupeOk) {
     return;
   }
   
@@ -2462,7 +2873,14 @@ document.getElementById('seed-resources-btn')?.addEventListener('click', async (
   const btn = document.getElementById('seed-resources-btn') as HTMLButtonElement;
   if (!btn) return;
   
-  if (!confirm('This will create initial resources from all industries and topics. Continue?')) {
+  const seedOk = await showConfirmDialog({
+    title: 'Seed resources',
+    message: 'Create initial resources from all industries and topics?',
+    details: 'New resources are created as drafts in your library.',
+    confirmLabel: 'Seed',
+    variant: 'primary',
+  });
+  if (!seedOk) {
     return;
   }
   

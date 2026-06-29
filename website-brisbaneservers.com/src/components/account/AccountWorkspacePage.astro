@@ -56,6 +56,17 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
     data-verify-token={initialVerifyToken}
     data-reset-token={initialResetToken}
   >
+    <div
+      id="api-connectivity-banner"
+      class="api-connectivity-banner"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <span data-connectivity-message>Checking API connectivity…</span>
+      <code class="api-connectivity-endpoint"></code>
+      <button type="button" id="api-connectivity-retry" class="btn btn-secondary btn-sm">Retry</button>
+    </div>
     <AccountSignIn />
     <div id="account-auth-boot" class="account-auth-boot" aria-live="polite" aria-busy="true">
       <p class="account-auth-boot__text">Checking your session…</p>
@@ -75,6 +86,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       <AccountAdminOpsPanel />
     </AccountWorkspaceShell>
     <AccountResourceModals />
+    <div id="portal-confirm-host"></div>
     <div id="notification-container" class="notification-container" aria-live="polite" aria-atomic="true"></div>
   </div>
 

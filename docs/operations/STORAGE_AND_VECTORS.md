@@ -15,6 +15,17 @@ How the **corpus**, **semantic index**, and **library growth** work on the produ
 
 **Production:** Neon via Hyperdrive on the Worker. Render Postgres is decommissioned.
 
+### Corpus JSONB integrity
+
+Each `corpus_documents` row must store a **jsonb array or object**, not a jsonb **string** (legacy double-encode). String blobs make loaders return empty data (e.g. Resource Tree shows “No resources yet” while rows exist).
+
+| Command | Purpose |
+|---------|---------|
+| `npm run audit:corpus` | List missing keys, string-encoded blobs, shape mismatches |
+| `npm run audit:corpus -- --repair --apply` | Repair string-encoded jsonb rows |
+
+Code guards: `normalizeForJsonbStorage` on save, `coerceCorpusPayload` on load (`src/lib/corpus-store.ts`).
+
 ---
 
 ## Corpus files (what matters)

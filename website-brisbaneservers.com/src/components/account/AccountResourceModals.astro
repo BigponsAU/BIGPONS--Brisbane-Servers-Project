@@ -19,6 +19,22 @@ import { industries } from '../../data/industries';
       </div>
     </div>
 
+    <!-- Preview Resource Modal (rendered markdown — public-style) -->
+    <div id="preview-resource-modal" class="modal" role="dialog" aria-labelledby="preview-resource-title" aria-hidden="true">
+      <div class="modal-overlay" onclick="closePreviewModal()"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2 id="preview-resource-title">Preview resource</h2>
+          <button class="modal-close" onclick="closePreviewModal()" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body" id="preview-resource-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closePreviewModal()">Close</button>
+          <button type="button" class="btn btn-primary" id="edit-from-preview-btn">Edit</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit Resource Modal -->
     <div id="edit-resource-modal" class="modal" role="dialog" aria-labelledby="edit-resource-title" aria-hidden="true">
       <div class="modal-overlay" onclick="closeEditModal()"></div>

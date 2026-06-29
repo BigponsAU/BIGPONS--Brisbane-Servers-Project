@@ -10,6 +10,8 @@ import {
 } from '../lib/site-mailboxes';
 import { getPortalAccountContext } from './account-workspace-runtime';
 
+import { loadModerationQueue } from './account-admin-moderation';
+
 export interface PortalAccountContext {
   apiBaseUrl: string;
   getAuthToken: () => string | null;
@@ -21,6 +23,8 @@ export interface PortalAccountContext {
   navigateToPanel: (panel: string) => void;
   selectResource?: (resourceId: string) => void;
 }
+
+export { loadModerationQueue };
 
 function escapeHtml(value: string): string {
   return value
@@ -333,96 +337,6 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
       errorDiv.textContent = error instanceof Error ? error.message : 'Passkey sign-in failed';
       errorDiv.classList.add('show');
     }
-  }
-}
-
-async function moderateContribution(
-  ctx: PortalAccountContext,
-  contributionId: string,
-  action: 'approve' | 'reject'
-): Promise<void> {
-  if (!hasSession(ctx)) {
-    const container = document.getElementById('moderation-queue');
-    sessionRequiredMessage(container, 'Sign in again to moderate uploads.');
-    return;
-  }
-  const endpoint = action === 'approve' ? 'approve' : 'reject';
-  await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contributionId })
-  });
-  await loadModerationQueue(ctx);
-}
-
-export async function loadModerationQueue(ctx: PortalAccountContext): Promise<void> {
-  const container = document.getElementById('moderation-queue');
-  if (!container) return;
-  if (!hasSession(ctx)) {
-    sessionRequiredMessage(container, 'Sign in again to view the moderation queue.');
-    return;
-  }
-
-  container.innerHTML = '<p class="status-message">Loading pending uploads…</p>';
-  try {
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/community/contributions`);
-    if (!res.ok) {
-      container.innerHTML = '<p class="status-message">Admin access required to view the moderation queue.</p>';
-      return;
-    }
-    const data = await res.json();
-    const items = (Array.isArray(data.contributions) ? data.contributions : [])
-      .filter((c: { status: string }) => c.status === 'pending');
-
-    if (!items.length) {
-      container.innerHTML = '<p class="status-message">No pending community uploads or voice-dashboard submissions.</p>';
-      return;
-    }
-
-    container.innerHTML = items.map((item: {
-      id: string;
-      userId: string;
-      resourceId: string;
-      type: string;
-      payload?: { title?: string; industry?: string; topic?: string; contentSnippet?: string };
-    }) => {
-      const snippet = (item.payload?.contentSnippet || '').slice(0, 280);
-      const ellipsis = (item.payload?.contentSnippet || '').length > 280 ? '…' : '';
-      return `
-        <article class="moderation-card" data-contribution-id="${escapeHtml(item.id)}" data-resource-id="${escapeHtml(item.resourceId)}">
-          <header>
-            <h4>${escapeHtml(item.payload?.title || 'Untitled upload')}</h4>
-            <p class="moderation-meta">${escapeHtml(item.type)} · ${escapeHtml(item.payload?.industry || '—')} · ${escapeHtml(item.payload?.topic || '—')} · user ${escapeHtml(item.userId)}</p>
-          </header>
-          <p class="moderation-snippet">${escapeHtml(snippet)}${ellipsis}</p>
-          <div class="moderation-actions">
-            <button type="button" class="btn btn-primary btn-sm moderation-approve">Approve</button>
-            <button type="button" class="btn btn-secondary btn-sm moderation-reject">Reject</button>
-            <button type="button" class="btn btn-secondary btn-sm moderation-open-resource">Open in Resources</button>
-          </div>
-        </article>`;
-    }).join('');
-
-    container.querySelectorAll('.moderation-card').forEach((card) => {
-      const id = (card as HTMLElement).dataset.contributionId;
-      const resourceId = (card as HTMLElement).dataset.resourceId;
-      if (!id) return;
-      card.querySelector('.moderation-approve')?.addEventListener('click', () => {
-        void moderateContribution(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
-      });
-      card.querySelector('.moderation-reject')?.addEventListener('click', () => {
-        void moderateContribution(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
-      });
-      card.querySelector('.moderation-open-resource')?.addEventListener('click', () => {
-        const liveCtx = getPortalAccountContext() as unknown as PortalAccountContext;
-        liveCtx.navigateToPanel('resources');
-        if (resourceId && liveCtx.selectResource) {
-          window.setTimeout(() => liveCtx.selectResource?.(resourceId), 150);
-        }
-      });
-    });
-  } catch {
-    container.innerHTML = '<p class="status-message">Could not load moderation queue.</p>';
   }
 }
 

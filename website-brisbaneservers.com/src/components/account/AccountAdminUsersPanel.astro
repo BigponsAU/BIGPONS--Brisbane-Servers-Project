@@ -2,10 +2,10 @@
 import { accountWorkspace } from '../../data/account-workspace';
 ---
 
-<div id="admin-users-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Registered users" style="display: none;">
-  <div class="admin-content">
+<div id="admin-users-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Registered users" style="display: none;">
+  <div class="admin-content admin-users-panel-shell">
     <section class="admin-section" aria-labelledby="admin-users-heading">
-      <div class="section-header">
+      <div class="section-header section-header--workspace">
         <div>
           <h2 id="admin-users-heading">Users &amp; sign-in audit</h2>
           <p class="section-subtitle">
@@ -13,7 +13,8 @@ import { accountWorkspace } from '../../data/account-workspace';
             <code>support@brisbaneservers.com</code> (Resend root domain).
           </p>
         </div>
-        <div class="admin-users-toolbar">
+        <div class="section-actions admin-panel-quick-links admin-users-toolbar">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
           <label class="sr-only" for="admin-users-search">Filter users</label>
           <input
             id="admin-users-search"
@@ -27,7 +28,16 @@ import { accountWorkspace } from '../../data/account-workspace';
         </div>
       </div>
 
-      <p id="admin-users-summary" class="section-subtitle admin-users-summary">Loading users…</p>
+      <details class="panel-guidance-details">
+        <summary>Roles &amp; workspace access</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Client / viewer:</strong> Account home and contributor tools; editors get Create panels.</p>
+          <p><strong>Admin:</strong> Library growth, moderation, site review, and ops panels.</p>
+          <p><strong>Auth audit</strong> below lists recent sign-ins, registrations, and OAuth events.</p>
+        </div>
+      </details>
+
+      <p id="admin-users-summary" class="admin-queue-summary" role="status" aria-live="polite">Loading users…</p>
 
       <div class="admin-users-table-wrap" role="region" aria-label="Registered users table" tabindex="0">
         <table class="admin-users-table">
@@ -47,7 +57,7 @@ import { accountWorkspace } from '../../data/account-workspace';
       </div>
     </section>
 
-    <section class="admin-section" aria-labelledby="admin-auth-audit-heading" style="margin-top: var(--space-2xl);">
+    <section class="admin-section admin-section--nested" aria-labelledby="admin-auth-audit-heading">
       <div class="section-header">
         <div>
           <h3 id="admin-auth-audit-heading">Recent auth events</h3>

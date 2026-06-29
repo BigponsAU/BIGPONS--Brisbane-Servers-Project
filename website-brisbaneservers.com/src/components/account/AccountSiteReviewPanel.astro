@@ -1,53 +1,72 @@
 ---
 import { adminMailboxKeys, adminMailboxLabels, siteMailboxes } from '../../lib/site-mailboxes';
 ---
-              <div id="site-review-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Site review" style="display: none;">
-                <div class="admin-content">
-                  <section class="admin-section" aria-labelledby="site-review-heading">
-                    <div class="section-header">
-                      <div>
-                        <h2 id="site-review-heading">Public site review</h2>
-                        <p class="section-subtitle">Open key public sections — including Corrections welcome — to verify copy, legal alignment, and voice.</p>
-                      </div>
-                      <button id="refresh-site-review-btn" type="button" class="btn btn-secondary btn-sm">Refresh list</button>
-                    </div>
-                    <div id="site-review-list" class="site-review-list"></div>
-                  </section>
-                  <section class="admin-section" aria-labelledby="hosting-status-heading" data-min-role="super-admin">
-                    <div class="section-header">
-                      <div>
-                        <h2 id="hosting-status-heading">Hosting &amp; environment</h2>
-                        <p class="section-subtitle">Check which production variables are configured on the API host (names only — never secret values).</p>
-                      </div>
-                      <div class="section-header__actions admin-email-actions">
-                        <div class="admin-email-options" role="group" aria-label="Email sender and recipient">
-                          <label class="admin-email-options__field" for="admin-email-from">
-                            <span class="admin-email-options__label">From</span>
-                            <select id="admin-email-from" class="form-select admin-email-options__select">
-                              {adminMailboxKeys.map((key) => (
-                                <option value={key} selected={key === 'support'}>
-                                  {adminMailboxLabels[key]} ({siteMailboxes[key]})
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                          <label class="admin-email-options__field" for="admin-email-to">
-                            <span class="admin-email-options__label">To</span>
-                            <select id="admin-email-to" class="form-select admin-email-options__select">
-                              {adminMailboxKeys.map((key) => (
-                                <option value={key} selected={key === 'bigpons'}>
-                                  {adminMailboxLabels[key]} ({siteMailboxes[key]})
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-                        <button id="refresh-hosting-status-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
-                        <button id="email-hosting-checklist-btn" type="button" class="btn btn-primary btn-sm">Email checklist</button>
-                      </div>
-                    </div>
-                    <div id="hosting-status-list" class="hosting-status-list"></div>
-                    <p id="hosting-status-message" class="status-message" role="status" aria-live="polite"></p>
-                  </section>
-                </div>
+<div id="site-review-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Site review" style="display: none;">
+  <div class="admin-content site-review-panel-shell">
+    <section class="admin-section" aria-labelledby="site-review-heading">
+      <div class="section-header section-header--workspace">
+        <div>
+          <h2 id="site-review-heading">Public site review</h2>
+          <p class="section-subtitle">Open key marketing sections — including Corrections welcome — to verify copy, legal alignment, and voice before campaigns go live.</p>
+        </div>
+        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
+          <button id="refresh-site-review-btn" type="button" class="btn btn-secondary btn-sm">Refresh list</button>
+        </div>
+      </div>
+
+      <details class="panel-guidance-details">
+        <summary>What to check on each page</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Voice:</strong> Copy should match your active BIGPONS / default profile tone.</p>
+          <p><strong>Legal:</strong> Privacy, terms, and contribute flows must stay aligned with production policies.</p>
+          <p><strong>Hosting:</strong> Super-admins can verify env vars and email the go-live checklist below.</p>
+        </div>
+      </details>
+
+      <div id="site-review-list" class="site-review-list site-review-grid"></div>
+    </section>
+
+    <details class="panel-guidance-details panel-guidance-details--accent admin-hosting-details" data-min-role="super-admin">
+      <summary>Hosting &amp; environment (super-admin)</summary>
+      <div class="panel-guidance-details__body">
+        <section class="admin-section admin-section--nested" aria-labelledby="hosting-status-heading">
+          <div class="section-header">
+            <div>
+              <h3 id="hosting-status-heading">API environment</h3>
+              <p class="section-subtitle">Configured variable names on the edge worker — never secret values.</p>
+            </div>
+            <div class="section-header__actions admin-email-actions">
+              <div class="admin-email-options" role="group" aria-label="Email sender and recipient">
+                <label class="admin-email-options__field" for="admin-email-from">
+                  <span class="admin-email-options__label">From</span>
+                  <select id="admin-email-from" class="form-select admin-email-options__select">
+                    {adminMailboxKeys.map((key) => (
+                      <option value={key} selected={key === 'support'}>
+                        {adminMailboxLabels[key]} ({siteMailboxes[key]})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label class="admin-email-options__field" for="admin-email-to">
+                  <span class="admin-email-options__label">To</span>
+                  <select id="admin-email-to" class="form-select admin-email-options__select">
+                    {adminMailboxKeys.map((key) => (
+                      <option value={key} selected={key === 'bigpons'}>
+                        {adminMailboxLabels[key]} ({siteMailboxes[key]})
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
+              <button id="refresh-hosting-status-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
+              <button id="email-hosting-checklist-btn" type="button" class="btn btn-primary btn-sm">Email checklist</button>
+            </div>
+          </div>
+          <div id="hosting-status-list" class="hosting-status-list"></div>
+          <p id="hosting-status-message" class="status-message" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </details>
+  </div>
+</div>

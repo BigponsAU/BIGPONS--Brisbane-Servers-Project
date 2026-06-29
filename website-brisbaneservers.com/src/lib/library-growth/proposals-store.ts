@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { GrowthProposal, GrowthProposalStatus } from './types';
 
@@ -8,12 +8,7 @@ function proposalsFilePath(): string {
 }
 
 export async function loadGrowthProposals(): Promise<GrowthProposal[]> {
-  const items = await readCorpusJson<GrowthProposal[]>(
-    CORPUS_DOC_KEYS.GROWTH_PROPOSALS,
-    proposalsFilePath(),
-    []
-  );
-  return Array.isArray(items) ? items : [];
+  return readCorpusArray<GrowthProposal>(CORPUS_DOC_KEYS.GROWTH_PROPOSALS, proposalsFilePath(), []);
 }
 
 export async function saveGrowthProposals(proposals: GrowthProposal[]): Promise<void> {

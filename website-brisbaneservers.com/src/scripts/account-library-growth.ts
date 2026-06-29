@@ -190,10 +190,17 @@ async function renderGrowthProposals(
         ? '<p class="growth-queue-actions"><button type="button" class="btn btn-secondary btn-sm" id="growth-open-resources">Open Resources</button></p>'
         : ''
     }`;
+    const summaryEl = document.getElementById('growth-queue-summary');
+    if (summaryEl) summaryEl.textContent = '0 pending proposals';
     document.getElementById('growth-open-resources')?.addEventListener('click', () => {
       ctx.navigateToPanel('resources');
     });
     return;
+  }
+
+  const summaryEl = document.getElementById('growth-queue-summary');
+  if (summaryEl) {
+    summaryEl.textContent = `${items.length} pending proposal${items.length === 1 ? '' : 's'}`;
   }
 
   container.innerHTML = items

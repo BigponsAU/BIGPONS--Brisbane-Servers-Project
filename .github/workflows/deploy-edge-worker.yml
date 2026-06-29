@@ -47,3 +47,7 @@ jobs:
           accountId: 92d738484386c6b613628bbeafebe2f9
           workingDirectory: website-brisbaneservers.com/workers/api
           command: deploy
+
+      - name: Verify dashboard API routes after deploy
+        working-directory: website-brisbaneservers.com
+        run: npm run verify:dashboard-api -- --api https://api.brisbaneservers.com

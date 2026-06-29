@@ -29,6 +29,7 @@ import {
   LOGIN_TIMEOUT_MS,
   handleWorkspaceSessionExpired,
 } from './account-workspace-runtime';
+import { initApiConnectivityBanner, syncApiConnectivityBanner } from './account-api-connectivity';
 
 export type { AccountWorkspaceBootConfig };
 
@@ -833,6 +834,7 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
 
   bindAuthForms();
   setupPasswordVisibilityToggles();
+  initApiConnectivityBanner();
   setResendVerificationVisibility(false);
   const pendingOAuth = hasPendingOAuthReturn();
   if (preAuthed && inlineSession?.user) {
@@ -857,6 +859,7 @@ export function bootAccountAuth(config: AccountWorkspaceBootConfig): void {
         return;
       }
       await ensureReachableApiBase({ fast: true });
+      await syncApiConnectivityBanner();
       await handleOAuthReturn();
       await handleVerificationToken();
       if (rt.pendingResetToken) {

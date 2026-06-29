@@ -4,6 +4,8 @@
 **Purpose:** Signed-in control surface for voice-aligned resources, moderation, analytics, and the self-growing library.  
 **Canonical ops:** [MASTER.md](../MASTER.md) · **Hosting (MCP):** [HOSTING_MCP_WORKSPACE.md](../operations/HOSTING_MCP_WORKSPACE.md) · **Growth:** [LIBRARY_GROWTH.md](LIBRARY_GROWTH.md)
 
+**Canonical feature inventory:** [DASHBOARD_FEATURE_MATRIX.md](DASHBOARD_FEATURE_MATRIX.md)
+
 Use this file to track **dashboard completion** across chat sessions. Items marked **Done** reflect the current repo; **Deploy** = operator action on hosting; **Chat** = continue in ongoing conversation.
 
 ---

@@ -2,10 +2,10 @@
 import { industries } from '../../data/industries';
 ---
               <div id="resources-panel" class="portal-panel" role="main" aria-label="Resources management" style="display: none;">
-                <div class="admin-content">
+                <div class="admin-content resources-panel-layout">
 
                   <!-- Resources Panel Content -->
-          <section class="admin-section" data-require-role="client" aria-label="Contributor resources note">
+          <section class="admin-section contributor-resources-note" data-require-role="client" aria-label="Contributor resources note">
             <div class="card profile-guidance-card">
               <p class="section-subtitle" style="margin: 0;">
                 As a <strong>contributor</strong>, you can browse resources and starter blocks from Overview.
@@ -14,28 +14,33 @@ import { industries } from '../../data/industries';
               </p>
             </div>
           </section>
-          <section class="admin-section" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
-            <div class="section-header">
-              <div>
-                <h2 id="resource-voice-profile-heading" class="sr-only">Voice profile for resources</h2>
-                <p class="section-subtitle" style="margin: 0;">Voice profile used for upload, paste/process, and generate below. Choose a saved profile or leave on Auto to match the server default and library-derived voice.</p>
+          <section class="admin-section resource-voice-profile-bar" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
+            <div class="resource-voice-profile-row card">
+              <div class="resource-voice-profile-row__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                </svg>
               </div>
-            </div>
-            <div class="card" style="margin-bottom: var(--space-lg);">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label for="resource-voice-profile-select">Voice profile</label>
+              <div class="form-group resource-voice-profile-row__field">
+                <label for="resource-voice-profile-select">Voice profile for create &amp; generate</label>
                 <select id="resource-voice-profile-select" name="resourceVoiceProfile" aria-describedby="resource-voice-profile-hint">
                   <option value="">Auto (saved default or library-derived)</option>
                 </select>
-                <small id="resource-voice-profile-hint" style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">Profiles load from the Voice Profiles panel. Open Profiles once or use Refresh there to update this list.</small>
+                <small id="resource-voice-profile-hint">Used for upload, paste, generate, and document rewrite.</small>
+                <p id="voice-context-summary" class="voice-context-summary" aria-live="polite">Voice context loads with your profiles…</p>
+              </div>
+              <div class="resource-voice-profile-row__links" role="group" aria-label="Voice tools">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Manage profiles</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('voice-lab')">Voice lab</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('voice-map')">Voice map</button>
               </div>
             </div>
           </section>
           <!-- Document OCR & voice rewrite -->
-          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="document-workspace-heading">
-            <div class="section-header">
+          <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="document-workspace-heading">
+            <div class="section-header section-header--collapsible">
               <h2 id="document-workspace-heading">Documents — OCR &amp; rewrite</h2>
-              <button type="button" class="section-toggle" aria-expanded="false" aria-controls="document-workspace-content" onclick="toggleSection('document-workspace-content', this)">
+              <button type="button" class="section-toggle" aria-expanded="false" aria-controls="document-workspace-content" onclick="toggleSection('document-workspace-content', this)" aria-label="Expand Documents section">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
@@ -95,10 +100,10 @@ import { industries } from '../../data/industries';
             </div>
           </section>
           <!-- Resource Upload Section -->
-          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="upload-resource-heading">
-            <div class="section-header">
+          <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="upload-resource-heading">
+            <div class="section-header section-header--collapsible">
               <h2 id="upload-resource-heading">Upload Resource</h2>
-              <button type="button" class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)">
+              <button type="button" class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)" aria-label="Collapse Upload section">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
@@ -155,7 +160,7 @@ import { industries } from '../../data/industries';
           </section>
 
           <!-- Create from content (paste / type, no file) -->
-          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="create-from-content-heading">
+          <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="create-from-content-heading">
             <div class="section-header">
               <h2 id="create-from-content-heading">Create from Content</h2>
               <button type="button" class="section-toggle" aria-expanded="false" aria-controls="create-from-content-content" onclick="toggleSection('create-from-content-content', this)">
@@ -204,7 +209,7 @@ import { industries } from '../../data/industries';
           </section>
 
           <!-- Resource Generation Section -->
-          <section class="admin-section admin-section-collapsible" data-min-role="editor" aria-labelledby="generate-resource-heading">
+          <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="generate-resource-heading">
             <div class="section-header">
               <h2 id="generate-resource-heading">Generate New Resource</h2>
               <button type="button" class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">
@@ -248,19 +253,21 @@ import { industries } from '../../data/industries';
                     <option value="long">Long</option>
                   </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Generate Resource</button>
+                <div class="resource-form-actions">
+                  <button type="submit" class="btn btn-primary btn-sm">Generate Resource</button>
+                </div>
                 <div id="generate-status" class="status-message" role="status" aria-live="polite"></div>
               </form>
             </div>
             </div>
           </section>
 
-          <!-- Resources Workspace -->
-          <section class="admin-section" aria-labelledby="resources-heading">
-            <div class="section-header">
+          <!-- Resources Workspace (primary surface — shown above create tools) -->
+          <section class="admin-section resource-workspace-section" aria-labelledby="resources-heading">
+            <div class="section-header section-header--workspace">
               <div>
                 <h2 id="resources-heading">Resource Workspace</h2>
-                <p class="section-subtitle">Create, refine, and organize your content resources. <strong>Start from template:</strong> pick a starter block (overview or below), then customise. Or use Create from content (paste) or upload a file.</p>
+                <p class="section-subtitle">Browse the tree, open a resource to refine it, or use the create panels below.</p>
               </div>
               <div class="section-actions">
                 <button id="refresh-resources" class="btn btn-secondary btn-sm" aria-label="Refresh resources">
@@ -336,6 +343,14 @@ import { industries } from '../../data/industries';
                       <line x1="17" y1="16" x2="17" y2="2"></line>
                     </svg>
                     <span>Archived</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm filter-btn filter-btn--admin" data-min-role="admin" onclick="filterTreeByStatus('removed')" data-status="removed" aria-label="Show resources removed from workspace" hidden>
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18"></path>
+                      <path d="M8 6V4h8v2"></path>
+                      <path d="M19 6l-1 14H6L5 6"></path>
+                    </svg>
+                    <span>Removed</span>
                   </button>
                 </div>
                 <div id="resource-tree" class="resource-tree" role="tree" aria-label="Resource hierarchy">
@@ -433,6 +448,7 @@ import { industries } from '../../data/industries';
                     <option value="user">My Resources</option>
                     <option value="starter">Starter Blocks</option>
                     <option value="all">All Resources</option>
+                    <option value="removed" class="admin-only-option" hidden>Removed from workspace</option>
                   </select>
                 </div>
                 <div class="toolbar-actions">

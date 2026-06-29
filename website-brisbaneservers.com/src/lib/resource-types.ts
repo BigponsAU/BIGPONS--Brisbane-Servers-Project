@@ -53,6 +53,10 @@ export interface Resource {
     filename?: string;
     mimeType?: string;
   };
+  /** Set when first published — public SEO/index retention even if removed from workspace. */
+  wasEverPublished?: boolean;
+  /** Soft-remove from /account workspace; public catalog + search index unchanged when status stays published. */
+  portalRemovedAt?: string;
 }
 
 export function isPublicResource(resource: Resource): boolean {
@@ -67,4 +71,9 @@ export function isPublicResource(resource: Resource): boolean {
     return true;
   }
   return false;
+}
+
+/** Hidden from /account lists after soft-delete; public plane unaffected when still published. */
+export function isVisibleInPortalWorkspace(resource: Resource): boolean {
+  return !resource.portalRemovedAt;
 }

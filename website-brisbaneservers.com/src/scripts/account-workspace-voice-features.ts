@@ -2,6 +2,7 @@
  * Voice lab + voice map client handlers for /account panels.
  */
 import { workspaceFetch } from '../lib/client-api';
+import { showConfirmDialog } from './portal-confirm-dialog';
 
 type MapNode = {
   id: string;
@@ -386,6 +387,25 @@ export function bindVoiceFeaturePanels(): void {
   document.getElementById('voice-map-bootstrap-btn')?.addEventListener('click', () => void bootstrapVoiceCorpus());
   document.getElementById('voice-lab-analyze-btn')?.addEventListener('click', () => void runVoiceLab('tone'));
   document.getElementById('voice-lab-patterns-btn')?.addEventListener('click', () => void runVoiceLab('patterns'));
+  document.getElementById('voice-lab-markov-refresh')?.addEventListener('click', () => {
+    void import('./portal-markov-tracker').then((m) => m.renderPortalMarkovIntoVoiceLab());
+  });
+  document.getElementById('voice-lab-markov-export')?.addEventListener('click', () => {
+    void import('./portal-markov-tracker').then((m) => m.exportPortalMarkovData());
+  });
+  document.getElementById('voice-lab-markov-reset')?.addEventListener('click', () => {
+    void (async () => {
+      const ok = await showConfirmDialog({
+        title: 'Reset flow tracking',
+        message: 'Reset all portal flow tracking data for this browser?',
+        details: 'Markov navigation stats will be cleared locally. This cannot be undone.',
+        confirmLabel: 'Reset',
+        variant: 'danger',
+      });
+      if (!ok) return;
+      void import('./portal-markov-tracker').then((m) => m.resetPortalMarkovTracker());
+    })();
+  });
 }
 
 export function onVoicePanelShown(panelName: string): void {

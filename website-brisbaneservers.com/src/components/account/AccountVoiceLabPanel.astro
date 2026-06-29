@@ -3,20 +3,24 @@ import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 ---
 
-<div id="voice-lab-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Voice lab" style="display: none;">
+<div id="voice-lab-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Voice lab" style="display: none;">
   <div class="admin-content">
     <section class="admin-section" aria-labelledby="voice-lab-heading">
       <SectionConstellationLayer variant="partnership" semanticKey="account-voice-lab" tier="whisper" placement="top-right" />
-      <div class="section-header">
+      <div class="section-header section-header--workspace">
         <div>
           <h2 id="voice-lab-heading">{accountWorkspace.voiceLabLabel}</h2>
           <p class="section-subtitle">
-            Tone analysis, pattern extraction, and voice match — integrated from the voice-framework workspace (no separate dashboard host).
+            Tone analysis and pattern extraction. Pair with Voice profiles and Create content for end-to-end voice control.
           </p>
+        </div>
+        <div class="section-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create content</button>
         </div>
       </div>
 
-      <div class="voice-lab-grid">
+      <div class="voice-lab-grid voice-lab-grid--primary">
         <div class="voice-lab-input card">
           <label for="voice-lab-text" class="form-label">Text to analyze</label>
           <textarea id="voice-lab-text" class="form-textarea" rows="8" placeholder="Paste sample copy (min 10 characters)…"></textarea>
@@ -29,12 +33,20 @@ import { accountWorkspace } from '../../data/account-workspace';
           <h3 class="card-title">Results</h3>
           <pre id="voice-lab-output" class="voice-lab-output-pre" aria-live="polite">Run analysis to see tone scores and voice match.</pre>
         </div>
-        <div class="voice-lab-output card">
-          <h3 class="card-title">Portal flow (Markov)</h3>
-          <p class="section-subtitle">Panel navigation patterns — legacy dashboard tracker parity (this browser only).</p>
+      </div>
+
+      <details class="panel-guidance-details voice-lab-markov-details">
+        <summary>Portal flow (Markov) — optional</summary>
+        <div class="panel-guidance-details__body">
+          <p class="section-subtitle">Panel navigation patterns recorded as you move through the workspace (this browser only).</p>
+          <div class="voice-lab-actions voice-lab-markov-actions">
+            <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
+            <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
+            <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
+          </div>
           <pre id="voice-lab-markov-summary" class="voice-lab-output-pre" aria-live="polite">Navigate the workspace to collect flow data.</pre>
         </div>
-      </div>
+      </details>
     </section>
   </div>
 </div>

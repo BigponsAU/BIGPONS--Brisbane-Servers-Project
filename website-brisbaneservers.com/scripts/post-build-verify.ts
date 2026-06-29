@@ -451,7 +451,9 @@ function checkBundledClientScripts(): VerificationResult {
     const jsAssets = readdirSync(assetsDir).filter((name) => name.endsWith('.js'));
     const hasMain = jsAssets.some((name) => name.includes('BaseLayout'));
     const hasAccount = jsAssets.some((name) => name.includes('account-auth') || name.includes('AccountWorkspacePage'));
-    const hasDashboard = jsAssets.some((name) => name.includes('account-workspace-app'));
+    const hasDashboardApp = jsAssets.some((name) => name.includes('account-workspace-app'));
+    const hasDashboardProfiles = jsAssets.some((name) => name.includes('account-workspace-profiles'));
+    const hasDashboardResources = jsAssets.some((name) => name.includes('account-workspace-resources'));
 
     if (!hasMain) {
       return {
@@ -461,12 +463,25 @@ function checkBundledClientScripts(): VerificationResult {
       };
     }
 
+    const missingChunks: string[] = [];
+    if (!hasDashboardApp) missingChunks.push('account-workspace-app');
+    if (!hasDashboardProfiles) missingChunks.push('account-workspace-profiles');
+    if (!hasDashboardResources) missingChunks.push('account-workspace-resources');
+
+    if (missingChunks.length > 0) {
+      return {
+        name: 'Bundled Client Scripts',
+        passed: false,
+        message: `Missing dashboard lazy chunks in dist/assets: ${missingChunks.join(', ')}`,
+      };
+    }
+
     return {
       name: 'Bundled Client Scripts',
       passed: true,
-      message: hasAccount && hasDashboard
+      message: hasAccount
         ? `Client bundles present (${jsAssets.length} JS assets; auth + lazy dashboard split)`
-        : `Client bundles present (${jsAssets.length} JS assets)`,
+        : `Client bundles present (${jsAssets.length} JS assets; lazy dashboard split)`,
     };
   } catch (error) {
     return {

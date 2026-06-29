@@ -2,20 +2,34 @@
 import { accountWorkspace } from '../../data/account-workspace';
 ---
 
-<div id="admin-ops-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Admin operations" style="display: none;">
-  <div class="admin-content">
+<div id="admin-ops-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Admin operations" style="display: none;">
+  <div class="admin-content admin-ops-panel-shell">
     <section class="admin-section" aria-labelledby="admin-ops-heading">
-      <div class="section-header">
+      <div class="section-header section-header--workspace">
         <div>
           <h2 id="admin-ops-heading">{accountWorkspace.adminOpsLabel}</h2>
           <p class="section-subtitle">
-            AI usage caps, credit top-ups, and platform ops. Stripe subscriptions ship after portal stabilisation; daily limits apply first.
+            AI usage caps, corpus health, token redemptions, and platform ops. Stripe subscriptions ship after portal stabilisation.
           </p>
+        </div>
+        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('site-review')">Site review</button>
         </div>
       </div>
 
-      <div class="admin-ops-grid">
-        <div class="card admin-ops-card">
+      <details class="panel-guidance-details">
+        <summary>Ops overview</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Daily AI usage</strong> caps Generate and Improve before NVIDIA NIM or Workers AI runs; template fallback is always free.</p>
+          <p><strong>Search corpus</strong> feeds public site search via semantic chunks on the edge worker.</p>
+          <p><strong>Token queue</strong> lists spotlight and office-hours redemptions awaiting manual follow-up.</p>
+        </div>
+      </details>
+
+      <div class="admin-ops-grid admin-ops-grid--polished">
+        <div class="card admin-ops-card admin-ops-card--primary">
           <div class="admin-ops-usage-header">
             <h3 class="card-title">Daily AI usage</h3>
             <button type="button" id="refresh-admin-ops-usage" class="btn btn-secondary btn-sm">Refresh</button>
@@ -27,34 +41,22 @@ import { accountWorkspace } from '../../data/account-workspace';
             </div>
             <p id="admin-ops-usage-meta" class="form-hint"></p>
           </div>
-          <p class="form-hint">
-            Daily caps apply to <strong>Generate</strong> and <strong>Improve</strong> before NVIDIA NIM or Workers AI runs; template fallback is always free.
-          </p>
         </div>
 
-        <div class="card admin-ops-card" data-min-role="admin">
+        <div class="card admin-ops-card">
           <div class="admin-ops-usage-header">
             <h3 class="card-title">Search &amp; RAG corpus</h3>
             <button type="button" id="refresh-admin-ops-search-corpus" class="btn btn-secondary btn-sm">Refresh</button>
           </div>
           <p class="form-hint">
-            Public search bars on the marketing site call <code>GET /api/resources/search</code> (semantic chunks + proposition keywords).
+            Public search bars call <code>GET /api/resources/search</code> (semantic chunks + proposition keywords).
           </p>
           <div id="admin-ops-search-corpus" class="admin-ops-search-corpus" aria-live="polite">
             <p class="form-hint">Loading corpus identity…</p>
           </div>
         </div>
 
-        <div class="card admin-ops-card" data-min-role="admin">
-          <p class="section-subtitle">
-            Primary: <strong>NVIDIA NIM</strong> (Developer Program, <code>NVIDIA_API_KEY</code> on edge worker).
-            Fallback: <strong>Cloudflare Workers AI</strong> via the <code>[ai]</code> binding.
-            See <code>docs/operations/INFERENCE_WORKERS_AI.md</code>.
-          </p>
-          <p class="form-hint">Configure locally: <code>npm run configure:inference-nvidia</code> then <code>npm run sync:edge-worker-secrets</code>.</p>
-        </div>
-
-        <div class="card admin-ops-card" data-min-role="admin">
+        <div class="card admin-ops-card">
           <div class="admin-ops-usage-header">
             <h3 class="card-title">Token perk queue</h3>
             <button type="button" id="refresh-admin-ops-token-queue" class="btn btn-secondary btn-sm">Refresh</button>
@@ -64,40 +66,56 @@ import { accountWorkspace } from '../../data/account-workspace';
           <p id="admin-ops-token-queue-status" class="form-hint" role="status"></p>
         </div>
 
-        <div class="card admin-ops-card" data-min-role="admin">
-          <h3 class="card-title">Top up (PayID)</h3>
-          <p class="section-subtitle">
-            After daily cap: request extra units via PayID to the business ABN account. Reference format:
-            <code>BS-{`{userId}`}-TOPUP</code>. Admin grants units after payment clears.
-          </p>
-          <p class="form-hint">Stripe subscription checkout — planned post-portal fix (hybrid billing).</p>
-        </div>
+        <details class="card admin-ops-card admin-ops-card--collapsible">
+          <summary class="card-title">Inference providers</summary>
+          <div class="admin-ops-card__body">
+            <p class="section-subtitle">
+              Primary: <strong>NVIDIA NIM</strong> (<code>NVIDIA_API_KEY</code> on edge worker).
+              Fallback: <strong>Cloudflare Workers AI</strong> via the <code>[ai]</code> binding.
+            </p>
+            <p class="form-hint">Configure: <code>npm run configure:inference-nvidia</code> then <code>npm run sync:edge-worker-secrets</code>.</p>
+          </div>
+        </details>
 
-        <div class="card admin-ops-card" data-min-role="admin">
-          <h3 class="card-title">Enable inference on edge worker</h3>
-          <ol class="section-subtitle" style="margin-left: 1.25rem;">
+        <details class="card admin-ops-card admin-ops-card--collapsible">
+          <summary class="card-title">Enable inference on edge worker</summary>
+          <ol class="section-subtitle admin-ops-steps">
             <li><code>npm run configure:inference-nvidia</code> — save <code>NVIDIA_API_KEY</code></li>
             <li><code>npm run sync:edge-worker-secrets</code> — push secrets to Cloudflare Worker</li>
             <li><code>npm run deploy:edge-worker</code> — deploy <code>INFERENCE_PROVIDER=nvidia</code> vars</li>
             <li>Test <strong>Generate</strong> and <strong>Improve</strong> in Resources; check usage meter above</li>
           </ol>
-        </div>
+        </details>
 
-        <div class="card admin-ops-card" data-require-role="super-admin">
-          <h3 class="card-title">Workers AI fallback</h3>
-          <p class="section-subtitle">
-            Edge Worker <code>[ai]</code> binding (~10k neurons/day free). Used when NVIDIA is unavailable or rate-limited.
-            No Grok subscription required.
-          </p>
-          <p class="form-hint">When both NVIDIA and Workers AI are unavailable, generation uses the template engine (always free).</p>
-        </div>
+        <details class="card admin-ops-card admin-ops-card--collapsible" data-require-role="super-admin">
+          <summary class="card-title">Workers AI fallback</summary>
+          <div class="admin-ops-card__body">
+            <p class="section-subtitle">
+              Edge Worker <code>[ai]</code> binding (~10k neurons/day free). Used when NVIDIA is unavailable or rate-limited.
+            </p>
+            <p class="form-hint">When both NVIDIA and Workers AI are unavailable, generation uses the template engine (always free).</p>
+          </div>
+        </details>
 
-        <div class="card admin-ops-card" data-require-role="super-admin">
-          <h3 class="card-title">Legacy voice-framework dashboard</h3>
-          <p class="section-subtitle">
-            Docker dashboard on Render (port 3001) is deprecated. Voice lab, voice map, and admin panels here replace it — no cold-start host required.
-          </p>
-        </div>
+        <details class="card admin-ops-card admin-ops-card--collapsible">
+          <summary class="card-title">Top up (PayID) — billing preview</summary>
+          <div class="admin-ops-card__body">
+            <p class="section-subtitle">
+              After daily cap: request extra units via PayID. Reference format:
+              <code>BS-{`{userId}`}-TOPUP</code>. Admin grants units after payment clears.
+            </p>
+            <p class="form-hint">Stripe subscription checkout — planned post-portal (see <code>FEATURES_NOT_BUILT.md</code>).</p>
+          </div>
+        </details>
+
+        <details class="card admin-ops-card admin-ops-card--collapsible" data-require-role="super-admin">
+          <summary class="card-title">Legacy voice-framework dashboard</summary>
+          <div class="admin-ops-card__body">
+            <p class="section-subtitle">
+              Docker dashboard on Render (port 3001) is deprecated. Voice lab, voice map, and admin panels here replace it.
+            </p>
+          </div>
+        </details>
       </div>
     </section>
   </div>

@@ -40,7 +40,7 @@ const probes: Probe[] = [
 
   // —— Resources ——
   { panel: 'resources', method: 'GET', path: '/resources/starter-blocks', expect: [200, 401] },
-  { panel: 'resources', method: 'GET', path: '/resources?includeStarterBlocks=true', expect: [200, 401] },
+  { panel: 'resources', method: 'GET', path: '/resources', expect: [200, 401] },
   { panel: 'resources', method: 'POST', path: '/resources/generate', expect: [400, 401, 403] },
   { panel: 'resources', method: 'POST', path: '/resources/upload', expect: [400, 401, 403] },
   { panel: 'resources', method: 'POST', path: '/documents/extract', expect: [400, 401, 403] },

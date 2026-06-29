@@ -8,6 +8,21 @@ import { pid, platform } from 'node:process';
 import { ensureDirExists, isLimitedFsRuntime } from '@voice-framework/utils/fs-safe';
 import { getSharedPool, usePostgres } from './db/pg-pool';
 import { getRuntimeEnv } from '../utils/runtime-env';
+import {
+  coerceCorpusPayload,
+  normalizeForJsonbStorage,
+  asCorpusArray,
+} from './corpus-payload-coerce';
+
+export {
+  coerceCorpusPayload,
+  isStringEncodedCorpusPayload,
+  normalizeForJsonbStorage,
+  unwrapCorpusJsonPayload,
+  asCorpusArray,
+  asCorpusObject,
+  corpusPayloadKind,
+} from './corpus-payload-coerce';
 
 function shouldSkipFileMirror(): boolean {
   return getRuntimeEnv('CORPUS_SKIP_FILE_MIRROR') === '1';
@@ -68,7 +83,7 @@ async function writeJsonFileAtomic(filePath: string, data: unknown): Promise<voi
   const dir = path.dirname(filePath);
   const base = path.basename(filePath);
   const tmp = path.join(dir, `.${base}.${pid}.${Date.now()}.tmp`);
-  const payload = JSON.stringify(data, null, 2);
+  const payload = JSON.stringify(normalizeForJsonbStorage(data), null, 2);
   await ensureDirExists(dir);
   await fs.writeFile(tmp, payload, 'utf-8');
   try {
@@ -95,17 +110,20 @@ async function loadFromPostgres<T>(key: CorpusDocKey): Promise<T | null> {
     'SELECT payload FROM corpus_documents WHERE doc_key = $1',
     [key],
   );
-  return rows[0]?.payload ?? null;
+  const raw = rows[0]?.payload ?? null;
+  if (raw === null) return null;
+  return coerceCorpusPayload(raw);
 }
 
 async function saveToPostgres(key: CorpusDocKey, data: unknown): Promise<void> {
   await ensureCorpusSchema();
   const pool = getSharedPool();
+  const payload = normalizeForJsonbStorage(data);
   await pool.query(
     `INSERT INTO corpus_documents (doc_key, payload, updated_at)
      VALUES ($1, $2::jsonb, NOW())
      ON CONFLICT (doc_key) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()`,
-    [key, JSON.stringify(data)],
+    [key, JSON.stringify(payload)],
   );
 }
 
@@ -132,6 +150,16 @@ export async function readCorpusJson<T>(
 
   const fromFile = await readJsonFile<T>(filePath);
   return fromFile ?? defaultValue;
+}
+
+/** Read a corpus array document with coercion and shape guard. */
+export async function readCorpusArray<T>(
+  key: CorpusDocKey,
+  filePath: string,
+  defaultValue: T[] = [],
+): Promise<T[]> {
+  const value = await readCorpusJson<T[] | unknown>(key, filePath, defaultValue);
+  return asCorpusArray<T>(value, defaultValue);
 }
 
 /**
@@ -181,21 +209,36 @@ export async function materializeCorpusToEphemeralFile<T>(
   }
   const data = await readCorpusJson(key, filePath, defaultValue);
   await ensureDirExists(path.dirname(filePath));
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.writeFile(filePath, JSON.stringify(normalizeForJsonbStorage(data), null, 2), 'utf-8');
 }
 
 export async function migrateAllCorpusFilesFromDisk(
   entries: Array<{ key: CorpusDocKey; filePath: string }>,
 ): Promise<number> {
   if (!usePostgres()) return 0;
+  const pool = getSharedPool();
   let migrated = 0;
   for (const { key, filePath } of entries) {
-    const existing = await loadFromPostgres(key);
-    if (existing !== null) continue;
+    const { rows } = await pool.query<{ payload_type: string | null; payload: unknown }>(
+      `SELECT jsonb_typeof(payload) AS payload_type, payload
+       FROM corpus_documents WHERE doc_key = $1`,
+      [key],
+    );
+    const payloadType = rows[0]?.payload_type ?? null;
+    const hasValidRow = payloadType !== null && payloadType !== 'string';
+    if (hasValidRow) continue;
+
     const fromFile = await readJsonFile(filePath);
-    if (fromFile === null) continue;
-    await saveToPostgres(key, fromFile);
-    migrated += 1;
+    if (fromFile !== null) {
+      await saveToPostgres(key, fromFile);
+      migrated += 1;
+      continue;
+    }
+
+    if (payloadType === 'string' && rows[0]?.payload !== undefined) {
+      await saveToPostgres(key, rows[0].payload);
+      migrated += 1;
+    }
   }
   return migrated;
 }

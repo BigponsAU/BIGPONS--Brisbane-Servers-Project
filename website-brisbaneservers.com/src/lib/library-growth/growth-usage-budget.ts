@@ -4,7 +4,7 @@
  */
 
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { LibraryGrowthConfig } from './types';
 
@@ -25,12 +25,7 @@ function utcDayKey(iso = new Date().toISOString()): string {
 }
 
 export async function loadGrowthUsageEntries(): Promise<GrowthUsageEntry[]> {
-  const entries = await readCorpusJson<GrowthUsageEntry[]>(
-    CORPUS_DOC_KEYS.GROWTH_USAGE_LEDGER,
-    growthUsageFile(),
-    []
-  );
-  return Array.isArray(entries) ? entries : [];
+  return readCorpusArray<GrowthUsageEntry>(CORPUS_DOC_KEYS.GROWTH_USAGE_LEDGER, growthUsageFile(), []);
 }
 
 async function saveGrowthUsageEntries(entries: GrowthUsageEntry[]): Promise<void> {

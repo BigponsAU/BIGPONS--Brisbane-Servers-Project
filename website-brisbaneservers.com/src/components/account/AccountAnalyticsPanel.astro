@@ -1,10 +1,10 @@
-              <div id="analytics-panel" class="portal-panel" data-min-role="editor" role="main" aria-label="Analytics" style="display: none;">
+              <div id="analytics-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Analytics" style="display: none;">
                 <div class="admin-content">
             <section class="admin-section" aria-labelledby="analytics-heading">
-              <div class="section-header">
+              <div class="section-header section-header--workspace">
                 <div>
-                  <h2 id="analytics-heading">Resource Analytics</h2>
-                  <p class="section-subtitle">Track your content performance and resource statistics</p>
+                  <h2 id="analytics-heading">Insights</h2>
+                  <p class="section-subtitle">Corpus performance, voice alignment, and pipeline suggestions — separate from day-to-day create tools.</p>
                 </div>
                 <button id="refresh-analytics" class="btn btn-secondary btn-sm" onclick="loadAnalytics()" aria-label="Refresh analytics">
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -16,23 +16,15 @@
                 </button>
               </div>
               
-              <!-- Analytics Guidance Card -->
-              <div class="analytics-guidance-card">
-                <div class="guidance-header">
-                  <svg class="guidance-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                  </svg>
-                  <h3>Understanding Your Analytics</h3>
+              <!-- Analytics Guidance -->
+              <details class="panel-guidance-details">
+                <summary>Understanding your metrics</summary>
+                <div class="panel-guidance-details__body">
+                  <p><strong>Total resources:</strong> Starter curriculum, case studies, and your own content.</p>
+                  <p><strong>Published / drafts:</strong> Live vs in-progress items.</p>
+                  <p><strong>Avg voice score:</strong> Alignment with your active voice profile (0–100%).</p>
                 </div>
-                <div class="guidance-content">
-                  <p><strong>Total Resources:</strong> All content in the corpus — starter curriculum, case studies, and your own resources.</p>
-                  <p><strong>Published:</strong> Resources that are live and publicly accessible.</p>
-                  <p><strong>Drafts:</strong> Resources still in development or pending review.</p>
-                  <p><strong>Avg Voice Score:</strong> Average voice match score across all resources (0-100%). Higher scores indicate better alignment with your voice profile.</p>
-                </div>
-              </div>
+              </details>
               
               <div id="analytics-content" class="analytics-content">
                 <div class="stats-grid">

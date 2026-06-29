@@ -3,7 +3,7 @@
  */
 
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { AuthRole } from '../../utils/auth';
 
@@ -40,12 +40,7 @@ export function unitsForGenerate(contentLength: number): number {
 }
 
 export async function loadUsageLedger(): Promise<UsageLedgerEntry[]> {
-  const entries = await readCorpusJson<UsageLedgerEntry[]>(
-    CORPUS_DOC_KEYS.USAGE_LEDGER,
-    getUsageLedgerFile(),
-    []
-  );
-  return Array.isArray(entries) ? entries : [];
+  return readCorpusArray<UsageLedgerEntry>(CORPUS_DOC_KEYS.USAGE_LEDGER, getUsageLedgerFile(), []);
 }
 
 export async function saveUsageLedger(entries: UsageLedgerEntry[]): Promise<void> {
@@ -74,12 +69,7 @@ export function getAiBonusFile(): string {
 }
 
 export async function loadDailyAiBonuses(): Promise<DailyAiBonusRow[]> {
-  const rows = await readCorpusJson<DailyAiBonusRow[]>(
-    CORPUS_DOC_KEYS.AI_DAILY_BONUSES,
-    getAiBonusFile(),
-    []
-  );
-  return Array.isArray(rows) ? rows : [];
+  return readCorpusArray<DailyAiBonusRow>(CORPUS_DOC_KEYS.AI_DAILY_BONUSES, getAiBonusFile(), []);
 }
 
 export async function saveDailyAiBonuses(rows: DailyAiBonusRow[]): Promise<void> {

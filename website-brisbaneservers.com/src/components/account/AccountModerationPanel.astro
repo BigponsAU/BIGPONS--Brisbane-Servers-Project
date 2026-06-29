@@ -1,15 +1,41 @@
-              <div id="moderation-panel" class="portal-panel" data-min-role="admin" role="main" aria-label="Upload moderation" style="display: none;">
-                <div class="admin-content">
-                  <section class="admin-section" aria-labelledby="moderation-heading">
-                    <div class="section-header">
-                      <div>
-                        <h2 id="moderation-heading">Upload moderation</h2>
-                        <p class="section-subtitle">Review pending community uploads and workspace submissions before they publish.</p>
-                      </div>
-                      <button id="refresh-moderation-btn" type="button" class="btn btn-secondary btn-sm">Refresh queue</button>
-                    </div>
-                    <div id="moderation-queue" class="moderation-queue"></div>
-                  </section>
-                </div>
-              </div>
+<div id="moderation-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Upload moderation" style="display: none;">
+  <div class="admin-content moderation-panel-shell">
+    <section class="admin-section" aria-labelledby="moderation-heading">
+      <div class="section-header section-header--workspace">
+        <div>
+          <h2 id="moderation-heading">Upload moderation</h2>
+          <p class="section-subtitle">Review pending community uploads before they publish. Approved items appear in Resources; rejected items stay off the public library.</p>
+        </div>
+        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
+          <button id="refresh-moderation-btn" type="button" class="btn btn-secondary btn-sm">Refresh queue</button>
+        </div>
+      </div>
 
+      <details class="panel-guidance-details">
+        <summary>Moderation workflow</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Approve</strong> publishes the contribution and links it to the contributor&apos;s resource.</p>
+          <p><strong>Reject</strong> removes it from the pending queue without publishing.</p>
+          <p><strong>Open in Resources</strong> jumps to the draft tree when a resource ID is attached.</p>
+        </div>
+      </details>
+
+      <p id="moderation-queue-summary" class="admin-queue-summary" role="status" aria-live="polite"></p>
+
+      <div class="moderation-workspace" id="moderation-workspace">
+        <aside class="moderation-queue-pane" aria-label="Pending uploads">
+          <div id="moderation-queue" class="moderation-queue moderation-queue-list"></div>
+        </aside>
+        <main class="moderation-detail-pane card" aria-label="Upload preview">
+          <div id="moderation-detail-empty" class="workspace-empty-state">
+            <h3>Select an upload</h3>
+            <p>Choose a pending item from the queue to preview metadata and content before approving or rejecting.</p>
+          </div>
+          <div id="moderation-detail-panel" class="moderation-detail-panel hidden" aria-live="polite"></div>
+        </main>
+      </div>
+    </section>
+  </div>
+</div>

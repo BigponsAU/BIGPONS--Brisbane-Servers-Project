@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from './corpus-store';
 import { voiceFrameworkStorageDir } from './monorepo-root';
 
 export const CONTRIBUTIONS_FILE = path.join(voiceFrameworkStorageDir(), 'contributions.json');
@@ -29,12 +29,7 @@ export interface Contribution {
 }
 
 export async function loadContributions(): Promise<Contribution[]> {
-  const items = await readCorpusJson<Contribution[]>(
-    CORPUS_DOC_KEYS.CONTRIBUTIONS,
-    CONTRIBUTIONS_FILE,
-    []
-  );
-  return Array.isArray(items) ? items : [];
+  return readCorpusArray<Contribution>(CORPUS_DOC_KEYS.CONTRIBUTIONS, CONTRIBUTIONS_FILE, []);
 }
 
 export async function saveContributions(contributions: Contribution[]): Promise<void> {

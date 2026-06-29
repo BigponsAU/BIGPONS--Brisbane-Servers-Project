@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from '../corpus-store';
+import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { CaseStudy } from '../../data/case-studies';
 import type { GrowthProposal } from './types';
@@ -63,12 +63,7 @@ export function buildCaseStudyDraftFromGrowth(
 }
 
 export async function loadCaseStudyDrafts(): Promise<CaseStudy[]> {
-  const raw = await readCorpusJson<CaseStudy[]>(
-    CORPUS_DOC_KEYS.CASE_STUDY_DRAFTS,
-    draftsFilePath(),
-    []
-  );
-  return Array.isArray(raw) ? raw : [];
+  return readCorpusArray<CaseStudy>(CORPUS_DOC_KEYS.CASE_STUDY_DRAFTS, draftsFilePath(), []);
 }
 
 export async function appendCaseStudyDraft(draft: CaseStudy): Promise<void> {

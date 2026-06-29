@@ -10,7 +10,7 @@ import { filterResourcesForUser } from '../../../lib/resource-access';
 /**
  * Get all resources
  * GET /api/resources
- * Query: industry, topic, status, includeStarterBlocks
+ * Query: industry, topic, status
  * Filtered by role: super-admin/admin see all; editor/viewer see starter + own.
  */
 export const GET: APIRoute = async ({ request }) => {
@@ -34,9 +34,27 @@ export const GET: APIRoute = async ({ request }) => {
     const industry = url.searchParams.get('industry');
     const topic = url.searchParams.get('topic');
     const status = url.searchParams.get('status');
+    const includeRemoved = url.searchParams.get('includeRemoved') === '1';
+    const removedOnly = url.searchParams.get('removedOnly') === '1';
+    const isAdmin =
+      authResult.user.role === 'admin' || authResult.user.role === 'super-admin';
+
+    if ((includeRemoved || removedOnly) && !isAdmin) {
+      return new Response(
+        JSON.stringify({
+          error: 'Admin only',
+          code: 'FORBIDDEN',
+          success: false,
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
 
     let resources = await loadResources();
-    resources = filterResourcesForUser(authResult.user, resources);
+    resources = filterResourcesForUser(authResult.user, resources, {
+      includeRemoved,
+      removedOnly,
+    });
 
     // Query filters
     if (industry) {
