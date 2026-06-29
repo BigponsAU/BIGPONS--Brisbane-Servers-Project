@@ -108,18 +108,45 @@
     transform: translateX(2px);
 }
 
-/* Dropdown visibility — escape section overflow clipping */
+/* Dropdown visibility — escape section overflow clipping + stack above bands below */
 .main-home .home-sections-shell:has(.search-bar),
 .main-home .home-sections-shell > .section:has(.search-bar),
 .main-home .home-sections-shell > .section:has(.search-bar) > .container,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section:has(.search-bar),
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section:has(.search-bar) > .container,
 .site-main--marketing .marketing-page-bands:has(.search-bar),
 .site-main--marketing .marketing-page-bands > .section:has(.search-bar),
-.site-main--marketing .marketing-page-bands > .section:has(.search-bar) > .container {
+.site-main--marketing .marketing-page-bands > .section:has(.search-bar) > .container,
+.site-main--marketing .marketing-page-bands__stage > .section:has(.search-bar),
+.site-main--marketing .marketing-page-bands__stage > .section:has(.search-bar) > .container {
     overflow: visible !important;
 }
 
+/* Stacked scroll layers paint later sections above earlier ones — lift search band when open */
+.marketing-scroll-shell__stage > .section:has(.search-bar),
+.site-main--marketing .marketing-page-bands__stage > .section:has(.search-bar),
+.main-home .home-sections-shell .section:has(.search-bar) {
+    position: relative;
+    z-index: 40 !important;
+    isolation: isolate;
+}
+
+.marketing-scroll-shell__stage > .section:has(.search-results.active),
+.marketing-scroll-shell__stage > .section:has(.search-bar:focus-within),
+.site-main--marketing .marketing-page-bands__stage > .section:has(.search-results.active),
+.site-main--marketing .marketing-page-bands__stage > .section:has(.search-bar:focus-within),
+.main-home .home-sections-shell .section:has(.search-results.active),
+.main-home .home-sections-shell .section:has(.search-bar:focus-within) {
+    z-index: 120 !important;
+}
+
 .search-bar {
+    position: relative;
     z-index: 30;
+}
+
+.search-bar:focus-within {
+    z-index: 80;
 }
 
 .search-results {

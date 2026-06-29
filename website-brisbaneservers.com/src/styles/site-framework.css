@@ -730,7 +730,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 /* Section satellite fields — seeded Sierpinski-style graph (SSR), larger read than legacy constellation */
-.main-home .home-sections-shell .section .section-satellite {
+.main-home .home-sections-shell .section .section-satellite:not(.section-satellite--backdrop) {
   --constellation-node-rgb: var(--accent-violet-rgb);
   --constellation-link-rgb: var(--primary-color-rgb);
   position: absolute;
@@ -794,21 +794,21 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   --constellation-link-rgb: var(--primary-color-rgb);
 }
 
-/* Proof band sits on dark hero surface — lift to hero-satellite clarity */
-.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite {
+/* Proof band sits on dark hero surface — lift to hero-satellite clarity (corner only; backdrop has field layout) */
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite:not(.section-satellite--backdrop) {
   opacity: 0.82;
   filter:
     drop-shadow(0 0 12px rgba(var(--accent-teal-rgb), 0.38))
     drop-shadow(0 0 24px rgba(var(--accent-pink-rgb), 0.16));
 }
 
-.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite__edge {
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite:not(.section-satellite--backdrop) .section-satellite__edge {
   stroke: rgba(255, 255, 255, 0.44);
   stroke-width: 1.4;
   stroke-linecap: round;
 }
 
-.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite__node {
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite:not(.section-satellite--backdrop) .section-satellite__node {
   fill: rgba(255, 255, 255, 0.28);
   stroke: rgba(var(--accent-teal-rgb), 0.88);
   stroke-width: 1.15;

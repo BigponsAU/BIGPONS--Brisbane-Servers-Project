@@ -51,8 +51,181 @@
     z-index: 1;
 }
 
-/* ─── Dark hero-wash bands: depth layer scrolled over by white panels ─── */
-.section-scroll-under.section--hero-wash {
+/* ─── Scroll transition deck (white → dark sticky → white over) ─── */
+.scroll-transition-deck {
+    position: relative;
+    isolation: isolate;
+    z-index: 1;
+}
+
+.scroll-transition-deck,
+.scroll-transition-deck > .section {
+    overflow: visible !important;
+}
+
+.main-home .home-sections-shell .scroll-transition-deck > .section.section-tartan-accent {
+    overflow: visible !important;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover {
+    position: relative;
+    background: #fff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--entry {
+    z-index: 3;
+    padding-bottom: clamp(2rem, 5vh, 3.5rem);
+    box-shadow: 0 18px 48px rgba(8, 12, 24, calc(0.04 + var(--deck-entry-shadow, 0) * 0.1));
+    transform: translate3d(0, calc(var(--deck-entry-y, 0) * 1px), 0);
+    will-change: transform;
+}
+
+.scroll-transition-deck .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
+    position: sticky;
+    top: calc(var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem));
+    z-index: 1;
+    margin-top: clamp(-5.5rem, -14vh, -2.75rem) !important;
+    margin-bottom: clamp(-3.5rem, -8vh, -2rem) !important;
+    padding-top: clamp(2.75rem, 7vh, 4.5rem);
+    /* Runway below card grid — white exit meets dark padding, not through cards */
+    padding-bottom: clamp(10rem, 24vh, 16rem);
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: var(--original-bg-gradient) !important;
+    isolation: isolate;
+    overflow-x: clip;
+    overflow-y: visible;
+    transform: translate3d(0, calc(var(--deck-stage-y, 0) * 1px), 0)
+        scale(calc(1 - var(--deck-stage-shrink, 0) * 0.025));
+    transform-origin: center top;
+    will-change: transform;
+    opacity: calc(1 - var(--deck-stage-fade, 0) * 0.35);
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--exit {
+    z-index: 2;
+    margin-top: clamp(0.5rem, 1.5vh, 1.25rem) !important;
+    padding-top: clamp(2.5rem, 6vh, 4rem);
+    border-radius: clamp(1.15rem, 2.4vw, 1.65rem) clamp(1.15rem, 2.4vw, 1.65rem) 0 0 !important;
+    box-shadow:
+        0 -1px 0 rgba(255, 255, 255, 0.98) inset,
+        0 -36px 72px rgba(8, 12, 24, calc(0.14 + var(--deck-cover-progress, 0) * 0.12)),
+        0 -10px 28px rgba(var(--primary-color-rgb), 0.08) !important;
+    transform: translate3d(0, calc(var(--deck-cover-y, 0) * 1px), 0);
+    will-change: transform;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--exit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92%, 56rem);
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), 0.2) 20%,
+        rgba(var(--accent-violet-rgb), 0.65) 50%,
+        rgba(var(--primary-color-rgb), 0.2) 80%,
+        transparent 100%
+    );
+    opacity: calc(0.55 + var(--deck-cover-progress, 0) * 0.45);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Proof band: full right-field backdrop behind card grid (section-level, not corner) */
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop {
+    top: clamp(-5rem, -10vh, -2rem);
+    right: clamp(-12%, -6vw, -2.5rem);
+    bottom: clamp(-4rem, -9vh, -1.5rem);
+    left: 22%;
+    width: auto;
+    height: auto;
+    max-height: none;
+    max-width: none;
+    aspect-ratio: auto;
+    contain: none;
+    opacity: 0.7;
+    z-index: 0;
+    transform: translate3d(4%, var(--backdrop-parallax-y, 0px), 0) rotate(-12deg) scale(1.28);
+    transform-origin: 58% 44%;
+    mask-image: linear-gradient(
+        108deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.18) 14%,
+        rgba(0, 0, 0, 0.72) 32%,
+        #000 48%,
+        #000 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        108deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.18) 14%,
+        rgba(0, 0, 0, 0.72) 32%,
+        #000 48%,
+        #000 100%
+    );
+    filter:
+        drop-shadow(0 0 40px rgba(var(--accent-teal-rgb), 0.32))
+        drop-shadow(0 0 72px rgba(var(--accent-pink-rgb), 0.16));
+}
+
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop .section-satellite__edge {
+    stroke: rgba(255, 255, 255, 0.42);
+    stroke-width: 1.5;
+}
+
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop .section-satellite__node {
+    fill: rgba(255, 255, 255, 0.24);
+    stroke: rgba(var(--accent-teal-rgb), 0.9);
+    stroke-width: 1.25;
+}
+
+.main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop .section-satellite__node--hub {
+    fill: rgba(255, 255, 255, 0.38);
+    stroke: rgba(var(--accent-pink-rgb), 0.95);
+}
+
+.scroll-transition-deck .section-scroll-deck-stage.section--hero-wash {
+    overflow: visible;
+}
+
+.scroll-transition-deck .section-scroll-deck-stage.section--hero-wash > .container {
+    position: relative;
+    z-index: 2;
+}
+
+.scroll-transition-deck .section-scroll-deck-cover--entry::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: clamp(3px, 0.45vh, 5px);
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), 0.12) 15%,
+        rgba(var(--accent-violet-rgb), 0.45) 50%,
+        rgba(var(--primary-color-rgb), 0.12) 85%,
+        transparent 100%
+    );
+    opacity: calc(0.35 + var(--deck-entry-shadow, 0) * 0.65);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Dark hero-wash bands outside decks */
+.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) {
     position: relative;
     z-index: 1;
     margin-top: 0 !important;
@@ -65,8 +238,8 @@
     overflow: hidden;
 }
 
-.section-scroll-over-panel,
-.section-scroll-under.section--hero-wash + .section {
+.section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
+.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section {
     position: relative;
     z-index: 12;
     margin-top: clamp(-4.75rem, -11vh, -2.75rem) !important;
@@ -82,8 +255,8 @@
     will-change: transform;
 }
 
-.section-scroll-over-panel::before,
-.section-scroll-under.section--hero-wash + .section::before {
+.section-scroll-over-panel:not(.section-scroll-deck-cover--exit)::before,
+.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section::before {
     content: '';
     position: absolute;
     top: 0;
@@ -107,7 +280,7 @@
 /* White stacked panels (non dark bands) */
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:not(.section--hero-wash),
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section,
-.marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash):not(.section-scroll-over-panel),
+.marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash):not(.section-scroll-over-panel):not(.section-scroll-deck-cover),
 .marketing-scroll-shell__stage > .inquiry-section:not(.section-scroll-over-panel) {
     position: relative;
     margin-top: clamp(-1.35rem, -2.8vw, -0.65rem);
@@ -172,6 +345,11 @@
 .main-home .home-sections-shell.marketing-scroll-shell {
     position: relative;
     isolation: isolate;
+    overflow: visible;
+}
+
+.main-home .home-sections-shell.marketing-scroll-shell > .marketing-scroll-shell__stage {
+    overflow: visible;
 }
 
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section:has(.search-bar),
@@ -192,7 +370,9 @@
     width: auto;
     height: auto;
     max-height: none;
+    max-width: none;
     aspect-ratio: auto;
+    contain: none;
     z-index: 0;
     opacity: 0.72;
     pointer-events: none;
@@ -231,14 +411,29 @@
         border-radius: 0.65rem 0.65rem 0 0;
     }
 
-    .section-scroll-over-panel,
-    .section-scroll-under.section--hero-wash + .section {
+    .section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
+    .section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section {
         margin-top: clamp(-2.5rem, -7vh, -1.5rem) !important;
     }
 
-    .section--hero-wash .section-satellite--backdrop {
+    .scroll-transition-deck .section-scroll-deck-stage.section-scroll-under {
+        margin-top: clamp(-3rem, -8vh, -1.75rem) !important;
+        margin-bottom: clamp(-3.5rem, -9vh, -2rem) !important;
+        padding-bottom: clamp(4rem, 10vh, 6rem);
+    }
+
+    .section--hero-wash .section-satellite--backdrop:not(.section-satellite--proof) {
         inset: 0 0 20% 30%;
         opacity: 0.48;
+    }
+
+    .main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop {
+        left: 18%;
+        right: clamp(-6%, -3vw, -1rem);
+        top: clamp(-2rem, -4vh, -0.5rem);
+        bottom: clamp(-1.5rem, -4vh, -0.5rem);
+        opacity: 0.46;
+        transform: translate3d(2%, var(--backdrop-parallax-y, 0px), 0) rotate(-12deg) scale(1.02);
     }
 
     .scroll-layer-canopy__plane--rails {
@@ -249,15 +444,24 @@
 @media (prefers-reduced-motion: reduce) {
     .scroll-layer-canopy__plane,
     .section--hero-wash .section-satellite--backdrop,
-    .section-scroll-over-panel,
-    .section-scroll-under.section--hero-wash + .section {
+    .section-scroll-over-panel:not(.section-scroll-deck-cover),
+    .section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section,
+    .scroll-transition-deck .section-scroll-deck-stage,
+    .scroll-transition-deck .section-scroll-deck-cover {
         transform: none !important;
         will-change: auto;
+        opacity: 1 !important;
+    }
+
+    .scroll-transition-deck .section-scroll-deck-stage {
+        position: relative;
+        top: auto;
     }
 
     .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:not(.section--hero-wash),
     .marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash),
-    .section-scroll-over-panel {
+    .section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
+    .scroll-transition-deck .section-scroll-deck-cover--exit {
         margin-top: 0;
         border-radius: 0;
         box-shadow: none;

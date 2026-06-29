@@ -11,7 +11,7 @@ const searchIndexPath = sitePath('/search-index.json');
 const inputId = 'site-search-input';
 ---
 
-<link rel="preload" href={searchIndexPath} as="fetch" crossorigin="anonymous" />
+<link rel="preload" href={searchIndexPath} as="fetch" type="application/json" />
 
 <div
   class="search-bar search-bar-panel"

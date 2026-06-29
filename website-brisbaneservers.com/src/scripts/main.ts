@@ -581,7 +581,11 @@ class SemanticSearch {
     
     async loadSearchIndex(): Promise<void> {
         try {
-            const response = await fetch(this.searchIndexPath);
+            const indexUrl = this.resolveIndexUrl();
+            const response = await fetch(indexUrl, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' },
+            });
             if (response.ok) {
                 const data = await response.json();
                 this.loadedIndex = Array.isArray(data?.items) ? data.items : [];
@@ -595,6 +599,15 @@ class SemanticSearch {
         } finally {
             this.indexReady = true;
         }
+    }
+
+    resolveIndexUrl(): string {
+        const raw = this.searchIndexPath.trim();
+        if (/^https?:\/\//i.test(raw)) return raw;
+        if (raw.startsWith('/')) {
+            return `${window.location.origin}${raw}`;
+        }
+        return new URL(raw, window.location.href).href;
     }
     
     buildSearchIndex(): void {
@@ -659,6 +672,15 @@ class SemanticSearch {
             await this.ensureIndexReady();
 
             if (trimmed.length < SEARCH_MIN_CHARS) {
+                if (trimmed.length >= 2) {
+                    const prefixResults = this.searchPrefix(trimmed);
+                    if (prefixResults.length > 0) {
+                        this.displayResults(prefixResults, trimmed);
+                        this.searchResults!.classList.add('active');
+                        this.searchInputWrapper?.classList.remove('loading');
+                        return;
+                    }
+                }
                 this.displayMinLengthHint(trimmed.length);
                 this.searchInputWrapper?.classList.remove('loading');
                 return;
@@ -727,10 +749,13 @@ class SemanticSearch {
 
     resolveSearchFallback(query: string): string | null {
         const trimmed = query.trim().toLowerCase();
-        if (trimmed.length < SEARCH_MIN_CHARS) return null;
+        if (trimmed.length < 2) return null;
 
         const index = this.getActiveIndex();
-        const top = this.search(trimmed)[0];
+        const top =
+            trimmed.length >= SEARCH_MIN_CHARS
+                ? this.search(trimmed)[0]
+                : this.searchPrefix(trimmed)[0] ?? this.search(trimmed)[0];
         if (top?.url) {
             const url = this.normalizeSearchUrl(top.url);
             if (url && url !== '#') return url;
@@ -756,10 +781,6 @@ class SemanticSearch {
         const normalized = href.split('#')[0].replace(/\/$/, '') || '/';
         const current = window.location.href.split('#')[0].replace(/\/$/, '') || '/';
         return normalized === current && !href.includes('#');
-    }
-    
-    handleSearch(query: string): void {
-        void this.runSearch(query);
     }
     
     search(query: string): SearchIndexItem[] {
@@ -835,6 +856,42 @@ class SemanticSearch {
         return scoredResults
             .sort((a, b) => (b.score || 0) - (a.score || 0))
             .slice(0, 8);
+    }
+
+    /** Two-character prefix pass — surfaces likely matches before full fuzzy gate. */
+    searchPrefix(query: string): SearchIndexItem[] {
+        const prefix = query.toLowerCase().trim().replace(/[^\w\s-]/g, '');
+        if (prefix.length < 2) return [];
+
+        const indexToSearch = this.getActiveIndex();
+        const scored: SearchIndexItem[] = [];
+
+        indexToSearch.forEach((item) => {
+            const title = (item.title || '').toLowerCase();
+            const description = (item.description || '').toLowerCase();
+            const industry = (item.industry || '').toLowerCase();
+            const keywords = (item.keywords || []).join(' ').toLowerCase();
+            const topics = (item.topics || []).join(' ').toLowerCase();
+            let score = 0;
+
+            if (title.startsWith(prefix)) score += 16;
+            else if (title.includes(prefix)) score += 12;
+            if (industry.startsWith(prefix)) score += 10;
+            else if (industry.includes(prefix)) score += 6;
+            if (keywords.includes(prefix)) score += 8;
+            if (topics.includes(prefix)) score += 7;
+            if (description.includes(prefix)) score += 3;
+
+            if (score > 0) {
+                scored.push({ ...item, score });
+            }
+        });
+
+        return scored.sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 8);
+    }
+
+    handleSearch(query: string): void {
+        void this.runSearch(query);
     }
 
     async fetchSemanticResults(query: string): Promise<RemoteSearchHit[]> {
@@ -1075,7 +1132,26 @@ class SemanticSearch {
     }
     
     getActiveIndex(): SearchIndexItem[] {
-        return this.loadedIndex && this.loadedIndex.length > 0 ? this.loadedIndex : this.searchIndex;
+        const remote = this.loadedIndex ?? [];
+        const local = this.searchIndex;
+
+        if (remote.length === 0) return local;
+        if (local.length === 0) return remote;
+
+        const byKey = new Map<string, SearchIndexItem>();
+        const keyFor = (item: SearchIndexItem) => item.id || item.url || item.title;
+
+        for (const item of remote) {
+            byKey.set(keyFor(item), item);
+        }
+        for (const item of local) {
+            const key = keyFor(item);
+            if (!byKey.has(key)) {
+                byKey.set(key, item);
+            }
+        }
+
+        return [...byKey.values()];
     }
 
     normalizeSearchUrl(url: string | undefined): string {
