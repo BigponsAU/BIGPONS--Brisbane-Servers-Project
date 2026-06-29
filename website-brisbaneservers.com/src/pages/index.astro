@@ -135,9 +135,9 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="section section-tartan-accent home-band--proof section--hero-wash" data-interconnection-node data-interconnection-band="proof">
+    <section class="section section-tartan-accent home-band--proof section--hero-wash section-scroll-under" data-interconnection-node data-interconnection-band="proof">
       <div class="container">
-        <SectionSatelliteConstellation variant="proof" semanticKey={HOME_BAND_SEMANTIC_KEYS.proof} />
+        <SectionSatelliteConstellation variant="proof" semanticKey={HOME_BAND_SEMANTIC_KEYS.proof} scale="rim" placement="backdrop" />
         <div class="home-phase-indicator home-phase-indicator--proof" aria-hidden="true"></div>
         <h2 class="section-title">
           <SemanticText text="Why choose Brisbane Servers" semanticLevel="high" isParent={true} />
@@ -179,7 +179,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     <!-- Live sites: concrete proof immediately before contact (trust → conversation). -->
     <section
       id="client-sites"
-      class="section section-tartan-accent section-home-band--surface home-band--clients"
+      class="section section-tartan-accent section-home-band--surface home-band--clients section-scroll-over-panel"
       data-interconnection-node
       data-interconnection-band="clients"
     >
@@ -304,9 +304,9 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     </section>
 
     <!-- Proven Solutions Section -->
-    <section class="section section-tartan-accent home-band--solutions section--hero-wash" data-interconnection-node data-interconnection-band="solutions">
+    <section class="section section-tartan-accent home-band--solutions section--hero-wash section-scroll-under" data-interconnection-node data-interconnection-band="solutions">
       <div class="container">
-        <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} />
+        <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} scale="rim" placement="backdrop" />
         <h2 class="section-title">
           <SemanticText text="Proven Solution Patterns" semanticLevel="high" isParent={true} />
         </h2>

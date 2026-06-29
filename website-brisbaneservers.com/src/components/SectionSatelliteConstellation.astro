@@ -9,6 +9,8 @@ interface Props {
   mode?: 'section' | 'gutter-echo';
   /** Graduated scale: whisper → default → accent → rim (same language, not two unrelated sizes). */
   scale?: 'whisper' | 'default' | 'accent' | 'rim';
+  /** corner = small field; backdrop = hero-scale mesh behind dark-band content */
+  placement?: 'corner' | 'backdrop';
 }
 
 const SCALE_PRESETS = {
@@ -18,7 +20,7 @@ const SCALE_PRESETS = {
   rim: { w: 720, h: 460, level: 3, nodeScale: 0.26, nodeMin: 2.4 },
 } as const;
 
-const { variant = 'strategy', semanticKey = '', mode = 'section', scale = 'default' } = Astro.props;
+const { variant = 'strategy', semanticKey = '', mode = 'section', scale = 'default', placement = 'corner' } = Astro.props;
 
 const seedKey = `${variant}|${semanticKey.slice(0, 120)}`;
 const rotationDeg =
@@ -44,6 +46,7 @@ const clipId = `section-satellite-clip-${hashSeedKey([seedKey, scale]).toString(
     'section-satellite',
     `section-satellite--${variant}`,
     mode === 'gutter-echo' && 'section-satellite--gutter-echo',
+    placement === 'backdrop' && 'section-satellite--backdrop',
     scaleClass,
   ]}
   aria-hidden="true"

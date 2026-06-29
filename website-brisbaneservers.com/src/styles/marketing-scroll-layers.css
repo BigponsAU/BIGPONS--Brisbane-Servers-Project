@@ -1,6 +1,5 @@
 /**
- * Layered scroll-over — parallax canopy + stacked section panels.
- * Hero routes stay outside .marketing-scroll-shell / .home-sections-shell.
+ * Layered scroll-over — parallax canopy, stacked panels, dark-band scroll-under.
  */
 
 .marketing-scroll-shell,
@@ -52,11 +51,64 @@
     z-index: 1;
 }
 
-/* Sections scroll over each other in a stacked deck */
-.marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent,
+/* ─── Dark hero-wash bands: depth layer scrolled over by white panels ─── */
+.section-scroll-under.section--hero-wash {
+    position: relative;
+    z-index: 1;
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--original-bg-gradient) !important;
+    padding-bottom: clamp(2.5rem, 7vh, 4.5rem);
+    overflow: hidden;
+}
+
+.section-scroll-over-panel,
+.section-scroll-under.section--hero-wash + .section {
+    position: relative;
+    z-index: 12;
+    margin-top: clamp(-4.75rem, -11vh, -2.75rem) !important;
+    border-radius: clamp(1rem, 2.2vw, 1.45rem) clamp(1rem, 2.2vw, 1.45rem) 0 0 !important;
+    box-shadow:
+        0 -1px 0 rgba(255, 255, 255, 0.95) inset,
+        0 -28px 56px rgba(8, 12, 24, 0.22),
+        0 -8px 24px rgba(var(--primary-color-rgb), 0.08) !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: translate3d(0, calc(var(--scroll-over-lift, 0) * 1px), 0);
+    will-change: transform;
+}
+
+.section-scroll-over-panel::before,
+.section-scroll-under.section--hero-wash + .section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(100%, 72rem);
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(var(--primary-color-rgb), 0.15) 18%,
+        rgba(var(--accent-violet-rgb), 0.55) 50%,
+        rgba(var(--primary-color-rgb), 0.15) 82%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* White stacked panels (non dark bands) */
+.marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:not(.section--hero-wash),
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section,
-.marketing-scroll-shell__stage > .section.section-tartan-accent,
-.marketing-scroll-shell__stage > .inquiry-section {
+.marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash):not(.section-scroll-over-panel),
+.marketing-scroll-shell__stage > .inquiry-section:not(.section-scroll-over-panel) {
     position: relative;
     margin-top: clamp(-1.35rem, -2.8vw, -0.65rem);
     border-radius: clamp(0.75rem, 1.6vw, 1.1rem) clamp(0.75rem, 1.6vw, 1.1rem) 0 0;
@@ -64,7 +116,7 @@
         0 -1px 0 rgba(255, 255, 255, 0.85) inset,
         0 -14px 36px rgba(15, 23, 42, 0.07),
         0 2px 0 rgba(var(--primary-color-rgb), 0.04);
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     overflow: visible;
@@ -72,7 +124,7 @@
 
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:first-child,
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .inquiry-section:first-child,
-.marketing-scroll-shell__stage > .section.section-tartan-accent:first-child,
+.marketing-scroll-shell__stage > .section.section-tartan-accent:first-child:not(.section-scroll-over-panel),
 .marketing-scroll-shell__stage > .inquiry-section:first-child {
     margin-top: 0;
     border-radius: 0;
@@ -107,7 +159,7 @@
     box-shadow:
         0 -1px 0 rgba(255, 255, 255, 0.85) inset,
         0 -14px 36px rgba(15, 23, 42, 0.07);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
@@ -122,7 +174,6 @@
     isolation: isolate;
 }
 
-/* Search dropdown must escape stacked panels */
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section:has(.search-bar),
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section:has(.search-bar) > .container,
 .marketing-scroll-shell__stage > .section:has(.search-bar),
@@ -130,16 +181,64 @@
     overflow: visible !important;
 }
 
-/* Soften duplicate band gradients where scroll-over panel provides surface */
 .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent::before {
     opacity: 0.45;
 }
 
+/* Backdrop satellite — hero-scale mesh on dark bands */
+.section--hero-wash .section-satellite--backdrop {
+    position: absolute;
+    inset: clamp(-4%, -2vh, 0) clamp(-6%, -3vw, -1rem) clamp(-8%, -4vh, -1rem) 18%;
+    width: auto;
+    height: auto;
+    max-height: none;
+    aspect-ratio: auto;
+    z-index: 0;
+    opacity: 0.72;
+    pointer-events: none;
+    filter:
+        drop-shadow(0 0 28px rgba(var(--accent-teal-rgb), 0.28))
+        drop-shadow(0 0 48px rgba(var(--accent-pink-rgb), 0.14));
+    transform: translate3d(0, var(--backdrop-parallax-y, 0px), 0);
+    will-change: transform;
+}
+
+.section--hero-wash .section-satellite--backdrop .section-satellite__edge {
+    stroke: rgba(255, 255, 255, 0.38);
+    stroke-width: 1.35;
+}
+
+.section--hero-wash .section-satellite--backdrop .section-satellite__node {
+    fill: rgba(255, 255, 255, 0.22);
+    stroke: rgba(var(--accent-teal-rgb), 0.82);
+    stroke-width: 1.2;
+}
+
+.section--hero-wash .section-satellite--backdrop .section-satellite__node--hub {
+    fill: rgba(255, 255, 255, 0.36);
+    stroke: rgba(var(--accent-pink-rgb), 0.9);
+}
+
+.section--hero-wash > .container {
+    position: relative;
+    z-index: 2;
+}
+
 @media (max-width: 768px) {
-    .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent,
-    .marketing-scroll-shell__stage > .section.section-tartan-accent {
+    .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:not(.section--hero-wash),
+    .marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash) {
         margin-top: clamp(-0.75rem, -2vw, -0.35rem);
         border-radius: 0.65rem 0.65rem 0 0;
+    }
+
+    .section-scroll-over-panel,
+    .section-scroll-under.section--hero-wash + .section {
+        margin-top: clamp(-2.5rem, -7vh, -1.5rem) !important;
+    }
+
+    .section--hero-wash .section-satellite--backdrop {
+        inset: 0 0 20% 30%;
+        opacity: 0.48;
     }
 
     .scroll-layer-canopy__plane--rails {
@@ -148,13 +247,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .scroll-layer-canopy__plane {
+    .scroll-layer-canopy__plane,
+    .section--hero-wash .section-satellite--backdrop,
+    .section-scroll-over-panel,
+    .section-scroll-under.section--hero-wash + .section {
         transform: none !important;
         will-change: auto;
     }
 
-    .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent,
-    .marketing-scroll-shell__stage > .section.section-tartan-accent {
+    .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section-tartan-accent:not(.section--hero-wash),
+    .marketing-scroll-shell__stage > .section.section-tartan-accent:not(.section--hero-wash),
+    .section-scroll-over-panel {
         margin-top: 0;
         border-radius: 0;
         box-shadow: none;

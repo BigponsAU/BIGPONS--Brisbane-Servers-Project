@@ -942,26 +942,65 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .main-home .home-sections-shell .home-phase-indicator {
-  --phase-line-width: clamp(5rem, 9vw, 7rem);
-  --phase-start: var(--accent-teal);
-  --phase-mid: var(--primary-color);
-  --phase-end: var(--accent-violet);
-  --phase-ring-rgb: var(--primary-color-rgb);
+  --phase-line-width: 100%;
+  width: 100%;
+  max-width: none;
+  height: clamp(0.85rem, 1.6vw, 1.15rem);
+  margin: 0 0 clamp(0.85rem, 1.2vw, 1.15rem);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   position: relative;
-  width: var(--phase-line-width);
-  height: 0.22rem;
-  margin: 0 0 clamp(0.65rem, 0.95vw, 0.95rem);
-  border-radius: 999px;
+}
+
+.main-home .home-sections-shell .home-phase-indicator::before {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto;
+  transform: translateY(-50%);
+  height: 1px;
   background: linear-gradient(
     90deg,
-    var(--phase-start) 0%,
-    var(--phase-mid) 55%,
-    var(--phase-end) 100%
+    transparent 0%,
+    var(--phase-start) 16%,
+    var(--phase-mid) 50%,
+    var(--phase-end) 84%,
+    transparent 100%
   );
+  opacity: 0.85;
+}
+
+.main-home .home-sections-shell .home-phase-indicator::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--phase-mid);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 0 0 1px rgba(var(--phase-ring-rgb), 0.1),
-    0 0 14px rgba(var(--phase-ring-rgb), 0.14);
+    0 0 0 3px rgba(var(--phase-ring-rgb), 0.14),
+    0 0 16px rgba(var(--phase-ring-rgb), 0.28);
+}
+
+.section--hero-wash .home-phase-indicator::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 16%,
+    rgba(255, 255, 255, 0.65) 50%,
+    rgba(255, 255, 255, 0.25) 84%,
+    transparent 100%
+  );
+}
+
+.section--hero-wash .home-phase-indicator::after {
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.12),
+    0 0 20px rgba(var(--accent-teal-rgb), 0.45);
 }
 
 .main-home .home-sections-shell .home-phase-indicator--strategy {
@@ -1012,22 +1051,33 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   font-weight: inherit !important;
 }
 
-/* Softer “pill” underline instead of the default squared accent bar */
-.main-home .home-sections-shell .section .section-title::after {
+/* Softer “pill” underline — extended rail on home + marketing bands */
+.main-home .home-sections-shell .section .section-title::after,
+.site-main--marketing .marketing-page-bands .section-title::after {
   bottom: 0;
   left: 0;
-  width: min(9.5rem, 48%);
-  height: 0.3125rem;
-  max-width: 14rem;
+  width: min(100%, 22rem);
+  height: 0.28rem;
+  max-width: none;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    var(--home-title-underline-start) 0%,
-    var(--home-title-underline-mid) 54%,
-    var(--home-title-underline-end) 100%
+    var(--home-title-underline-start, var(--primary-color)) 0%,
+    var(--home-title-underline-mid, var(--accent-violet)) 54%,
+    var(--home-title-underline-end, var(--accent-pink)) 100%
   );
   opacity: 0.9;
   box-shadow: 0 0 20px rgba(var(--accent-violet-rgb), 0.22);
+}
+
+.section--hero-wash > .container .section-title::after {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(var(--accent-teal-rgb), 0.75) 100%
+  );
+  box-shadow: 0 0 24px rgba(var(--accent-teal-rgb), 0.35);
 }
 
 .main-home .home-sections-shell .section .section-title.section-title--center::after {
@@ -1797,7 +1847,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     max-inline-size: 100%;
   }
 
-  .main-home .home-sections-shell .section .section-satellite {
+  .main-home .home-sections-shell .section .section-satellite:not(.section-satellite--backdrop) {
     display: none;
   }
 
