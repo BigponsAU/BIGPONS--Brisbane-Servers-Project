@@ -67,8 +67,12 @@ function updateScrollDecks(): void {
 
         if (exitCover) {
             exitCover.style.setProperty('--deck-cover-progress', coverProgress.toFixed(3));
-            const exitY = Math.min(10, Math.max(-36, (stageRect.bottom - viewH * 0.36) * -0.14));
-            exitCover.style.setProperty('--deck-cover-y', exitY.toFixed(1));
+            if (isBottomEngulf) {
+                exitCover.style.setProperty('--deck-cover-y', '0');
+            } else {
+                const exitY = Math.min(10, Math.max(-36, (stageRect.bottom - viewH * 0.36) * -0.14));
+                exitCover.style.setProperty('--deck-cover-y', exitY.toFixed(1));
+            }
         }
     });
 }
