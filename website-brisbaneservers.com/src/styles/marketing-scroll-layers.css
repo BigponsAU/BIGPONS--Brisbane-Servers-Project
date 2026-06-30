@@ -85,6 +85,10 @@
     will-change: transform;
 }
 
+.scroll-transition-deck--bottom-engulf {
+    background: var(--original-bg-gradient);
+}
+
 .scroll-transition-deck .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
     position: sticky;
     top: calc(var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem));
@@ -108,7 +112,35 @@
 
 /* Bottom-engulf: proof stays locked; only clients panel scrolls over */
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
+    top: 0;
+    margin-top: clamp(-4rem, -10vh, -2rem) !important;
     margin-bottom: 0 !important;
+    /* Header clearance inside padding so dark bg fills viewport top (no white band) */
+    padding-top: calc(
+        var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(2rem, 5vh, 3.5rem)
+    );
+}
+
+.scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section--hero-wash::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0.4) 35%,
+        rgba(0, 0, 0, 0.3) 45%,
+        rgba(0, 0, 0, 0.2) 48%,
+        rgba(var(--original-purple-glow-rgb), 0.1) calc(100% * var(--phi-inv)),
+        rgba(var(--original-purple-glow-rgb), 0.2) 55%,
+        rgba(var(--original-purple-glow-rgb), 0.3) 60%,
+        rgba(var(--original-purple-glow-rgb), 0.4) 70%,
+        rgba(var(--original-purple-glow-rgb), 0.45) 100%
+    );
+    mix-blend-mode: multiply;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash > .container {
@@ -479,7 +511,10 @@
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-        margin-bottom: 0 !important;
+        margin-top: clamp(-2.5rem, -7vh, -1.25rem) !important;
+        padding-top: calc(
+            var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(1.5rem, 4vh, 2.5rem)
+        );
         padding-bottom: clamp(18rem, 36vh, 24rem);
     }
 
