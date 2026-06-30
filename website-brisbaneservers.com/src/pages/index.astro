@@ -91,9 +91,8 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       </div>
     </section>
 
-    <!-- Industries → Why choose → Client sites: layered scroll-over deck -->
-    <ScrollTransitionDeck>
-    <section class="section section-tartan-accent section-home-band--surface home-band--industry section-scroll-deck-cover section-scroll-deck-cover--entry" data-interconnection-node data-interconnection-band="industry">
+    <!-- Industries Served Section -->
+    <section class="section section-tartan-accent section-home-band--surface home-band--industry" data-interconnection-node data-interconnection-band="industry">
       <div class="container">
         <SectionSatelliteConstellation variant="industry" semanticKey={HOME_BAND_SEMANTIC_KEYS.industry} />
         <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
@@ -136,6 +135,8 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       </div>
     </section>
 
+    <!-- Why choose → Client sites: bottom white engulfs dark proof (top scrolls normally) -->
+    <ScrollTransitionDeck>
     <!-- Why Choose Us Section -->
     <section class="section section-tartan-accent home-band--proof section--hero-wash section-scroll-deck-stage section-scroll-under" data-interconnection-node data-interconnection-band="proof">
       <SectionSatelliteConstellation variant="proof" semanticKey={HOME_BAND_SEMANTIC_KEYS.proof} scale="field" placement="backdrop" />

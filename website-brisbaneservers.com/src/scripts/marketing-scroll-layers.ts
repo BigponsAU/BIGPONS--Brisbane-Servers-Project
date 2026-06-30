@@ -28,9 +28,9 @@ function updateScrollDecks(): void {
     document.querySelectorAll<HTMLElement>('[data-scroll-deck]').forEach((deck) => {
         const stage = deck.querySelector<HTMLElement>('.section-scroll-deck-stage');
         const exitCover = deck.querySelector<HTMLElement>('.section-scroll-deck-cover--exit');
-        const entryCover = deck.querySelector<HTMLElement>('.section-scroll-deck-cover--entry');
         if (!stage) return;
 
+        const isBottomEngulf = deck.classList.contains('scroll-transition-deck--bottom-engulf');
         const stageRect = stage.getBoundingClientRect();
         const exitRect = exitCover?.getBoundingClientRect();
 
@@ -44,13 +44,19 @@ function updateScrollDecks(): void {
             coverProgress = Math.min(1, Math.max(0, (viewH * 0.72 - stageRect.bottom) / (viewH * 0.5)));
         }
 
-        const stageY = coverProgress * -56;
-        const stageShrink = coverProgress * 0.65;
-        const stageFade = coverProgress * 0.85;
+        if (isBottomEngulf) {
+            stage.style.setProperty('--deck-stage-y', '0');
+            stage.style.setProperty('--deck-stage-shrink', '0');
+            stage.style.setProperty('--deck-stage-fade', '0');
+        } else {
+            const stageY = coverProgress * -56;
+            const stageShrink = coverProgress * 0.65;
+            const stageFade = coverProgress * 0.85;
 
-        stage.style.setProperty('--deck-stage-y', stageY.toFixed(1));
-        stage.style.setProperty('--deck-stage-shrink', stageShrink.toFixed(3));
-        stage.style.setProperty('--deck-stage-fade', stageFade.toFixed(3));
+            stage.style.setProperty('--deck-stage-y', stageY.toFixed(1));
+            stage.style.setProperty('--deck-stage-shrink', stageShrink.toFixed(3));
+            stage.style.setProperty('--deck-stage-fade', stageFade.toFixed(3));
+        }
 
         const approachParallax = Math.min(1, Math.max(0, (viewH * 0.55 - stageRect.top) / (viewH * 0.45)));
         const parallaxY = coverProgress * 44 + (1 - coverProgress) * approachParallax * 28;
@@ -63,15 +69,6 @@ function updateScrollDecks(): void {
             exitCover.style.setProperty('--deck-cover-progress', coverProgress.toFixed(3));
             const exitY = Math.min(10, Math.max(-36, (stageRect.bottom - viewH * 0.36) * -0.14));
             exitCover.style.setProperty('--deck-cover-y', exitY.toFixed(1));
-        }
-
-        if (entryCover) {
-            const entryRect = entryCover.getBoundingClientRect();
-            const overlap = entryRect.bottom - stageRect.top;
-            const approach = Math.min(1, Math.max(0, overlap / (viewH * 0.38)));
-            entryCover.style.setProperty('--deck-entry-shadow', approach.toFixed(3));
-            const entryY = approach > 0 ? Math.min(14, overlap * 0.035) : 0;
-            entryCover.style.setProperty('--deck-entry-y', entryY.toFixed(1));
         }
     });
 }
