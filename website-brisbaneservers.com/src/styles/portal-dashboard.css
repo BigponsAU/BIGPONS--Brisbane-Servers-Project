@@ -1477,30 +1477,61 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   order: 0;
 }
 
-.account-workspace-shell .resources-panel-layout > .resource-voice-profile-bar {
+.account-workspace-shell .resources-panel-layout > .resources-workspace-band {
   order: 1;
 }
 
-.account-workspace-shell .resources-panel-layout > .resource-workspace-section {
+.account-workspace-shell .resources-panel-layout > .resources-create-band {
   order: 2;
 }
 
-.account-workspace-shell .resources-panel-layout > .resources-create-panel {
-  order: 4;
+.account-workspace-shell .resources-workspace-band .admin-section,
+.account-workspace-shell .resources-create-band .admin-section {
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
+
+.account-workspace-shell .account-workspace-panel-band {
+  margin-bottom: var(--space-lg);
+}
+
+.account-workspace-shell .admin-section--in-band {
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.account-workspace-shell .admin-section--in-band::before,
+.account-workspace-shell .admin-section--in-band::after {
+  display: none;
+}
+
+.account-workspace-shell .account-workspace-panel-band__header .section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
 
 @media (min-width: 56rem) {
   .account-workspace-shell .resources-panel-layout {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: var(--space-lg);
-    align-items: start;
   }
 
   .account-workspace-shell .resources-panel-layout > .contributor-resources-note,
-  .account-workspace-shell .resources-panel-layout > .resource-voice-profile-bar,
-  .account-workspace-shell .resources-panel-layout > .resource-workspace-section {
-    grid-column: 1 / -1;
+  .account-workspace-shell .resources-panel-layout > .resources-workspace-band,
+  .account-workspace-shell .resources-panel-layout > .resources-create-band {
+    width: 100%;
+  }
+
+  .account-workspace-shell .resources-panel-layout > .resources-create-panel,
+  .account-workspace-shell .resources-create-band .resources-create-panel {
+    margin: 0;
   }
 }
 

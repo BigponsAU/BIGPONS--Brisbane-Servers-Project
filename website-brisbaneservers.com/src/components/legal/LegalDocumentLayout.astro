@@ -1,0 +1,125 @@
+---
+import PageHero from '../PageHero.astro';
+import MarketingPageBands from '../MarketingPageBands.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import SiteLink from '../SiteLink.astro';
+
+export interface LegalTocItem {
+  id: string;
+  number: number;
+  title: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead: string;
+  lastUpdated: string;
+  jurisdiction?: string;
+  framework?: string;
+  operatorNote?: string;
+  toc: LegalTocItem[];
+  relatedHref: string;
+  relatedTitle: string;
+  relatedDescription: string;
+}
+
+const {
+  eyebrow = 'Legal',
+  title,
+  lead,
+  lastUpdated,
+  jurisdiction = 'Queensland, Australia',
+  framework,
+  operatorNote,
+  toc,
+  relatedHref,
+  relatedTitle,
+  relatedDescription,
+} = Astro.props;
+---
+
+<PageHero eyebrow={eyebrow} title={title} lead={lead}>
+  <div class="legal-hero-meta" role="list" aria-label="Document metadata">
+    <span class="legal-hero-chip" role="listitem">
+      <span class="legal-hero-chip__label">Updated</span>
+      <span class="legal-hero-chip__value">{lastUpdated}</span>
+    </span>
+    <span class="legal-hero-chip" role="listitem">
+      <span class="legal-hero-chip__label">Jurisdiction</span>
+      <span class="legal-hero-chip__value">{jurisdiction}</span>
+    </span>
+    {framework && (
+      <span class="legal-hero-chip" role="listitem">
+        <span class="legal-hero-chip__label">Framework</span>
+        <span class="legal-hero-chip__value">{framework}</span>
+      </span>
+    )}
+    {operatorNote && (
+      <span class="legal-hero-chip legal-hero-chip--wide" role="listitem">
+        <span class="legal-hero-chip__label">Operator</span>
+        <span class="legal-hero-chip__value">{operatorNote}</span>
+      </span>
+    )}
+  </div>
+</PageHero>
+
+<MarketingPageBands class="marketing-page-bands--legal">
+  <section class="section section--continuation section-tartan-accent section-home-band--surface phi-line-symmetrical legal-document-band">
+    <SectionConstellationLayer variant="about" semanticKey="legal-document" tier="whisper" placement="top-right" />
+    <div class="bg-pattern-phi-grid bg-pattern-subtle" aria-hidden="true"></div>
+    <div class="phi-lateral-horizontal" aria-hidden="true"></div>
+
+    <div class="container legal-document">
+      <aside class="legal-document__aside" aria-label="On this page">
+        <nav class="legal-toc">
+          <p class="legal-toc__label">On this page</p>
+          <ol class="legal-toc__list">
+            {toc.map((item) => (
+              <li>
+                <a class="legal-toc__link" href={`#${item.id}`}>
+                  <span class="legal-toc__num" aria-hidden="true">{item.number}</span>
+                  <span class="legal-toc__text">{item.title}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <div class="legal-aside-card legal-aside-card--related">
+          <p class="legal-aside-card__eyebrow">Related</p>
+          <h3 class="legal-aside-card__title">
+            <SiteLink href={relatedHref}>{relatedTitle}</SiteLink>
+          </h3>
+          <p class="legal-aside-card__copy">{relatedDescription}</p>
+        </div>
+      </aside>
+
+      <div class="legal-document__main legal-page">
+        <slot />
+
+        <aside class="legal-contact-card" aria-labelledby="legal-contact-heading">
+          <div class="legal-contact-card__icon" aria-hidden="true">
+            <i class="fas fa-envelope-open-text"></i>
+          </div>
+          <div class="legal-contact-card__content">
+            <h2 class="legal-contact-card__title h4" id="legal-contact-heading">Questions or requests</h2>
+            <p class="legal-contact-card__copy">
+              For privacy requests, account issues, or questions about these documents, contact BIGPONS directly.
+            </p>
+            <div class="legal-contact-card__actions">
+              <a class="btn btn-primary btn-sm" href="mailto:bigpons@brisbaneservers.com">bigpons@brisbaneservers.com</a>
+              <a class="btn btn-secondary btn-sm" href="tel:+61490478864">0490 478 864</a>
+            </div>
+          </div>
+        </aside>
+
+        <nav class="legal-footer-nav" aria-label="Legal navigation">
+          <SiteLink href={relatedHref} class="legal-footer-nav__link">{relatedTitle}</SiteLink>
+          <span class="legal-footer-nav__sep" aria-hidden="true">·</span>
+          <SiteLink href="/" class="legal-footer-nav__link">Home</SiteLink>
+        </nav>
+      </div>
+    </div>
+  </section>
+</MarketingPageBands>

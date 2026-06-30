@@ -4,6 +4,8 @@
 import { workspaceFetch } from '../lib/client-api';
 import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
+import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 
 interface UsageMeResponse {
   success: boolean;
@@ -12,7 +14,16 @@ interface UsageMeResponse {
   workersAiConfigured?: boolean;
   nvidiaConfigured?: boolean;
   nvidiaModel?: string;
-  daily?: { cap: number; used: number; remaining: number; bonus?: number };
+  stripeConfigured?: boolean;
+  subscription?: { active?: boolean; status?: string; dailyBonusUnits?: number };
+  daily?: {
+    cap: number;
+    used: number;
+    remaining: number;
+    bonus?: number;
+    subscriptionBonus?: number;
+    baseCap?: number;
+  };
 }
 
 function hasSession(ctx: PortalAccountContext): boolean {
@@ -89,6 +100,13 @@ export async function loadTokenRedemptionQueue(ctx?: PortalAccountContext): Prom
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-fulfill-redemption');
         if (!id) return;
+        const ok = await showConfirmDialog({
+          title: 'Mark redemption fulfilled',
+          message: 'Mark this token redemption as manually completed?',
+          confirmLabel: 'Mark done',
+          variant: 'primary',
+        });
+        if (!ok) return;
         btn.disabled = true;
         if (statusEl) statusEl.textContent = 'Updating…';
         try {
@@ -117,6 +135,7 @@ export async function loadTokenRedemptionQueue(ctx?: PortalAccountContext): Prom
 }
 
 export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<void> {
+  trackPortalAction('loadAdminOpsPanel');
   const summaryEl = document.getElementById('admin-ops-usage-summary');
   const metaEl = document.getElementById('admin-ops-usage-meta');
   const barWrap = document.getElementById('admin-ops-usage-bar-wrap');
@@ -147,11 +166,13 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
 
     const { cap, used, remaining } = data.daily;
     const bonus = data.daily.bonus ?? 0;
+    const subscriptionBonus = data.daily.subscriptionBonus ?? 0;
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
-    summaryEl.textContent =
-      bonus > 0
-        ? `${used} of ${cap} daily AI units used (${remaining} remaining, incl. ${bonus} token bonus)`
-        : `${used} of ${cap} daily AI units used (${remaining} remaining)`;
+    const bonusParts: string[] = [];
+    if (bonus > 0) bonusParts.push(`${bonus} token`);
+    if (subscriptionBonus > 0) bonusParts.push(`${subscriptionBonus} subscription`);
+    const bonusLabel = bonusParts.length ? ` (${bonusParts.join(' + ')} bonus)` : '';
+    summaryEl.textContent = `${used} of ${cap} daily AI units used (${remaining} remaining)${bonusLabel}`;
 
     if (barWrap && barFill) {
       barWrap.hidden = false;
@@ -164,6 +185,11 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
       const parts: string[] = [`Active provider: ${provider}.`];
       if (data.nvidiaConfigured) {
         parts.push(`NVIDIA NIM${data.nvidiaModel ? ` (${data.nvidiaModel})` : ''} configured.`);
+      }
+      if (data.subscription?.active) {
+        parts.push(`Stripe AI Boost active (+${data.subscription.dailyBonusUnits ?? 0}/day).`);
+      } else if (data.stripeConfigured) {
+        parts.push('Stripe checkout available for users at cap.');
       }
       if (data.workersAiConfigured) {
         parts.push('Workers AI fallback available.');
@@ -180,6 +206,72 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
 
   await loadTokenRedemptionQueue(accountCtx);
   await loadSearchCorpusPanel(accountCtx);
+  await loadAdminBillingStatus(accountCtx);
+}
+
+async function loadAdminBillingStatus(ctx: PortalAccountContext): Promise<void> {
+  const el = document.getElementById('admin-ops-stripe-status');
+  if (!el || !hasSession(ctx)) return;
+  try {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/billing/status`);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      el.textContent = 'Billing status unavailable.';
+      return;
+    }
+    if (!data.stripeConfigured) {
+      el.textContent =
+        'Stripe not configured — set STRIPE_SECRET_KEY, STRIPE_AI_BOOST_PRICE_ID, and STRIPE_WEBHOOK_SECRET on the edge worker.';
+      return;
+    }
+    el.textContent = data.subscription?.active
+      ? `Your subscription: active (+${data.subscription.dailyBonusUnits ?? 0} daily units).`
+      : 'Stripe checkout is live. Webhook: POST /api/billing/webhook';
+  } catch {
+    el.textContent = 'Could not load billing status.';
+  }
+}
+
+async function submitAdminUsageGrant(ctx: PortalAccountContext, event: Event): Promise<void> {
+  event.preventDefault();
+  const email = (document.getElementById('admin-usage-grant-email') as HTMLInputElement | null)?.value.trim();
+  const units = Number((document.getElementById('admin-usage-grant-units') as HTMLInputElement | null)?.value);
+  const note = (document.getElementById('admin-usage-grant-note') as HTMLInputElement | null)?.value.trim();
+  const statusEl = document.getElementById('admin-usage-grant-status');
+  if (!email || !Number.isFinite(units)) return;
+
+  const ok = await showConfirmDialog({
+    title: 'Grant AI usage units',
+    message: `Grant ${units} bonus AI unit(s) to ${email} for today (UTC)?`,
+    confirmLabel: 'Grant',
+    variant: 'primary',
+  });
+  if (!ok) return;
+
+  trackPortalAction('grantAiUsageUnits');
+  if (statusEl) statusEl.textContent = 'Granting…';
+  try {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/usage/grant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, units, note: note || undefined }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      trackPortalError('grantAiUsageUnits', new Error(data.error || 'Grant failed'));
+      if (statusEl) statusEl.textContent = data.error || 'Grant failed.';
+      return;
+    }
+    if (statusEl) {
+      statusEl.textContent = `Granted ${data.unitsGranted} unit(s) to ${data.email}.`;
+    }
+    (document.getElementById('admin-usage-grant-form') as HTMLFormElement | null)?.reset();
+    const unitsInput = document.getElementById('admin-usage-grant-units') as HTMLInputElement | null;
+    if (unitsInput) unitsInput.value = '5';
+  } catch (error) {
+    trackPortalError('grantAiUsageUnits', error);
+    if (statusEl) statusEl.textContent = 'Network error.';
+  }
 }
 
 interface SearchCorpusResponse {
@@ -275,5 +367,8 @@ export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void 
   });
   document.getElementById('refresh-admin-ops-search-corpus')?.addEventListener('click', () => {
     void loadSearchCorpusPanel(resolveCtx());
+  });
+  document.getElementById('admin-usage-grant-form')?.addEventListener('submit', (e) => {
+    void submitAdminUsageGrant(resolveCtx(), e);
   });
 }

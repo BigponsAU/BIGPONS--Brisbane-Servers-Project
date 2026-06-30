@@ -1,7 +1,10 @@
 ---
 import { industries } from '../../data/industries';
+import SectionIntro from '../SectionIntro.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import { accountWorkspace } from '../../data/account-workspace';
 ---
-              <div id="resources-panel" class="portal-panel" role="main" aria-label="Resources management" style="display: none;">
+              <div id="resources-panel" class="portal-panel panel-shell" role="main" aria-label="Resources management" style="display: none;">
                 <div class="admin-content resources-panel-layout">
 
                   <!-- Resources Panel Content -->
@@ -14,7 +17,17 @@ import { industries } from '../../data/industries';
               </p>
             </div>
           </section>
-          <section class="admin-section resource-voice-profile-bar" data-min-role="editor" aria-labelledby="resource-voice-profile-heading">
+
+          <!-- Create tools (marketing band) -->
+          <div class="resources-create-band section section-tartan-accent section-home-band--primary-light account-workspace-panel-section" data-min-role="editor">
+            <div class="container account-workspace-panel-inner">
+              <SectionIntro
+                eyebrow="Create"
+                title="Upload, generate &amp; rewrite"
+                byline="Voice-aligned tools for new resources — documents, files, paste, and AI generate."
+                titleId="resources-create-heading"
+              />
+          <section class="admin-section resource-voice-profile-bar" aria-labelledby="resource-voice-profile-heading">
             <div class="resource-voice-profile-row card">
               <div class="resource-voice-profile-row__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -261,14 +274,22 @@ import { industries } from '../../data/industries';
             </div>
             </div>
           </section>
+            </div>
+          </div>
 
-          <!-- Resources Workspace (primary surface — shown above create tools) -->
+          <!-- Resource workspace (primary marketing band) -->
+          <div class="resources-workspace-band section section-tartan-accent section-home-band--surface account-workspace-panel-section">
+            <SectionConstellationLayer variant="solutions" semanticKey="account-resources-workspace" tier="whisper" placement="top-right" />
+            <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+            <div class="container account-workspace-panel-inner">
           <section class="admin-section resource-workspace-section" aria-labelledby="resources-heading">
             <div class="section-header section-header--workspace">
-              <div>
-                <h2 id="resources-heading">Resource Workspace</h2>
-                <p class="section-subtitle">Browse the tree, open a resource to refine it, or use the create panels below.</p>
-              </div>
+              <SectionIntro
+                eyebrow={accountWorkspace.productNameShort}
+                title="Resource workspace"
+                byline="Browse the tree, open a resource to refine it, or switch to list view."
+                titleId="resources-heading"
+              />
               <div class="section-actions">
                 <button id="refresh-resources" class="btn btn-secondary btn-sm" aria-label="Refresh resources">
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -473,5 +494,7 @@ import { industries } from '../../data/industries';
               </div>
             </div>
           </section>
+            </div>
+          </div>
         </div>
               </div>

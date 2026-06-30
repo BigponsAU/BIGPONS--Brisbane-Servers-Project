@@ -4,7 +4,7 @@ import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 import { portalVoiceRules } from '../../lib/portal-voice-framework';
 ---
-              <div id="dashboard-panel" class="portal-panel active" role="main" aria-label="Workspace overview">
+              <div id="dashboard-panel" class="portal-panel panel-shell active" role="main" aria-label="Workspace overview">
                 <div class="admin-content">
                   <section class="section section-tartan-accent section-home-band--surface account-workspace-panel-section" aria-labelledby="workspace-greeting">
                     <SectionConstellationLayer variant="solutions" semanticKey="account-overview" tier="whisper" placement="top-right" />
@@ -83,6 +83,15 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                     </div>
 
                     <div class="client-insights" aria-live="polite">
+                      <div id="client-ai-usage-card" class="client-token-card client-ai-usage-card">
+                        <h3>Daily AI usage</h3>
+                        <p id="client-ai-usage-summary" class="client-token-help">Loading…</p>
+                        <p id="client-ai-usage-meta" class="form-hint"></p>
+                        <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary btn-sm" hidden>
+                          Upgrade AI cap (Stripe)
+                        </button>
+                        <p id="client-ai-billing-status" class="status-message" role="status" aria-live="polite"></p>
+                      </div>
                       <div class="client-token-card">
                         <h3>Your contribution tokens</h3>
                         <p class="client-token-balance">

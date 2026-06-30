@@ -1,23 +1,25 @@
 ---
 import { accountWorkspace } from '../../data/account-workspace';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 ---
 
 <div id="admin-ops-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Admin operations" style="display: none;">
   <div class="admin-content admin-ops-panel-shell">
-    <section class="admin-section" aria-labelledby="admin-ops-heading">
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="admin-ops-heading">{accountWorkspace.adminOpsLabel}</h2>
-          <p class="section-subtitle">
-            AI usage caps, corpus health, token redemptions, and platform ops. Stripe subscriptions ship after portal stabilisation.
-          </p>
-        </div>
-        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('site-review')">Site review</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-admin-ops"
+      eyebrow="Platform"
+      title={accountWorkspace.adminOpsLabel}
+      byline="AI usage caps, corpus health, token redemptions, Stripe AI boost, and platform ops."
+      titleId="admin-ops-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('site-review')">Site review</button>
       </div>
+
+    <section class="admin-section admin-section--in-band" aria-labelledby="admin-ops-heading">
 
       <details class="panel-guidance-details">
         <summary>Ops overview</summary>
@@ -98,13 +100,26 @@ import { accountWorkspace } from '../../data/account-workspace';
         </details>
 
         <details class="card admin-ops-card admin-ops-card--collapsible">
-          <summary class="card-title">Top up (PayID) — billing preview</summary>
+          <summary class="card-title">AI cap top-up</summary>
           <div class="admin-ops-card__body">
             <p class="section-subtitle">
-              After daily cap: request extra units via PayID. Reference format:
-              <code>BS-{`{userId}`}-TOPUP</code>. Admin grants units after payment clears.
+              <strong>Stripe:</strong> Users subscribe for +15 daily AI units when checkout is configured
+              (<code>STRIPE_SECRET_KEY</code>, <code>STRIPE_AI_BOOST_PRICE_ID</code>, <code>STRIPE_WEBHOOK_SECRET</code>).
             </p>
-            <p class="form-hint">Stripe subscription checkout — planned post-portal (see <code>FEATURES_NOT_BUILT.md</code>).</p>
+            <p class="form-hint" id="admin-ops-stripe-status" aria-live="polite">Checking billing configuration…</p>
+            <hr class="admin-ops-divider" />
+            <p class="section-subtitle"><strong>PayID manual grant</strong> — add units after payment clears.</p>
+            <form id="admin-usage-grant-form" class="admin-usage-grant-form">
+              <label class="form-label" for="admin-usage-grant-email">User email</label>
+              <input id="admin-usage-grant-email" class="form-input" type="email" required autocomplete="off" />
+              <label class="form-label" for="admin-usage-grant-units">Bonus units (1–50, today UTC)</label>
+              <input id="admin-usage-grant-units" class="form-input" type="number" min="1" max="50" value="5" required />
+              <label class="form-label" for="admin-usage-grant-note">Note (optional)</label>
+              <input id="admin-usage-grant-note" class="form-input" type="text" placeholder="PayID ref BS-user-TOPUP" />
+              <button type="submit" class="btn btn-primary btn-sm">Grant units</button>
+            </form>
+            <p id="admin-usage-grant-status" class="form-hint" role="status" aria-live="polite"></p>
+            <p class="form-hint">PayID reference format: <code>BS-{`{userId}`}-TOPUP</code></p>
           </div>
         </details>
 
@@ -118,5 +133,6 @@ import { accountWorkspace } from '../../data/account-workspace';
         </details>
       </div>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

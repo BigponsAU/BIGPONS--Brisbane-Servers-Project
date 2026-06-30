@@ -1,0 +1,53 @@
+---
+/**
+ * Shared marketing-band shell for /account panels (matches Overview + Resources).
+ */
+import SectionIntro from '../SectionIntro.astro';
+import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+
+interface Props {
+  variant?: 'surface' | 'primary-light';
+  semanticKey: string;
+  eyebrow: string;
+  title: string;
+  byline?: string;
+  titleId: string;
+  constellationVariant?: string;
+  class?: string;
+}
+
+const {
+  variant = 'surface',
+  semanticKey,
+  eyebrow,
+  title,
+  byline,
+  titleId,
+  constellationVariant = 'solutions',
+  class: className = '',
+} = Astro.props;
+
+const bandTone =
+  variant === 'primary-light' ? 'section-home-band--primary-light' : 'section-home-band--surface';
+---
+
+<div
+  class:list={[
+    'account-workspace-panel-band',
+    'section',
+    'section-tartan-accent',
+    bandTone,
+    'account-workspace-panel-section',
+    className,
+  ]}
+>
+  <SectionConstellationLayer variant={constellationVariant} semanticKey={semanticKey} tier="whisper" placement="top-right" />
+  <div class="bg-pattern-phi-radial bg-pattern-subtle"></div>
+  <div class="container account-workspace-panel-inner">
+    <div class="section-header section-header--workspace account-workspace-panel-band__header">
+      <SectionIntro eyebrow={eyebrow} title={title} byline={byline} titleId={titleId} />
+      <slot name="actions" />
+    </div>
+    <slot />
+  </div>
+</div>

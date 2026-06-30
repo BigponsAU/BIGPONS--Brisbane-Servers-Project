@@ -1,0 +1,19 @@
+---
+interface Props {
+  id: string;
+  number: number;
+  title: string;
+}
+
+const { id, number, title } = Astro.props;
+---
+
+<article class="legal-section" id={id} aria-labelledby={`${id}-heading`}>
+  <header class="legal-section__header">
+    <span class="legal-section__number" aria-hidden="true">{number}</span>
+    <h2 class="legal-section__title h3" id={`${id}-heading`}>{title}</h2>
+  </header>
+  <div class="legal-section__body">
+    <slot />
+  </div>
+</article>

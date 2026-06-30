@@ -3,18 +3,27 @@ export const prerender = true;
 
 import '../styles/legal-pages.css';
 import SiteShell from '../layouts/SiteShell.astro';
-import PageHero from '../components/PageHero.astro';
-import MarketingPageBands from '../components/MarketingPageBands.astro';
-import SiteLink from '../components/SiteLink.astro';
+import LegalDocumentLayout from '../components/legal/LegalDocumentLayout.astro';
+import LegalSection from '../components/legal/LegalSection.astro';
 import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/privacy-policy';
 const pageDescriptor = getPageDescriptor(currentPath);
+
+const toc = [
+  { id: 'collection', number: 1, title: 'What we collect' },
+  { id: 'how-we-collect', number: 2, title: 'How we collect' },
+  { id: 'why-we-use', number: 3, title: 'Why we use data' },
+  { id: 'disclosure', number: 4, title: 'Disclosure' },
+  { id: 'security-retention', number: 5, title: 'Security & retention' },
+  { id: 'your-rights', number: 6, title: 'Your rights' },
+  { id: 'cookies', number: 7, title: 'Cookies & tracking' },
+];
 ---
 
 <SiteShell
   title="Privacy policy"
-  description="Privacy practices for the Brisbane Servers website and account workspace — cookies, analytics, retention, and your choices. BIGPONS technology project."
+  description="How BIGPONS collects, uses, and protects personal information for brisbaneservers.com and the account workspace — Australian Privacy Principles, cookies, retention, and your rights."
   currentPath={currentPath}
   pageId={pageDescriptor.pageId}
   shellVariant={pageDescriptor.shellVariant}
@@ -23,51 +32,62 @@ const pageDescriptor = getPageDescriptor(currentPath);
   density={pageDescriptor.density}
   mainClass="main-phi-chassis"
 >
-  <PageHero
-    eyebrow="Legal"
+  <LegalDocumentLayout
+    eyebrow="Legal · BIGPONS"
     title="Privacy Policy"
-    lead="Last updated: March 2026. Brisbane Servers is operated by BIGPONS (ABN 93 297 393 962). This page summarises how we handle privacy across this website and related services. It is general information, not legal advice."
-  />
+    lead="BIGPONS respects your privacy and is committed to protecting personal information when you use brisbaneservers.com and the associated account workspace."
+    lastUpdated="June 2026"
+    framework="Privacy Act 1988 (Cth) · APPs"
+    operatorNote="BIGPONS · ABN 93 297 393 962"
+    toc={toc}
+    relatedHref="/terms-of-service"
+    relatedTitle="Terms of Service"
+    relatedDescription="Eligibility, acceptable use, user content, AI features, and platform agreements."
+  >
+    <LegalSection id="collection" number={1} title="What Personal Information We Collect">
+      <ul class="legal-list">
+        <li><strong>Account information:</strong> name, email address, password (hashed), organisation details, role (client/editor/admin), contact phone.</li>
+        <li><strong>Usage &amp; technical data:</strong> IP address, browser/device information, login timestamps, navigation within the workspace, feature usage (resources created, voice profiles used, analytics viewed).</li>
+        <li><strong>User-generated content:</strong> documents uploaded for OCR/rewrite, text/paste content, voice profile data (corpus, rings, matrix, recordings if any), resource metadata and content you create or contribute.</li>
+        <li><strong>Analytics &amp; performance data:</strong> corpus statistics, suggestion interactions, pipeline configuration choices (non-identifying where possible).</li>
+        <li><strong>Moderation &amp; admin data:</strong> flags, review notes, and actions taken on content (for users with appropriate roles).</li>
+      </ul>
+    </LegalSection>
 
-    <MarketingPageBands>
-    <section class="section section--continuation section-tartan-accent section-home-band--surface phi-line-symmetrical">
-      <div class="container phi-measure-prose">
+    <LegalSection id="how-we-collect" number={2} title="How We Collect Personal Information">
+      <p class="text-content">
+        Directly from you when you create an account, sign in (email, Google, passkeys), upload content, create resources or voice profiles, or contact us. Automatically through cookies, server logs, and platform analytics when you use the site and workspace. From third-party sign-in providers (Google, passkey providers) with your consent.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Information we may collect</h2>
-        <p class="text-content">
-          Depending on how you use this site or your account workspace, we may process information you provide (for example, via forms or account registration), technical data such as IP address and browser type, and usage data used to keep services secure and reliable.
-        </p>
+    <LegalSection id="why-we-use" number={3} title="Why We Collect and Use Personal Information">
+      <p class="text-content">
+        To provide and improve the account workspace and Local Data Pipeline Solutions; to authenticate users and enforce role-based access; to enable core features (resource management, voice studio, OCR, analytics, moderation); to communicate with you about your account, updates, or support; to maintain platform security, prevent abuse, and comply with legal obligations; to analyse usage for product improvement and to support our recurring revenue and infrastructure scaling plans; and to meet grant, tender, or regulatory reporting requirements where applicable.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Cookies and similar technologies</h2>
-        <p class="text-content">
-          We use cookies and local storage for essential operation, preference management (including cookie consent), and aggregate traffic insights. You can manage cookies in your browser settings and through the cookie banner when shown.
-        </p>
+    <LegalSection id="disclosure" number={4} title="Disclosure of Personal Information">
+      <p class="text-content">
+        We may disclose personal information to: service providers who help us operate the platform (hosting, analytics, email delivery) under confidentiality obligations; moderators or admins within BIGPONS for content review and platform governance; law enforcement or regulators where required by law; and in connection with a business transition (e.g. Pty Ltd incorporation) with appropriate protections. We do not sell personal information. Some processing occurs via Cloudflare (edge infrastructure) — overseas disclosure is limited to what is necessary for service delivery and subject to APP 8 requirements.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Third parties</h2>
-        <p class="text-content">
-          Some functionality relies on trusted third-party services (for example, hosting and analytics). Those providers process data under their own terms and privacy policies, alongside the practices summarised here.
-        </p>
+    <LegalSection id="security-retention" number={5} title="Data Security &amp; Retention">
+      <p class="text-content">
+        We take reasonable steps to protect personal information from misuse, interference, loss, unauthorised access, modification or disclosure. This includes encryption in transit, access controls, role-based permissions, and secure coding practices. We retain personal information only as long as necessary for the purposes described or as required by law. You may request deletion of your account and associated data (subject to legal or legitimate business retention needs, e.g. moderation records).
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Retention and security</h2>
-        <p class="text-content">
-          We retain information only for as long as required for the purposes described, legal obligations, or dispute resolution. We apply reasonable technical and organisational safeguards, noting that no online service can guarantee absolute security.
-        </p>
+    <LegalSection id="your-rights" number={6} title="Your Rights &amp; Access">
+      <p class="text-content">
+        You may request access to, or correction of, your personal information held by us. You may also complain about a breach of the APPs. Contact us at <a href="mailto:bigpons@brisbaneservers.com">bigpons@brisbaneservers.com</a> or <a href="tel:+61490478864">0490 478 864</a>. If you are not satisfied with our response, you may complain to the Office of the Australian Information Commissioner (OAIC) at <a href="https://www.oaic.gov.au" rel="noopener noreferrer">www.oaic.gov.au</a>.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Your choices</h2>
-        <p class="text-content">
-          Where applicable, you may request access to or correction of personal information we hold, or raise concerns using the contact details on this site. For Australian Privacy Principles enquiries, we respond in accordance with applicable law.
-        </p>
-
-        <h2 class="h3 legal-h2">Contact</h2>
-        <p class="text-content">
-          Questions about this policy: <a href="mailto:support@brisbaneservers.com">support@brisbaneservers.com</a>
-        </p>
-
-        <p class="text-content legal-nav">
-          <SiteLink href="/terms-of-service">Terms of Service</SiteLink>
-          · <SiteLink href="/">Home</SiteLink>
-        </p>
-      </div>
-    </section>
-    </MarketingPageBands>
+    <LegalSection id="cookies" number={7} title="Cookies &amp; Tracking">
+      <p class="text-content">
+        We use essential cookies for authentication, session management, and security. We may use analytics cookies to understand usage patterns and improve the platform. You can control non-essential cookies through your browser settings, though this may affect functionality.
+      </p>
+    </LegalSection>
+  </LegalDocumentLayout>
 </SiteShell>

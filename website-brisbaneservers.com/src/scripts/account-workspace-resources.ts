@@ -14,7 +14,9 @@ import {
 import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
 import { buildResourcesListUrl } from './account-workspace-resource-api';
 import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 import { mountMarkdownFields, readMarkdownFieldValue } from './workspace-markdown-field';
+import { portalActionFailure } from './portal-action';
 import { wrapMarkdownDocument } from '../lib/markdown-render';
 import type { VoiceContextApi } from './account-workspace-voice-context';
 
@@ -158,6 +160,7 @@ function setupResourceFilters(): void {
 // Generate resource
 document.getElementById('generate-resource-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  trackPortalAction('generateResource');
   const form = e.target as HTMLFormElement;
   const formData = new FormData(form);
   
@@ -217,6 +220,7 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
       }, 500);
     } else {
       const errorMsg = data.error || 'Generation failed';
+      portalActionFailure('generateResource', new Error(errorMsg));
       if (statusDiv) {
         statusDiv.textContent = errorMsg;
         statusDiv.className = 'status-message error';
@@ -225,6 +229,7 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
       console.error('[Portal] Resource generation failed:', data);
     }
     } catch (error) {
+      portalActionFailure('generateResource', error);
       if (statusDiv) {
         statusDiv.textContent = 'Connection error. Please try again.';
         statusDiv.className = 'status-message error';
@@ -1832,6 +1837,7 @@ function closeEditModal(): void {
 // Edit form submission
 document.getElementById('edit-resource-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  trackPortalAction('saveResource');
   const form = e.target as HTMLFormElement;
   const formData = new FormData(form);
   const id = (document.getElementById('edit-resource-id') as HTMLInputElement)!.value;
@@ -1885,6 +1891,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
       setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
     } else {
       const errorMsg = data.error || 'Unknown error';
+      portalActionFailure('saveResource', new Error(errorMsg));
       console.error('[Portal] Failed to update resource:', errorMsg);
       showNotification('Failed to update resource: ' + errorMsg, 'error');
       if (submitBtn && originalText) {
@@ -1893,6 +1900,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
       }
     }
   } catch (error) {
+    portalActionFailure('saveResource', error);
     showNotification('Connection error. Please try again.', 'error');
     console.error('[Portal] Update error:', error);
     if (submitBtn && originalText) {
@@ -2348,6 +2356,7 @@ initDocumentWorkspace();
 // Upload Resource Handler
 document.getElementById('upload-resource-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  trackPortalAction('uploadResource');
   const form = e.target as HTMLFormElement;
   const formData = new FormData(form);
   

@@ -3,18 +3,31 @@ export const prerender = true;
 
 import '../styles/legal-pages.css';
 import SiteShell from '../layouts/SiteShell.astro';
-import PageHero from '../components/PageHero.astro';
-import MarketingPageBands from '../components/MarketingPageBands.astro';
-import SiteLink from '../components/SiteLink.astro';
+import LegalDocumentLayout from '../components/legal/LegalDocumentLayout.astro';
+import LegalSection from '../components/legal/LegalSection.astro';
 import { getPageDescriptor } from '../lib/page-descriptors';
 
 const currentPath = '/terms-of-service';
 const pageDescriptor = getPageDescriptor(currentPath);
+
+const toc = [
+  { id: 'eligibility', number: 1, title: 'Eligibility & registration' },
+  { id: 'acceptable-use', number: 2, title: 'Acceptable use' },
+  { id: 'user-content', number: 3, title: 'User content & IP' },
+  { id: 'ai-features', number: 4, title: 'Voice studio & AI' },
+  { id: 'billing', number: 5, title: 'Fees & billing' },
+  { id: 'termination', number: 6, title: 'Termination' },
+  { id: 'liability', number: 7, title: 'Disclaimers & liability' },
+  { id: 'indemnity', number: 8, title: 'Indemnity' },
+  { id: 'governing-law', number: 9, title: 'Governing law' },
+  { id: 'changes', number: 10, title: 'Changes to terms' },
+  { id: 'contact', number: 11, title: 'Contact' },
+];
 ---
 
 <SiteShell
   title="Terms of service"
-  description="Terms of use for the Brisbane Servers website, account workspace, and related tools — a BIGPONS technology project."
+  description="Terms governing use of brisbaneservers.com and the BIGPONS account workspace — eligibility, acceptable use, user content, AI features, billing, and Queensland law."
   currentPath={currentPath}
   pageId={pageDescriptor.pageId}
   shellVariant={pageDescriptor.shellVariant}
@@ -23,56 +36,91 @@ const pageDescriptor = getPageDescriptor(currentPath);
   density={pageDescriptor.density}
   mainClass="main-phi-chassis"
 >
-  <PageHero
-    eyebrow="Legal"
+  <LegalDocumentLayout
+    eyebrow="Legal · BIGPONS"
     title="Terms of Service"
-    lead="Last updated: March 2026. By using this website, you agree to these terms. If you do not agree, please do not use the site. This summary is general information and not a substitute for independent legal advice."
-  />
+    lead="These Terms govern your access to and use of brisbaneservers.com and the BIGPONS account workspace (the &quot;Platform&quot;). By creating an account or using the Platform you agree to these Terms."
+    lastUpdated="June 2026"
+    framework="Queensland law · Australian Consumer Law"
+    operatorNote="BIGPONS · ABN 93 297 393 962"
+    toc={toc}
+    relatedHref="/privacy-policy"
+    relatedTitle="Privacy Policy"
+    relatedDescription="How we collect, use, disclose, and protect personal information across the platform."
+  >
+    <LegalSection id="eligibility" number={1} title="Eligibility &amp; Account Registration">
+      <p class="text-content">
+        You must be at least 18 years old and have authority to enter into this agreement on behalf of any organisation you represent. You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account. Notify us immediately of any unauthorised use. We may suspend or terminate accounts that violate these Terms or for platform integrity reasons.
+      </p>
+    </LegalSection>
 
-    <MarketingPageBands>
-    <section class="section section--continuation section-tartan-accent section-home-band--surface phi-line-symmetrical">
-      <div class="container phi-measure-prose">
+    <LegalSection id="acceptable-use" number={2} title="Acceptable Use">
+      <p class="text-content">You agree not to:</p>
+      <ul class="legal-list">
+        <li>use the Platform for any unlawful purpose or in breach of Australian law (including Privacy Act, Copyright Act, Crimes Act);</li>
+        <li>upload, generate or share content that is illegal, defamatory, infringing, or harmful;</li>
+        <li>attempt to reverse engineer, decompile, or interfere with the Platform&apos;s operation or security;</li>
+        <li>abuse AI/voice generation, OCR, or other features (e.g. bulk automated scraping, spam, or malicious input);</li>
+        <li>impersonate others or misrepresent affiliation; or</li>
+        <li>interfere with other users&apos; access or the moderation system.</li>
+      </ul>
+      <p class="text-content">
+        We reserve the right to remove content and suspend accounts that breach these rules.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Use of the site</h2>
-        <p class="text-content">
-          You may use the public website for lawful purposes and in ways that do not damage, disable, or impair the service or others' access. We may suspend or restrict access where required to protect security, integrity, or legal compliance.
-        </p>
+    <LegalSection id="user-content" number={3} title="User Content &amp; Intellectual Property">
+      <p class="text-content">
+        You retain ownership of content you upload or create (&quot;User Content&quot;), subject to any separate agreement for paid services. By uploading or creating User Content you grant BIGPONS a non-exclusive, royalty-free, worldwide licence to host, display, process, moderate, and use that content solely as necessary to provide and improve the Platform and related services. You represent that you have all necessary rights to grant this licence and that User Content does not infringe third-party rights. BIGPONS retains all rights in the Platform, software, voice models, analytics systems, and any generated suggestions or templates (excluding your specific User Content).
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Information and disclaimers</h2>
-        <p class="text-content">
-          Content on this site is provided for general information. It is not professional, financial, or technical advice for your specific circumstances. Business and technology decisions should be validated with appropriately qualified advisers.
-        </p>
+    <LegalSection id="ai-features" number={4} title="Voice Studio, AI Features &amp; Generated Output">
+      <p class="text-content">
+        Voice profiles, Markov analysis, topology visualisations, and AI-assisted generation features are provided for legitimate professional and creative use within your organisation. You are responsible for reviewing and approving any generated output before use. BIGPONS does not guarantee accuracy, suitability, or non-infringement of generated content. Do not use these features to create misleading, harmful, or infringing material.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Accounts and workspace access</h2>
-        <p class="text-content">
-          Access to account workspace features and related tools may require registration. You are responsible for protecting credentials and for activity under your account. We may change, suspend, or withdraw features to maintain security and service quality.
-        </p>
+    <LegalSection id="billing" number={5} title="Fees, Billing &amp; Paid Services (Future)">
+      <p class="text-content">
+        Core platform access is currently provided as part of our technology consulting and Local Data Pipeline Solutions engagement. Paid tiers, billing via Stripe/PayID, and usage-based charges for advanced features will be introduced in accordance with published pricing (Starter/Growth/Enterprise). When billing is enabled, separate or updated terms will apply. You will be notified and given the opportunity to accept before charges commence.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Intellectual property</h2>
-        <p class="text-content">
-          Materials on this site (including branding, text, graphics, and software) are owned by Brisbane Servers / BIGPONS or relevant licensors and are protected by law. Unless we provide express permission, do not copy, scrape, or redistribute content for commercial use.
-        </p>
+    <LegalSection id="termination" number={6} title="Termination &amp; Suspension">
+      <p class="text-content">
+        You may terminate your account at any time by contacting us. We may suspend or terminate access if you breach these Terms, for non-payment (once billing is active), or to protect the Platform or other users. Upon termination, your right to use the Platform ends and we may delete or retain User Content in accordance with the Privacy Policy and legal obligations.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Limitation of liability</h2>
-        <p class="text-content">
-          To the maximum extent permitted under Australian law, we are not liable for indirect or consequential loss arising from site use. Where liability cannot be excluded, it is limited to resupply of the relevant service or payment of fees you paid for that service in the prior twelve months, if any.
-        </p>
+    <LegalSection id="liability" number={7} title="Disclaimers &amp; Limitation of Liability">
+      <p class="text-content">
+        The Platform is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, to the maximum extent permitted by law. We do not warrant uninterrupted or error-free operation or that the Platform will meet your specific requirements. To the maximum extent permitted by Australian Consumer Law and other applicable law, BIGPONS&apos; total liability arising out of or in connection with these Terms or the Platform is limited to the fees you have paid to BIGPONS in the 12 months preceding the claim (or $1,000 if no fees paid). We are not liable for indirect, incidental, special, or consequential damages, including loss of data, profits, or business opportunity, even if advised of the possibility.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Governing law</h2>
-        <p class="text-content">
-          These terms are governed by the laws of Queensland, Australia. Courts in Queensland have non-exclusive jurisdiction.
-        </p>
+    <LegalSection id="indemnity" number={8} title="Indemnity">
+      <p class="text-content">
+        You agree to indemnify and hold harmless BIGPONS, its officers and agents from any claims, losses, damages, liabilities, costs (including reasonable legal fees) arising from your use of the Platform, your User Content, or your breach of these Terms.
+      </p>
+    </LegalSection>
 
-        <h2 class="h3 legal-h2">Changes</h2>
-        <p class="text-content">
-          We may update these terms from time to time. The "Last updated" date will change when revisions are made. Continued use of the site after changes constitutes acceptance of the revised terms.
-        </p>
+    <LegalSection id="governing-law" number={9} title="Governing Law &amp; Disputes">
+      <p class="text-content">
+        These Terms are governed by the laws of Queensland, Australia. Any dispute arising under or in connection with these Terms or the Platform shall be subject to the exclusive jurisdiction of the courts of Queensland. You agree to attempt good-faith resolution (including mediation if appropriate) before commencing court proceedings.
+      </p>
+    </LegalSection>
 
-        <p class="text-content legal-nav">
-          <SiteLink href="/privacy-policy">Privacy Policy</SiteLink>
-          · <SiteLink href="/">Home</SiteLink>
-        </p>
-      </div>
-    </section>
-    </MarketingPageBands>
+    <LegalSection id="changes" number={10} title="Changes to These Terms">
+      <p class="text-content">
+        We may update these Terms from time to time. Material changes will be notified via email to registered users or prominent notice on the Platform. Continued use after the effective date constitutes acceptance of the updated Terms.
+      </p>
+    </LegalSection>
+
+    <LegalSection id="contact" number={11} title="Contact">
+      <p class="text-content">
+        For privacy requests, account issues, or questions about these Terms, contact us at <a href="mailto:bigpons@brisbaneservers.com">bigpons@brisbaneservers.com</a> or <a href="tel:+61490478864">0490 478 864</a>.
+      </p>
+    </LegalSection>
+  </LegalDocumentLayout>
 </SiteShell>

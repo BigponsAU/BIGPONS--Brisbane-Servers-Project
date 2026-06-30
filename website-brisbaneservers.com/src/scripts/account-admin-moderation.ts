@@ -5,6 +5,8 @@ import { workspaceFetch } from '../lib/client-api';
 import { escapeHtml } from './account-workspace-utils';
 import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
+import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction } from './portal-markov-tracker';
 
 export type ModerationItem = {
   id: string;
@@ -75,10 +77,29 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
   `;
 
   panel.querySelector('[data-moderation-approve]')?.addEventListener('click', () => {
-    void moderateContribution(ctx, item.id, 'approve');
+    void (async () => {
+      const ok = await showConfirmDialog({
+        title: 'Approve upload',
+        message: 'Publish this community contribution?',
+        details: 'Approved items become available in Resources and may appear on the public site when published.',
+        confirmLabel: 'Approve',
+        variant: 'primary',
+      });
+      if (!ok) return;
+      void moderateContribution(ctx, item.id, 'approve');
+    })();
   });
   panel.querySelector('[data-moderation-reject]')?.addEventListener('click', () => {
-    void moderateContribution(ctx, item.id, 'reject');
+    void (async () => {
+      const ok = await showConfirmDialog({
+        title: 'Reject upload',
+        message: 'Remove this contribution from the moderation queue?',
+        confirmLabel: 'Reject',
+        variant: 'danger',
+      });
+      if (!ok) return;
+      void moderateContribution(ctx, item.id, 'reject');
+    })();
   });
   panel.querySelector('[data-moderation-open]')?.addEventListener('click', () => {
     ctx.navigateToPanel('resources');
@@ -101,6 +122,7 @@ async function moderateContribution(
     return;
   }
   const endpoint = action === 'approve' ? 'approve' : 'reject';
+  trackPortalAction(action === 'approve' ? 'moderateContributionApprove' : 'moderateContributionReject');
   await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -110,6 +132,7 @@ async function moderateContribution(
 }
 
 export async function loadModerationQueue(ctx: PortalAccountContext): Promise<void> {
+  trackPortalAction('loadModerationQueue');
   const container = document.getElementById('moderation-queue');
   if (!container) return;
 

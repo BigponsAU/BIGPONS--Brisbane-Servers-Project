@@ -1,32 +1,33 @@
 ---
 import { accountWorkspace } from '../../data/account-workspace';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 ---
 
 <div id="admin-users-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Registered users" style="display: none;">
   <div class="admin-content admin-users-panel-shell">
-    <section class="admin-section" aria-labelledby="admin-users-heading">
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="admin-users-heading">Users &amp; sign-in audit</h2>
-          <p class="section-subtitle">
-            Registered accounts from Neon auth. Verification emails send from
-            <code>support@brisbaneservers.com</code> (Resend root domain).
-          </p>
-        </div>
-        <div class="section-actions admin-panel-quick-links admin-users-toolbar">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
-          <label class="sr-only" for="admin-users-search">Filter users</label>
-          <input
-            id="admin-users-search"
-            type="search"
-            class="form-input admin-users-search"
-            placeholder="Filter by email or role…"
-            autocomplete="off"
-          />
-          <button id="admin-users-export-btn" type="button" class="btn btn-secondary btn-sm">Export CSV</button>
-          <button id="admin-users-refresh-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-admin-users"
+      eyebrow="Platform"
+      title="Users &amp; sign-in audit"
+      byline="Registered accounts from Neon auth. Verification emails send from support@brisbaneservers.com (Resend root domain)."
+      titleId="admin-users-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links admin-users-toolbar">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
+        <label class="sr-only" for="admin-users-search">Filter users</label>
+        <input
+          id="admin-users-search"
+          type="search"
+          class="form-input admin-users-search"
+          placeholder="Filter by email or role…"
+          autocomplete="off"
+        />
+        <button id="admin-users-export-btn" type="button" class="btn btn-secondary btn-sm">Export CSV</button>
+        <button id="admin-users-refresh-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
       </div>
+
+    <section class="admin-section admin-section--in-band" aria-labelledby="admin-users-heading">
 
       <details class="panel-guidance-details">
         <summary>Roles &amp; workspace access</summary>
@@ -80,5 +81,6 @@ import { accountWorkspace } from '../../data/account-workspace';
         </table>
       </div>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

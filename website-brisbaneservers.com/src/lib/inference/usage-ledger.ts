@@ -6,6 +6,7 @@ import * as path from 'path';
 import { CORPUS_DOC_KEYS, readCorpusArray, saveCorpusJson } from '../corpus-store';
 import { voiceFrameworkStorageDir } from '../monorepo-root';
 import type { AuthRole } from '../../utils/auth';
+import { getSubscriptionDailyBonus } from '../billing/billing-accounts';
 
 export function getUsageLedgerFile(): string {
   return path.join(voiceFrameworkStorageDir(), 'usage-ledger.json');
@@ -109,7 +110,8 @@ export async function checkUsageCap(
 ): Promise<{ ok: true; remaining: number } | { ok: false; cap: number; used: number }> {
   const baseCap = DAILY_USAGE_CAP[role] ?? DAILY_USAGE_CAP.client;
   const bonus = await getDailyAiBonus(userId);
-  const cap = baseCap + bonus;
+  const subscriptionBonus = await getSubscriptionDailyBonus(userId);
+  const cap = baseCap + bonus + subscriptionBonus;
   const used = await getUserDailyUsage(userId);
   if (used + units > cap) {
     return { ok: false, cap, used };
@@ -132,10 +134,25 @@ export async function recordUsage(entry: Omit<UsageLedgerEntry, 'id' | 'createdA
 export async function getUserUsageSummary(
   userId: string,
   role: AuthRole
-): Promise<{ cap: number; used: number; remaining: number; bonus: number }> {
+): Promise<{
+  cap: number;
+  used: number;
+  remaining: number;
+  bonus: number;
+  subscriptionBonus: number;
+  baseCap: number;
+}> {
   const baseCap = DAILY_USAGE_CAP[role] ?? DAILY_USAGE_CAP.client;
   const bonus = await getDailyAiBonus(userId);
-  const cap = baseCap + bonus;
+  const subscriptionBonus = await getSubscriptionDailyBonus(userId);
+  const cap = baseCap + bonus + subscriptionBonus;
   const used = await getUserDailyUsage(userId);
-  return { cap, used, remaining: Math.max(0, cap - used), bonus };
+  return {
+    baseCap,
+    cap,
+    used,
+    remaining: Math.max(0, cap - used),
+    bonus,
+    subscriptionBonus,
+  };
 }

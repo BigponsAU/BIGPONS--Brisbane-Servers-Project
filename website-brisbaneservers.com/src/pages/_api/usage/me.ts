@@ -2,8 +2,10 @@ import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
 import { getUserUsageSummary } from '../../../lib/inference/usage-ledger';
 import { getInferenceProvider } from '../../../lib/inference/inference-provider';
-import { getNvidiaModelId, isNvidiaConfigured } from '../../../lib/inference/nvidia-ai-client';
+import { isNvidiaConfigured, getNvidiaModelId } from '../../../lib/inference/nvidia-ai-client';
 import { isWorkersAIConfigured } from '../../../lib/inference/workers-ai-client';
+import { isStripeConfigured } from '../../../lib/billing/stripe-config';
+import { findBillingAccountByUserId, isActiveSubscriptionStatus } from '../../../lib/billing/billing-accounts';
 
 /**
  * Daily AI usage summary for portal meter.
@@ -20,6 +22,10 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const summary = await getUserUsageSummary(authResult.user.id, authResult.user.role);
+    const billingAccount = await findBillingAccountByUserId(authResult.user.id);
+    const subscriptionActive = billingAccount
+      ? isActiveSubscriptionStatus(billingAccount.status)
+      : false;
     return new Response(
       JSON.stringify({
         success: true,
@@ -27,6 +33,12 @@ export const GET: APIRoute = async ({ request }) => {
         workersAiConfigured: isWorkersAIConfigured(),
         nvidiaConfigured: isNvidiaConfigured(),
         nvidiaModel: isNvidiaConfigured() ? getNvidiaModelId() : undefined,
+        stripeConfigured: isStripeConfigured(),
+        subscription: {
+          active: subscriptionActive,
+          status: billingAccount?.status ?? 'none',
+          dailyBonusUnits: summary.subscriptionBonus,
+        },
         daily: summary,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

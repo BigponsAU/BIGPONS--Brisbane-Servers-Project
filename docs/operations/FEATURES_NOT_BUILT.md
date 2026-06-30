@@ -12,11 +12,11 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Why not built yet |
 |---------|--------|-------------------|
-| **Stripe subscription** past daily AI cap | Planned | Portal auth, corpus, and inference metering had to stabilise first. Stripe needs webhook handling, customer portal, and alignment with daily `usage-ledger` caps — hybrid billing is a separate product slice. |
-| **PayID manual top-up** + admin grant | On hold | Deferred until Stripe/billing slice is scoped; manual flow documented for later. |
+| **Stripe subscription** past daily AI cap | **Live** | Checkout + webhook + `billing-accounts` corpus; +15 daily units when active. Requires `STRIPE_*` secrets on edge worker. |
+| **PayID manual top-up** + admin grant | **Live** | Admin Ops → AI cap top-up form; `POST /api/admin/usage/grant` |
 | **Automated credit purchase** | Not planned (short term) | Daily role-based caps + template fallback already prevent runaway cost on Workers AI free tier. Paid top-up is a business process, not a code gap. |
 
-**What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding on the edge worker.
+**What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding, **Stripe AI Boost checkout** (`POST /api/billing/checkout`), **PayID admin grant** (`POST /api/admin/usage/grant`).
 
 ---
 
@@ -39,7 +39,7 @@ This document records product and platform capabilities that are **deliberately 
 |---------|--------|-------|
 | **Earn tokens** | **Live** | Approved contributions + moderation adjustments |
 | **Redeem flat perks** | **Live** | Overview panel — AI boost, spotlight, office hours (no tiers) |
-| **Stripe / paid top-up** | Planned | See billing section above |
+| **Stripe / paid top-up** | **Live** | See billing section above |
 
 **What ships today:** `GET /api/tokens/me`, `GET /api/tokens/perks`, `POST /api/tokens/redeem`, ledger in `token-ledger.ts`.
 
@@ -78,8 +78,8 @@ This document records product and platform capabilities that are **deliberately 
 
 Suggested order after portal and edge are stable:
 
-1. **PayID grant admin UI** — if manual top-ups become frequent.
-2. **Stripe subscription** past daily AI cap — when billing product slice is ready.
+1. **PayID grant admin UI** — shipped in Admin Ops.
+2. **Stripe subscription** past daily AI cap — shipped; configure Stripe secrets on worker.
 3. **Stripe** — if subscription revenue is prioritised over manual PayID.
 4. **Binary DOCX/PDF round-trip** — if customers need original fonts/logos preserved in-file (not markdown structure).
 

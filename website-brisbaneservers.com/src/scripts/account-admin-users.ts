@@ -1,4 +1,6 @@
 import { workspaceFetch } from '../lib/client-api';
+import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction } from './portal-markov-tracker';
 
 type AdminUserRow = {
   id: string;
@@ -80,6 +82,19 @@ function renderUsersTable(apiBaseUrl: string, query = ''): void {
       const userId = input.dataset.userId;
       if (!userId) return;
       const enabled = input.checked;
+      if (!enabled) {
+        const ok = await showConfirmDialog({
+          title: 'Disable workspace access',
+          message: 'Remove editor workspace tools for this user?',
+          details: 'They keep contributor account access but lose Create, Voice studio, and Insights panels.',
+          confirmLabel: 'Disable workspace',
+          variant: 'danger',
+        });
+        if (!ok) {
+          input.checked = true;
+          return;
+        }
+      }
       input.disabled = true;
       try {
         const res = await workspaceFetch(`${apiBaseUrl}/admin/users/${encodeURIComponent(userId)}`, {
@@ -154,6 +169,7 @@ function bindAdminUsersPanel(apiBaseUrl: string): void {
 }
 
 export async function loadAdminUsersPanel(apiBaseUrl: string): Promise<void> {
+  trackPortalAction('loadAdminUsersPanel');
   bindAdminUsersPanel(apiBaseUrl);
   const tbody = document.getElementById('admin-users-tbody');
   const summary = document.getElementById('admin-users-summary');

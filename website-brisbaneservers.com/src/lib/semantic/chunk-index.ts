@@ -10,6 +10,7 @@ import { isPublicResource } from '../resource-types';
 import { createEmbeddingClient } from './embedding-client';
 import { DEFAULT_EMBEDDING_VERSION } from './embedding-version';
 import { chunkResource } from './chunker';
+import { cosineSimilarity } from './semantic-similarity';
 
 export interface IndexedChunk {
   id: string;
@@ -48,20 +49,6 @@ async function saveIndex(data: SemanticIndexFile): Promise<void> {
   await saveCorpusJson(CORPUS_DOC_KEYS.SEMANTIC_INDEX, getSemanticIndexFile(), data);
 }
 
-function cosine(a: number[], b: number[]): number {
-  if (a.length !== b.length || a.length === 0) return 0;
-  let dot = 0;
-  let na = 0;
-  let nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  const d = Math.sqrt(na) * Math.sqrt(nb);
-  return d === 0 ? 0 : dot / d;
-}
-
 export async function searchSimilar(
   queryEmbedding: number[],
   options: {
@@ -88,7 +75,7 @@ export async function searchSimilar(
     if (resourceId && ch.resourceId !== resourceId) continue;
     if (excludeResourceIds?.has(ch.resourceId)) continue;
     if (publishedOnly && !publishedSet.has(ch.resourceId)) continue;
-    const score = cosine(queryEmbedding, ch.vector);
+    const score = cosineSimilarity(queryEmbedding, ch.vector);
     scored.push({ chunk: ch, score });
   }
   scored.sort((a, b) => b.score - a.score);

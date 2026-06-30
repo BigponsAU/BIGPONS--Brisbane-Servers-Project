@@ -1,19 +1,23 @@
 ---
 import { adminMailboxKeys, adminMailboxLabels, siteMailboxes } from '../../lib/site-mailboxes';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 ---
 <div id="site-review-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Site review" style="display: none;">
   <div class="admin-content site-review-panel-shell">
-    <section class="admin-section" aria-labelledby="site-review-heading">
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="site-review-heading">Public site review</h2>
-          <p class="section-subtitle">Open key marketing sections — including Corrections welcome — to verify copy, legal alignment, and voice before campaigns go live.</p>
-        </div>
-        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
-          <button id="refresh-site-review-btn" type="button" class="btn btn-secondary btn-sm">Refresh list</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-site-review"
+      eyebrow="Library"
+      title="Public site review"
+      byline="Open key marketing sections — including Corrections welcome — to verify copy, legal alignment, and voice before campaigns go live."
+      titleId="site-review-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
+        <button id="refresh-site-review-btn" type="button" class="btn btn-secondary btn-sm">Refresh list</button>
       </div>
+
+    <section class="admin-section admin-section--in-band" aria-labelledby="site-review-heading">
 
       <details class="panel-guidance-details">
         <summary>What to check on each page</summary>
@@ -26,6 +30,7 @@ import { adminMailboxKeys, adminMailboxLabels, siteMailboxes } from '../../lib/s
 
       <div id="site-review-list" class="site-review-list site-review-grid"></div>
     </section>
+    </AccountWorkspacePanelBand>
 
     <details class="panel-guidance-details panel-guidance-details--accent admin-hosting-details" data-min-role="super-admin">
       <summary>Hosting &amp; environment (super-admin)</summary>

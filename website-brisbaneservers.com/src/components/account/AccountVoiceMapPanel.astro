@@ -1,40 +1,54 @@
 ---
-import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 ---
 
 <div id="voice-map-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Voice map" style="display: none;">
   <div class="admin-content">
-    <section class="admin-section" aria-labelledby="voice-map-heading">
-      <SectionConstellationLayer variant="strategy" semanticKey="account-voice-map" tier="whisper" placement="top-left" />
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="voice-map-heading">{accountWorkspace.voiceMapLabel}</h2>
-          <p class="section-subtitle">
-            Corpus topology from published resources. Pair with Voice profiles for detail and Create content for generation.
-          </p>
-        </div>
-        <div class="section-header-actions voice-map-toolbar">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create</button>
-          <select id="voice-map-view" class="form-select" aria-label="Map layer">
-            <option value="corpus-resources">Resources (by industry)</option>
-            <option value="corpus-chunks">Semantic chunks</option>
-            <option value="principles">Principles</option>
-          </select>
-          <button type="button" id="voice-map-view-mode" class="btn btn-secondary btn-sm" aria-pressed="false" title="Toggle isometric depth view">
-            Depth view
-          </button>
-          <button type="button" id="voice-map-3d-btn" class="btn btn-secondary btn-sm" aria-pressed="false" title="Orbit 3D WebGL topology">
-            3D view
-          </button>
-          <button type="button" id="voice-map-refresh-btn" class="btn btn-secondary btn-sm">Refresh</button>
-          <button type="button" id="voice-map-bootstrap-btn" class="btn btn-primary btn-sm" data-min-role="admin">
-            Reindex corpus
-          </button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-voice-map"
+      eyebrow="Voice studio"
+      title={accountWorkspace.voiceMapLabel}
+      byline="Corpus topology from published resources. Pair with Voice profiles for detail and Create content for generation."
+      titleId="voice-map-heading"
+      constellationVariant="strategy"
+    >
+      <div slot="actions" class="section-header-actions voice-map-toolbar section-actions">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create</button>
+        <select id="voice-map-view" class="form-select" aria-label="Map layer">
+          <option value="corpus-resources">Resources (by industry)</option>
+          <option value="corpus-chunks">Semantic chunks</option>
+          <option value="semantic">Semantic route</option>
+          <option value="principles">Principles</option>
+        </select>
+        <button type="button" id="voice-map-view-mode" class="btn btn-secondary btn-sm" aria-pressed="false" title="Toggle isometric depth view">
+          Depth view
+        </button>
+        <button type="button" id="voice-map-3d-btn" class="btn btn-secondary btn-sm" aria-pressed="false" title="Orbit 3D WebGL topology">
+          3D view
+        </button>
+        <button type="button" id="voice-map-refresh-btn" class="btn btn-secondary btn-sm">Refresh</button>
+        <button type="button" id="voice-map-bootstrap-btn" class="btn btn-primary btn-sm" data-min-role="admin">
+          Reindex corpus
+        </button>
       </div>
 
+    <section class="admin-section admin-section--in-band" aria-labelledby="voice-map-heading">
+      <div id="voice-map-semantic-query-wrap" class="voice-map-semantic-query hidden" role="search">
+        <label class="sr-only" for="voice-map-semantic-query">Semantic route query</label>
+        <input
+          id="voice-map-semantic-query"
+          type="search"
+          class="form-input voice-map-semantic-query__input"
+          placeholder="Plot semantic route — e.g. patient scheduling compliance"
+          minlength="3"
+          autocomplete="off"
+        />
+        <button type="button" id="voice-map-semantic-route-btn" class="btn btn-secondary btn-sm">
+          Plot route
+        </button>
+      </div>
       <div id="voice-map-legend" class="voice-map-legend" aria-live="polite"></div>
 
       <div class="voice-map-stage card">
@@ -45,5 +59,6 @@ import { accountWorkspace } from '../../data/account-workspace';
         <p id="voice-map-meta" class="voice-map-meta" aria-live="polite"></p>
       </div>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

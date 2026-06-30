@@ -2,7 +2,7 @@
 
 **Purpose:** Track where every user-facing capability lives after panel reorganization. Use when moving UI so nothing is dropped before payment/billing ships.
 
-**Last updated:** 2026-06-28
+**Last updated:** 2026-06-29
 
 **Related:** [DASHBOARD_FEATURE_MATRIX.md](DASHBOARD_FEATURE_MATRIX.md) (status per panel/API) · [FEATURES_NOT_BUILT.md](../operations/FEATURES_NOT_BUILT.md) (Stripe, PayID — do not “fix” without sign-off) · [DASHBOARD_WIRING_GAPS.md](DASHBOARD_WIRING_GAPS.md) (unwired UI + action standards)
 
@@ -55,7 +55,7 @@ Contributor home links to `/resources/`, `/contribute/`, and **Request workspace
 | Resource view / edit modals | Resources → `#view-resource-modal`, `#edit-resource-modal` | Detail pane → **inline edit** (`editResource(id, 'inline')`) |
 | Resource action permissions | `getResourceActionPermissions()` | Delete blocked while **published** (owner); admin **Remove from workspace** = soft delete |
 | Published index retention | `portalRemovedAt` soft delete | Public + search index **unchanged** when admin removes from workspace |
-| Confirm dialogs | `showConfirmDialog()` | All account workspace panels (resources, profiles, voice lab) |
+| Confirm dialogs | `showConfirmDialog()` | All workspace + admin panels (resources, profiles, voice, growth, moderation, ops, users) |
 | Markdown content editor | `workspace-markdown-field.ts` | Visual / Markdown / Preview + format toolbar on content fields |
 | Preview resource modal | `#preview-resource-modal` | Rendered markdown; replaces ad-hoc DOM |
 | Admin removed resources | Tree **Removed** + list filter `removedOnly=1` | Restore via `restoreResource()` |
@@ -79,15 +79,17 @@ Contributor home links to `/resources/`, `/contribute/`, and **Request workspace
 | Users | Guidance, cross-link to Ops, queue-style summary |
 | Ops & billing | Primary usage card, collapsible inference/billing/setup cards |
 
-### `panel-shell` consistency
+### `panel-shell` + marketing bands
 
-| Panel | Root `panel-shell` |
-|-------|-------------------|
-| Overview, Resources, Profiles | **No** — use inner `*-panel-shell` or legacy `portal-panel` only |
-| Analytics, Voice lab, Voice map | Yes |
-| All admin panels | Yes |
+| Panel | Root `panel-shell` | Marketing band |
+|-------|-------------------|----------------|
+| Overview | Yes | `account-workspace-panel-section` (inline) |
+| Resources | Yes | Dual bands (workspace + create) |
+| Profiles | Yes | `AccountWorkspacePanelBand` |
+| Analytics, Voice lab, Voice map | Yes | `AccountWorkspacePanelBand` |
+| All admin panels | Yes | `AccountWorkspacePanelBand` (`primary-light`) |
 
-Optional polish: add root `panel-shell` to Overview / Resources / Profiles for uniform spacing — not required for function.
+Shared component: `AccountWorkspacePanelBand.astro`
 
 ---
 
@@ -153,8 +155,11 @@ Repo-ready items (local / CI). **Production** also needs Pages deploy + edge wor
 - [x] Post-create resource reveal in tree
 - [x] Profiles inline detail workspace
 - [x] Nav sections: Home / Create / Voice studio / Insights
-- [x] Admin panels: growth, moderation, site review, users, ops (`panel-shell` + split workspaces)
-- [x] `account-workspace-app.ts` split — resources + profiles lazy chunks; shared store + API helpers
+- [x] Admin panels: growth, moderation, site review, users, ops
+- [x] Lazy chunks: resources + profiles + voice features
+- [x] Marketing bands + `panel-shell` on all panels
+- [x] Styled confirms on admin approve/reject/arm/run/fulfill
+- [x] Global search prefixes + mode-aware keyboard shortcuts
 - [ ] Payment UI in Admin ops (planned — `FEATURES_NOT_BUILT.md`)
 - [x] Owner backfill — **not needed** on production (4 resources, all `ownerId: system`, 0 orphans). Script: `npm run backfill:resource-owners`
 - [x] Corpus payload repair — use `npm run audit:corpus -- --repair --apply` if string-encoded rows return

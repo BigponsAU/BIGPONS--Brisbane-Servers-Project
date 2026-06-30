@@ -3,6 +3,7 @@
  */
 import { workspaceFetch } from '../lib/client-api';
 import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 
 type MapNode = {
   id: string;
@@ -17,7 +18,12 @@ type MapEdge = { sourceId: string; targetId: string; strength?: number; kind?: s
 
 let voiceMapDepthMode = false;
 let voiceMap3dMode = false;
-let voiceMapCache: { nodes: MapNode[]; edges: MapEdge[]; meta: string } | null = null;
+let voiceMapCache: {
+  nodes: MapNode[];
+  edges: MapEdge[];
+  meta: string;
+  routeNodeIds?: Set<string>;
+} | null = null;
 let voiceMapWebGl: { render: () => void; destroy: () => void } | null = null;
 
 const INDUSTRY_COLORS: Record<string, string> = {
@@ -153,7 +159,13 @@ async function renderVoiceMap3d(nodes: MapNode[], edges: MapEdge[]): Promise<voi
   }
 }
 
-function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[], meta: string): void {
+function renderVoiceMapSvg(
+  svg: SVGSVGElement,
+  nodes: MapNode[],
+  edges: MapEdge[],
+  meta: string,
+  routeNodeIds?: Set<string>
+): void {
   const width = 800;
   const height = 480;
   applyVoiceMapViewMode();
@@ -191,7 +203,7 @@ function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[
     line.setAttribute('y1', String(a.cy));
     line.setAttribute('x2', String(b.cx));
     line.setAttribute('y2', String(b.cy));
-    line.setAttribute('class', 'voice-map-edge');
+    line.setAttribute('class', edge.kind === 'route' ? 'voice-map-edge voice-map-edge--route' : 'voice-map-edge');
     line.setAttribute('stroke-opacity', String(Math.min(0.6, edge.strength ?? 0.35)));
     svg.appendChild(line);
   }
@@ -214,7 +226,15 @@ function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[
     if (voiceMapDepthMode) {
       circle.setAttribute('opacity', String(0.65 + Math.min(0.35, pos.z / 40)));
     }
-    circle.setAttribute('class', isProfile ? 'voice-map-node voice-map-node--profile' : 'voice-map-node');
+    const isRoute = routeNodeIds?.has(node.id);
+    circle.setAttribute(
+      'class',
+      isRoute
+        ? 'voice-map-node voice-map-node--route'
+        : isProfile
+          ? 'voice-map-node voice-map-node--profile'
+          : 'voice-map-node'
+    );
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     title.textContent = node.label || node.id;
     circle.appendChild(title);
@@ -225,10 +245,22 @@ function renderVoiceMapSvg(svg: SVGSVGElement, nodes: MapNode[], edges: MapEdge[
   if (metaEl) metaEl.textContent = meta;
 }
 
-function mapApiPath(view: string): string {
+function mapApiPath(view: string, semanticQuery?: string): string {
   if (view === 'principles') return '/voice-map/principles';
   if (view === 'corpus-chunks') return '/voice-map/corpus?layer=chunks';
+  if (view === 'semantic') {
+    const q = semanticQuery?.trim();
+    return q && q.length >= 3
+      ? `/voice-map/semantic?limit=120&query=${encodeURIComponent(q)}`
+      : '/voice-map/semantic?limit=120';
+  }
   return '/voice-map/corpus?layer=resources';
+}
+
+function toggleSemanticQueryUi(view: string): void {
+  const wrap = document.getElementById('voice-map-semantic-query-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('hidden', view !== 'semantic');
 }
 
 export async function loadVoiceMap(): Promise<void> {
@@ -237,7 +269,12 @@ export async function loadVoiceMap(): Promise<void> {
   if (!svg || !viewSelect) return;
 
   const view = viewSelect.value;
-  const path = mapApiPath(view);
+  toggleSemanticQueryUi(view);
+  const semanticQuery =
+    view === 'semantic'
+      ? (document.getElementById('voice-map-semantic-query') as HTMLInputElement | null)?.value
+      : undefined;
+  const path = mapApiPath(view, semanticQuery);
 
   try {
     const res = await workspaceJsonFetch(path);
@@ -264,22 +301,45 @@ export async function loadVoiceMap(): Promise<void> {
         industry: n.industry,
       })
     );
-    const edges: MapEdge[] = data.edges ?? [];
+    const edges: MapEdge[] = (data.edges ?? []).map(
+      (e: { sourceId: string; targetId: string; strength?: number; kind?: string }) => ({
+        sourceId: e.sourceId,
+        targetId: e.targetId,
+        strength: e.strength,
+        kind: e.kind,
+      })
+    );
+    const routeIds = Array.isArray(data.routeNodeIds) ? (data.routeNodeIds as string[]) : [];
+    const routeNodeIds = routeIds.length > 0 ? new Set(routeIds) : undefined;
     const stats = data.stats;
     const brisbane = data.brisbaneProfile?.name ?? 'Brisbane';
+    const viewLabel =
+      view === 'semantic'
+        ? 'Semantic route'
+        : view.includes('chunk')
+          ? 'Chunks'
+          : view === 'principles'
+            ? 'Principles'
+            : 'Corpus';
     const metaParts = [
-      `${view.includes('chunk') ? 'Chunks' : 'Corpus'} — ${nodes.length} nodes`,
+      `${viewLabel} — ${nodes.length} nodes`,
+      view === 'semantic' && data.total != null ? `${data.total} indexed chunks` : '',
+      routeIds.length > 0 ? `Route: ${routeIds.length} hops` : '',
       stats?.indexedResources != null ? `${stats.indexedResources} indexed resources` : '',
       stats?.chunksInIndex != null ? `${stats.chunksInIndex} chunks` : '',
       data.brisbaneProfile ? `Hub: ${brisbane}` : '',
     ].filter(Boolean);
     if (stats?.industries) renderLegend(stats.industries as string[]);
-    voiceMapCache = { nodes, edges, meta: metaParts.join(' · ') };
+    else if (view === 'semantic') {
+      const industries = [...new Set(nodes.map((n) => n.industry).filter(Boolean))] as string[];
+      if (industries.length) renderLegend(industries);
+    }
+    voiceMapCache = { nodes, edges, meta: metaParts.join(' · '), routeNodeIds };
     if (voiceMap3dMode) {
       await renderVoiceMap3d(nodes, edges);
     } else {
       destroyVoiceMapWebGl();
-      renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta);
+      renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta, routeNodeIds);
     }
   } catch {
     renderVoiceMapSvg(svg, [], [], 'Network error loading voice map.');
@@ -347,6 +407,10 @@ async function runVoiceLab(mode: 'tone' | 'patterns'): Promise<void> {
 export function bindVoiceFeaturePanels(): void {
   document.getElementById('voice-map-refresh-btn')?.addEventListener('click', () => void loadVoiceMap());
   document.getElementById('voice-map-view')?.addEventListener('change', () => void loadVoiceMap());
+  document.getElementById('voice-map-semantic-route-btn')?.addEventListener('click', () => void loadVoiceMap());
+  document.getElementById('voice-map-semantic-query')?.addEventListener('keydown', (e) => {
+    if ((e as KeyboardEvent).key === 'Enter') void loadVoiceMap();
+  });
   document.getElementById('voice-map-view-mode')?.addEventListener('click', () => {
     if (voiceMap3dMode) return;
     voiceMapDepthMode = !voiceMapDepthMode;
@@ -357,7 +421,7 @@ export function bindVoiceFeaturePanels(): void {
     }
     const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
     if (svg && voiceMapCache) {
-      renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta);
+      renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta, voiceMapCache.routeNodeIds);
     }
   });
   document.getElementById('voice-map-3d-btn')?.addEventListener('click', () => {
@@ -380,15 +444,61 @@ export function bindVoiceFeaturePanels(): void {
       } else {
         destroyVoiceMapWebGl();
         const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
-        if (svg) renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta);
+        if (svg) renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta, voiceMapCache.routeNodeIds);
       }
     }
   });
-  document.getElementById('voice-map-bootstrap-btn')?.addEventListener('click', () => void bootstrapVoiceCorpus());
+  document.getElementById('voice-map-bootstrap-btn')?.addEventListener('click', () => {
+    void (async () => {
+      const ok = await showConfirmDialog({
+        title: 'Reindex voice corpus',
+        message: 'Rebuild semantic chunks and the Brisbane site voice profile from published resources?',
+        details: 'This may take a minute on large libraries. Voice map layers refresh when complete.',
+        confirmLabel: 'Reindex',
+        variant: 'primary',
+      });
+      if (!ok) return;
+      trackPortalAction('bootstrapVoiceCorpus');
+      void bootstrapVoiceCorpus();
+    })();
+  });
   document.getElementById('voice-lab-analyze-btn')?.addEventListener('click', () => void runVoiceLab('tone'));
   document.getElementById('voice-lab-patterns-btn')?.addEventListener('click', () => void runVoiceLab('patterns'));
   document.getElementById('voice-lab-markov-refresh')?.addEventListener('click', () => {
     void import('./portal-markov-tracker').then((m) => m.renderPortalMarkovIntoVoiceLab());
+  });
+  document.getElementById('voice-lab-markov-debug')?.addEventListener('click', () => {
+    void import('./portal-markov-tracker').then((m) => m.renderPortalMarkovDebug());
+  });
+  document.getElementById('voice-lab-markov-extrapolate')?.addEventListener('click', () => {
+    const debugEl = document.getElementById('voice-lab-markov-debug');
+    if (debugEl) {
+      debugEl.dataset.userTriggered = 'true';
+      debugEl.textContent = 'Extrapolating issues from Markov chain…';
+    }
+    trackPortalAction('extrapolateMarkovIssues');
+    void import('./portal-markov-tracker').then((m) =>
+      m
+        .extrapolatePortalMarkovIssues(async (path, body) => {
+          const res = await workspaceJsonFetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            return { ok: false, error: data.error || 'Extrapolation failed' };
+          }
+          return { ok: true, text: data.text as string };
+        })
+        .then((text) => {
+          if (debugEl) debugEl.textContent = text;
+        })
+        .catch((err) => {
+          trackPortalError('extrapolateMarkovIssues', err);
+          if (debugEl) debugEl.textContent = 'Network error during extrapolation.';
+        })
+    );
   });
   document.getElementById('voice-lab-markov-export')?.addEventListener('click', () => {
     void import('./portal-markov-tracker').then((m) => m.exportPortalMarkovData());

@@ -1,22 +1,26 @@
+---
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
+---
               <div id="analytics-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Analytics" style="display: none;">
                 <div class="admin-content">
-            <section class="admin-section" aria-labelledby="analytics-heading">
-              <div class="section-header section-header--workspace">
-                <div>
-                  <h2 id="analytics-heading">Insights</h2>
-                  <p class="section-subtitle">Corpus performance, voice alignment, and pipeline suggestions — separate from day-to-day create tools.</p>
-                </div>
-                <button id="refresh-analytics" class="btn btn-secondary btn-sm" onclick="loadAnalytics()" aria-label="Refresh analytics">
-                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <polyline points="1 20 1 14 7 14"></polyline>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                  </svg>
-                  Refresh
-                </button>
-              </div>
-              
-              <!-- Analytics Guidance -->
+            <AccountWorkspacePanelBand
+              semanticKey="account-analytics"
+              eyebrow="Insights"
+              title="Corpus analytics"
+              byline="Corpus performance, voice alignment, and pipeline suggestions — separate from day-to-day create tools."
+              titleId="analytics-heading"
+              constellationVariant="proof"
+            >
+              <button slot="actions" id="refresh-analytics" class="btn btn-secondary btn-sm section-actions" onclick="loadAnalytics()" aria-label="Refresh analytics">
+                <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+              </button>
+
+            <section class="admin-section admin-section--in-band" aria-labelledby="analytics-heading">
               <details class="panel-guidance-details">
                 <summary>Understanding your metrics</summary>
                 <div class="panel-guidance-details__body">
@@ -90,6 +94,6 @@
                 </div>
               </div>
             </section>
+            </AccountWorkspacePanelBand>
                 </div>
               </div>
-

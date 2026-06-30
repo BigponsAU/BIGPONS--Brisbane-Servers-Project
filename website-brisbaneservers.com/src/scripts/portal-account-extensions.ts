@@ -11,6 +11,7 @@ import {
 import { getPortalAccountContext } from './account-workspace-runtime';
 
 import { loadModerationQueue } from './account-admin-moderation';
+import { bindOverviewBilling, loadOverviewAiBilling } from './account-billing';
 
 export interface PortalAccountContext {
   apiBaseUrl: string;
@@ -193,6 +194,8 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
         }).join('');
       }
     }
+
+    await loadOverviewAiBilling(ctx);
   } catch (error) {
     console.warn('[Portal] Client workspace data failed:', error);
     if (balanceEl) balanceEl.textContent = '—';
@@ -476,6 +479,7 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
 
 export function bindPortalAccountExtensions(resolveCtx: () => PortalAccountContext): void {
   bindAdminEmailPrefs();
+  bindOverviewBilling(resolveCtx());
 
   document.getElementById('passkey-login-btn')?.addEventListener('click', () => {
     const ctx = resolveCtx();

@@ -18,7 +18,11 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/tokens/perks', loadModule: () => import('../src/pages/_api/tokens/perks') },
   { path: '/api/tokens/redeem', loadModule: () => import('../src/pages/_api/tokens/redeem') },
   { path: '/api/usage/me', loadModule: () => import('../src/pages/_api/usage/me') },
+  { path: '/api/billing/checkout', loadModule: () => import('../src/pages/_api/billing/checkout') },
+  { path: '/api/billing/status', loadModule: () => import('../src/pages/_api/billing/status') },
+  { path: '/api/billing/webhook', loadModule: () => import('../src/pages/_api/billing/webhook') },
   { path: '/api/voice/analyze', loadModule: () => import('../src/pages/_api/voice/analyze') },
+  { path: '/api/voice/extrapolate', loadModule: () => import('../src/pages/_api/voice/extrapolate') },
   { path: '/api/voice-map/corpus', loadModule: () => import('../src/pages/_api/voice-map/corpus') },
   { path: '/api/voice-map/principles', loadModule: () => import('../src/pages/_api/voice-map/principles') },
   { path: '/api/voice-map/semantic', loadModule: () => import('../src/pages/_api/voice-map/semantic') },
@@ -83,4 +87,5 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/admin/bootstrap-voice-corpus', loadModule: () => import('../src/pages/_api/admin/bootstrap-voice-corpus') },
   { path: '/api/admin/token-redemptions', loadModule: () => import('../src/pages/_api/admin/token-redemptions') },
   { path: '/api/admin/token-redemptions/fulfill', loadModule: () => import('../src/pages/_api/admin/token-redemptions/fulfill') },
+  { path: '/api/admin/usage/grant', loadModule: () => import('../src/pages/_api/admin/usage/grant') },
 ];

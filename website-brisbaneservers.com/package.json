@@ -63,11 +63,15 @@
     "@astrojs/cloudflare": "^12.6.13",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.0",
+    "@tiptap/core": "^3.27.1",
+    "@tiptap/extension-link": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
     "astro": "^5.18.2",
     "fflate": "^0.8.2",
     "nodemailer": "^8.0.4",
     "pg": "^8.13.1",
     "postgres": "^3.4.9",
+    "stripe": "^22.3.0",
     "tsx": "^4.7.0"
   },
   "devDependencies": {

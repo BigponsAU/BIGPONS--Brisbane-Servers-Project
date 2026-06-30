@@ -10,7 +10,7 @@ import {
   setAccountNavSignedIn,
 } from '../lib/client-api';
 import { initWorkspaceModeSwitcher } from './account-workspace-mode';
-import { trackPortalPanel } from './portal-markov-tracker';
+import { trackPortalPanel, trackPortalAction, registerPortalWorkspaceFunctions } from './portal-markov-tracker';
 import { closeMobileNav } from './nav-mobile';
 import {
   type AccountWorkspaceBootConfig,
@@ -202,6 +202,7 @@ export function bootAccountWorkspaceDashboard(): void {
     syncPortalAccountContext();
 
     applyRoleAccess(user);
+    registerPortalWorkspaceFunctions();
 
     syncWorkspaceSidebarLayout();
     setAccountNavSignedIn(true);
@@ -328,8 +329,10 @@ export function bootAccountWorkspaceDashboard(): void {
   function refreshPanelData(panelName: string): void {
     const accountCtx = getPortalAccountContext();
     if (panelName === 'dashboard') {
+      trackPortalAction('loadDashboardData');
       loadDashboardData();
     } else if (panelName === 'resources') {
+      trackPortalAction('loadResources');
       const workspace = document.getElementById('resource-workspace');
       const listView = document.getElementById('resources-list-view');
       if (workspace && listView) {
@@ -339,10 +342,12 @@ export function bootAccountWorkspaceDashboard(): void {
       loadResources();
       void voiceContext.ensureWorkspaceVoiceProfiles();
     } else if (panelName === 'profiles') {
+      trackPortalAction('loadProfiles');
       setTimeout(() => {
         loadProfiles();
       }, 100);
     } else if (panelName === 'analytics') {
+      trackPortalAction('loadAnalytics');
       if (getWorkspaceResources().length > 0) {
         updateAnalyticsDisplay(getWorkspaceResources());
         loadAnalyticsSuggestions();
@@ -352,15 +357,20 @@ export function bootAccountWorkspaceDashboard(): void {
     } else if (panelName === 'voice-map' || panelName === 'voice-lab') {
       void import('./account-workspace-voice-features.ts').then((mod) => mod.onVoicePanelShown(panelName));
     } else if (panelName === 'library-growth') {
+      trackPortalAction('loadLibraryGrowthPanel');
       window.__portalAccountExt?.loadLibraryGrowthPanel(accountCtx);
     } else if (panelName === 'moderation') {
+      trackPortalAction('loadModerationQueue');
       window.__portalAccountExt?.loadModerationQueue(accountCtx);
     } else if (panelName === 'site-review') {
+      trackPortalAction('loadSiteReviewSections');
       window.__portalAccountExt?.loadSiteReviewSections(accountCtx);
       window.__portalAccountExt?.loadHostingStatus(accountCtx);
     } else if (panelName === 'admin-users') {
+      trackPortalAction('loadAdminUsersPanel');
       void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()));
     } else if (panelName === 'admin-ops') {
+      trackPortalAction('loadAdminOpsPanel');
       window.__portalAccountExt?.loadAdminOpsPanel(accountCtx);
     }
   }
@@ -915,6 +925,26 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!query) return;
 
     const lower = query.toLowerCase();
+    if (lower.startsWith('panel:')) {
+      const panelQuery = query.slice(6).trim().toLowerCase();
+      const panelTarget = GLOBAL_SEARCH_PANEL_ALIASES[panelQuery] ?? panelQuery;
+      navigateToPanel(panelTarget);
+      return;
+    }
+
+    if (lower.startsWith('resource:')) {
+      const resourceQuery = query.slice(9).trim();
+      navigateToPanel('resources');
+      window.setTimeout(() => {
+        const resourceSearch = document.getElementById('resource-search') as HTMLInputElement | null;
+        if (resourceSearch) {
+          resourceSearch.value = resourceQuery;
+          loadResources();
+        }
+      }, 150);
+      return;
+    }
+
     if (lower.startsWith('profile:')) {
       const profileQuery = query.slice(8).trim();
       navigateToPanel('profiles');
@@ -993,10 +1023,13 @@ export function bootAccountWorkspaceDashboard(): void {
       }
     }
 
-    // Number keys for navigation (1-4)
-    if (e.key >= '1' && e.key <= '4' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const panels = ['dashboard', 'resources', 'profiles', 'analytics'];
-      const index = parseInt(e.key) - 1;
+    // Number keys for navigation (mode-aware)
+    if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const adminMode = document.getElementById('header-workspace-mode-admin')?.classList.contains('is-active');
+      const panels = adminMode
+        ? ['library-growth', 'moderation', 'site-review', 'admin-users', 'admin-ops']
+        : ['dashboard', 'resources', 'profiles', 'voice-lab', 'voice-map', 'analytics'];
+      const index = parseInt(e.key, 10) - 1;
       if (panels[index]) {
         navigateToPanel(panels[index]);
       }
@@ -1019,6 +1052,11 @@ export function bootAccountWorkspaceDashboard(): void {
           closeViewModal();
         } else if (modalId === 'edit-resource-modal') {
           closeEditModal();
+        } else if (modalId === 'preview-resource-modal') {
+          closePreviewModal();
+        } else if (modalId === 'portal-confirm-host' || modal.classList.contains('portal-confirm-modal')) {
+          document.getElementById('portal-confirm-host')!.innerHTML = '';
+          document.body.style.overflow = '';
         }
       });
 

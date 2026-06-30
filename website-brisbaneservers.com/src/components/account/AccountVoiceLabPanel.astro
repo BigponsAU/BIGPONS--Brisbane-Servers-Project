@@ -1,25 +1,24 @@
 ---
-import SectionConstellationLayer from '../SectionConstellationLayer.astro';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 ---
 
 <div id="voice-lab-panel" class="portal-panel panel-shell" data-min-role="editor" role="main" aria-label="Voice lab" style="display: none;">
   <div class="admin-content">
-    <section class="admin-section" aria-labelledby="voice-lab-heading">
-      <SectionConstellationLayer variant="partnership" semanticKey="account-voice-lab" tier="whisper" placement="top-right" />
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="voice-lab-heading">{accountWorkspace.voiceLabLabel}</h2>
-          <p class="section-subtitle">
-            Tone analysis and pattern extraction. Pair with Voice profiles and Create content for end-to-end voice control.
-          </p>
-        </div>
-        <div class="section-actions">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create content</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-voice-lab"
+      eyebrow="Voice studio"
+      title={accountWorkspace.voiceLabLabel}
+      byline="Tone analysis and pattern extraction. Pair with Voice profiles and Create content for end-to-end voice control."
+      titleId="voice-lab-heading"
+      constellationVariant="partnership"
+    >
+      <div slot="actions" class="section-actions">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create content</button>
       </div>
 
+    <section class="admin-section admin-section--in-band" aria-labelledby="voice-lab-heading">
       <div class="voice-lab-grid voice-lab-grid--primary">
         <div class="voice-lab-input card">
           <label for="voice-lab-text" class="form-label">Text to analyze</label>
@@ -41,12 +40,16 @@ import { accountWorkspace } from '../../data/account-workspace';
           <p class="section-subtitle">Panel navigation patterns recorded as you move through the workspace (this browser only).</p>
           <div class="voice-lab-actions voice-lab-markov-actions">
             <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
+            <button type="button" id="voice-lab-markov-debug" class="btn btn-secondary btn-sm">Debug insights</button>
+            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-secondary btn-sm">Extrapolate issues</button>
             <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
             <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
           </div>
           <pre id="voice-lab-markov-summary" class="voice-lab-output-pre" aria-live="polite">Navigate the workspace to collect flow data.</pre>
+          <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Click “Debug insights” to analyze function errors and unused registrations.</pre>
         </div>
       </details>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

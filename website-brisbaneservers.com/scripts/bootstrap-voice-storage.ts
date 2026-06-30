@@ -29,6 +29,7 @@ const CORPUS_FILE_NAMES: Record<CorpusDocKey, string> = {
   [CORPUS_DOC_KEYS.TOKEN_LEDGER]: 'token-ledger.json',
   [CORPUS_DOC_KEYS.USAGE_LEDGER]: 'usage-ledger.json',
   [CORPUS_DOC_KEYS.AI_DAILY_BONUSES]: 'ai-daily-bonuses.json',
+  [CORPUS_DOC_KEYS.BILLING_ACCOUNTS]: 'billing-accounts.json',
   [CORPUS_DOC_KEYS.TOKEN_REDEMPTION_QUEUE]: 'token-redemption-queue.json',
   [CORPUS_DOC_KEYS.GROWTH_USAGE_LEDGER]: 'growth-usage-ledger.json',
   [CORPUS_DOC_KEYS.CASE_STUDY_DRAFTS]: 'case-study-drafts.json',

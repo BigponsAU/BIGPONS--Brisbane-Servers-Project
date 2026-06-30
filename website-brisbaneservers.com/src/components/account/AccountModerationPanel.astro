@@ -1,18 +1,23 @@
+---
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
+---
 <div id="moderation-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Upload moderation" style="display: none;">
   <div class="admin-content moderation-panel-shell">
-    <section class="admin-section" aria-labelledby="moderation-heading">
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="moderation-heading">Upload moderation</h2>
-          <p class="section-subtitle">Review pending community uploads before they publish. Approved items appear in Resources; rejected items stay off the public library.</p>
-        </div>
-        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
-          <button id="refresh-moderation-btn" type="button" class="btn btn-secondary btn-sm">Refresh queue</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-moderation"
+      eyebrow="Library"
+      title="Upload moderation"
+      byline="Review pending community uploads before they publish. Approved items appear in Resources; rejected items stay off the public library."
+      titleId="moderation-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
+        <button id="refresh-moderation-btn" type="button" class="btn btn-secondary btn-sm">Refresh queue</button>
       </div>
 
+    <section class="admin-section admin-section--in-band" aria-labelledby="moderation-heading">
       <details class="panel-guidance-details">
         <summary>Moderation workflow</summary>
         <div class="panel-guidance-details__body">
@@ -24,18 +29,21 @@
 
       <p id="moderation-queue-summary" class="admin-queue-summary" role="status" aria-live="polite"></p>
 
-      <div class="moderation-workspace" id="moderation-workspace">
+      <div class="moderation-workspace">
         <aside class="moderation-queue-pane" aria-label="Pending uploads">
-          <div id="moderation-queue" class="moderation-queue moderation-queue-list"></div>
+          <div id="moderation-queue" class="moderation-queue" aria-live="polite">
+            <p class="loading-message">Loading moderation queue…</p>
+          </div>
         </aside>
-        <main class="moderation-detail-pane card" aria-label="Upload preview">
+        <main class="moderation-detail-pane" aria-label="Upload preview">
           <div id="moderation-detail-empty" class="workspace-empty-state">
             <h3>Select an upload</h3>
-            <p>Choose a pending item from the queue to preview metadata and content before approving or rejecting.</p>
+            <p>Choose a pending item to preview content and approve or reject.</p>
           </div>
           <div id="moderation-detail-panel" class="moderation-detail-panel hidden" aria-live="polite"></div>
         </main>
       </div>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

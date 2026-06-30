@@ -1,21 +1,24 @@
 ---
-import SectionIntro from '../SectionIntro.astro';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 ---
 
 <div id="library-growth-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Library growth" style="display: none;">
   <div class="admin-content growth-panel-shell">
-    <section class="admin-section" aria-labelledby="library-growth-heading">
-      <div class="section-header section-header--workspace">
-        <div>
-          <h2 id="library-growth-heading">Library growth</h2>
-          <p class="section-subtitle">Plans topic gaps from Insights, generates voice-aligned drafts, and queues them for review before anything goes live in Resources.</p>
-        </div>
-        <div class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="growth-refresh-queue">Refresh queue</button>
-        </div>
+    <AccountWorkspacePanelBand
+      semanticKey="account-library-growth"
+      eyebrow="Library"
+      title="Library growth"
+      byline="Plans topic gaps from Insights, generates voice-aligned drafts, and queues them for review before anything goes live in Resources."
+      titleId="library-growth-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Resources</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="growth-refresh-queue">Refresh queue</button>
       </div>
+
+    <section class="admin-section admin-section--in-band" aria-labelledby="library-growth-heading">
 
       <details class="panel-guidance-details">
         <summary>How growth cycles work</summary>
@@ -86,5 +89,6 @@ import SectionIntro from '../SectionIntro.astro';
         </main>
       </div>
     </section>
+    </AccountWorkspacePanelBand>
   </div>
 </div>

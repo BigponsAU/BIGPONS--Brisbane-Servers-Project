@@ -4,6 +4,8 @@
 import { workspaceFetch } from '../lib/client-api';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { getPortalAccountContext } from './account-workspace-runtime';
+import { showConfirmDialog } from './portal-confirm-dialog';
+import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 
 function formatProposalKind(kind: string): string {
   return kind === 'case_study' ? 'Case study' : 'Resource guide';
@@ -29,6 +31,7 @@ function hasSession(ctx: PortalAccountContext): boolean {
 }
 
 export async function loadLibraryGrowthPanel(ctx: PortalAccountContext): Promise<void> {
+  trackPortalAction('loadLibraryGrowthPanel');
   if (!hasSession(ctx)) {
     setGrowthStatus('Sign in again to manage library growth.', true);
     return;
@@ -224,10 +227,29 @@ async function renderGrowthProposals(
     const id = (card as HTMLElement).dataset.proposalId;
     if (!id) return;
     card.querySelector('.growth-approve')?.addEventListener('click', () => {
-      void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
+      void (async () => {
+        const ok = await showConfirmDialog({
+          title: 'Approve growth proposal',
+          message: 'Generate a voice-aligned draft from this proposal?',
+          details: 'Draft appears in Resources for review before publish (unless auto-materialize is enabled).',
+          confirmLabel: 'Approve & generate',
+          variant: 'primary',
+        });
+        if (!ok) return;
+        void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
+      })();
     });
     card.querySelector('.growth-reject')?.addEventListener('click', () => {
-      void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
+      void (async () => {
+        const ok = await showConfirmDialog({
+          title: 'Reject proposal',
+          message: 'Remove this proposal from the queue?',
+          confirmLabel: 'Reject',
+          variant: 'danger',
+        });
+        if (!ok) return;
+        void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
+      })();
     });
   });
 }
@@ -311,6 +333,14 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
+    const ok = await showConfirmDialog({
+      title: 'Activate growth schedule',
+      message: 'Arm the automated library growth schedule on the edge worker?',
+      details: 'Cron checks every 6 hours when a cycle is due. Budget caps still apply.',
+      confirmLabel: 'Activate schedule',
+      variant: 'primary',
+    });
+    if (!ok) return;
     setGrowthStatus('Activating schedule…');
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
@@ -350,12 +380,22 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
+    const ok = await showConfirmDialog({
+      title: 'Run growth cycle now',
+      message: 'Plan new library growth proposals immediately?',
+      details: 'Uses configured budget and proposal limits. Auto-materialize may create drafts in Resources.',
+      confirmLabel: 'Run cycle',
+      variant: 'primary',
+    });
+    if (!ok) return;
+    trackPortalAction('runLibraryGrowthCycle');
     setGrowthStatus('Running growth cycle…');
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
       method: 'POST',
     });
     const data = await res.json();
     if (!res.ok || !data.success) {
+      trackPortalError('runLibraryGrowthCycle', new Error(data.error || 'Cycle failed'));
       setGrowthStatus(data.error || 'Cycle failed.', true);
       return;
     }

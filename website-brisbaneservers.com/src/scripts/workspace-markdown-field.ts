@@ -1,10 +1,16 @@
 /**
  * Rich text / markdown editor for resource content in the account workspace.
- * Modes: Visual (contenteditable) | Markdown (source) | Preview (rendered).
+ * Visual mode: TipTap (ProseMirror). Markdown + Preview tabs unchanged.
  */
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
 import { wrapMarkdownDocument } from '../lib/markdown-render';
+import { showPromptDialog } from './portal-confirm-dialog';
 
 type EditorMode = 'visual' | 'markdown' | 'preview';
+
+const tipTapEditors = new WeakMap<HTMLTextAreaElement, Editor>();
 
 function htmlToMarkdown(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -59,12 +65,8 @@ function markdownToVisualHtml(markdown: string): string {
   return wrapMarkdownDocument(markdown).replace(/^<div class="markdown-document">|<\/div>$/g, '');
 }
 
-function syncTextareaFromVisual(textarea: HTMLTextAreaElement, visual: HTMLElement): void {
-  textarea.value = htmlToMarkdown(visual.innerHTML);
-}
-
-function syncVisualFromTextarea(textarea: HTMLTextAreaElement, visual: HTMLElement): void {
-  visual.innerHTML = markdownToVisualHtml(textarea.value);
+function syncTextareaFromEditor(textarea: HTMLTextAreaElement, editor: Editor): void {
+  textarea.value = htmlToMarkdown(editor.getHTML());
 }
 
 function wrapSelection(textarea: HTMLTextAreaElement, before: string, after: string): void {
@@ -75,6 +77,25 @@ function wrapSelection(textarea: HTMLTextAreaElement, before: string, after: str
   textarea.focus();
   textarea.selectionStart = start + before.length;
   textarea.selectionEnd = start + before.length + selected.length;
+}
+
+function createTipTapEditor(mount: HTMLElement, textarea: HTMLTextAreaElement): Editor {
+  const editor = new Editor({
+    element: mount,
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3, 4] },
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { rel: 'noopener noreferrer' },
+      }),
+    ],
+    content: markdownToVisualHtml(textarea.value),
+    onUpdate: ({ editor: ed }) => syncTextareaFromEditor(textarea, ed),
+  });
+  tipTapEditors.set(textarea, editor);
+  return editor;
 }
 
 export function enhanceMarkdownTextarea(textarea: HTMLTextAreaElement): void {
@@ -111,7 +132,6 @@ export function enhanceMarkdownTextarea(textarea: HTMLTextAreaElement): void {
 
   const visual = document.createElement('div');
   visual.className = 'workspace-markdown-field__visual';
-  visual.contentEditable = 'true';
   visual.setAttribute('role', 'textbox');
   visual.setAttribute('aria-multiline', 'true');
   visual.setAttribute('aria-label', 'Visual editor');
@@ -122,20 +142,21 @@ export function enhanceMarkdownTextarea(textarea: HTMLTextAreaElement): void {
   preview.setAttribute('aria-live', 'polite');
   wrapper.appendChild(preview);
 
+  const editor = createTipTapEditor(visual, textarea);
+
   let mode: EditorMode = 'visual';
-  syncVisualFromTextarea(textarea, visual);
 
   const tabs = modeBar.querySelectorAll<HTMLButtonElement>('[data-mode]');
 
   const setMode = (next: EditorMode) => {
     if (next === 'markdown' && mode === 'visual') {
-      syncTextareaFromVisual(textarea, visual);
+      syncTextareaFromEditor(textarea, editor);
     }
     if (next === 'visual' && mode !== 'visual') {
-      syncVisualFromTextarea(textarea, visual);
+      editor.commands.setContent(markdownToVisualHtml(textarea.value), { emitUpdate: false });
     }
     if (next === 'preview') {
-      if (mode === 'visual') syncTextareaFromVisual(textarea, visual);
+      if (mode === 'visual') syncTextareaFromEditor(textarea, editor);
       preview.innerHTML = wrapMarkdownDocument(textarea.value);
     }
     mode = next;
@@ -154,23 +175,32 @@ export function enhanceMarkdownTextarea(textarea: HTMLTextAreaElement): void {
     tab.addEventListener('click', () => setMode(tab.dataset.mode as EditorMode));
   });
 
-  visual.addEventListener('input', () => syncTextareaFromVisual(textarea, visual));
-
   formatBar.querySelectorAll<HTMLButtonElement>('[data-cmd]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const cmd = btn.dataset.cmd;
       if (mode === 'visual') {
-        visual.focus();
-        if (cmd === 'bold') document.execCommand('bold');
-        else if (cmd === 'italic') document.execCommand('italic');
-        else if (cmd === 'h2') document.execCommand('formatBlock', false, 'h2');
-        else if (cmd === 'h3') document.execCommand('formatBlock', false, 'h3');
-        else if (cmd === 'ul') document.execCommand('insertUnorderedList');
+        const chain = editor.chain().focus();
+        if (cmd === 'bold') chain.toggleBold().run();
+        else if (cmd === 'italic') chain.toggleItalic().run();
+        else if (cmd === 'h2') chain.toggleHeading({ level: 2 }).run();
+        else if (cmd === 'h3') chain.toggleHeading({ level: 3 }).run();
+        else if (cmd === 'ul') chain.toggleBulletList().run();
         else if (cmd === 'link') {
-          const url = window.prompt('Link URL');
-          if (url) document.execCommand('createLink', false, url);
-        } else if (cmd === 'code') document.execCommand('insertHTML', false, `<code>${window.getSelection()?.toString() || 'code'}</code>`);
-        syncTextareaFromVisual(textarea, visual);
+          void showPromptDialog({
+            title: 'Insert link',
+            message: 'Enter the URL for this link.',
+            inputType: 'url',
+            placeholder: 'https://',
+          }).then((url) => {
+            if (!url) return;
+            const { from, to } = editor.state.selection;
+            if (from === to) {
+              chain.setLink({ href: url }).insertContent(url).run();
+            } else {
+              chain.setLink({ href: url }).run();
+            }
+          });
+        } else if (cmd === 'code') chain.toggleCode().run();
         return;
       }
       if (mode === 'markdown') {
@@ -180,8 +210,14 @@ export function enhanceMarkdownTextarea(textarea: HTMLTextAreaElement): void {
         else if (cmd === 'h3') wrapSelection(textarea, '\n### ', '\n');
         else if (cmd === 'ul') wrapSelection(textarea, '\n* ', '\n');
         else if (cmd === 'link') {
-          const url = window.prompt('Link URL');
-          if (url) wrapSelection(textarea, '[', `](${url})`);
+          void showPromptDialog({
+            title: 'Insert link',
+            message: 'Enter the URL for this link.',
+            inputType: 'url',
+            placeholder: 'https://',
+          }).then((url) => {
+            if (url) wrapSelection(textarea, '[', `](${url})`);
+          });
         } else if (cmd === 'code') wrapSelection(textarea, '`', '`');
       }
     });
@@ -198,9 +234,10 @@ export function readMarkdownFieldValue(textareaId: string): string {
   const textarea = document.getElementById(textareaId) as HTMLTextAreaElement | null;
   if (!textarea) return '';
   const wrapper = textarea.closest('.workspace-markdown-field');
-  const visual = wrapper?.querySelector('.workspace-markdown-field__visual') as HTMLElement | null;
-  if (visual && !visual.classList.contains('hidden')) {
-    textarea.value = htmlToMarkdown(visual.innerHTML);
+  const visual = wrapper?.querySelector('.workspace-markdown-field__visual');
+  const editor = tipTapEditors.get(textarea);
+  if (editor && visual && !visual.classList.contains('hidden')) {
+    syncTextareaFromEditor(textarea, editor);
   }
   return textarea.value.trim();
 }
