@@ -81,12 +81,36 @@
 }
 
 .account-workspace-shell .account-workspace-panel-section {
-  padding-block: clamp(1.75rem, 4vw, 3rem);
+  padding-block: clamp(1.25rem, 3vw, 2rem);
+  width: 100%;
 }
 
 .account-workspace-shell .account-workspace-panel-inner {
   position: relative;
   z-index: 1;
+  max-width: 100%;
+  padding-inline: clamp(var(--space-sm), 1.5vw, var(--space-lg));
+}
+
+.account-workspace-shell .portal-main {
+  margin-left: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.account-workspace-shell .dashboard-stats-grid {
+  justify-content: stretch;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: clamp(var(--space-md), 2vw, var(--space-lg));
+}
+
+.account-workspace-shell .section-header--workspace .section-title {
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  line-height: 1.2;
+}
+
+.account-workspace-shell .section-header--workspace .section-intro__byline {
+  max-width: none;
 }
 
 .account-workspace-shell .account-workspace-panels {
@@ -107,39 +131,39 @@
   padding: 0;
 }
 
-.site-shell--marketing.account-workspace-shell .admin-portal,
+.site-shell--marketing .account-workspace-shell .admin-portal,
 .site-shell--portal .admin-portal {
   background: var(--bg-spectrum);
 }
 
-.site-shell--marketing.account-workspace-shell #admin-dashboard.admin-dashboard,
+.site-shell--marketing .account-workspace-shell #admin-dashboard.admin-dashboard,
 .site-shell--portal #admin-dashboard.admin-dashboard {
   min-height: 0;
   content-visibility: hidden;
   contain-intrinsic-size: auto 600px;
 }
 
-.site-shell--marketing.account-workspace-shell #admin-dashboard.admin-dashboard[style*="display: block"],
+.site-shell--marketing .account-workspace-shell #admin-dashboard.admin-dashboard[style*="display: block"],
 .site-shell--portal #admin-dashboard.admin-dashboard[style*="display: block"] {
   content-visibility: visible;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-layout,
+.site-shell--marketing .account-workspace-shell .portal-layout,
 .site-shell--portal .portal-layout {
   display: grid;
   grid-template-columns: minmax(0, var(--portal-sidebar-width)) minmax(0, 1fr);
   align-items: start;
-  gap: clamp(var(--space-md), 2vw, var(--space-xl));
+  gap: clamp(var(--space-sm), 1.5vw, var(--space-lg));
   width: 100%;
-  max-width: var(--site-frame-wide);
+  max-width: min(100%, calc(100vw - 2 * var(--site-frame-gutter)));
   margin-inline: auto;
-  padding: clamp(var(--space-md), 2vw, var(--space-xl)) var(--site-frame-gutter)
+  padding: clamp(var(--space-md), 2vw, var(--space-lg)) var(--site-frame-gutter)
     clamp(var(--space-2xl), 4vw, var(--space-3xl));
   box-sizing: border-box;
   min-height: 0;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-sidebar,
+.site-shell--marketing .account-workspace-shell .portal-sidebar,
 .site-shell--portal .portal-sidebar {
   position: sticky;
   top: var(--site-main-offset-top);
@@ -160,12 +184,12 @@
   flex-direction: column;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-sidebar::before,
+.site-shell--marketing .account-workspace-shell .portal-sidebar::before,
 .site-shell--portal .portal-sidebar::before {
   display: none;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-header,
+.site-shell--marketing .account-workspace-shell .sidebar-header,
 .site-shell--portal .sidebar-header {
   background: var(--surface-elevated);
   color: var(--text-primary);
@@ -174,44 +198,44 @@
   padding: var(--space-lg);
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-header::before,
+.site-shell--marketing .account-workspace-shell .sidebar-header::before,
 .site-shell--portal .sidebar-header::before {
   display: none;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-logo,
+.site-shell--marketing .account-workspace-shell .sidebar-logo,
 .site-shell--portal .sidebar-logo,
-.site-shell--marketing.account-workspace-shell .sidebar-subtitle,
+.site-shell--marketing .account-workspace-shell .sidebar-subtitle,
 .site-shell--portal .sidebar-subtitle {
   color: var(--text-primary);
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-subtitle,
+.site-shell--marketing .account-workspace-shell .sidebar-subtitle,
 .site-shell--portal .sidebar-subtitle {
   opacity: 0.72;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-toggle,
+.site-shell--marketing .account-workspace-shell .sidebar-toggle,
 .site-shell--portal .sidebar-toggle {
   background: var(--surface);
   border-color: var(--border);
   color: var(--text-primary);
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item,
 .site-shell--portal .sidebar-nav-item {
   clip-path: none;
   border: 1px solid transparent;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item::before,
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item::after,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item::before,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item::after,
 .site-shell--portal .sidebar-nav-item::before,
 .site-shell--portal .sidebar-nav-item::after {
   display: none;
 }
 
-.site-shell--marketing.account-workspace-shell .admin-section-collapsible .section-toggle[aria-expanded='false'] ~ .section-content,
+.site-shell--marketing .account-workspace-shell .admin-section-collapsible .section-toggle[aria-expanded='false'] ~ .section-content,
 .site-shell--portal .admin-section-collapsible .section-toggle[aria-expanded='false'] ~ .section-content {
   display: none !important;
   max-height: 0 !important;
@@ -222,51 +246,51 @@
 }
 
 /* Flatten legacy portal chrome — decorative pseudo-elements clip or misalign in grid layout */
-.site-shell--marketing.account-workspace-shell .admin-section::before,
-.site-shell--marketing.account-workspace-shell .admin-section::after,
+.site-shell--marketing .account-workspace-shell .admin-section::before,
+.site-shell--marketing .account-workspace-shell .admin-section::after,
 .site-shell--portal .admin-section::before,
 .site-shell--portal .admin-section::after,
-.site-shell--marketing.account-workspace-shell .admin-section h2::before,
+.site-shell--marketing .account-workspace-shell .admin-section h2::before,
 .site-shell--portal .admin-section h2::before,
-.site-shell--marketing.account-workspace-shell .section-header::after,
+.site-shell--marketing .account-workspace-shell .section-header::after,
 .site-shell--portal .section-header::after,
-.site-shell--marketing.account-workspace-shell .section-toggle::before,
+.site-shell--marketing .account-workspace-shell .section-toggle::before,
 .site-shell--portal .section-toggle::before,
-.site-shell--marketing.account-workspace-shell .admin-portal .form-group label::before,
+.site-shell--marketing .account-workspace-shell .admin-portal .form-group label::before,
 .site-shell--portal .admin-portal .form-group label::before {
   display: none;
 }
 
-.site-shell--marketing.account-workspace-shell .admin-section:hover,
+.site-shell--marketing .account-workspace-shell .admin-section:hover,
 .site-shell--portal .admin-section:hover {
   transform: none;
 }
 
-.site-shell--marketing.account-workspace-shell .resource-item:has(.resource-actions-more.active),
+.site-shell--marketing .account-workspace-shell .resource-item:has(.resource-actions-more.active),
 .site-shell--portal .resource-item:has(.resource-actions-more.active) {
   overflow: visible;
   z-index: 2;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item:hover,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item:hover,
 .site-shell--portal .sidebar-nav-item:hover {
   background: var(--primary-light);
   border-color: rgba(var(--primary-color-rgb), 0.12);
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item.active,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active,
 .site-shell--portal .sidebar-nav-item.active {
   background: var(--primary-light);
   border-color: rgba(var(--primary-color-rgb), 0.22);
   color: var(--primary-dark);
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav-item.active .nav-icon,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active .nav-icon,
 .site-shell--portal .sidebar-nav-item.active .nav-icon {
   color: var(--primary-color);
 }
 
-.site-shell--marketing.account-workspace-shell .portal-main,
+.site-shell--marketing .account-workspace-shell .portal-main,
 .site-shell--portal .portal-main {
   margin-left: 0;
   min-height: 0;
@@ -275,7 +299,7 @@
   overflow: visible;
 }
 
-.site-shell--marketing.account-workspace-shell .sidebar-nav {
+.site-shell--marketing .account-workspace-shell .sidebar-nav {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -283,11 +307,11 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-panel {
+.site-shell--marketing .account-workspace-shell .portal-panel {
   height: auto;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-header,
+.site-shell--marketing .account-workspace-shell .portal-header,
 .site-shell--portal .portal-header {
   position: sticky;
   top: var(--site-main-offset-top);
@@ -299,17 +323,17 @@
   margin-bottom: clamp(var(--space-md), 2vw, var(--space-lg));
 }
 
-.site-shell--marketing.account-workspace-shell .portal-panels,
+.site-shell--marketing .account-workspace-shell .portal-panels,
 .site-shell--portal .portal-panels {
   background: transparent;
 }
 
-.site-shell--marketing.account-workspace-shell .portal-panel .admin-content,
+.site-shell--marketing .account-workspace-shell .portal-panel .admin-content,
 .site-shell--portal .portal-panel .admin-content {
   padding: 0;
 }
 
-.site-shell--marketing.account-workspace-shell .admin-section,
+.site-shell--marketing .account-workspace-shell .admin-section,
 .site-shell--portal .admin-section {
   background: var(--surface-elevated);
   border: 1px solid var(--border);
@@ -318,7 +342,7 @@
   box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
 }
 
-.site-shell--marketing.account-workspace-shell .workspace-hero,
+.site-shell--marketing .account-workspace-shell .workspace-hero,
 .site-shell--portal .workspace-hero {
   margin-bottom: clamp(var(--space-md), 2vw, var(--space-lg));
   padding: clamp(var(--space-lg), 3vw, var(--space-xl));
@@ -329,7 +353,7 @@
     var(--surface-elevated);
 }
 
-.site-shell--marketing.account-workspace-shell .workspace-hero__eyebrow,
+.site-shell--marketing .account-workspace-shell .workspace-hero__eyebrow,
 .site-shell--portal .workspace-hero__eyebrow {
   margin: 0 0 var(--space-xs);
   font-size: var(--text-sm);
@@ -339,7 +363,7 @@
   color: var(--primary-color);
 }
 
-.site-shell--marketing.account-workspace-shell .workspace-hero__title,
+.site-shell--marketing .account-workspace-shell .workspace-hero__title,
 .site-shell--portal .workspace-hero__title {
   margin: 0 0 var(--space-sm);
   font-size: clamp(1.35rem, 2.2vw, 1.85rem);
@@ -347,7 +371,7 @@
   color: var(--primary-ink);
 }
 
-.site-shell--marketing.account-workspace-shell .workspace-hero__lead,
+.site-shell--marketing .account-workspace-shell .workspace-hero__lead,
 .site-shell--portal .workspace-hero__lead {
   margin: 0;
   max-width: var(--measure-prose);
@@ -355,7 +379,7 @@
   line-height: 1.55;
 }
 
-.site-shell--marketing.account-workspace-shell #api-connectivity-banner.api-connectivity-banner,
+.site-shell--marketing .account-workspace-shell #api-connectivity-banner.api-connectivity-banner,
 .site-shell--portal #api-connectivity-banner.api-connectivity-banner {
   display: flex;
   flex-wrap: wrap;
@@ -372,7 +396,7 @@
   color: var(--text-secondary);
 }
 
-.site-shell--marketing.account-workspace-shell .api-connectivity-endpoint,
+.site-shell--marketing .account-workspace-shell .api-connectivity-endpoint,
 .site-shell--portal .api-connectivity-endpoint {
   font-size: var(--text-xs);
   padding: 0.15rem 0.4rem;
@@ -381,39 +405,39 @@
   word-break: break-all;
 }
 
-.site-shell--marketing.account-workspace-shell #login-screen ~ #api-connectivity-banner,
+.site-shell--marketing .account-workspace-shell #login-screen ~ #api-connectivity-banner,
 .site-shell--portal #login-screen ~ #api-connectivity-banner {
   max-width: var(--site-frame-wide);
   padding-inline: var(--site-frame-gutter);
 }
 
-.site-shell--marketing.account-workspace-shell .api-connectivity-banner[data-state='ok'],
+.site-shell--marketing .account-workspace-shell .api-connectivity-banner[data-state='ok'],
 .site-shell--portal .api-connectivity-banner[data-state='ok'] {
   border-color: rgba(16, 185, 129, 0.35);
   background: #ecfdf5;
   color: #065f46;
 }
 
-.site-shell--marketing.account-workspace-shell .api-connectivity-banner[data-state='warn'],
+.site-shell--marketing .account-workspace-shell .api-connectivity-banner[data-state='warn'],
 .site-shell--portal .api-connectivity-banner[data-state='warn'] {
   border-color: rgba(245, 158, 11, 0.35);
   background: #fffbeb;
   color: #92400e;
 }
 
-.site-shell--marketing.account-workspace-shell .api-connectivity-banner[data-state='error'],
+.site-shell--marketing .account-workspace-shell .api-connectivity-banner[data-state='error'],
 .site-shell--portal .api-connectivity-banner[data-state='error'] {
   border-color: rgba(239, 68, 68, 0.35);
   background: #fef2f2;
   color: #991b1b;
 }
 
-.site-shell--marketing.account-workspace-shell .api-connectivity-banner[hidden],
+.site-shell--marketing .account-workspace-shell .api-connectivity-banner[hidden],
 .site-shell--portal .api-connectivity-banner[hidden] {
   display: none !important;
 }
 
-.site-shell--marketing.account-workspace-shell .stat-card,
+.site-shell--marketing .account-workspace-shell .stat-card,
 .site-shell--portal .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -421,28 +445,28 @@
   box-shadow: none;
 }
 
-.site-shell--marketing.account-workspace-shell .stat-card::before,
+.site-shell--marketing .account-workspace-shell .stat-card::before,
 .site-shell--portal .stat-card::after,
 .site-shell--portal .stat-card::before,
 .site-shell--portal .stat-card::after {
   display: none;
 }
 
-.site-shell--marketing.account-workspace-shell .stat-icon,
+.site-shell--marketing .account-workspace-shell .stat-icon,
 .site-shell--portal .stat-icon {
   background: var(--primary-light);
   color: var(--primary-color);
   border-radius: var(--border-radius);
 }
 
-.site-shell--marketing.account-workspace-shell .client-insights,
+.site-shell--marketing .account-workspace-shell .client-insights,
 .site-shell--portal .client-insights {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: var(--space-lg);
 }
 
-.site-shell--marketing.account-workspace-shell .client-token-card,
+.site-shell--marketing .account-workspace-shell .client-token-card,
 .site-shell--portal .client-contributions-card,
 .site-shell--portal .client-token-card,
 .site-shell--portal .client-contributions-card {
@@ -452,7 +476,7 @@
   padding: var(--space-lg);
 }
 
-.site-shell--marketing.account-workspace-shell .quick-action-card,
+.site-shell--marketing .account-workspace-shell .quick-action-card,
 .site-shell--portal .starter-block-card,
 .site-shell--portal .quick-action-card,
 .site-shell--portal .starter-block-card {
@@ -461,7 +485,7 @@
   background: var(--surface-elevated);
 }
 
-.site-shell--marketing.account-workspace-shell .quick-action-card:hover,
+.site-shell--marketing .account-workspace-shell .quick-action-card:hover,
 .site-shell--portal .starter-block-card:hover,
 .site-shell--portal .quick-action-card:hover,
 .site-shell--portal .starter-block-card:hover {
@@ -469,7 +493,7 @@
   box-shadow: 0 0.5rem 1.25rem rgba(var(--primary-color-rgb), 0.08);
 }
 
-.site-shell--marketing.account-workspace-shell .moderation-card,
+.site-shell--marketing .account-workspace-shell .moderation-card,
 .site-shell--portal .site-review-card,
 .site-shell--portal .moderation-card,
 .site-shell--portal .site-review-card {
@@ -479,7 +503,7 @@
   padding: var(--space-lg);
 }
 
-.site-shell--marketing.account-workspace-shell .passkey-row,
+.site-shell--marketing .account-workspace-shell .passkey-row,
 .site-shell--portal .passkey-row {
   display: flex;
   align-items: center;
@@ -489,19 +513,19 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.site-shell--marketing.account-workspace-shell .passkey-row:last-child,
+.site-shell--marketing .account-workspace-shell .passkey-row:last-child,
 .site-shell--portal .passkey-row:last-child {
   border-bottom: none;
 }
 
-.site-shell--marketing.account-workspace-shell .client-security-card .security-subsection + .security-subsection,
+.site-shell--marketing .account-workspace-shell .client-security-card .security-subsection + .security-subsection,
 .site-shell--portal .client-security-card .security-subsection + .security-subsection {
   margin-top: var(--space-lg);
   padding-top: var(--space-lg);
   border-top: 1px solid var(--border-light);
 }
 
-.site-shell--marketing.account-workspace-shell .security-subsection-title,
+.site-shell--marketing .account-workspace-shell .security-subsection-title,
 .site-shell--portal .security-subsection-title {
   margin: 0 0 var(--space-sm);
   font-size: var(--text-base);
@@ -615,14 +639,14 @@
 }
 
 @media (max-width: 1023px) {
-  .site-shell--marketing.account-workspace-shell .portal-layout,
+  .site-shell--marketing .account-workspace-shell .portal-layout,
 .site-shell--portal .portal-layout {
     grid-template-columns: 1fr;
     padding-inline: var(--layout-padding-inline-start, var(--site-frame-gutter))
       var(--layout-padding-inline-end, var(--site-frame-gutter));
   }
 
-  .site-shell--marketing.account-workspace-shell .portal-sidebar,
+  .site-shell--marketing .account-workspace-shell .portal-sidebar,
 .site-shell--portal .portal-sidebar {
     position: fixed;
     top: var(--site-main-offset-top);
@@ -635,12 +659,12 @@
     z-index: 120;
   }
 
-  .site-shell--marketing.account-workspace-shell .portal-sidebar.open,
+  .site-shell--marketing .account-workspace-shell .portal-sidebar.open,
 .site-shell--portal .portal-sidebar.open {
     transform: translateX(0);
   }
 
-  .site-shell--marketing.account-workspace-shell .portal-sidebar.open ~ .portal-main::before,
+  .site-shell--marketing .account-workspace-shell .portal-sidebar.open ~ .portal-main::before,
 .site-shell--portal .portal-sidebar.open ~ .portal-main::before {
     top: var(--site-main-offset-top);
   }
@@ -650,6 +674,7 @@
 body[data-page-id='account'] {
   --page-density-multiplier: 1;
   --page-measure-max: min(44rem, 100%);
+  --portal-sidebar-width: clamp(13.5rem, 14vw, 16.5rem);
 }
 
 .main-phi-chassis.account-workspace-shell {
@@ -696,17 +721,13 @@ body[data-page-id='account'] {
   padding-top: var(--space-md);
 }
 
-.account-workspace-shell .account-workspace-panel-section {
-  padding-block: clamp(1.25rem, 3vw, 2.25rem);
-}
-
 .account-workspace-shell .account-workspace-panels,
 .account-workspace-shell .account-workspace-panels > .portal-panels {
   overflow: visible;
 }
 
 @media (max-width: 1023px) {
-  .site-shell--marketing.account-workspace-shell .portal-sidebar.open {
+  .site-shell--marketing .account-workspace-shell .portal-sidebar.open {
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -714,11 +735,11 @@ body[data-page-id='account'] {
 
 /* Desktop: keep sidebar in grid flow (override legacy fixed positioning) */
 @media (min-width: 1024px) {
-  .site-shell--marketing.account-workspace-shell .portal-layout {
+  .site-shell--marketing .account-workspace-shell .portal-layout {
     display: grid !important;
   }
 
-  .site-shell--marketing.account-workspace-shell .portal-sidebar {
+  .site-shell--marketing .account-workspace-shell .portal-sidebar {
     position: sticky !important;
     left: auto !important;
     top: var(--site-main-offset-top) !important;
@@ -732,20 +753,20 @@ body[data-page-id='account'] {
     z-index: 30 !important;
   }
 
-  .site-shell--marketing.account-workspace-shell .portal-main {
+  .site-shell--marketing .account-workspace-shell .portal-main {
     margin-left: 0 !important;
     width: 100% !important;
     min-height: 0 !important;
   }
 
-  .site-shell--marketing.account-workspace-shell .sidebar-toggle {
+  .site-shell--marketing .account-workspace-shell .sidebar-toggle {
     display: none !important;
   }
 }
 
 /* Single page scroll: footer stays in document flow below workspace */
-.site-shell--marketing.account-workspace-shell .admin-portal,
-.site-shell--marketing.account-workspace-shell .account-workspace-root {
+.site-shell--marketing .account-workspace-shell .admin-portal,
+.site-shell--marketing .account-workspace-shell .account-workspace-root {
   overflow-y: visible !important;
   overflow-x: clip;
   min-height: 0 !important;
@@ -984,10 +1005,6 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-}
-
-.account-workspace-shell .portal-sidebar {
-  position: relative;
 }
 
 .account-workspace-shell .sidebar-nav-tracks {

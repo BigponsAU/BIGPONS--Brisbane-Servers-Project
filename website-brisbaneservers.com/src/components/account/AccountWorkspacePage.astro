@@ -1,5 +1,5 @@
 ---
-import SiteShell from '../../layouts/SiteShell.astro';
+import AccountSiteShell from '../../layouts/AccountSiteShell.astro';
 import AccountSignIn from './AccountSignIn.astro';
 import AccountBasicHome from './AccountBasicHome.astro';
 import AccountWorkspaceShell from './AccountWorkspaceShell.astro';
@@ -33,7 +33,7 @@ const pageTitleSignedOut = `Sign in · ${accountWorkspace.productName}`;
 const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWorkspace.productName}`;
 ---
 
-<SiteShell
+<AccountSiteShell
   title={pageTitleSignedOut}
   description="Secure account workspace for contributions, resources, and voice profile management"
   noindex={true}
@@ -103,4 +103,4 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       boot();
     }
   </script>
-</SiteShell>
+</AccountSiteShell>

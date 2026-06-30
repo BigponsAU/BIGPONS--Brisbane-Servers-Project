@@ -449,17 +449,28 @@ function checkBundledClientScripts(): VerificationResult {
     }
 
     const jsAssets = readdirSync(assetsDir).filter((name) => name.endsWith('.js'));
-    const hasMain = jsAssets.some((name) => name.includes('BaseLayout'));
+    const hasMarketingShell = jsAssets.some(
+      (name) => name.includes('SiteShell') && !name.includes('AccountSiteShell'),
+    );
+    const hasAccountShell = jsAssets.some((name) => name.includes('AccountSiteShell'));
     const hasAccount = jsAssets.some((name) => name.includes('account-auth') || name.includes('AccountWorkspacePage'));
     const hasDashboardApp = jsAssets.some((name) => name.includes('account-workspace-app'));
     const hasDashboardProfiles = jsAssets.some((name) => name.includes('account-workspace-profiles'));
     const hasDashboardResources = jsAssets.some((name) => name.includes('account-workspace-resources'));
 
-    if (!hasMain) {
+    if (!hasMarketingShell) {
       return {
         name: 'Bundled Client Scripts',
         passed: false,
-        message: 'Missing BaseLayout client bundle in dist/assets',
+        message: 'Missing SiteShell client bundle (main.ts) in dist/assets',
+      };
+    }
+
+    if (!hasAccountShell) {
+      return {
+        name: 'Bundled Client Scripts',
+        passed: false,
+        message: 'Missing AccountSiteShell client bundle (account-nav.ts) in dist/assets',
       };
     }
 
@@ -493,6 +504,83 @@ function checkBundledClientScripts(): VerificationResult {
 }
 
 /**
+ * Marketing pages must load main.ts (search); account must load account-nav only.
+ * Guards against Astro conditional-script index inversion (search silent failure).
+ */
+function checkClientBundlePageMapping(): VerificationResult {
+  try {
+    const marketingPages = [
+      join(distPath, 'index.html'),
+      join(distPath, 'resources', 'index.html'),
+    ];
+    const accountPage = join(distPath, 'account', 'index.html');
+    const assetsDir = join(distPath, 'assets');
+
+    const readBundleForHtml = (htmlPath: string): { scriptName: string; content: string } | null => {
+      if (!existsSync(htmlPath)) return null;
+      const html = readFileSync(htmlPath, 'utf-8');
+      const match = html.match(/\/assets\/([^"']+\.js)/);
+      if (!match) return null;
+      const scriptName = match[1];
+      const scriptPath = join(assetsDir, scriptName);
+      if (!existsSync(scriptPath)) return null;
+      return { scriptName, content: readFileSync(scriptPath, 'utf-8') };
+    };
+
+    const marketingMissingSearch: string[] = [];
+    for (const pagePath of marketingPages) {
+      const bundle = readBundleForHtml(pagePath);
+      if (!bundle) {
+        marketingMissingSearch.push(`${pagePath.replace(distPath, 'dist')}: no client bundle`);
+        continue;
+      }
+      if (!bundle.content.includes('search-results')) {
+        marketingMissingSearch.push(
+          `${pagePath.replace(distPath, 'dist')}: ${bundle.scriptName} missing search`,
+        );
+      }
+    }
+
+    if (marketingMissingSearch.length > 0) {
+      return {
+        name: 'Client bundle page mapping',
+        passed: false,
+        message: marketingMissingSearch.join('; '),
+      };
+    }
+
+    const accountBundle = readBundleForHtml(accountPage);
+    if (!accountBundle) {
+      return {
+        name: 'Client bundle page mapping',
+        passed: false,
+        message: 'account/index.html has no client bundle',
+      };
+    }
+
+    if (accountBundle.content.includes('search-results')) {
+      return {
+        name: 'Client bundle page mapping',
+        passed: false,
+        message: `account loads marketing bundle (${accountBundle.scriptName})`,
+      };
+    }
+
+    return {
+      name: 'Client bundle page mapping',
+      passed: true,
+      message: 'Marketing pages load main.ts; account loads account-nav.ts',
+    };
+  } catch (error) {
+    return {
+      name: 'Client bundle page mapping',
+      passed: false,
+      message: `Could not verify bundle mapping: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+/**
  * Run all verification checks
  */
 function runVerification(): void {
@@ -505,6 +593,7 @@ function runVerification(): void {
   results.push(checkCSSFiles());
   results.push(checkBrandChromaCSS());
   results.push(checkBundledClientScripts());
+  results.push(checkClientBundlePageMapping());
   results.push(checkAssetReferences());
 
   // Print results

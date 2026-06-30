@@ -1,0 +1,53 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MarketingMainRail from '../components/marketing/MarketingMainRail.astro';
+import type { PageShellVariant } from '../lib/page-descriptors';
+
+interface Props {
+  currentPath?: string;
+  pageId?: string;
+  shellVariant?: PageShellVariant;
+  mainClass?: string;
+  mainId?: string;
+  showFooter?: boolean;
+}
+
+const {
+  currentPath = '',
+  pageId,
+  shellVariant = 'public',
+  mainClass = '',
+  mainId = 'main-content',
+  showFooter = true,
+} = Astro.props;
+
+/** Guide routes: header scrolls with the page (no fixed overlap / bleed). */
+const headerInFlow =
+  pageId === 'resource-topic' || pageId === 'resource-industry';
+
+const shellClassName = [
+  'site-shell',
+  `site-shell--${shellVariant}`,
+  headerInFlow && 'site-shell--header-in-flow',
+]
+  .filter(Boolean)
+  .join(' ');
+const mainClassName = [
+  'site-main',
+  shellVariant !== 'portal' ? 'site-main--public' : '',
+  shellVariant === 'marketing' ? 'site-main--marketing' : '',
+  shellVariant === 'public' ? 'site-main--marketing' : '',
+  mainClass,
+].filter(Boolean).join(' ');
+const showMarketingRail = shellVariant !== 'portal' && pageId !== 'account';
+---
+
+<div class={shellClassName}>
+  <Header currentPath={currentPath} />
+  <main id={mainId} class={mainClassName} role="main">
+    {showMarketingRail && <MarketingMainRail />}
+    <slot />
+  </main>
+  {showFooter && <Footer />}
+</div>
