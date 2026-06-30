@@ -314,22 +314,23 @@
     z-index: 4;
 }
 
-/* Dark hero-wash bands outside decks */
-.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) {
-    position: relative;
-    z-index: 1;
+/* Static dark → light bands: normal flow (scroll-over only via scroll-transition-deck exit) */
+.main-home .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) + .section,
+.marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section--hero-wash + .section {
     margin-top: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: var(--original-bg-gradient) !important;
-    padding-bottom: clamp(2.5rem, 7vh, 4.5rem);
-    overflow: hidden;
+    transform: none !important;
+    z-index: auto;
 }
 
-.section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
-.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section {
+.main-home .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) + .section::before,
+.marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section--hero-wash + .section::before {
+    display: none !important;
+    content: none !important;
+}
+
+.section-scroll-over-panel:not(.section-scroll-deck-cover--exit) {
     position: relative;
     z-index: 12;
     margin-top: clamp(-4.75rem, -11vh, -2.75rem) !important;
@@ -345,8 +346,7 @@
     will-change: transform;
 }
 
-.section-scroll-over-panel:not(.section-scroll-deck-cover--exit)::before,
-.section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section::before {
+.section-scroll-over-panel:not(.section-scroll-deck-cover--exit)::before {
     content: '';
     position: absolute;
     top: 0;
@@ -501,9 +501,13 @@
         border-radius: 0.65rem 0.65rem 0 0;
     }
 
-    .section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
-    .section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section {
+    .section-scroll-over-panel:not(.section-scroll-deck-cover--exit) {
         margin-top: clamp(-2.5rem, -7vh, -1.5rem) !important;
+    }
+
+    .main-home .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) + .section,
+    .marketing-page-bands--scroll-layers .marketing-page-bands__stage > .section.section--hero-wash + .section {
+        margin-top: 0 !important;
     }
 
     .scroll-transition-deck:not(.scroll-transition-deck--bottom-engulf) .section-scroll-deck-cover--exit {
@@ -553,7 +557,6 @@
     .scroll-layer-canopy__plane,
     .section--hero-wash .section-satellite--backdrop,
     .section-scroll-over-panel:not(.section-scroll-deck-cover),
-    .section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section,
     .scroll-transition-deck .section-scroll-deck-stage,
     .scroll-transition-deck .section-scroll-deck-cover {
         transform: none !important;

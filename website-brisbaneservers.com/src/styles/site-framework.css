@@ -224,6 +224,7 @@ main.main-phi-chassis .section:not(.hero),
  */
 .site-main--marketing .section.section--hero-wash,
 .main-home .home-sections-shell > .section.section--hero-wash,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage),
 main:not(.site-main) .section.section--hero-wash {
   isolation: isolate;
   overflow-x: clip;
@@ -234,6 +235,7 @@ main:not(.site-main) .section.section--hero-wash {
 /* Same multiply veil as `.hero::before` */
 .site-main--marketing .section.section--hero-wash::before,
 .main-home .home-sections-shell > .section.section--hero-wash::before,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage)::before,
 main:not(.site-main) .section.section--hero-wash::before {
   content: '' !important;
   display: block !important;
@@ -260,6 +262,7 @@ main:not(.site-main) .section.section--hero-wash::before {
 
 .site-main--marketing .section.section--hero-wash > .container,
 .main-home .home-sections-shell > .section.section--hero-wash > .container,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) > .container,
 main:not(.site-main) .section.section--hero-wash > .container {
   position: relative;
   z-index: 2;
@@ -268,6 +271,7 @@ main:not(.site-main) .section.section--hero-wash > .container {
 /* Copy on the dark hero surface (cards keep their own surfaces) */
 .site-main--marketing .section.section--hero-wash > .container .section-title,
 .main-home .home-sections-shell > .section.section--hero-wash > .container .section-title,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) > .container .section-title,
 main:not(.site-main) .section.section--hero-wash > .container .section-title {
   color: var(--text-on-dark);
 }
@@ -276,6 +280,8 @@ main:not(.site-main) .section.section--hero-wash > .container .section-title {
 .site-main--marketing .section.section--hero-wash > .container .section-intro-phi,
 .main-home .home-sections-shell > .section.section--hero-wash > .container .section-description,
 .main-home .home-sections-shell > .section.section--hero-wash > .container .section-intro-phi,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) > .container .section-description,
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) > .container .section-intro-phi,
 main:not(.site-main) .section.section--hero-wash > .container .section-description,
 main:not(.site-main) .section.section--hero-wash > .container .section-intro-phi {
   color: rgba(255, 255, 255, 0.88);
@@ -295,12 +301,14 @@ main:not(.site-main) .section.section--hero-wash > .container .contribute-block 
 
 .site-main--marketing .section.section--hero-wash > .container a:not(.btn),
 .main-home .home-sections-shell > .section.section--hero-wash > .container a:not(.btn),
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) > .container a:not(.btn),
 main:not(.site-main) .section.section--hero-wash > .container a:not(.btn) {
   color: rgba(255, 255, 255, 0.95);
   text-decoration-color: rgba(255, 255, 255, 0.4);
 }
 
-.main-home .home-sections-shell > .section.section--hero-wash .section-title :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-parent) {
+.main-home .home-sections-shell > .section.section--hero-wash .section-title :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-parent),
+.main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage) .section-title :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-parent) {
   color: inherit !important;
 }
 
