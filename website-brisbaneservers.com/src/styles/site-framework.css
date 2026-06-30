@@ -865,11 +865,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 /* Active band: in-section graph grows toward the gutter without becoming a full-width mesh */
-.main-home .home-interconnection-rig[data-margin-band='strategy'] .home-band--strategy .section-satellite.section-satellite--strategy:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='about'] .home-band--about .section-satellite.section-satellite--about:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='challenge'] .home-band--challenge .section-satellite.section-satellite--challenge:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='partnership'] .home-band--partnership .section-satellite.section-satellite--partnership:not(.section-satellite--gutter-echo) {
+.main-home .home-interconnection-rig[data-margin-band='strategy'] .home-band--strategy .section-satellite.section-satellite--strategy:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='about'] .home-band--about .section-satellite.section-satellite--about:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='challenge'] .home-band--challenge .section-satellite.section-satellite--challenge:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='partnership'] .home-band--partnership .section-satellite.section-satellite--partnership:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop) {
   width: min(20rem, calc(14rem + var(--home-page-margin-w) * 0.32));
   right: calc(-0.44 * var(--home-page-margin-w));
   opacity: 0.72;
@@ -877,10 +877,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   transform-origin: 84% 38%;
 }
 
-.main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo),
-.main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo) {
+.main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop),
+.main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop) {
   width: min(20rem, calc(14rem + var(--home-page-margin-w) * 0.32));
   left: calc(-0.44 * var(--home-page-margin-w));
   opacity: 0.72;
@@ -888,11 +888,11 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   transform-origin: 16% 38%;
 }
 
-.main-home .home-interconnection-rig[data-margin-band='strategy'] .home-band--strategy .section-satellite.section-satellite--strategy:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='about'] .home-band--about .section-satellite.section-satellite--about:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='challenge'] .home-band--challenge .section-satellite.section-satellite--challenge:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='partnership'] .home-band--partnership .section-satellite.section-satellite--partnership:not(.section-satellite--gutter-echo)::after {
+.main-home .home-interconnection-rig[data-margin-band='strategy'] .home-band--strategy .section-satellite.section-satellite--strategy:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='about'] .home-band--about .section-satellite.section-satellite--about:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='challenge'] .home-band--challenge .section-satellite.section-satellite--challenge:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='partnership'] .home-band--partnership .section-satellite.section-satellite--partnership:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after {
   content: '';
   position: absolute;
   top: 38%;
@@ -910,10 +910,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   pointer-events: none;
 }
 
-.main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo)::after,
-.main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo)::after {
+.main-home .home-interconnection-rig[data-margin-band='industry'] .home-band--industry .section-satellite.section-satellite--industry:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='clients'] .home-band--clients .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='contact'] .home-band--contact .section-satellite.section-satellite--contact:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after,
+.main-home .home-interconnection-rig[data-margin-band='solutions'] .home-band--solutions .section-satellite.section-satellite--solutions:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after {
   content: '';
   position: absolute;
   top: 38%;
@@ -931,8 +931,8 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   pointer-events: none;
 }
 
-/* Proof bridge stays slightly brighter on hero-wash */
-.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo)::after {
+/* Proof bridge stays slightly brighter on hero-wash (corner satellites only) */
+.main-home .home-interconnection-rig[data-margin-band='proof'] .home-band--proof .section-satellite.section-satellite--proof:not(.section-satellite--gutter-echo):not(.section-satellite--backdrop)::after {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.62) 0%,
