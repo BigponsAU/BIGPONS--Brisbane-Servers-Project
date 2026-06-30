@@ -107,6 +107,20 @@
 }
 
 /* Bottom-engulf: proof stays locked; only clients panel scrolls over */
+.scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
+    margin-bottom: 0 !important;
+    /* Extra dark runway so white panel does not reach cards too soon */
+    padding-bottom: clamp(22rem, 48vh, 32rem);
+}
+
+.scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash .card-grid {
+    margin-bottom: clamp(2.5rem, 6vh, 4rem);
+}
+
+.scroll-transition-deck--bottom-engulf .section-scroll-deck-cover--exit {
+    margin-top: clamp(-4.5rem, -10vh, -1.5rem) !important;
+}
+
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash > .container {
     transform: none;
     opacity: 1;
@@ -446,6 +460,15 @@
     .section-scroll-over-panel:not(.section-scroll-deck-cover--exit),
     .section-scroll-under.section--hero-wash:not(.section-scroll-deck-stage) + .section {
         margin-top: clamp(-2.5rem, -7vh, -1.5rem) !important;
+    }
+
+    .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under {
+        margin-bottom: 0 !important;
+        padding-bottom: clamp(14rem, 28vh, 18rem);
+    }
+
+    .scroll-transition-deck--bottom-engulf .section-scroll-deck-cover--exit {
+        margin-top: clamp(-3rem, -8vh, -1rem) !important;
     }
 
     .scroll-transition-deck .section-scroll-deck-stage.section-scroll-under {
