@@ -4,6 +4,7 @@
 import { workspaceFetch } from '../lib/client-api';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { getPortalAccountContext } from './account-workspace-runtime';
+import { runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 
@@ -24,6 +25,86 @@ function setGrowthStatus(message: string, isError = false): void {
   if (!el) return;
   el.textContent = message;
   el.style.color = isError ? 'var(--portal-error-dark, #991b1b)' : '';
+}
+
+function findProposalCard(proposalId: string): HTMLElement | null {
+  return document.querySelector(`.growth-proposal-card[data-proposal-id="${proposalId}"]`);
+}
+
+function setProposalCardBusy(
+  card: HTMLElement | null,
+  busy: boolean,
+  action?: 'approve' | 'reject',
+): void {
+  if (!card) return;
+  card.classList.toggle('growth-proposal-card--busy', busy);
+  const approveBtn = card.querySelector('.growth-approve') as HTMLButtonElement | null;
+  const rejectBtn = card.querySelector('.growth-reject') as HTMLButtonElement | null;
+
+  if (approveBtn) {
+    if (busy && action === 'approve') {
+      if (!approveBtn.dataset.originalLabel) {
+        approveBtn.dataset.originalLabel = approveBtn.textContent ?? '';
+      }
+      approveBtn.textContent = 'Generating…';
+      approveBtn.setAttribute('aria-busy', 'true');
+    } else if (!busy) {
+      if (approveBtn.dataset.originalLabel) {
+        approveBtn.textContent = approveBtn.dataset.originalLabel;
+      }
+      approveBtn.removeAttribute('aria-busy');
+    }
+    approveBtn.disabled = busy;
+  }
+
+  if (rejectBtn) {
+    if (busy && action === 'reject') {
+      if (!rejectBtn.dataset.originalLabel) {
+        rejectBtn.dataset.originalLabel = rejectBtn.textContent ?? '';
+      }
+      rejectBtn.textContent = 'Rejecting…';
+      rejectBtn.setAttribute('aria-busy', 'true');
+    } else if (!busy) {
+      if (rejectBtn.dataset.originalLabel) {
+        rejectBtn.textContent = rejectBtn.dataset.originalLabel;
+      }
+      rejectBtn.removeAttribute('aria-busy');
+    }
+    rejectBtn.disabled = busy;
+  }
+
+  if (busy) {
+    card.querySelectorAll('.growth-approve, .growth-reject').forEach((btn) => {
+      (btn as HTMLButtonElement).disabled = true;
+    });
+  }
+}
+
+async function promptProposalAction(
+  card: HTMLElement,
+  proposalId: string,
+  action: 'approve' | 'reject',
+  ctx: PortalAccountContext,
+): Promise<void> {
+  await runWorkspaceGuardedAction(`growth:proposal:${proposalId}`, {
+    confirm: () =>
+      action === 'approve'
+        ? showConfirmDialog({
+            title: 'Approve growth proposal',
+            message: 'Generate a voice-aligned draft from this proposal?',
+            details: 'Draft appears in Resources for review before publish (unless auto-materialize is enabled).',
+            confirmLabel: 'Approve & generate',
+            variant: 'primary',
+          })
+        : showConfirmDialog({
+            title: 'Reject proposal',
+            message: 'Remove this proposal from the queue?',
+            confirmLabel: 'Reject',
+            variant: 'danger',
+          }),
+    onBusy: (busy) => setProposalCardBusy(card, busy, action),
+    run: () => actOnProposal(ctx, proposalId, action),
+  });
 }
 
 function hasSession(ctx: PortalAccountContext): boolean {
@@ -227,29 +308,10 @@ async function renderGrowthProposals(
     const id = (card as HTMLElement).dataset.proposalId;
     if (!id) return;
     card.querySelector('.growth-approve')?.addEventListener('click', () => {
-      void (async () => {
-        const ok = await showConfirmDialog({
-          title: 'Approve growth proposal',
-          message: 'Generate a voice-aligned draft from this proposal?',
-          details: 'Draft appears in Resources for review before publish (unless auto-materialize is enabled).',
-          confirmLabel: 'Approve & generate',
-          variant: 'primary',
-        });
-        if (!ok) return;
-        void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'approve');
-      })();
+      void promptProposalAction(card as HTMLElement, id, 'approve', ctx);
     });
     card.querySelector('.growth-reject')?.addEventListener('click', () => {
-      void (async () => {
-        const ok = await showConfirmDialog({
-          title: 'Reject proposal',
-          message: 'Remove this proposal from the queue?',
-          confirmLabel: 'Reject',
-          variant: 'danger',
-        });
-        if (!ok) return;
-        void actOnProposal(getPortalAccountContext() as unknown as PortalAccountContext, id, 'reject');
-      })();
+      void promptProposalAction(card as HTMLElement, id, 'reject', ctx);
     });
   });
 }
@@ -303,6 +365,7 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
+    const saveBtn = document.getElementById('growth-save-config') as HTMLButtonElement | null;
     const body = {
       enabled: (document.getElementById('growth-enabled') as HTMLInputElement)?.checked ?? false,
       intervalHours: Number((document.getElementById('growth-interval-hours') as HTMLInputElement)?.value ?? 168),
@@ -317,14 +380,19 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
         (document.getElementById('growth-max-units-cycle') as HTMLInputElement)?.value ?? 5
       ),
     };
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    await runWorkspaceGuardedAction('growth:save-config', {
+      onBusy: (busy) => setElementBusy(saveBtn, busy, busy ? 'Saving…' : undefined),
+      run: async () => {
+        const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        setGrowthStatus(data.success ? 'Growth settings saved.' : data.error || 'Save failed.', !data.success);
+        if (data.success) await loadLibraryGrowthPanel(ctx);
+      },
     });
-    const data = await res.json();
-    setGrowthStatus(data.success ? 'Growth settings saved.' : data.error || 'Save failed.', !data.success);
-    if (data.success) await loadLibraryGrowthPanel(ctx);
   });
 
   document.getElementById('growth-arm-schedule')?.addEventListener('click', async () => {
@@ -333,28 +401,34 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
-    const ok = await showConfirmDialog({
-      title: 'Activate growth schedule',
-      message: 'Arm the automated library growth schedule on the edge worker?',
-      details: 'Cron checks every 6 hours when a cycle is due. Budget caps still apply.',
-      confirmLabel: 'Activate schedule',
-      variant: 'primary',
+    const armBtn = document.getElementById('growth-arm-schedule') as HTMLButtonElement | null;
+    await runWorkspaceGuardedAction('growth:arm-schedule', {
+      confirm: () =>
+        showConfirmDialog({
+          title: 'Activate growth schedule',
+          message: 'Arm the automated library growth schedule on the edge worker?',
+          details: 'Cron checks every 6 hours when a cycle is due. Budget caps still apply.',
+          confirmLabel: 'Activate schedule',
+          variant: 'primary',
+        }),
+      onBusy: (busy) => setElementBusy(armBtn, busy, busy ? 'Activating…' : undefined),
+      run: async () => {
+        setGrowthStatus('Activating schedule…');
+        const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'arm' }),
+        });
+        const data = await res.json();
+        setGrowthStatus(
+          data.success
+            ? 'Schedule activated. Edge cron checks every 6 hours when a cycle is due.'
+            : data.error || 'Could not activate schedule.',
+          !data.success
+        );
+        if (data.success) await loadLibraryGrowthPanel(ctx);
+      },
     });
-    if (!ok) return;
-    setGrowthStatus('Activating schedule…');
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'arm' }),
-    });
-    const data = await res.json();
-    setGrowthStatus(
-      data.success
-        ? 'Schedule activated. Edge cron checks every 6 hours when a cycle is due.'
-        : data.error || 'Could not activate schedule.',
-      !data.success
-    );
-    if (data.success) await loadLibraryGrowthPanel(ctx);
   });
 
   document.getElementById('growth-pause-schedule')?.addEventListener('click', async () => {
@@ -363,15 +437,21 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
-    setGrowthStatus('Pausing schedule…');
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'pause' }),
+    const pauseBtn = document.getElementById('growth-pause-schedule') as HTMLButtonElement | null;
+    await runWorkspaceGuardedAction('growth:pause-schedule', {
+      onBusy: (busy) => setElementBusy(pauseBtn, busy, busy ? 'Pausing…' : undefined),
+      run: async () => {
+        setGrowthStatus('Pausing schedule…');
+        const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'pause' }),
+        });
+        const data = await res.json();
+        setGrowthStatus(data.success ? 'Schedule paused. Use Run cycle now for manual planning.' : data.error || 'Pause failed.', !data.success);
+        if (data.success) await loadLibraryGrowthPanel(ctx);
+      },
     });
-    const data = await res.json();
-    setGrowthStatus(data.success ? 'Schedule paused. Use Run cycle now for manual planning.' : data.error || 'Pause failed.', !data.success);
-    if (data.success) await loadLibraryGrowthPanel(ctx);
   });
 
   document.getElementById('growth-run-cycle')?.addEventListener('click', async () => {
@@ -380,48 +460,54 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
       setGrowthStatus('Sign in again to save growth settings.', true);
       return;
     }
-    const ok = await showConfirmDialog({
-      title: 'Run growth cycle now',
-      message: 'Plan new library growth proposals immediately?',
-      details: 'Uses configured budget and proposal limits. Auto-materialize may create drafts in Resources.',
-      confirmLabel: 'Run cycle',
-      variant: 'primary',
+    const runBtn = document.getElementById('growth-run-cycle') as HTMLButtonElement | null;
+    await runWorkspaceGuardedAction('growth:run-cycle', {
+      confirm: () =>
+        showConfirmDialog({
+          title: 'Run growth cycle now',
+          message: 'Plan new library growth proposals immediately?',
+          details: 'Uses configured budget and proposal limits. Auto-materialize may create drafts in Resources.',
+          confirmLabel: 'Run cycle',
+          variant: 'primary',
+        }),
+      onBusy: (busy) => setElementBusy(runBtn, busy, busy ? 'Running…' : undefined),
+      run: async () => {
+        trackPortalAction('runLibraryGrowthCycle');
+        setGrowthStatus('Running growth cycle…');
+        const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
+          method: 'POST',
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          trackPortalError('runLibraryGrowthCycle', new Error(data.error || 'Cycle failed'));
+          setGrowthStatus(data.error || 'Cycle failed.', true);
+          return;
+        }
+        const mat = data.autoMaterialize as {
+          materialized?: number;
+          published?: number;
+          budgetBlocked?: boolean;
+          budgetReason?: string;
+          skippedBudget?: number;
+        } | undefined;
+        const queue = data.queue as { pending?: number; materialized?: number; rejected?: number } | undefined;
+        const parts = [
+          `Cycle: ${data.created} new proposal(s), ${data.skipped} skipped.`,
+        ];
+        if (mat?.budgetBlocked) {
+          parts.push(`Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`);
+        } else if (mat && (mat.materialized ?? 0) > 0) {
+          parts.push(
+            `Auto-generated ${mat.materialized} draft(s) in Resources${mat.published ? ` (${mat.published} auto-published)` : ''}.`
+          );
+        }
+        if (queue) {
+          parts.push(`Queue now: ${queue.pending ?? 0} pending, ${queue.materialized ?? 0} materialized.`);
+        }
+        setGrowthStatus(parts.join(' '));
+        await loadLibraryGrowthPanel(ctx);
+      },
     });
-    if (!ok) return;
-    trackPortalAction('runLibraryGrowthCycle');
-    setGrowthStatus('Running growth cycle…');
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/library-growth`, {
-      method: 'POST',
-    });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      trackPortalError('runLibraryGrowthCycle', new Error(data.error || 'Cycle failed'));
-      setGrowthStatus(data.error || 'Cycle failed.', true);
-      return;
-    }
-    const mat = data.autoMaterialize as {
-      materialized?: number;
-      published?: number;
-      budgetBlocked?: boolean;
-      budgetReason?: string;
-      skippedBudget?: number;
-    } | undefined;
-    const queue = data.queue as { pending?: number; materialized?: number; rejected?: number } | undefined;
-    const parts = [
-      `Cycle: ${data.created} new proposal(s), ${data.skipped} skipped.`,
-    ];
-    if (mat?.budgetBlocked) {
-      parts.push(`Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`);
-    } else if (mat && (mat.materialized ?? 0) > 0) {
-      parts.push(
-        `Auto-generated ${mat.materialized} draft(s) in Resources${mat.published ? ` (${mat.published} auto-published)` : ''}.`
-      );
-    }
-    if (queue) {
-      parts.push(`Queue now: ${queue.pending ?? 0} pending, ${queue.materialized ?? 0} materialized.`);
-    }
-    setGrowthStatus(parts.join(' '));
-    await loadLibraryGrowthPanel(ctx);
   });
 
   document.getElementById('growth-refresh-queue')?.addEventListener('click', () => void loadLibraryGrowthPanel(resolveCtx()));

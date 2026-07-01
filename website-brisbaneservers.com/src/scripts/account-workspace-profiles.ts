@@ -1,6 +1,6 @@
 // @ts-nocheck — profiles panel (extracted from account-workspace-app)
 import { workspaceFetch } from '../lib/client-api';
-import { escapeHtml, showWorkspaceNotification } from './account-workspace-utils';
+import { escapeHtml, showWorkspaceNotification, runWorkspaceGuardedAction, withWorkspaceActionGuard } from './account-workspace-utils';
 import { showConfirmDialog } from './portal-confirm-dialog';
 
 export type ProfilesWorkspaceDeps = {
@@ -20,12 +20,14 @@ export function registerProfilesWorkspace(deps: ProfilesWorkspaceDeps): {
 async function createBaseProfile(): Promise<void> {
   const btn = document.getElementById('create-base-profile-btn') as HTMLButtonElement;
   if (!btn) return;
-  
-  const originalText = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIGPONS from resources...';
-  
-  try {
+
+  await withWorkspaceActionGuard('profiles:create-base', async () => {
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML =
+      '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIGPONS from resources...';
+
+    try {
     const industryEl = document.getElementById('bigpons-industry-filter') as HTMLSelectElement | null;
     const industry = industryEl?.value?.trim() || undefined;
     const body = industry ? { industry } : {};
@@ -61,18 +63,7 @@ async function createBaseProfile(): Promise<void> {
     btn.disabled = false;
     btn.innerHTML = originalText;
   }
-}
-
-function formatInferenceBadge(metadata: Record<string, unknown> | undefined): string {
-  const mode = metadata?.inferenceMode as string | undefined;
-  if (!mode) return '';
-  const model = metadata?.inferenceModelId as string | null | undefined;
-  let label = mode;
-  if (model && model !== 'voice-framework-template') {
-    const short = String(model).includes('/') ? String(model).split('/').pop() : model;
-    label = `${mode} · ${short}`;
-  }
-  return `<span class="badge badge-draft inference-badge" title="Last inference: ${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+  });
 }
 
 (window as any).useProfileForGenerate = function(profileId: string): void {
@@ -1030,6 +1021,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
 
 // Archive Profile
 (window as any).archiveProfile = async (id: string, btn?: HTMLButtonElement | null) => {
+  await withWorkspaceActionGuard(`profile:archive:${id}`, async () => {
   const trigger = btn ?? (typeof window !== 'undefined' ? ((window as unknown as { event?: Event }).event?.target as HTMLButtonElement) : undefined);
   const profileItem = trigger?.closest('.profile-item');
   const originalText = trigger?.textContent || 'Archive';
@@ -1077,10 +1069,12 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       trigger.textContent = originalText;
     }
   }
+  });
 };
 
 // Unarchive Profile
 (window as any).unarchiveProfile = async (id: string, btn?: HTMLButtonElement | null) => {
+  await withWorkspaceActionGuard(`profile:unarchive:${id}`, async () => {
   const trigger = btn ?? (typeof window !== 'undefined' ? ((window as unknown as { event?: Event }).event?.target as HTMLButtonElement) : undefined);
   const profileItem = trigger?.closest('.profile-item');
   const originalText = trigger?.textContent || 'Unarchive';
@@ -1128,6 +1122,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       trigger.textContent = originalText;
     }
   }
+  });
 };
 
 // Filter Profiles
@@ -1435,56 +1430,65 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
 (window as any).deduplicateProfiles = async () => {
   const btn = document.getElementById('deduplicate-profiles-btn') as HTMLButtonElement;
   if (!btn) return;
-  
-  const dedupeOk = await showConfirmDialog({
-    title: 'Sculpt profile library',
-    message:
-      'Analyze and merge duplicate profiles using neural similarity matching?',
-    details: 'The best version of each duplicate group will be kept and merged.',
-    confirmLabel: 'Sculpt library',
-    variant: 'primary',
-  });
-  if (!dedupeOk) {
-    return;
-  }
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Sculpting...';
-  showNotification('Analyzing and sculpting profile library...', 'info');
+  const sculptBusyMarkup = '<span class="loading-spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Sculpting...';
+  const sculptIdleMarkup = `
+      <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+      </svg>
+      Sculpt Library
+    `;
 
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/deduplicate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        similarityThreshold: 0.85,
-        mergeMode: 'intelligent'
-      })
-    });
+  await runWorkspaceGuardedAction('profiles:deduplicate', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Sculpt profile library',
+        message:
+          'Analyze and merge duplicate profiles using neural similarity matching?',
+        details: 'The best version of each duplicate group will be kept and merged.',
+        confirmLabel: 'Sculpt library',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => {
+      btn.disabled = busy;
+      btn.innerHTML = busy ? sculptBusyMarkup : sculptIdleMarkup;
+    },
+    run: async () => {
+      showNotification('Analyzing and sculpting profile library...', 'info');
 
-    const data = await response.json();
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/profiles/deduplicate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            similarityThreshold: 0.85,
+            mergeMode: 'intelligent',
+          }),
+        });
 
-    if (response.ok && data.success) {
-      const removed = data.profilesRemoved || 0;
-      const duplicates = data.duplicates || [];
-      
-      if (removed === 0) {
-        showNotification('No duplicates found. Library is already sculpted!', 'success');
-      } else {
-        let message = `Library sculpted! ${removed} duplicate profile(s) ${data.mergeMode === 'intelligent' ? 'merged' : 'removed'}.`;
-        if (duplicates.length > 0) {
-          message += ` ${duplicates.length} duplicate group(s) processed.`;
-        }
-        showNotification(message, 'success');
-        
-        // Show detailed results
-        setTimeout(() => {
-          const resultsModal = document.createElement('div');
-          resultsModal.className = 'modal';
-          resultsModal.setAttribute('aria-hidden', 'false');
-          resultsModal.innerHTML = `
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const removed = data.profilesRemoved || 0;
+          const duplicates = data.duplicates || [];
+
+          if (removed === 0) {
+            showNotification('No duplicates found. Library is already sculpted!', 'success');
+          } else {
+            let message = `Library sculpted! ${removed} duplicate profile(s) ${data.mergeMode === 'intelligent' ? 'merged' : 'removed'}.`;
+            if (duplicates.length > 0) {
+              message += ` ${duplicates.length} duplicate group(s) processed.`;
+            }
+            showNotification(message, 'success');
+
+            setTimeout(() => {
+              const resultsModal = document.createElement('div');
+              resultsModal.className = 'modal';
+              resultsModal.setAttribute('aria-hidden', 'false');
+              resultsModal.innerHTML = `
             <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
             <div class="modal-content">
               <div class="modal-header">
@@ -1529,20 +1533,13 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
       showNotification('Failed to sculpt library: ' + errorMsg, 'error');
       console.error('[Portal] Deduplication failed:', data);
     }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Network error';
-    showNotification('Error sculpting library: ' + errorMsg, 'error');
-    console.error('[Portal] Error deduplicating profiles:', error);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `
-      <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 6L6 18"></path>
-        <path d="M6 6l12 12"></path>
-      </svg>
-      Sculpt Library
-    `;
-  }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Network error';
+      showNotification('Error sculpting library: ' + errorMsg, 'error');
+      console.error('[Portal] Error deduplicating profiles:', error);
+    }
+    },
+  });
 };
 
 // Export Profiles

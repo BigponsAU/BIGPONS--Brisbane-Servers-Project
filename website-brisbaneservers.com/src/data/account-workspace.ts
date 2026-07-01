@@ -33,6 +33,8 @@ export interface WorkspaceNavItem {
   /** Sidebar grouping label (see workspaceNavSectionLabels) */
   section: WorkspaceNavSection;
   title: string;
+  /** Primary CTA styling in the sidebar (e.g. Create content) */
+  featured?: boolean;
 }
 
 export const workspaceNavSectionLabels: Record<WorkspaceNavSection, string> = {
@@ -120,6 +122,7 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
     mode: 'creator',
     section: 'create',
     title: 'Resources — generate, upload, and manage content',
+    featured: true,
   },
   {
     panel: 'profiles',

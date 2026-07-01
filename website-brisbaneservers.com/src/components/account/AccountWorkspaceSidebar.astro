@@ -40,6 +40,22 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
 
   <p id="sidebar-mode-subtitle" class="sidebar-mode-subtitle">{accountWorkspace.creatorModeDescription}</p>
 
+  <div class="sidebar-global-search">
+    <label for="global-search" class="sr-only">Global workspace search</label>
+    <div class="header-search sidebar-search">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
+      <input
+        type="text"
+        id="global-search"
+        placeholder="Search… profile: voice: panel (Ctrl+K)"
+        aria-label="Global workspace search"
+      />
+    </div>
+  </div>
+
   <div class="sidebar-nav-viewport">
     <nav class="sidebar-nav-tracks" id="sidebar-nav-tracks" data-workspace-mode="creator" aria-live="polite">
       <div class="sidebar-nav-track sidebar-nav-track--creator" data-track="creator">
@@ -51,7 +67,7 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
                 group.items.map((item, index) => (
                   <a
                     href="#"
-                    class={`sidebar-nav-item${groupIndex === 0 && index === 0 ? ' active' : ''}`}
+                    class={`sidebar-nav-item${item.featured ? ' sidebar-nav-item--featured' : ''}${groupIndex === 0 && index === 0 ? ' active' : ''}`}
                     data-panel={item.panel}
                     data-min-role={item.minRole}
                     data-nav-mode="creator"

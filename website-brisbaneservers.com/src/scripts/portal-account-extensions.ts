@@ -9,6 +9,7 @@ import {
   type AdminMailboxKey,
 } from '../lib/site-mailboxes';
 import { getPortalAccountContext } from './account-workspace-runtime';
+import { runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
 
 import { loadModerationQueue } from './account-admin-moderation';
 import { bindOverviewBilling, loadOverviewAiBilling } from './account-billing';
@@ -238,12 +239,17 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
       btn.addEventListener('click', async () => {
         const id = (btn as HTMLElement).getAttribute('data-passkey-remove');
         if (!id) return;
-        await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ credentialId: id })
+        await runWorkspaceGuardedAction(`passkey:remove:${id}`, {
+          onBusy: (busy) => setElementBusy(btn as HTMLButtonElement, busy, busy ? 'Removing…' : 'Remove'),
+          run: async () => {
+            await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ credentialId: id }),
+            });
+            await loadPasskeyCredentials(ctx);
+          },
         });
-        await loadPasskeyCredentials(ctx);
       });
     });
   } catch {

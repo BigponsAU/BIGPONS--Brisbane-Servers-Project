@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
 import { loadResources } from '../../../lib/resources-api';
-import { syncInferenceMetaStarterToResources } from '../../../lib/inference-meta-starter-corpus';
+import { syncStarterBlockCorpus } from '../../../lib/starter-block-corpus';
 
 /**
  * Get starter blocks only
@@ -28,10 +28,8 @@ export const GET: APIRoute = async ({ request }) => {
     const industry = url.searchParams.get('industry');
     const topic = url.searchParams.get('topic');
 
-    const sync = await syncInferenceMetaStarterToResources();
-    let resources = sync.resources;
-
-    resources = resources.filter((r) => r.isStarterBlock === true);
+    const sync = await syncStarterBlockCorpus();
+    let resources = sync.resources.filter((r) => r.isStarterBlock === true);
 
     if (industry) {
       resources = resources.filter((r) => r.industry === industry);

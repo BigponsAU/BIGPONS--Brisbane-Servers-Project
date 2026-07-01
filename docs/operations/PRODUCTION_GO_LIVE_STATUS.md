@@ -2,7 +2,20 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-06-28 — Pages resource prerender pipeline
+**Last synced:** 2026-07-01 — account workspace UX + action-guard deploy
+
+### 2026-07-01 — Account workspace UX, starter corpus, double-click guards
+
+- **Portal** — global search in sidebar (tree filter); Create content featured nav pill; inference badge fix; admin Users & vectors panel; library growth approve loading; starter-block corpus sync (~17 templates).
+- **Client** — shared `runWorkspaceGuardedAction` on publish/improve/delete/bulk/starter/moderation/growth/profile actions (blocks spam during confirm + API).
+- **Deploy** — push to `main` → Pages production + edge worker (`src/lib/starter-block-corpus.ts`, `_api/resources/starter-blocks.ts`, portal scripts).
+
+### 2026-06-30 — Marketing search client bundle (Option A layouts)
+
+- **Root cause** — Astro conditional script in `BaseLayout.astro` inverted bundles: marketing pages loaded `account-nav.ts` (~1.2 KB) instead of `main.ts` (~32 KB), so `SemanticSearch` never ran.
+- **Fix** — `SiteShell.astro` → unconditional `main.ts`; `AccountSiteShell.astro` → unconditional `account-nav.ts`; shared `SiteShellBody.astro`; post-build `checkClientBundlePageMapping`.
+- **Deploy** — Cloudflare Pages production `658ad0b9` from `13f49e8` (**success**, 2026-06-30). Live bundles: homepage `SiteShell.*.js` (search present); `/account/` `AccountSiteShell.*.js` (search absent).
+- **Verify** — `npm run verify:production -- --api https://api.brisbaneservers.com` **PASS**; `GET /api/resources/search?q=pro` **200**.
 
 ### 2026-06-28 — Pages static resource detail pages
 

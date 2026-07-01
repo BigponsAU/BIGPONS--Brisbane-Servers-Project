@@ -34,6 +34,18 @@ export function treeSlug(value: string): string {
   return value.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'item';
 }
 
+export function formatInferenceBadge(metadata: Record<string, unknown> | undefined): string {
+  const mode = metadata?.inferenceMode as string | undefined;
+  if (!mode) return '';
+  const model = metadata?.inferenceModelId as string | null | undefined;
+  let label = mode;
+  if (model && model !== 'voice-framework-template') {
+    const short = String(model).includes('/') ? String(model).split('/').pop() : model;
+    label = `${mode} · ${short}`;
+  }
+  return `<span class="badge badge-draft inference-badge" title="Last inference: ${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+}
+
 export function resourceExcerpt(
   resource: { description?: unknown; content?: unknown },
   maxLen = 150,
@@ -49,6 +61,19 @@ export function resourceExcerpt(
 
 export type WorkspaceNotificationType = 'success' | 'error' | 'warning' | 'info';
 
+export function dismissWorkspaceNotifications(
+  type?: WorkspaceNotificationType | 'all',
+): void {
+  const container = document.getElementById('notification-container');
+  if (!container) return;
+  container.querySelectorAll('.notification').forEach((node) => {
+    const el = node as HTMLElement;
+    if (type && type !== 'all' && !el.classList.contains(type)) return;
+    el.classList.add('hiding');
+    window.setTimeout(() => el.remove(), 300);
+  });
+}
+
 export function showWorkspaceNotification(
   message: string,
   type: WorkspaceNotificationType = 'info',
@@ -58,6 +83,11 @@ export function showWorkspaceNotification(
   if (!container) {
     console.warn('[Portal] Notification container not found');
     return;
+  }
+
+  // Replace prior sticky progress toasts (duration 0) when showing a new alert
+  if (type !== 'info') {
+    dismissWorkspaceNotifications('info');
   }
 
   const notification = document.createElement('div');
@@ -108,4 +138,119 @@ export function showWorkspaceNotification(
   if (duration > 0) {
     setTimeout(removeNotification, duration);
   }
+}
+
+const inFlightWorkspaceActions = new Set<string>();
+
+export function isWorkspaceActionInFlight(key: string): boolean {
+  return inFlightWorkspaceActions.has(key);
+}
+
+function tryAcquireWorkspaceAction(key: string): boolean {
+  if (inFlightWorkspaceActions.has(key)) return false;
+  inFlightWorkspaceActions.add(key);
+  return true;
+}
+
+function releaseWorkspaceAction(key: string): void {
+  inFlightWorkspaceActions.delete(key);
+}
+
+/** Run async work once per key; returns undefined if already in flight. */
+export async function withWorkspaceActionGuard<T>(
+  key: string,
+  fn: () => Promise<T>,
+): Promise<T | undefined> {
+  if (!tryAcquireWorkspaceAction(key)) return undefined;
+  try {
+    return await fn();
+  } finally {
+    releaseWorkspaceAction(key);
+  }
+}
+
+/**
+ * Hold an in-flight guard from first click through confirm + API work.
+ * `onBusy(true)` runs immediately; `onBusy(false)` runs in finally (including cancel).
+ */
+export async function runWorkspaceGuardedAction(
+  key: string,
+  options: {
+    confirm?: () => Promise<boolean>;
+    onBusy?: (busy: boolean) => void;
+    run: () => Promise<void>;
+  },
+): Promise<void> {
+  if (!tryAcquireWorkspaceAction(key)) return;
+  options.onBusy?.(true);
+  try {
+    if (options.confirm) {
+      const ok = await options.confirm();
+      if (!ok) return;
+    }
+    await options.run();
+  } finally {
+    options.onBusy?.(false);
+    releaseWorkspaceAction(key);
+  }
+}
+
+export function setElementBusy(
+  el: HTMLElement | null | undefined,
+  busy: boolean,
+  busyLabel?: string,
+): void {
+  if (!el || el.tagName !== 'BUTTON') return;
+  const btn = el as HTMLButtonElement;
+  if (busy) {
+    if (!btn.dataset.workspaceBusyOriginal) {
+      btn.dataset.workspaceBusyOriginal = btn.textContent ?? '';
+    }
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    if (busyLabel) btn.textContent = busyLabel;
+  } else {
+    if (btn.dataset.workspaceBusyOriginal) {
+      btn.textContent = btn.dataset.workspaceBusyOriginal;
+      delete btn.dataset.workspaceBusyOriginal;
+    }
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+  }
+}
+
+/** Disable all matching action buttons (list row + detail panel). */
+export function setResourceActionButtonsBusy(
+  actionName: string,
+  resourceId: string,
+  busy: boolean,
+  busyLabel?: string,
+): void {
+  document.querySelectorAll(`button[onclick*="${actionName}"]`).forEach((node) => {
+    const onclick = node.getAttribute('onclick') ?? '';
+    if (!onclick.includes(resourceId)) return;
+    setElementBusy(node as HTMLButtonElement, busy, busyLabel);
+  });
+}
+
+export function setBulkActionsBusy(busy: boolean, busyLabel?: string): void {
+  document.getElementById('bulk-actions')?.querySelectorAll('button').forEach((btn) => {
+    setElementBusy(btn as HTMLButtonElement, busy, busyLabel);
+  });
+}
+
+export function setStarterBlockCardsBusy(starterBlockId: string, busy: boolean): void {
+  document.querySelectorAll('.starter-block-card').forEach((card) => {
+    const htmlCard = card as HTMLElement;
+    const onclick = htmlCard.getAttribute('onclick') ?? '';
+    const matches =
+      onclick.includes(starterBlockId) ||
+      Boolean(htmlCard.querySelector(`button[onclick*="${starterBlockId}"]`));
+    if (!matches) return;
+    htmlCard.classList.toggle('starter-block-card--busy', busy);
+    htmlCard.style.pointerEvents = busy ? 'none' : '';
+    htmlCard.querySelectorAll('button').forEach((btn) => {
+      setElementBusy(btn as HTMLButtonElement, busy, busy ? 'Creating…' : undefined);
+    });
+  });
 }

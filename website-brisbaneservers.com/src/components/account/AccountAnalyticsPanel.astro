@@ -24,18 +24,18 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
               <details class="panel-guidance-details">
                 <summary>Understanding your metrics</summary>
                 <div class="panel-guidance-details__body">
-                  <p><strong>Total resources:</strong> Starter curriculum, case studies, and your own content.</p>
-                  <p><strong>Published / drafts:</strong> Live vs in-progress items.</p>
+                  <p><strong>Your resources:</strong> Content you created or copied from starter blocks (improve updates in place — it does not duplicate).</p>
+                  <p><strong>Published / drafts:</strong> Live vs in-progress items among your resources.</p>
                   <p><strong>Avg voice score:</strong> Alignment with your active voice profile (0–100%).</p>
                 </div>
               </details>
               
               <div id="analytics-content" class="analytics-content">
                 <div class="stats-grid">
-                  <div class="stat-card" title="Total number of resources in your system">
-                    <h3>Total Resources</h3>
+                  <div class="stat-card" title="Resources you created or copied from starter blocks">
+                    <h3>Your Resources</h3>
                     <p class="stat-value" id="stat-total-resources">-</p>
-                    <p class="stat-description">All content items</p>
+                    <p class="stat-description">Your content items</p>
                   </div>
                   <div class="stat-card" title="Published resources available to users">
                     <h3>Published</h3>
@@ -88,8 +88,9 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
                   <div id="analytics-config-display" class="analytics-config-display"></div>
                   <div id="analytics-suggestions-list" class="analytics-suggestions-list"></div>
                 </div>
-                <div id="analytics-admin-meta" class="analytics-admin-meta" style="margin-top: var(--space-2xl);">
+                <div id="analytics-admin-meta" class="analytics-admin-meta" data-min-role="admin" style="margin-top: var(--space-2xl);">
                   <h3>Admin: Users &amp; vectors</h3>
+                  <p class="section-subtitle">Platform-wide user count and semantic index size (admin only).</p>
                   <div id="analytics-users-vectors" class="analytics-users-vectors"></div>
                 </div>
               </div>

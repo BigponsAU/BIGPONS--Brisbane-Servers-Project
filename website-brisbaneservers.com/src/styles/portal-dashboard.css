@@ -638,6 +638,37 @@
   margin-top: var(--space-md);
 }
 
+.account-workspace-shell .growth-proposal-card--busy {
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.account-workspace-shell .growth-proposal-card .growth-approve[aria-busy='true'],
+.account-workspace-shell .growth-proposal-card .growth-reject[aria-busy='true'] {
+  position: relative;
+  min-width: 9rem;
+}
+
+.account-workspace-shell .growth-proposal-card .growth-approve[aria-busy='true']::before,
+.account-workspace-shell .growth-proposal-card .growth-reject[aria-busy='true']::before {
+  content: '';
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.4rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.15em;
+  animation: growth-btn-spin 0.65s linear infinite;
+}
+
+@keyframes growth-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 1023px) {
   .site-shell--marketing .account-workspace-shell .portal-layout,
 .site-shell--portal .portal-layout {
@@ -1071,6 +1102,101 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   line-height: 1.4;
 }
 
+/* Global search — anchored in sidebar so it aligns with nav, not floating in main column */
+.account-workspace-shell .sidebar-global-search {
+  flex-shrink: 0;
+  padding: 0 var(--space-md) var(--space-sm);
+}
+
+.account-workspace-shell .sidebar-search.header-search {
+  flex: none;
+  max-width: none;
+  width: 100%;
+}
+
+.account-workspace-shell .sidebar-search input {
+  padding: 0.5rem 0.65rem 0.5rem calc(0.65rem + 16px + 0.4rem);
+  font-size: var(--text-sm);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-workspace-shell .sidebar-search input:focus {
+  outline: none;
+  border-color: rgba(var(--primary-color-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.12);
+}
+
+.account-workspace-shell .sidebar-search .search-icon {
+  left: 0.65rem;
+  width: 14px;
+  height: 14px;
+}
+
+/* Featured Create content pill */
+.account-workspace-shell .sidebar-nav-item--featured {
+  margin: var(--space-xs) var(--space-xs) var(--space-sm);
+  padding: 0.6rem var(--space-md);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-color-rgb), 0.1) 0%,
+    rgba(var(--accent-violet-rgb, 139, 92, 246), 0.07) 100%
+  );
+  border: 1px solid rgba(var(--primary-color-rgb), 0.18);
+  box-shadow: 0 2px 10px rgba(var(--primary-color-rgb), 0.08);
+}
+
+.account-workspace-shell .sidebar-nav-item--featured .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--primary-color-rgb), 0.14);
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.account-workspace-shell .sidebar-nav-item--featured .nav-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-workspace-shell .sidebar-nav-item--featured:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-color-rgb), 0.16) 0%,
+    rgba(var(--accent-violet-rgb, 139, 92, 246), 0.1) 100%
+  );
+  border-color: rgba(var(--primary-color-rgb), 0.28);
+  transform: translateX(2px);
+}
+
+.account-workspace-shell .sidebar-nav-item--featured.active {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    color-mix(in srgb, var(--primary-color) 82%, #6366f1) 100%
+  );
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.32);
+}
+
+.account-workspace-shell .sidebar-nav-item--featured.active .nav-label,
+.account-workspace-shell .sidebar-nav-item--featured.active .nav-description {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.account-workspace-shell .sidebar-nav-item--featured.active .nav-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 .account-workspace-shell .sidebar-footer {
   flex-shrink: 0;
   margin-top: auto;
@@ -1104,11 +1230,12 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   }
 
   .account-workspace-shell .portal-header {
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-sm) var(--space-lg);
+    justify-content: flex-end;
   }
 
-  .account-workspace-shell .header-search {
-    max-width: 22rem;
+  .account-workspace-shell .header-left {
+    display: none;
   }
 }
 

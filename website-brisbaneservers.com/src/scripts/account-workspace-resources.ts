@@ -9,7 +9,12 @@ import {
   treeGroupLabel,
   treeSlug,
   resourceExcerpt,
+  formatInferenceBadge,
   showWorkspaceNotification,
+  runWorkspaceGuardedAction,
+  setResourceActionButtonsBusy,
+  setBulkActionsBusy,
+  setElementBusy,
 } from './account-workspace-utils';
 import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
 import { buildResourcesListUrl } from './account-workspace-resource-api';
@@ -388,6 +393,12 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
                          treeTypeFilter === 'all' ? resources :
                          userResources;
     buildResourceTree(treeResources);
+
+    if (searchQuery && searchQuery.trim()) {
+      const treeSearch = document.getElementById('tree-search') as HTMLInputElement | null;
+      if (treeSearch) treeSearch.value = searchQuery;
+      window.setTimeout(() => (window as any).filterTree(searchQuery), 0);
+    }
 
     if (options?.revealResourceId) {
       resetTreeStatusFilters();
@@ -1671,57 +1682,46 @@ function closeEditModal(): void {
     return;
   }
 
-  const publishOk = await showConfirmDialog({
-    title: 'Publish resource',
-    message: 'Publish this resource? It will be visible on the website.',
-    confirmLabel: 'Publish',
-    variant: 'primary',
-  });
-  if (!publishOk) return;
-  
-  // Find the button and show loading state
-  const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
-  const publishBtn = resourceItem?.querySelector('button[onclick*="publishResource"]') as HTMLButtonElement;
-  const originalText = publishBtn?.textContent;
-  
-  if (publishBtn) {
-    publishBtn.disabled = true;
-    publishBtn.textContent = 'Publishing...';
-  }
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'published' })
-    });
+  await runWorkspaceGuardedAction(`resource:publish:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Publish resource',
+        message: 'Publish this resource? It will be visible on the website.',
+        confirmLabel: 'Publish',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('publishResource', id, busy, busy ? 'Publishing...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'published' }),
+        });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      if (import.meta.env.MODE === 'development') {
-        console.log('[Portal] Resource published successfully');
+        const data = await response.json();
+        if (response.ok && data.success) {
+          if (import.meta.env.MODE === 'development') {
+            console.log('[Portal] Resource published successfully');
+          }
+          showNotification('Resource published successfully.', 'success');
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 300);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to publish resource:', errorMsg);
+          showNotification('Failed to publish resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Publish error:', error);
       }
-      showNotification('Resource published successfully.', 'success');
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to publish resource:', errorMsg);
-      showNotification('Failed to publish resource: ' + errorMsg, 'error');
-      if (publishBtn && originalText) {
-        publishBtn.disabled = false;
-        publishBtn.textContent = originalText;
-      }
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Publish error:', error);
-    if (publishBtn && originalText) {
-      publishBtn.disabled = false;
-      publishBtn.textContent = originalText;
-    }
-  }
+    },
+  });
 };
 
 (window as any).unpublishResource = async (id: string) => {
@@ -1732,106 +1732,127 @@ function closeEditModal(): void {
     return;
   }
 
-  const unpublishOk = await showConfirmDialog({
-    title: 'Unpublish resource',
-    message: 'Unpublish this resource? It will no longer be visible on the public website.',
-    details: 'Your draft copy stays in the workspace. You can edit and publish again later.',
-    confirmLabel: 'Unpublish',
-    variant: 'primary',
-  });
-  if (!unpublishOk) return;
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'draft' })
-    });
+  await runWorkspaceGuardedAction(`resource:unpublish:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Unpublish resource',
+        message: 'Unpublish this resource? It will no longer be visible on the public website.',
+        details: 'Your draft copy stays in the workspace. You can edit and publish again later.',
+        confirmLabel: 'Unpublish',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('unpublishResource', id, busy, busy ? 'Unpublishing...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'draft' }),
+        });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      console.log('[Portal] Resource unpublished successfully');
-      showNotification('Resource unpublished successfully.', 'success');
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to unpublish resource:', errorMsg);
-      showNotification('Failed to unpublish resource: ' + errorMsg, 'error');
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Unpublish error:', error);
-  }
+        const data = await response.json();
+        if (response.ok && data.success) {
+          console.log('[Portal] Resource unpublished successfully');
+          showNotification('Resource unpublished successfully.', 'success');
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 300);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to unpublish resource:', errorMsg);
+          showNotification('Failed to unpublish resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Unpublish error:', error);
+      }
+    },
+  });
 };
 
 (window as any).archiveResource = async (id: string) => {
-  const archiveOk = await showConfirmDialog({
-    title: 'Archive resource',
-    message: 'Archive this resource? It will be hidden from normal views but can be restored later.',
-    confirmLabel: 'Archive',
-  });
-  if (!archiveOk) return;
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'archived' })
-    });
+  await runWorkspaceGuardedAction(`resource:archive:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Archive resource',
+        message: 'Archive this resource? It will be hidden from normal views but can be restored later.',
+        confirmLabel: 'Archive',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('archiveResource', id, busy, busy ? 'Archiving...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'archived' }),
+        });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      if (import.meta.env.MODE === 'development') {
-        console.log('[Portal] Resource archived successfully');
+        const data = await response.json();
+        if (response.ok && data.success) {
+          if (import.meta.env.MODE === 'development') {
+            console.log('[Portal] Resource archived successfully');
+          }
+          showNotification('Resource archived successfully.', 'success');
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 300);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to archive resource:', errorMsg);
+          showNotification('Failed to archive resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Archive error:', error);
       }
-      showNotification('Resource archived successfully.', 'success');
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to archive resource:', errorMsg);
-      showNotification('Failed to archive resource: ' + errorMsg, 'error');
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Archive error:', error);
-  }
+    },
+  });
 };
 
 (window as any).unarchiveResource = async (id: string) => {
-  const unarchiveOk = await showConfirmDialog({
-    title: 'Unarchive resource',
-    message: 'Unarchive this resource? It will be restored to draft status.',
-    confirmLabel: 'Unarchive',
-  });
-  if (!unarchiveOk) return;
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'draft' })
-    });
+  await runWorkspaceGuardedAction(`resource:unarchive:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Unarchive resource',
+        message: 'Unarchive this resource? It will be restored to draft status.',
+        confirmLabel: 'Unarchive',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('unarchiveResource', id, busy, busy ? 'Unarchiving...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'draft' }),
+        });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      console.log('[Portal] Resource unarchived successfully');
-      showNotification('Resource unarchived successfully.', 'success');
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to unarchive resource:', errorMsg);
-      showNotification('Failed to unarchive resource: ' + errorMsg, 'error');
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Unarchive error:', error);
-  }
+        const data = await response.json();
+        if (response.ok && data.success) {
+          console.log('[Portal] Resource unarchived successfully');
+          showNotification('Resource unarchived successfully.', 'success');
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 300);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to unarchive resource:', errorMsg);
+          showNotification('Failed to unarchive resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Unarchive error:', error);
+      }
+    },
+  });
 };
 
 // Edit form submission
@@ -1992,62 +2013,51 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  const improveOk = await showConfirmDialog({
-    title: 'Improve resource',
-    message: 'Improve this resource using voice profile + RAG + inference?',
-    details: 'This may take a moment. Existing content will be rewritten.',
-    confirmLabel: 'Improve',
-    variant: 'primary',
-  });
-  if (!improveOk) return;
-  
-  // Find the button and show loading state
-  const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
-  const improveBtn = resourceItem?.querySelector('button[onclick*="improveResource"]') as HTMLButtonElement;
-  const originalText = improveBtn?.textContent;
-  
-  if (improveBtn) {
-    improveBtn.disabled = true;
-    improveBtn.textContent = 'Improving...';
-  }
-  
-  showNotification('Improving resource... This may take a moment.', 'info', 0);
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}/improve`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({})
-    });
+  await runWorkspaceGuardedAction(`resource:improve:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Improve resource',
+        message: 'Improve this resource using voice profile + RAG + inference?',
+        details: 'This may take a moment. Existing content will be rewritten.',
+        confirmLabel: 'Improve',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('improveResource', id, busy, busy ? 'Improving...' : undefined),
+    run: async () => {
+      showNotification('Improving resource... This may take a moment.', 'info', 0);
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      const voiceScore = data.voiceValidation?.score || 0;
-      const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
-      const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
-      const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-      showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}`, 'success');
-      console.log('[Portal] Resource improved successfully');
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to improve resource:', errorMsg);
-      showNotification('Failed to improve resource: ' + errorMsg, 'error');
-      if (improveBtn && originalText) {
-        improveBtn.disabled = false;
-        improveBtn.textContent = originalText;
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}/improve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          const voiceScore = data.voiceValidation?.score || 0;
+          const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+          const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+          const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
+          showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}`, 'success');
+          console.log('[Portal] Resource improved successfully');
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 500);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to improve resource:', errorMsg);
+          showNotification('Failed to improve resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Improve error:', error);
       }
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Improve error:', error);
-    if (improveBtn && originalText) {
-      improveBtn.disabled = false;
-      improveBtn.textContent = originalText;
-    }
-  }
+    },
+  });
 };
 
 (window as any).deleteResource = async (id: string) => {
@@ -2059,64 +2069,53 @@ document.addEventListener('keydown', (e) => {
   }
 
   const isPublishedRemove = resource?.status === 'published';
-  const deleteOk = await showConfirmDialog({
-    title: isPublishedRemove ? 'Remove from workspace' : 'Delete resource',
-    message: isPublishedRemove
-      ? 'Remove this resource from your workspace?'
-      : 'Delete this resource permanently?',
-    details: isPublishedRemove
-      ? 'The public page and search index stay live. Use Unpublish first if you need to take it off the website.'
-      : 'This action cannot be undone.',
-    confirmLabel: isPublishedRemove ? 'Remove' : 'Delete',
-    variant: 'danger',
-  });
-  if (!deleteOk) return;
-  
-  // Find the button and show loading state
-  const resourceItem = document.querySelector(`[data-resource-id="${id}"]`);
-  const deleteBtn = resourceItem?.querySelector('button[onclick*="deleteResource"]') as HTMLButtonElement;
-  const originalText = deleteBtn?.textContent;
-  
-  if (deleteBtn) {
-    deleteBtn.disabled = true;
-    deleteBtn.textContent = 'Deleting...';
-  }
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'DELETE',
-      headers: {
-      }
-    });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      const message =
-        data.softDeleted === true
-          ? (data.message as string) || 'Removed from workspace. Public page unchanged.'
-          : 'Resource deleted successfully.';
-      showNotification(message, 'success');
-      if (data.softDeleted) {
-        (window as any).closeResourceDetail?.();
+  await runWorkspaceGuardedAction(`resource:delete:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: isPublishedRemove ? 'Remove from workspace' : 'Delete resource',
+        message: isPublishedRemove
+          ? 'Remove this resource from your workspace?'
+          : 'Delete this resource permanently?',
+        details: isPublishedRemove
+          ? 'The public page and search index stay live. Use Unpublish first if you need to take it off the website.'
+          : 'This action cannot be undone.',
+        confirmLabel: isPublishedRemove ? 'Remove' : 'Delete',
+        variant: 'danger',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('deleteResource', id, busy, busy ? 'Deleting...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'DELETE',
+          headers: {},
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          const message =
+            data.softDeleted === true
+              ? (data.message as string) || 'Removed from workspace. Public page unchanged.'
+              : 'Resource deleted successfully.';
+          showNotification(message, 'success');
+          if (data.softDeleted) {
+            (window as any).closeResourceDetail?.();
+          }
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 300);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          console.error('[Portal] Failed to delete resource:', errorMsg);
+          showNotification('Failed to delete resource: ' + errorMsg, 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Delete error:', error);
       }
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      console.error('[Portal] Failed to delete resource:', errorMsg);
-      showNotification('Failed to delete resource: ' + errorMsg, 'error');
-      if (deleteBtn && originalText) {
-        deleteBtn.disabled = false;
-        deleteBtn.textContent = originalText;
-      }
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Delete error:', error);
-    if (deleteBtn && originalText) {
-      deleteBtn.disabled = false;
-      deleteBtn.textContent = originalText;
-    }
-  }
+    },
+  });
 };
 
 function initDocumentWorkspace(): void {
@@ -2607,79 +2606,93 @@ function clearSelection(): void {
 (window as any).bulkPublish = async () => {
   const ids = getSelectedResourceIds();
   if (ids.length === 0) return;
-  const publishOk = await showConfirmDialog({
-    title: 'Publish resources',
-    message: `Publish ${ids.length} resource(s)? They will be visible on the website.`,
-    confirmLabel: 'Publish all',
-    variant: 'primary',
+
+  await runWorkspaceGuardedAction('bulk:publish', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Publish resources',
+        message: `Publish ${ids.length} resource(s)? They will be visible on the website.`,
+        confirmLabel: 'Publish all',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setBulkActionsBusy(busy, busy ? 'Publishing...' : undefined),
+    run: async () => {
+      try {
+        const results = await Promise.all(
+          ids.map((id) =>
+            workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ status: 'published' }),
+            }).then((r) => r.json()),
+          ),
+        );
+        const successCount = results.filter((r: any) => r.success).length;
+        const failCount = results.length - successCount;
+
+        if (failCount > 0) {
+          showNotification(`Published ${successCount} resource(s). ${failCount} failed.`, 'warning');
+        } else {
+          showNotification(`Successfully published ${successCount} resource(s).`, 'success');
+        }
+
+        console.log('[Portal] Bulk publish results:', results);
+        clearSelection();
+        setTimeout(() => loadResources(), 300);
+      } catch (error) {
+        showNotification('Error publishing resources. Please try again.', 'error');
+        console.error('[Portal] Bulk publish error:', error);
+      }
+    },
   });
-  if (!publishOk) return;
-  
-  try {
-    const results = await Promise.all(ids.map(id => 
-      workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'published' })
-      }).then(r => r.json())
-    ));
-    const successCount = results.filter((r: any) => r.success).length;
-    const failCount = results.length - successCount;
-    
-    if (failCount > 0) {
-      showNotification(`Published ${successCount} resource(s). ${failCount} failed.`, 'warning');
-    } else {
-      showNotification(`Successfully published ${successCount} resource(s).`, 'success');
-    }
-    
-    console.log('[Portal] Bulk publish results:', results);
-    clearSelection();
-    setTimeout(() => loadResources(), 300);
-  } catch (error) {
-    showNotification('Error publishing resources. Please try again.', 'error');
-    console.error('[Portal] Bulk publish error:', error);
-  }
 };
 
 (window as any).bulkUnpublish = async () => {
   const ids = getSelectedResourceIds();
   if (ids.length === 0) return;
-  const unpublishOk = await showConfirmDialog({
-    title: 'Unpublish resources',
-    message: `Unpublish ${ids.length} resource(s)? They will be removed from the public website.`,
-    confirmLabel: 'Unpublish all',
-    variant: 'primary',
+
+  await runWorkspaceGuardedAction('bulk:unpublish', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Unpublish resources',
+        message: `Unpublish ${ids.length} resource(s)? They will be removed from the public website.`,
+        confirmLabel: 'Unpublish all',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setBulkActionsBusy(busy, busy ? 'Unpublishing...' : undefined),
+    run: async () => {
+      try {
+        const results = await Promise.all(
+          ids.map((id) =>
+            workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ status: 'draft' }),
+            }).then((r) => r.json()),
+          ),
+        );
+        const successCount = results.filter((r: any) => r.success).length;
+        const failCount = results.length - successCount;
+
+        if (failCount > 0) {
+          showNotification(`Unpublished ${successCount} resource(s). ${failCount} failed.`, 'warning');
+        } else {
+          showNotification(`Successfully unpublished ${successCount} resource(s).`, 'success');
+        }
+
+        console.log('[Portal] Bulk unpublish results:', results);
+        clearSelection();
+        setTimeout(() => loadResources(), 300);
+      } catch (error) {
+        showNotification('Error unpublishing resources. Please try again.', 'error');
+        console.error('[Portal] Bulk unpublish error:', error);
+      }
+    },
   });
-  if (!unpublishOk) return;
-  
-  try {
-    const results = await Promise.all(ids.map(id => 
-      workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'draft' })
-      }).then(r => r.json())
-    ));
-    const successCount = results.filter((r: any) => r.success).length;
-    const failCount = results.length - successCount;
-    
-    if (failCount > 0) {
-      showNotification(`Unpublished ${successCount} resource(s). ${failCount} failed.`, 'warning');
-    } else {
-      showNotification(`Successfully unpublished ${successCount} resource(s).`, 'success');
-    }
-    
-    console.log('[Portal] Bulk unpublish results:', results);
-    clearSelection();
-    setTimeout(() => loadResources(), 300);
-  } catch (error) {
-    showNotification('Error unpublishing resources. Please try again.', 'error');
-    console.error('[Portal] Bulk unpublish error:', error);
-  }
 };
 
 (window as any).bulkDelete = async () => {
@@ -2706,39 +2719,44 @@ function clearSelection(): void {
     );
   }
 
-  const deleteOk = await showConfirmDialog({
-    title: 'Delete resources',
-    message: `Delete ${deletableIds.length} resource(s) permanently?`,
-    details: 'This cannot be undone.',
-    confirmLabel: 'Delete all',
-    variant: 'danger',
-  });
-  if (!deleteOk) return;
-  
-  try {
-    const results = await Promise.all(deletableIds.map(id =>
-      workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-        method: 'DELETE',
-        headers: {
+  await runWorkspaceGuardedAction('bulk:delete', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Delete resources',
+        message: `Delete ${deletableIds.length} resource(s) permanently?`,
+        details: 'This cannot be undone.',
+        confirmLabel: 'Delete all',
+        variant: 'danger',
+      }),
+    onBusy: (busy) => setBulkActionsBusy(busy, busy ? 'Deleting...' : undefined),
+    run: async () => {
+      try {
+        const results = await Promise.all(
+          deletableIds.map((id) =>
+            workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+              method: 'DELETE',
+              headers: {},
+            }).then((r) => r.json()),
+          ),
+        );
+        const successCount = results.filter((r: any) => r.success).length;
+        const failCount = results.length - successCount;
+
+        if (failCount > 0) {
+          showNotification(`Deleted ${successCount} resource(s). ${failCount} failed.`, 'warning');
+        } else {
+          showNotification(`Successfully deleted ${successCount} resource(s).`, 'success');
         }
-      }).then(r => r.json())
-    ));
-    const successCount = results.filter((r: any) => r.success).length;
-    const failCount = results.length - successCount;
-    
-    if (failCount > 0) {
-      showNotification(`Deleted ${successCount} resource(s). ${failCount} failed.`, 'warning');
-    } else {
-      showNotification(`Successfully deleted ${successCount} resource(s).`, 'success');
-    }
-    
-    console.log('[Portal] Bulk delete results:', results);
-    clearSelection();
-    setTimeout(() => loadResources(), 300);
-  } catch (error) {
-    showNotification('Error deleting resources. Please try again.', 'error');
-    console.error('[Portal] Bulk delete error:', error);
-  }
+
+        console.log('[Portal] Bulk delete results:', results);
+        clearSelection();
+        setTimeout(() => loadResources(), 300);
+      } catch (error) {
+        showNotification('Error deleting resources. Please try again.', 'error');
+        console.error('[Portal] Bulk delete error:', error);
+      }
+    },
+  });
 };
 
 (window as any).previewResource = (id: string) => {
@@ -2796,133 +2814,135 @@ function closePreviewModal(): void {
     return;
   }
 
-  const restoreOk = await showConfirmDialog({
-    title: 'Restore to workspace',
-    message: 'Show this resource again in the workspace tree?',
-    details: 'The public page and search index are unchanged.',
-    confirmLabel: 'Restore',
-    variant: 'primary',
+  await runWorkspaceGuardedAction(`resource:restore:${id}`, {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Restore to workspace',
+        message: 'Show this resource again in the workspace tree?',
+        details: 'The public page and search index are unchanged.',
+        confirmLabel: 'Restore',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setResourceActionButtonsBusy('restoreResource', id, busy, busy ? 'Restoring...' : undefined),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ restoreToWorkspace: true }),
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          showNotification('Resource restored to workspace.', 'success');
+          const typeEl = document.getElementById('resource-type-filter') as HTMLSelectElement | null;
+          if (typeEl?.value === 'removed') typeEl.value = 'user';
+          currentTreeStatusFilter = '';
+          await loadResources({ revealResourceId: id });
+        } else {
+          showNotification(data.error || 'Failed to restore resource.', 'error');
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Restore error:', error);
+      }
+    },
   });
-  if (!restoreOk) return;
-
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restoreToWorkspace: true }),
-    });
-    const data = await response.json();
-    if (response.ok && data.success) {
-      showNotification('Resource restored to workspace.', 'success');
-      const typeEl = document.getElementById('resource-type-filter') as HTMLSelectElement | null;
-      if (typeEl?.value === 'removed') typeEl.value = 'user';
-      currentTreeStatusFilter = '';
-      await loadResources({ revealResourceId: id });
-    } else {
-      showNotification(data.error || 'Failed to restore resource.', 'error');
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Restore error:', error);
-  }
 };
 
 // Deduplicate Resources Handler
 document.getElementById('deduplicate-resources-btn')?.addEventListener('click', async () => {
   const btn = document.getElementById('deduplicate-resources-btn') as HTMLButtonElement;
   if (!btn) return;
-  
-  const dedupeOk = await showConfirmDialog({
-    title: 'Deduplicate resources',
-    message: 'Remove duplicate resources (same industry + topic)?',
-    details: 'The best version of each duplicate group will be kept.',
-    confirmLabel: 'Deduplicate',
-    variant: 'primary',
-  });
-  if (!dedupeOk) {
-    return;
-  }
-  
-  btn.disabled = true;
-  btn.textContent = 'Deduplicating...';
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/deduplicate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+
+  await runWorkspaceGuardedAction('resources:deduplicate', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Deduplicate resources',
+        message: 'Remove duplicate resources (same industry + topic)?',
+        details: 'The best version of each duplicate group will be kept.',
+        confirmLabel: 'Deduplicate',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setElementBusy(btn, busy, busy ? 'Deduplicating...' : 'Remove Duplicates'),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/deduplicate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const message = data.resourcesRemoved > 0
+            ? `Removed ${data.resourcesRemoved} duplicate resource(s)! Kept: ${data.totalResources} unique resources.`
+            : 'No duplicates found. All resources are unique.';
+          showNotification(message, data.resourcesRemoved > 0 ? 'success' : 'info');
+          console.log('[Portal] Deduplication result:', data);
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 500);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          showNotification('Failed to deduplicate resources: ' + errorMsg, 'error');
+          console.error('[Portal] Deduplication failed:', data);
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Deduplication error:', error);
       }
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok && data.success) {
-      const message = data.resourcesRemoved > 0
-        ? `Removed ${data.resourcesRemoved} duplicate resource(s)! Kept: ${data.totalResources} unique resources.`
-        : 'No duplicates found. All resources are unique.';
-      showNotification(message, data.resourcesRemoved > 0 ? 'success' : 'info');
-      console.log('[Portal] Deduplication result:', data);
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      showNotification('Failed to deduplicate resources: ' + errorMsg, 'error');
-      console.error('[Portal] Deduplication failed:', data);
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Deduplication error:', error);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Remove Duplicates';
-  }
+    },
+  });
 });
 
 // Seed Resources Handler
 document.getElementById('seed-resources-btn')?.addEventListener('click', async () => {
   const btn = document.getElementById('seed-resources-btn') as HTMLButtonElement;
   if (!btn) return;
-  
-  const seedOk = await showConfirmDialog({
-    title: 'Seed resources',
-    message: 'Create initial resources from all industries and topics?',
-    details: 'New resources are created as drafts in your library.',
-    confirmLabel: 'Seed',
-    variant: 'primary',
-  });
-  if (!seedOk) {
-    return;
-  }
-  
-  btn.disabled = true;
-  btn.textContent = 'Seeding...';
-  
-  try {
-    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/seed`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+
+  await runWorkspaceGuardedAction('resources:seed', {
+    confirm: () =>
+      showConfirmDialog({
+        title: 'Seed resources',
+        message: 'Create initial resources from all industries and topics?',
+        details: 'New resources are created as drafts in your library.',
+        confirmLabel: 'Seed',
+        variant: 'primary',
+      }),
+    onBusy: (busy) => setElementBusy(btn, busy, busy ? 'Seeding...' : 'Seed Resources'),
+    run: async () => {
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/seed`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          const message = `Successfully seeded ${data.created} resource(s)! Skipped: ${data.skipped}. Total: ${data.total}. These resources are in "draft" status.`;
+          showNotification(message, 'success');
+          console.log('[Portal] Seeded resources:', data);
+          setTimeout(() => {
+            loadResources();
+            loadDashboardData();
+          }, 500);
+        } else {
+          const errorMsg = data.error || 'Unknown error';
+          showNotification('Failed to seed resources: ' + errorMsg, 'error');
+          console.error('[Portal] Seed failed:', data);
+        }
+      } catch (error) {
+        showNotification('Connection error. Please try again.', 'error');
+        console.error('[Portal] Seed error:', error);
       }
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok && data.success) {
-      const message = `Successfully seeded ${data.created} resource(s)! Skipped: ${data.skipped}. Total: ${data.total}. These resources are in "draft" status.`;
-      showNotification(message, 'success');
-      console.log('[Portal] Seeded resources:', data);
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
-    } else {
-      const errorMsg = data.error || 'Unknown error';
-      showNotification('Failed to seed resources: ' + errorMsg, 'error');
-      console.error('[Portal] Seed failed:', data);
-    }
-  } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
-    console.error('[Portal] Seed error:', error);
-    } finally {
-    btn.disabled = false;
-    btn.textContent = 'Seed Resources';
-  }
+    },
+  });
 });
 
   setupResourceFilters();

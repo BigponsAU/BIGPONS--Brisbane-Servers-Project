@@ -51,7 +51,11 @@ export async function planGrowthProposals(config: LibraryGrowthConfig): Promise<
 
       if (!hasPublished) {
         priority += hasAny ? 2 : 4;
-        reasons.push(hasAny ? 'draft exists but nothing published yet' : 'no library entry for this topic');
+        reasons.push(
+          hasAny
+            ? `draft exists for ${topic.name} but nothing published yet`
+            : `no published guide for ${topic.name} (${industry.name})`,
+        );
       }
       const pending = pendingByKey.get(key) ?? 0;
       if (pending > 0) {

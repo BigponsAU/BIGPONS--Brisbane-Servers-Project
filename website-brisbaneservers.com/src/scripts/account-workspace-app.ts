@@ -31,7 +31,7 @@ import { ensureProfilesPanel, ensureResourcesPanel, registerPanelLoaderStubs } f
 import { createVoiceContext } from './account-workspace-voice-context';
 import { fetchAuthenticatedResources, fetchStarterBlocks } from './account-workspace-resource-api';
 import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
-import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification } from './account-workspace-utils';
+import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy } from './account-workspace-utils';
 import { hasWorkspaceCapability } from '../lib/workspace-roles';
 import { showConfirmDialog } from './portal-confirm-dialog';
 
@@ -203,6 +203,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     applyRoleAccess(user);
     registerPortalWorkspaceFunctions();
+    setupGlobalSearch();
 
     syncWorkspaceSidebarLayout();
     setAccountNavSignedIn(true);
@@ -351,6 +352,7 @@ export function bootAccountWorkspaceDashboard(): void {
       if (getWorkspaceResources().length > 0) {
         updateAnalyticsDisplay(getWorkspaceResources());
         loadAnalyticsSuggestions();
+        loadAdminMeta();
       } else {
         loadAnalytics();
       }
@@ -624,6 +626,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
   function computeWorkspaceResourceStats(resources: any[]): {
     total: number;
+    userTotal: number;
     published: number;
     drafts: number;
     archived: number;
@@ -631,12 +634,14 @@ export function bootAccountWorkspaceDashboard(): void {
     avgScorePercent: string;
     avgScoreRaw: number;
   } {
-    const total = resources.length;
-    const published = resources.filter((r: any) => r.status === 'published').length;
-    const drafts = resources.filter((r: any) => r.status === 'draft').length;
-    const archived = resources.filter((r: any) => r.status === 'archived').length;
     const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true).length;
-    const scores = resources
+    const userResources = resources.filter((r: any) => !r.isStarterBlock);
+    const total = resources.length;
+    const userTotal = userResources.length;
+    const published = userResources.filter((r: any) => r.status === 'published').length;
+    const drafts = userResources.filter((r: any) => r.status === 'draft').length;
+    const archived = userResources.filter((r: any) => r.status === 'archived').length;
+    const scores = userResources
       .map((r: any) => r.metadata?.voiceScore)
       .filter((s: any) => s !== undefined && s !== null && !isNaN(s));
     const avgScoreRaw = scores.length > 0
@@ -645,13 +650,12 @@ export function bootAccountWorkspaceDashboard(): void {
     const avgScorePercent = scores.length > 0
       ? (avgScoreRaw * 100).toFixed(1)
       : 'N/A';
-    return { total, published, drafts, archived, starterBlocks, avgScorePercent, avgScoreRaw };
+    return { total, userTotal, published, drafts, archived, starterBlocks, avgScorePercent, avgScoreRaw };
   }
 
   function applyDashboardResourceSnapshot(resources: any[]): void {
     setWorkspaceResources(resources);
 
-    const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
     const stats = computeWorkspaceResourceStats(resources);
 
     const totalEl = document.getElementById('dashboard-total-resources');
@@ -659,7 +663,7 @@ export function bootAccountWorkspaceDashboard(): void {
     const draftsEl = document.getElementById('dashboard-drafts');
     const avgScoreEl = document.getElementById('dashboard-avg-score');
 
-    if (totalEl) totalEl.textContent = stats.total.toString();
+    if (totalEl) totalEl.textContent = stats.userTotal.toString();
     if (publishedEl) publishedEl.textContent = stats.published.toString();
     if (draftsEl) draftsEl.textContent = stats.drafts.toString();
     if (avgScoreEl) {
@@ -672,10 +676,7 @@ export function bootAccountWorkspaceDashboard(): void {
     updateRecentActivity(resources.filter((r: any) => !r.isStarterBlock));
     updateRecentResourcesPreview(resources.filter((r: any) => !r.isStarterBlock));
 
-    const dashboardPanel = document.getElementById('dashboard-panel');
-    if (dashboardPanel?.classList.contains('active')) {
-      renderStarterBlocksGrid(starterBlocks);
-    }
+    void loadStarterBlocks();
   }
 
   // Load starter blocks
@@ -702,6 +703,14 @@ export function bootAccountWorkspaceDashboard(): void {
   function renderStarterBlocksGrid(starterBlocks: any[]): void {
     const grid = document.getElementById('starter-blocks-grid');
     if (!grid) return;
+
+    const countEl = document.getElementById('starter-blocks-count');
+    if (countEl) {
+      countEl.textContent =
+        starterBlocks.length > 0
+          ? `${starterBlocks.length} template${starterBlocks.length === 1 ? '' : 's'} in library`
+          : '';
+    }
 
     if (starterBlocks.length === 0) {
       grid.innerHTML = `
@@ -772,7 +781,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     if (starterBlocks.length > 12) {
       grid.innerHTML += `
-        <div class="starter-block-card" style="border-style: dashed; cursor: pointer;" onclick="navigateToPanel('resources'); document.getElementById('resource-search').value = 'starter block'; loadResources();">
+        <div class="starter-block-card" style="border-style: dashed; cursor: pointer;" onclick="navigateToPanel('resources'); const f = document.getElementById('resource-type-filter'); if (f) f.value = 'starter'; loadResources();">
           <div style="text-align: center; padding: var(--space-xl);">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.3; margin-bottom: var(--space-md);">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -813,46 +822,49 @@ export function bootAccountWorkspaceDashboard(): void {
 
   // Create resource from starter block
   async function createFromStarterBlock(starterBlockId: string): Promise<void> {
-    showNotification('Creating resource from starter block...', 'info', 0);
-    try {
-      const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/from-starter-block`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          starterBlockId: starterBlockId
-        })
-      });
+    await runWorkspaceGuardedAction(`starter:create:${starterBlockId}`, {
+      onBusy: (busy) => setStarterBlockCardsBusy(starterBlockId, busy),
+      run: async () => {
+        showNotification('Creating resource from starter block...', 'info', 0);
+        try {
+          const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/from-starter-block`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              starterBlockId: starterBlockId,
+            }),
+          });
 
-      const data = await response.json();
+          const data = await response.json();
 
-      if (response.ok && data.success) {
-        let message = 'Resource created from starter block!';
-        if (data.profileCreated) {
-          message += ' Base voice profile created automatically.';
+          if (response.ok && data.success) {
+            let message = 'Resource created from starter block!';
+            if (data.profileCreated) {
+              message += ' Base voice profile created automatically.';
+            }
+            showNotification(message, 'success');
+            navigateToPanel('resources');
+            setTimeout(() => {
+              if (data.resource?.id) {
+                selectResource(data.resource.id);
+              }
+              loadResources();
+              loadDashboardData();
+              if (data.profileCreated && typeof loadProfiles === 'function') {
+                setTimeout(() => loadProfiles(), 1000);
+              }
+            }, 100);
+          } else {
+            showNotification(`Failed to create resource: ${data.error || 'Unknown error'}`, 'error');
+          }
+        } catch (error) {
+          console.error('[Portal] Error creating from starter block:', error);
+          showNotification('Error creating resource from starter block', 'error');
         }
-        showNotification(message, 'success');
-        // Navigate to resources and select the new resource
-        navigateToPanel('resources');
-        setTimeout(() => {
-          if (data.resource?.id) {
-            selectResource(data.resource.id);
-          }
-          loadResources();
-          loadDashboardData();
-          // Refresh profiles if profile was created
-          if (data.profileCreated && typeof loadProfiles === 'function') {
-            setTimeout(() => loadProfiles(), 1000);
-          }
-        }, 100);
-      } else {
-        showNotification(`Failed to create resource: ${data.error || 'Unknown error'}`, 'error');
-      }
-    } catch (error) {
-      console.error('[Portal] Error creating from starter block:', error);
-      showNotification('Error creating resource from starter block', 'error');
-    }
+      },
+    });
   }
 
   // Make functions globally accessible
@@ -862,10 +874,14 @@ export function bootAccountWorkspaceDashboard(): void {
   // Clear filters function
   (window as any).clearFilters = function(): void {
     const searchInput = document.getElementById('resource-search') as HTMLInputElement;
+    const treeSearch = document.getElementById('tree-search') as HTMLInputElement;
+    const globalSearch = document.getElementById('global-search') as HTMLInputElement;
     const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
     const typeFilter = document.getElementById('resource-type-filter') as HTMLSelectElement;
     
     if (searchInput) searchInput.value = '';
+    if (treeSearch) treeSearch.value = '';
+    if (globalSearch) globalSearch.value = '';
     if (statusFilter) statusFilter.value = '';
     if (typeFilter) typeFilter.value = 'user';
     
@@ -920,6 +936,20 @@ export function bootAccountWorkspaceDashboard(): void {
     });
   }
 
+  function applyResourceSearchQuery(query: string): void {
+    const trimmed = query.trim();
+    navigateToPanel('resources');
+    window.setTimeout(() => {
+      const resourceSearch = document.getElementById('resource-search') as HTMLInputElement | null;
+      const treeSearch = document.getElementById('tree-search') as HTMLInputElement | null;
+      if (resourceSearch) resourceSearch.value = trimmed;
+      if (treeSearch) treeSearch.value = trimmed;
+      void loadResources().then(() => {
+        if (trimmed) (window as any).filterTree(trimmed);
+      });
+    }, 150);
+  }
+
   function applyGlobalSearchQuery(rawQuery: string): void {
     const query = rawQuery.trim();
     if (!query) return;
@@ -934,14 +964,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     if (lower.startsWith('resource:')) {
       const resourceQuery = query.slice(9).trim();
-      navigateToPanel('resources');
-      window.setTimeout(() => {
-        const resourceSearch = document.getElementById('resource-search') as HTMLInputElement | null;
-        if (resourceSearch) {
-          resourceSearch.value = resourceQuery;
-          loadResources();
-        }
-      }, 150);
+      applyResourceSearchQuery(resourceQuery);
       return;
     }
 
@@ -968,16 +991,15 @@ export function bootAccountWorkspaceDashboard(): void {
       return;
     }
 
-    navigateToPanel('resources');
-    const resourceSearch = document.getElementById('resource-search') as HTMLInputElement | null;
-    if (resourceSearch) {
-      resourceSearch.value = query;
-      loadResources();
-    }
+    applyResourceSearchQuery(query);
   }
 
-  const globalSearchInput = document.getElementById('global-search') as HTMLInputElement;
-  if (globalSearchInput) {
+  let globalSearchBound = false;
+  function setupGlobalSearch(): void {
+    const globalSearchInput = document.getElementById('global-search') as HTMLInputElement | null;
+    if (!globalSearchInput || globalSearchBound) return;
+    globalSearchBound = true;
+
     let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
     globalSearchInput.addEventListener('input', () => {
@@ -987,11 +1009,11 @@ export function bootAccountWorkspaceDashboard(): void {
         clearTimeout(searchTimeout);
       }
 
+      if (!query) return;
+
       searchTimeout = setTimeout(() => {
-        if (query) {
-          applyGlobalSearchQuery(query);
-        }
-      }, 300);
+        applyGlobalSearchQuery(query);
+      }, 400);
     });
 
     globalSearchInput.addEventListener('keydown', (e) => {
@@ -1002,8 +1024,14 @@ export function bootAccountWorkspaceDashboard(): void {
           applyGlobalSearchQuery(query);
         }
       }
+      if (e.key === 'Escape') {
+        globalSearchInput.value = '';
+        globalSearchInput.blur();
+      }
     });
   }
+
+  setupGlobalSearch();
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
@@ -1138,6 +1166,7 @@ export function bootAccountWorkspaceDashboard(): void {
       // Fallback to current resources if available
       const resources = getWorkspaceResources();
       updateAnalyticsDisplay(resources);
+      loadAdminMeta();
     }
   }
 
@@ -1167,14 +1196,21 @@ export function bootAccountWorkspaceDashboard(): void {
           const key = (btn as HTMLElement).getAttribute('data-key');
           const value = parseFloat((btn as HTMLElement).getAttribute('data-value') || '0');
           if (!key) return;
-          try {
-            const patchRes = await workspaceFetch(`${getVoiceApiUrl()}/admin/pipeline-config`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ [key]: value })
-            });
-            if (patchRes.ok) loadAnalyticsSuggestions();
-          } catch (e) { console.error(e); }
+          await runWorkspaceGuardedAction(`analytics:apply:${key}`, {
+            onBusy: (busy) => setElementBusy(btn as HTMLButtonElement, busy, busy ? 'Applying…' : 'Apply'),
+            run: async () => {
+              try {
+                const patchRes = await workspaceFetch(`${getVoiceApiUrl()}/admin/pipeline-config`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ [key]: value }),
+                });
+                if (patchRes.ok) loadAnalyticsSuggestions();
+              } catch (e) {
+                console.error(e);
+              }
+            },
+          });
         });
       });
     } catch (e) {
@@ -1185,13 +1221,31 @@ export function bootAccountWorkspaceDashboard(): void {
 
   async function loadAdminMeta(): Promise<void> {
     const container = document.getElementById('analytics-users-vectors');
+    const section = document.getElementById('analytics-admin-meta');
     if (!container) return;
+
+    const user = workspaceUser;
+    const isAdmin = user?.role === 'admin' || user?.role === 'super-admin';
+    if (!isAdmin) {
+      if (section) section.hidden = true;
+      return;
+    }
+    if (section) {
+      section.hidden = false;
+      section.removeAttribute('hidden');
+    }
+
     container.innerHTML = '<p style="color: var(--text-secondary); font-size: var(--text-sm);">Loading users and vector summary…</p>';
     try {
       const [usersRes, vectorsRes] = await Promise.all([
         workspaceFetch(`${getVoiceApiUrl()}/admin/users`),
         workspaceFetch(`${getVoiceApiUrl()}/admin/vectors-summary`)
       ]);
+      if (!usersRes.ok && !vectorsRes.ok) {
+        container.innerHTML =
+          '<p>Admin summary unavailable. Check that you are signed in as an admin.</p>';
+        return;
+      }
       const usersData = usersRes.ok ? await usersRes.json() : null;
       const vectorsData = vectorsRes.ok ? await vectorsRes.json() : null;
       const userCount = usersData?.count ?? '—';
@@ -1220,13 +1274,19 @@ export function bootAccountWorkspaceDashboard(): void {
       const avgScoreEl = document.getElementById('stat-avg-score');
 
       if (totalEl) {
-        totalEl.textContent = stats.total.toString();
+        totalEl.textContent = stats.userTotal.toString();
+        const desc = totalEl.parentElement?.querySelector('.stat-description');
+        if (desc) {
+          desc.textContent = stats.starterBlocks > 0
+            ? `Your content (+${stats.starterBlocks} starter blocks in library)`
+            : 'Your content items';
+        }
         totalEl.parentElement?.setAttribute(
           'title',
-          `Total: ${stats.total} resources (${stats.starterBlocks} starter blocks)`
+          `Your resources: ${stats.userTotal} (${stats.starterBlocks} starter blocks in library, ${stats.total} total in API)`
         );
-        if (stats.total > 9999) {
-          totalEl.textContent = (stats.total / 1000).toFixed(1) + 'k';
+        if (stats.userTotal > 9999) {
+          totalEl.textContent = (stats.userTotal / 1000).toFixed(1) + 'k';
         }
       }
       if (publishedEl) {
@@ -1346,67 +1406,70 @@ export function bootAccountWorkspaceDashboard(): void {
       showNotification('No draft resources to improve.', 'info');
       return;
     }
-    
-    const bulkImproveOk = await showConfirmDialog({
-      title: 'Improve draft resources',
-      message: `Improve ${drafts.length} draft resource(s) using voice profile + RAG + inference?`,
-      details: 'This may take a while. Only drafts in your library are included.',
-      confirmLabel: 'Improve all',
-      variant: 'primary',
-    });
-    if (!bulkImproveOk) return;
-    
-    showNotification(`Improving ${drafts.length} resources...`, 'info');
-    
-    let successCount = 0;
-    let failCount = 0;
-    const errors: string[] = [];
-    
-    try {
-      // Process in batches to avoid overwhelming the server
-      const batchSize = 5;
-      for (let i = 0; i < drafts.length; i += batchSize) {
-        const batch = drafts.slice(i, i + batchSize);
-        const results = await Promise.allSettled(
-          batch.map(resource =>
-            workspaceFetch(`${getVoiceApiUrl()}/resources/${resource.id}/improve`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({})
-            }).then(r => r.json())
-          )
-        );
-        
-        results.forEach((result, idx) => {
-          if (result.status === 'fulfilled' && result.value.success) {
-            successCount++;
-          } else {
-            failCount++;
-            const resource = batch[idx];
-            errors.push(`${resource.title || resource.id}: ${result.status === 'rejected' ? result.reason : result.value.error || 'Unknown error'}`);
+
+    await runWorkspaceGuardedAction('bulk:improve', {
+      confirm: () =>
+        showConfirmDialog({
+          title: 'Improve draft resources',
+          message: `Improve ${drafts.length} draft resource(s) using voice profile + RAG + inference?`,
+          details: 'This may take a while. Only drafts in your library are included.',
+          confirmLabel: 'Improve all',
+          variant: 'primary',
+        }),
+      run: async () => {
+        showNotification(`Improving ${drafts.length} resources...`, 'info', 0);
+
+        let successCount = 0;
+        let failCount = 0;
+        const errors: string[] = [];
+
+        try {
+          const batchSize = 5;
+          for (let i = 0; i < drafts.length; i += batchSize) {
+            const batch = drafts.slice(i, i + batchSize);
+            const results = await Promise.allSettled(
+              batch.map((resource) =>
+                workspaceFetch(`${getVoiceApiUrl()}/resources/${resource.id}/improve`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({}),
+                }).then((r) => r.json()),
+              ),
+            );
+
+            results.forEach((result, idx) => {
+              if (result.status === 'fulfilled' && result.value.success) {
+                successCount++;
+              } else {
+                failCount++;
+                const resource = batch[idx];
+                errors.push(
+                  `${resource.title || resource.id}: ${result.status === 'rejected' ? result.reason : result.value.error || 'Unknown error'}`,
+                );
+              }
+            });
+
+            if (i + batchSize < drafts.length) {
+              await new Promise((resolve) => setTimeout(resolve, 500));
+            }
           }
-        });
-        
-        // Small delay between batches
-        if (i + batchSize < drafts.length) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+
+          let message = `Improved ${successCount} resource(s) successfully.`;
+          if (failCount > 0) {
+            message += ` ${failCount} failed.`;
+            console.error('[Portal] Bulk improve errors:', errors);
+          }
+
+          showNotification(message, failCount > 0 ? 'warning' : 'success');
+          setTimeout(() => loadResources(), 1000);
+        } catch (error) {
+          showNotification('Error during bulk improve operation.', 'error');
+          console.error('[Portal] Bulk improve error:', error);
         }
-      }
-      
-      let message = `Improved ${successCount} resource(s) successfully.`;
-      if (failCount > 0) {
-        message += ` ${failCount} failed.`;
-        console.error('[Portal] Bulk improve errors:', errors);
-      }
-      
-      showNotification(message, failCount > 0 ? 'warning' : 'success');
-      setTimeout(() => loadResources(), 1000);
-    } catch (error) {
-      showNotification('Error during bulk improve operation.', 'error');
-      console.error('[Portal] Bulk improve error:', error);
-    }
+      },
+    });
   };
 
   // Set initial filter button state

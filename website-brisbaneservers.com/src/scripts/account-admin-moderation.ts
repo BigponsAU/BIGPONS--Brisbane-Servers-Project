@@ -2,7 +2,7 @@
  * Admin moderation panel — pending community uploads queue + inline preview.
  */
 import { workspaceFetch } from '../lib/client-api';
-import { escapeHtml } from './account-workspace-utils';
+import { escapeHtml, runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
 import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
@@ -77,29 +77,41 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
   `;
 
   panel.querySelector('[data-moderation-approve]')?.addEventListener('click', () => {
-    void (async () => {
-      const ok = await showConfirmDialog({
-        title: 'Approve upload',
-        message: 'Publish this community contribution?',
-        details: 'Approved items become available in Resources and may appear on the public site when published.',
-        confirmLabel: 'Approve',
-        variant: 'primary',
-      });
-      if (!ok) return;
-      void moderateContribution(ctx, item.id, 'approve');
-    })();
+    const approveBtn = panel.querySelector('[data-moderation-approve]') as HTMLButtonElement | null;
+    const rejectBtn = panel.querySelector('[data-moderation-reject]') as HTMLButtonElement | null;
+    void runWorkspaceGuardedAction(`moderation:${item.id}:approve`, {
+      confirm: () =>
+        showConfirmDialog({
+          title: 'Approve upload',
+          message: 'Publish this community contribution?',
+          details: 'Approved items become available in Resources and may appear on the public site when published.',
+          confirmLabel: 'Approve',
+          variant: 'primary',
+        }),
+      onBusy: (busy) => {
+        setElementBusy(approveBtn, busy, busy ? 'Approving…' : 'Approve');
+        setElementBusy(rejectBtn, busy);
+      },
+      run: () => moderateContribution(ctx, item.id, 'approve'),
+    });
   });
   panel.querySelector('[data-moderation-reject]')?.addEventListener('click', () => {
-    void (async () => {
-      const ok = await showConfirmDialog({
-        title: 'Reject upload',
-        message: 'Remove this contribution from the moderation queue?',
-        confirmLabel: 'Reject',
-        variant: 'danger',
-      });
-      if (!ok) return;
-      void moderateContribution(ctx, item.id, 'reject');
-    })();
+    const approveBtn = panel.querySelector('[data-moderation-approve]') as HTMLButtonElement | null;
+    const rejectBtn = panel.querySelector('[data-moderation-reject]') as HTMLButtonElement | null;
+    void runWorkspaceGuardedAction(`moderation:${item.id}:reject`, {
+      confirm: () =>
+        showConfirmDialog({
+          title: 'Reject upload',
+          message: 'Remove this contribution from the moderation queue?',
+          confirmLabel: 'Reject',
+          variant: 'danger',
+        }),
+      onBusy: (busy) => {
+        setElementBusy(rejectBtn, busy, busy ? 'Rejecting…' : 'Reject');
+        setElementBusy(approveBtn, busy);
+      },
+      run: () => moderateContribution(ctx, item.id, 'reject'),
+    });
   });
   panel.querySelector('[data-moderation-open]')?.addEventListener('click', () => {
     ctx.navigateToPanel('resources');
