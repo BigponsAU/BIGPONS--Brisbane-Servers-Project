@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const ACCOUNT_SCRIPTS = [
   'account-workspace-app.ts',
+  'account-workspace-global-search.ts',
   'account-workspace-resources.ts',
   'account-workspace-profiles.ts',
   'account-workspace-voice-features.ts',
@@ -59,6 +60,17 @@ describe('dashboard production standards', () => {
     );
     expect(band).toContain('SectionIntro');
     expect(band).toContain('account-workspace-panel-section');
+  });
+
+  it('workspace sidebar exposes wired global search markup', async () => {
+    const sidebar = await readFile(
+      path.resolve('src/components/account/AccountWorkspaceSidebar.astro'),
+      'utf8',
+    );
+    expect(sidebar).toContain('data-workspace-global-search');
+    expect(sidebar).toContain('sidebar-command-band');
+    expect(sidebar).toContain('id="global-search"');
+    expect(sidebar).toContain('id="workspace-global-search-results"');
   });
 
   it('portal markov tracker registers workspace loaders', async () => {

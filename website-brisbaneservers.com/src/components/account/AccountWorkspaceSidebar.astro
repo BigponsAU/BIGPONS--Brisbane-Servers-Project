@@ -29,30 +29,62 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
     <p class="sidebar-workspace-title">{accountWorkspace.productName}</p>
   </div>
 
-  <div id="workspace-mode-switcher" class="workspace-mode-switcher" data-min-role="admin" hidden aria-hidden="true">
-    <button type="button" id="workspace-mode-creator" class="workspace-mode-btn is-active" data-workspace-mode="creator" aria-pressed="true">
-      {accountWorkspace.creatorModeLabel}
-    </button>
-    <button type="button" id="workspace-mode-admin" class="workspace-mode-btn" data-workspace-mode="admin" aria-pressed="false">
-      {accountWorkspace.adminModeLabel}
-    </button>
-  </div>
+  <div class="sidebar-command-band">
+    <div id="workspace-mode-switcher" class="workspace-mode-switcher sidebar-command-band__modes" data-min-role="admin" hidden aria-hidden="true">
+      <button type="button" id="workspace-mode-creator" class="workspace-mode-btn is-active" data-workspace-mode="creator" aria-pressed="true">
+        {accountWorkspace.creatorModeLabel}
+      </button>
+      <button type="button" id="workspace-mode-admin" class="workspace-mode-btn" data-workspace-mode="admin" aria-pressed="false">
+        {accountWorkspace.adminModeLabel}
+      </button>
+    </div>
 
-  <p id="sidebar-mode-subtitle" class="sidebar-mode-subtitle">{accountWorkspace.creatorModeDescription}</p>
+    <p id="sidebar-mode-subtitle" class="sidebar-mode-subtitle sidebar-command-band__subtitle">{accountWorkspace.creatorModeDescription}</p>
 
-  <div class="sidebar-global-search">
-    <label for="global-search" class="sr-only">Global workspace search</label>
-    <div class="header-search sidebar-search">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="M21 21l-4.35-4.35"></path>
-      </svg>
-      <input
-        type="text"
-        id="global-search"
-        placeholder="Search… profile: voice: panel (Ctrl+K)"
-        aria-label="Global workspace search"
-      />
+    <div class="sidebar-global-search workspace-global-search sidebar-command-band__search" data-workspace-global-search>
+      <div class="sidebar-command-band__search-head">
+        <span class="sidebar-command-band__search-label" id="workspace-search-label">Quick find</span>
+        <kbd class="sidebar-command-band__kbd" aria-hidden="true">Ctrl+K</kbd>
+      </div>
+      <form
+        class="workspace-global-search__form workspace-global-search__form--panel"
+        role="search"
+        autocomplete="off"
+        action="javascript:void(0)"
+        aria-labelledby="workspace-search-label"
+      >
+        <div class="header-search sidebar-search workspace-global-search__wrapper workspace-global-search__wrapper--panel">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <label for="global-search" class="sr-only">Search workspace panels, resources, and profiles</label>
+          <input
+            type="search"
+            id="global-search"
+            class="workspace-global-search__input"
+            placeholder="Panels, resources, profiles…"
+            aria-label="Search workspace panels, resources, and profiles"
+            aria-autocomplete="list"
+            aria-controls="workspace-global-search-results"
+            aria-expanded="false"
+            enterkeyhint="search"
+            autocomplete="off"
+          />
+          <button type="submit" class="workspace-global-search__submit" aria-label="Run search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="M13 6l6 6-6 6"></path>
+            </svg>
+          </button>
+        </div>
+        <div
+          id="workspace-global-search-results"
+          class="workspace-global-search__results"
+          role="listbox"
+          aria-label="Workspace search suggestions"
+        ></div>
+      </form>
     </div>
   </div>
 

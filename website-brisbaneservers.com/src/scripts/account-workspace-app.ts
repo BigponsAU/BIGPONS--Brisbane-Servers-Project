@@ -34,6 +34,10 @@ import { getWorkspaceResources, setWorkspaceResources } from './account-workspac
 import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy } from './account-workspace-utils';
 import { hasWorkspaceCapability } from '../lib/workspace-roles';
 import { showConfirmDialog } from './portal-confirm-dialog';
+import {
+  bootWorkspaceGlobalSearch,
+  focusWorkspaceGlobalSearch,
+} from './account-workspace-global-search';
 
 export type { AccountWorkspaceBootConfig };
 
@@ -203,7 +207,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
     applyRoleAccess(user);
     registerPortalWorkspaceFunctions();
-    setupGlobalSearch();
+    bootWorkspaceGlobalSearch({
+      navigateToPanel,
+      applyResourceSearchQuery,
+      filterProfileCardsByQuery,
+    });
 
     syncWorkspaceSidebarLayout();
     setAccountNavSignedIn(true);
@@ -897,33 +905,6 @@ export function bootAccountWorkspaceDashboard(): void {
   // Make loadDashboardData globally accessible
   (window as any).loadDashboardData = loadDashboardData;
 
-  // Global search — resources default; prefix routes for profiles, voice lab, and panels
-  const GLOBAL_SEARCH_PANEL_ALIASES: Record<string, string> = {
-    overview: 'dashboard',
-    dashboard: 'dashboard',
-    home: 'dashboard',
-    resources: 'resources',
-    profiles: 'profiles',
-    analytics: 'analytics',
-    'voice lab': 'voice-lab',
-    'voice-lab': 'voice-lab',
-    voicelab: 'voice-lab',
-    'voice map': 'voice-map',
-    'voice-map': 'voice-map',
-    voicemap: 'voice-map',
-    growth: 'library-growth',
-    'library growth': 'library-growth',
-    'library-growth': 'library-growth',
-    moderation: 'moderation',
-    'site review': 'site-review',
-    'site-review': 'site-review',
-    users: 'admin-users',
-    'admin-users': 'admin-users',
-    ops: 'admin-ops',
-    'admin-ops': 'admin-ops',
-    billing: 'admin-ops',
-  };
-
   function filterProfileCardsByQuery(query: string): void {
     const needle = query.trim().toLowerCase();
     document.querySelectorAll<HTMLElement>('.profile-card-v1, .profile-item').forEach((item) => {
@@ -950,89 +931,6 @@ export function bootAccountWorkspaceDashboard(): void {
     }, 150);
   }
 
-  function applyGlobalSearchQuery(rawQuery: string): void {
-    const query = rawQuery.trim();
-    if (!query) return;
-
-    const lower = query.toLowerCase();
-    if (lower.startsWith('panel:')) {
-      const panelQuery = query.slice(6).trim().toLowerCase();
-      const panelTarget = GLOBAL_SEARCH_PANEL_ALIASES[panelQuery] ?? panelQuery;
-      navigateToPanel(panelTarget);
-      return;
-    }
-
-    if (lower.startsWith('resource:')) {
-      const resourceQuery = query.slice(9).trim();
-      applyResourceSearchQuery(resourceQuery);
-      return;
-    }
-
-    if (lower.startsWith('profile:')) {
-      const profileQuery = query.slice(8).trim();
-      navigateToPanel('profiles');
-      window.setTimeout(() => filterProfileCardsByQuery(profileQuery), 150);
-      return;
-    }
-
-    if (lower.startsWith('voice:')) {
-      const voiceText = query.slice(6).trim();
-      navigateToPanel('voice-lab');
-      window.setTimeout(() => {
-        const textarea = document.getElementById('voice-lab-text') as HTMLTextAreaElement | null;
-        if (textarea && voiceText) textarea.value = voiceText;
-      }, 150);
-      return;
-    }
-
-    const panelTarget = GLOBAL_SEARCH_PANEL_ALIASES[lower];
-    if (panelTarget) {
-      navigateToPanel(panelTarget);
-      return;
-    }
-
-    applyResourceSearchQuery(query);
-  }
-
-  let globalSearchBound = false;
-  function setupGlobalSearch(): void {
-    const globalSearchInput = document.getElementById('global-search') as HTMLInputElement | null;
-    if (!globalSearchInput || globalSearchBound) return;
-    globalSearchBound = true;
-
-    let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    globalSearchInput.addEventListener('input', () => {
-      const query = globalSearchInput.value.trim();
-
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-
-      if (!query) return;
-
-      searchTimeout = setTimeout(() => {
-        applyGlobalSearchQuery(query);
-      }, 400);
-    });
-
-    globalSearchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const query = globalSearchInput.value.trim();
-        if (query) {
-          applyGlobalSearchQuery(query);
-        }
-      }
-      if (e.key === 'Escape') {
-        globalSearchInput.value = '';
-        globalSearchInput.blur();
-      }
-    });
-  }
-
-  setupGlobalSearch();
-
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Only activate shortcuts when not typing in inputs
@@ -1044,11 +942,7 @@ export function bootAccountWorkspaceDashboard(): void {
     // Ctrl/Cmd + K for global search
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
-      const globalSearch = document.getElementById('global-search') as HTMLInputElement;
-      if (globalSearch) {
-        globalSearch.focus();
-        globalSearch.select();
-      }
+      focusWorkspaceGlobalSearch();
     }
 
     // Number keys for navigation (mode-aware)
