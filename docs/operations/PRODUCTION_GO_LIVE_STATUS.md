@@ -2,7 +2,14 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-01 — workspace sidebar search + layout deploy
+**Last synced:** 2026-07-11 — marketing chrome + inquiry lockup deploy
+
+### 2026-07-11 — Marketing visuals, inquiry lockup, nav chrome
+
+- **Site** — native BIGPONS lockup (favicon brain crop), inquiry aside sitewide, homepage band simplification, Brisbane 2032 inference dedupe, OG image swap (no baked text), nav hover/hero-fade fixes, marketing accent rail removed under header.
+- **Deploy** — push `9cb2128` (6 commits `40d23e2…9cb2128`) → Cloudflare Pages production `16323817` (**success**, 2026-07-11). Live: `https://brisbaneservers.com`.
+- **Verify** — `npm run verify:production -- --api https://api.brisbaneservers.com` **PASS**.
+- **Note** — GitHub CI still fails on `npm audit` (high severity); Pages deploy is independent and succeeded.
 
 ### 2026-07-01 — Workspace sidebar search + tighter dashboard chrome
 
