@@ -145,15 +145,20 @@ async function main(): Promise<void> {
         );
       }
       const res = await fetch(url, init);
-      if (res.status === 403) blocked403++;
-      const ok = probe.expect.includes(res.status);
+      // Bot Fight sometimes challenges the first CI request; one retry clears it.
+      const retried =
+        res.status === 403
+          ? await fetch(url, init)
+          : res;
+      if (retried.status === 403) blocked403++;
+      const ok = probe.expect.includes(retried.status);
       const tag = ok ? 'PASS' : 'FAIL';
       if (ok) passed++;
       else failed++;
       console.log(
-        `[${tag}] ${probe.panel.padEnd(14)} ${probe.method.padEnd(4)} ${probe.path} → ${res.status}${ok ? '' : ` (expected ${probe.expect.join('|')})`}`
+        `[${tag}] ${probe.panel.padEnd(14)} ${probe.method.padEnd(4)} ${probe.path} → ${retried.status}${ok ? '' : ` (expected ${probe.expect.join('|')})`}`
       );
-      if (res.status === 404) {
+      if (retried.status === 404 && !probe.expect.includes(404)) {
         console.log('       ^ Route missing on worker — check route-manifest + deploy');
       }
     } catch (error) {
