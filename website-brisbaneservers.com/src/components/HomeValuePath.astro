@@ -1,0 +1,36 @@
+---
+/**
+ * Homepage value path — sells the page thesis as a clear, ordered journey.
+ * Distinct from project case studies (those live on /projects).
+ */
+import SemanticText from './SemanticText.astro';
+import { valueProposition } from '../data/value-proposition';
+
+const path = valueProposition.home.valuePath;
+---
+
+<div class="home-value-path" aria-labelledby="home-value-path-title">
+  <header class="home-value-path__header">
+    <p class="home-value-path__eyebrow">{path.eyebrow}</p>
+    <h2 class="home-value-path__title" id="home-value-path-title">
+      <SemanticText text={path.title} semanticLevel="high" isParent={true} />
+    </h2>
+    <p class="home-value-path__lead">
+      <SemanticText text={path.lead} semanticLevel="normal" isChild={true} />
+    </p>
+  </header>
+
+  <ol class="home-value-path__steps">
+    {path.steps.map((step, index) => (
+      <li class="home-value-path__step">
+        <span class="home-value-path__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <span class="home-value-path__step-title">{step.title}</span>
+        <p class="home-value-path__step-body">{step.body}</p>
+      </li>
+    ))}
+  </ol>
+
+  <p class="home-value-path__outcome">
+    <SemanticText text={path.outcome} semanticLevel="medium" isChild={true} />
+  </p>
+</div>

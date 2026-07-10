@@ -151,6 +151,32 @@ export const valueProposition = {
         },
       ],
     },
+    /** Homepage thesis — how Brisbane Servers turns noise into agreed, delivered outcomes. */
+    valuePath: {
+      eyebrow: 'How we work',
+      title: 'From operating reality to agreed delivery',
+      lead: 'The homepage promise in one path: clarify what is true for your business, agree scope and cost, then deliver work that matches that agreement.',
+      steps: [
+        {
+          title: 'Clarify',
+          body: 'Map constraints, priorities, and what “good” looks like in your operations — not a vendor catalogue.',
+        },
+        {
+          title: 'Evidence',
+          body: 'Weigh options against industry rules, grants, capacity, and risk so recommendations stay grounded.',
+        },
+        {
+          title: 'Agree',
+          body: 'Lock scope, sequencing, and costs in writing before major spend — trade-offs visible up front.',
+        },
+        {
+          title: 'Deliver',
+          body: 'Build and support what we scoped together: presence, automation, integrations, and documentation you can reuse.',
+        },
+      ],
+      outcome:
+        'Access to truth in technology means decisions you can defend, delivery you can measure, and a path you can revisit as priorities change.',
+    },
     clientsContact: {
       eyebrow: 'Ready to talk',
       title: 'Start a conversation',
