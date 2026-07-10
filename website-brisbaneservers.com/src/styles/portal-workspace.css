@@ -116,8 +116,8 @@
 
     /* Text Colors (literal fallbacks — avoid circular var() with global tokens) */
     --portal-text-primary: #111827;
-    --portal-text-secondary: #4b5563;
-    --portal-text-tertiary: #6b7280;
+    --portal-text-secondary: #374151;
+    --portal-text-tertiary: #4b5563;
     --portal-text-inverse: #ffffff;
 
     /* Surface Colors */

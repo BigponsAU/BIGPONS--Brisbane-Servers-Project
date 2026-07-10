@@ -64,8 +64,9 @@
   --page-section-space: var(--space-2xl);
   --page-density-multiplier: 1;
   --page-accent-strength: 1;
-  /* Header offset below fixed bar — rem so it tracks content when zooming (avoids px/rem clash) */
-  --site-header-clearance: clamp(4.25rem, 5rem, 6rem);
+  /* Header offset below fixed bar — rem so it tracks content when zooming (avoids px/rem clash).
+     Keep in sync with header nav min-height + --nav-chrome-padding-block. */
+  --site-header-clearance: clamp(4.75rem, 5.5rem, 6.5rem);
   /* Same value as `main` top padding — dark hero uses negative margin to cancel so the band extends under the fixed header */
   --site-main-padding-top: clamp(
     calc(var(--space-lg) * 1.2 + var(--site-header-clearance)),
@@ -215,8 +216,9 @@
   
   /* Text Colors */
   --text-primary: #1A1A1A;
-  --text-secondary: #6b7280;
-  --text-light: #9ca3af;
+  /* Secondary/muted: keep clear of light page washes (#FAFBFC / #F8F9FA) */
+  --text-secondary: #4b5563;
+  --text-light: #64748b;
   
   /* Background Colors */
   --bg-primary: var(--primary-ultra-light);
@@ -718,7 +720,7 @@
   /* Navigation Tokens */
   --nav-padding: var(--space-md);
   --nav-gap: var(--space-xl);
-  --nav-height: calc(var(--space-lg) * var(--phi));
+  --nav-height: var(--site-header-clearance);
   
   /* Grid Tokens */
   --grid-gap: var(--space-xl);
@@ -787,11 +789,11 @@
   );
   --layout-section-padding-y: clamp(1rem, 1.15rem, 1.35rem);
   --layout-section-padding-y-alt: clamp(0.9rem, 1.05rem, 1.25rem);
-  /* Nav: compact vertical chrome — stable bar, smaller % than body sections */
+  /* Nav: fill --site-header-clearance (logo + padding ≈ reserved band) */
   --nav-chrome-padding-block: clamp(
-    0.5rem,
-    0.75rem,
-    1.05rem
+    0.85rem,
+    1.15rem,
+    1.5rem
   );
   /* Footer: roomier vertical rhythm for scanning links / legal copy */
   --footer-chrome-padding-block: clamp(

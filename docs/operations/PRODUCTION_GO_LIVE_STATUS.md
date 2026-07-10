@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-01 — account workspace UX + action-guard deploy
+**Last synced:** 2026-07-01 — workspace sidebar search + layout deploy
+
+### 2026-07-01 — Workspace sidebar search + tighter dashboard chrome
+
+- **Portal** — command-palette global search (`account-workspace-global-search.ts`) with suggestions dropdown; search anchored in sidebar command band; reduced header-to-workspace gap on signed-in `/account`.
+- **Deploy** — push `2eb158e` → Cloudflare Pages production `c1b41a83` (**success**, 2026-07-01). Live: `https://brisbaneservers.com`.
+- **Verify** — `npm run verify:production -- --api https://api.brisbaneservers.com` **PASS**.
 
 ### 2026-07-01 — Account workspace UX, starter corpus, double-click guards
 

@@ -147,6 +147,8 @@ header nav {
   align-items: center;
   gap: clamp(var(--space-sm), var(--space-md), var(--space-xl));
   padding-block: var(--nav-chrome-padding-block);
+  /* Match reserved header band so chrome fills --site-header-clearance */
+  min-height: var(--site-header-clearance);
 }
 
 .nav-brand {
@@ -154,7 +156,7 @@ header nav {
 }
 
 .nav-brand img {
-  inline-size: clamp(2.5rem, 2.85rem, 3.15rem);
+  inline-size: clamp(2.75rem, 3.1rem, 3.5rem);
   block-size: auto;
 }
 
@@ -222,10 +224,10 @@ main.main-phi-chassis .section:not(.hero),
  * Opt-in: exact hero surface (.hero in global.css) — `var(--original-bg-gradient)` + multiply blend `::before`.
  * Only sections with `section--hero-wash`; all others keep default light/white bands.
  */
-.site-main--marketing .section.section--hero-wash,
-.main-home .home-sections-shell > .section.section--hero-wash,
+.site-main--marketing .section.section--hero-wash:not(.section-scroll-deck-stage),
+.main-home .home-sections-shell > .section.section--hero-wash:not(.section-scroll-deck-stage),
 .main-home .home-sections-shell .marketing-scroll-shell__stage > .section.section--hero-wash:not(.section-scroll-deck-stage),
-main:not(.site-main) .section.section--hero-wash {
+main:not(.site-main) .section.section--hero-wash:not(.section-scroll-deck-stage) {
   isolation: isolate;
   overflow-x: clip;
   background: var(--original-bg-gradient) !important;
@@ -334,8 +336,9 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   padding-bottom: clamp(0.6rem, 0.9rem, 1.15rem) !important;
 }
 
-/* Public marketing pages: clearer vertical rhythm between bands (readability). */
-.site-main.site-main--marketing .section:not(.hero):not(.page-hero--surface),
+/* Public marketing pages: clearer vertical rhythm between bands (readability).
+   Scroll-deck stages keep their own padding (sticky runway + phase indicator clearance). */
+.site-main.site-main--marketing .section:not(.hero):not(.page-hero--surface):not(.section-scroll-deck-stage):not(.section-scroll-deck-cover),
 .site-main.site-main--marketing .inquiry-section {
   padding-top: clamp(1.75rem, 4.25vw, 3.5rem) !important;
   padding-bottom: clamp(1.75rem, 4.25vw, 3.5rem) !important;
@@ -2322,6 +2325,266 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   flex-wrap: wrap;
   gap: 0.9rem;
   margin-top: var(--space-xl);
+}
+
+/* ─── Home asymmetric inline bands (fill side space without fake symmetry) ─── */
+.home-band-split {
+  display: grid;
+  gap: clamp(1.25rem, 2.2vw, 2.25rem);
+  align-items: start;
+  width: 100%;
+  margin-top: clamp(0.35rem, 0.8vw, 0.85rem);
+}
+
+.home-band-split--challenge {
+  grid-template-columns: minmax(14rem, 0.9fr) minmax(0, 2.1fr);
+}
+
+.home-band-split--search {
+  grid-template-columns: minmax(0, 2.15fr) minmax(13.5rem, 0.85fr);
+  margin-top: clamp(1.35rem, 2.4vw, 2.35rem);
+}
+
+.home-band-split--solutions {
+  grid-template-columns: minmax(15rem, 0.95fr) minmax(0, 2.05fr);
+  align-items: stretch;
+}
+
+.home-band-split--partnership {
+  grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 2.15fr);
+}
+
+.home-band-split--inquiry {
+  grid-template-columns: minmax(13.5rem, 0.9fr) minmax(0, 1.35fr) minmax(13.5rem, 0.9fr);
+  align-items: stretch;
+  margin-top: 0;
+}
+
+.home-band-split__main {
+  min-width: 0;
+}
+
+.home-band-split--solutions .home-band-split__main,
+.home-band-split--partnership .home-band-split__main {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 1.6vw, 1.5rem);
+}
+
+.home-inline-rail {
+  min-width: 0;
+  padding: clamp(1rem, 1.4vw, 1.35rem) clamp(0.95rem, 1.3vw, 1.25rem);
+  border-radius: var(--site-panel-radius, 0.85rem);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.97) 0%,
+      rgba(237, 244, 255, 0.72) 55%,
+      rgba(255, 255, 255, 0.94) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 8px 24px rgba(8, 27, 54, 0.05);
+}
+
+.home-inline-rail--on-dark {
+  border-color: rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.home-inline-rail__kicker {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  color: var(--primary-color);
+}
+
+.home-inline-rail--on-dark .home-inline-rail__kicker {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.home-inline-rail__lead {
+  margin: 0 0 var(--space-md);
+  font-size: clamp(0.95rem, 0.9rem + 0.15vw, 1.05rem);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.home-inline-rail--on-dark .home-inline-rail__lead {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.home-inline-rail__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.home-inline-rail__list li {
+  position: relative;
+  padding-inline-start: 1.05rem;
+  font-size: clamp(0.9rem, 0.86rem + 0.1vw, 0.98rem);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.home-inline-rail__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--primary-color);
+  opacity: 0.75;
+}
+
+.home-inline-rail--on-dark .home-inline-rail__list li {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.home-inline-rail--on-dark .home-inline-rail__list li::before {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.home-inline-rail__contact {
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.home-inline-rail__contact dt {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.home-inline-rail__contact dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.home-inline-rail__contact dd a {
+  color: var(--primary-dark, var(--primary-color));
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+}
+
+.home-inline-rail__contact dd a:hover,
+.home-inline-rail__contact dd a:focus-visible {
+  text-decoration: underline;
+}
+
+.home-inline-rail__note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+.main-home .home-band-split--solutions .section-title,
+.main-home .home-band-split--partnership .section-title {
+  margin-bottom: var(--space-md);
+}
+
+.main-home .home-band-split--solutions .section-description,
+.main-home .home-band-split--partnership .section-description {
+  margin-bottom: var(--space-lg);
+  max-width: none;
+}
+
+.main-home .home-band--solutions .home-inline-rail--on-dark .section-title,
+.main-home .home-band--solutions .home-inline-rail--on-dark .section-title :is(.semantic-text, .semantic-high, .semantic-parent) {
+  color: var(--text-on-dark) !important;
+  -webkit-text-fill-color: var(--text-on-dark) !important;
+}
+
+.main-home .home-band--solutions .home-inline-rail--on-dark .section-description,
+.main-home .home-band--solutions .home-inline-rail--on-dark .section-description :is(.semantic-text, .semantic-child, .semantic-normal) {
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.main-home .home-band--solutions .home-inline-rail--on-dark .section-title::after {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(var(--accent-teal-rgb), 0.75) 100%
+  );
+}
+
+.main-home .inquiry-section--flanked .container {
+  max-width: var(--site-frame-wide);
+}
+
+.main-home .home-inquiry-interconnection .inquiry-section .container {
+  border-top: 0;
+}
+
+.main-home .home-band-split--inquiry .inquiry-form {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+  height: 100%;
+}
+
+.main-home .home-band-split--inquiry .inquiry-form-title,
+.main-home .home-band-split--inquiry .inquiry-form-subtitle,
+.main-home .home-band-split--inquiry .inquiry-form > h2,
+.main-home .home-band-split--inquiry .inquiry-form > p {
+  text-align: left;
+  margin-inline: 0;
+}
+
+.main-home .home-band-split--inquiry .home-inline-rail {
+  height: 100%;
+}
+
+@media (max-width: 1100px) {
+  .home-band-split--challenge,
+  .home-band-split--search,
+  .home-band-split--solutions,
+  .home-band-split--partnership {
+    grid-template-columns: 1fr;
+  }
+
+  .home-band-split--inquiry {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .home-band-split--inquiry .home-band-split__form {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-band-split--inquiry {
+    grid-template-columns: 1fr;
+  }
+
+  .home-band-split--inquiry .home-band-split__form {
+    order: 0;
+  }
 }
 
 .portal-shell {

@@ -53,6 +53,58 @@ export const valueProposition = {
       'From public web presence and high-performance sites to integrations, automation, and practical delivery, we define scope and budget early, then deliver with transparent trade-offs, visible costs, and measurable outcomes.',
     coreServicesLead:
       'Technology delivery sized to your business: web presence, automation, and integrations delivered with clear scope, practical sequencing, and decision-ready guidance.',
+    /** Inline rails that break uniform centered bands without looking like decorative filler. */
+    challengeRail: {
+      kicker: 'Where initiatives stall',
+      lead: 'Most stalled projects share the same early mistakes — not a lack of tools.',
+      points: [
+        'Buying platforms before scope and success criteria are written down',
+        'Discovering grants after capital is already committed',
+        'Treating vendor demos as evidence of fit for your operations',
+      ],
+    },
+    searchRail: {
+      kicker: 'Start from your sector',
+      lead: 'Industry hubs carry regulations, incentives, and operating constraints that generic advice skips. Pick a sector chip, or search a topic you already have in mind.',
+      points: [
+        'Guides stay tied to how Australian SMEs actually operate',
+        'Grants and compliance notes sit beside implementation options',
+        'Enter opens the strongest match from the live index',
+      ],
+    },
+    solutionsRail: {
+      kicker: 'How patterns are used',
+      lead: 'Each pattern is a starting frame — not a product catalogue. We adapt it to your scale, budget, and industry rules before recommending spend.',
+      points: [
+        'Evidence and constraints first',
+        'Sequencing before tooling',
+        'Outcomes you can measure',
+      ],
+    },
+    partnershipRail: {
+      kicker: 'What you keep ownership of',
+      lead: 'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions are grounded.',
+    },
+    inquiryRails: {
+      left: {
+        kicker: 'What happens next',
+        lead: 'We reply with practical next steps sized to what you shared — not a generic sales deck.',
+        points: [
+          'Clarify goals, constraints, and timing',
+          'Map feasible options and rough effort',
+          'Flag grants or compliance notes that may apply',
+        ],
+      },
+      right: {
+        kicker: 'Prefer direct contact',
+        phone: '+61 490 478 864',
+        phoneNote: 'Consultations by appointment',
+        email: 'support@brisbaneservers.com',
+        emailNote: 'Enquiries and support',
+        location: 'Brisbane, Queensland',
+        locationNote: 'Serving businesses across Australia',
+      },
+    },
   },
 
   about: {

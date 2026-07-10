@@ -95,16 +95,17 @@
     z-index: 1;
     margin-top: 0 !important;
     margin-bottom: clamp(-2rem, -5vh, -1rem) !important;
-    padding-top: clamp(3rem, 8vh, 5rem);
+    /* !important: beat marketing section rhythm so phase-indicator glow is not clipped */
+    padding-top: clamp(3.5rem, 9vh, 5.5rem) !important;
     min-height: min(94vh, 58rem);
     /* Runway below card grid — white exit meets dark padding, not through cards */
-    padding-bottom: clamp(14rem, 32vh, 20rem);
+    padding-bottom: clamp(14rem, 32vh, 20rem) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     background: var(--original-bg-gradient) !important;
     isolation: isolate;
-    overflow-x: clip;
-    overflow-y: visible;
+    /* Visible on both axes — overflow-x:clip forces overflow-y to clip and slices the backdrop mesh */
+    overflow: visible;
     /* transform on sticky breaks pin — motion lives on .container in non-engulf decks only */
     transform: none;
     opacity: 1;
@@ -113,12 +114,13 @@
 /* Bottom-engulf: proof stays locked; only clients panel scrolls over */
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
     top: 0;
-    margin-top: clamp(-4rem, -10vh, -2rem) !important;
+    /* Softer pull-up so phase indicator stays fully visible at the white→dark seam */
+    margin-top: clamp(-2.5rem, -6vh, -1.25rem) !important;
     margin-bottom: 0 !important;
-    /* Header clearance inside padding so dark bg fills viewport top (no white band) */
+    /* Header clearance + phase-indicator headroom (glow must clear the seam) */
     padding-top: calc(
-        var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(2rem, 5vh, 3.5rem)
-    );
+        var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(2.75rem, 6.5vh, 4.25rem)
+    ) !important;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section--hero-wash::before {
@@ -171,7 +173,7 @@
 
 /* Bottom-engulf exit — must follow generic exit; no aggressive negative overlap */
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-    padding-bottom: clamp(30rem, 58vh, 44rem);
+    padding-bottom: clamp(30rem, 58vh, 44rem) !important;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash .card-grid {
@@ -211,6 +213,8 @@
 }
 
 .scroll-transition-deck .section-scroll-deck-stage .home-phase-indicator {
+    /* Lift indicator off the dark-band seam so the hub glow is not cropped */
+    margin-top: clamp(0.45rem, 1.1vh, 0.85rem);
     margin-bottom: clamp(1rem, 2vh, 1.35rem);
 }
 
@@ -223,12 +227,14 @@
     height: clamp(0.68rem, 1.05vw, 0.82rem);
 }
 
-/* Proof band: single right-field backdrop behind card grid */
+/* Proof band: single right-field backdrop behind card grid.
+   Keep the mesh below the white→dark seam — negative section margin pulls the
+   band under Industry, so a negative satellite top reads as a hard crop (worse when zoomed out). */
 .main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop {
-    top: clamp(-4rem, -8vh, -1.5rem);
+    top: clamp(1.75rem, 5.5vh, 3.25rem);
     left: 52%;
     right: clamp(-12%, -6vw, -2rem);
-    bottom: clamp(-4rem, -9vh, -1.5rem);
+    bottom: clamp(-2rem, -5vh, -0.75rem);
     width: auto;
     height: auto;
     max-height: none;
@@ -237,25 +243,42 @@
     contain: none;
     opacity: 0.58;
     z-index: 0;
-    transform: translate3d(2%, var(--backdrop-parallax-y, 0px), 0) rotate(-7deg) scale(1.18);
-    transform-origin: 88% 42%;
-    mask-image: linear-gradient(
-        275deg,
-        #000 0%,
-        #000 55%,
-        rgba(0, 0, 0, 0.38) 72%,
-        transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-        275deg,
-        #000 0%,
-        #000 55%,
-        rgba(0, 0, 0, 0.38) 72%,
-        transparent 100%
-    );
+    transform: translate3d(2%, var(--backdrop-parallax-y, 0px), 0) rotate(-7deg) scale(1.12);
+    transform-origin: 88% 48%;
+    /* Horizontal fade into cards + soft top dissolve so zoom-out never hard-slices nodes */
+    -webkit-mask-image:
+        linear-gradient(180deg, transparent 0%, #000 10%, #000 100%),
+        linear-gradient(
+            275deg,
+            #000 0%,
+            #000 55%,
+            rgba(0, 0, 0, 0.38) 72%,
+            transparent 100%
+        );
+    mask-image:
+        linear-gradient(180deg, transparent 0%, #000 10%, #000 100%),
+        linear-gradient(
+            275deg,
+            #000 0%,
+            #000 55%,
+            rgba(0, 0, 0, 0.38) 72%,
+            transparent 100%
+        );
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
     filter:
         drop-shadow(0 0 36px rgba(var(--accent-teal-rgb), 0.28))
         drop-shadow(0 0 64px rgba(var(--accent-pink-rgb), 0.12));
+}
+
+/* Wide / zoomed-out: slightly smaller field so the mesh stays inside the dark band */
+@media (min-width: 90rem) {
+    .main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop {
+        top: clamp(2.25rem, 6vh, 3.75rem);
+        left: 54%;
+        transform: translate3d(1%, var(--backdrop-parallax-y, 0px), 0) rotate(-6deg) scale(1.05);
+        transform-origin: 90% 50%;
+    }
 }
 
 /* One satellite only — hide margin echoes while proof/clients deck is focal */
@@ -515,11 +538,11 @@
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-        margin-top: clamp(-2.5rem, -7vh, -1.25rem) !important;
+        margin-top: clamp(-1.75rem, -4.5vh, -0.85rem) !important;
         padding-top: calc(
-            var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(1.5rem, 4vh, 2.5rem)
-        );
-        padding-bottom: clamp(18rem, 36vh, 24rem);
+            var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(2.25rem, 5vh, 3.25rem)
+        ) !important;
+        padding-bottom: clamp(18rem, 36vh, 24rem) !important;
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-cover--exit {
@@ -542,10 +565,10 @@
     .main-home .home-sections-shell .section.home-band--proof.section--hero-wash .section-satellite--backdrop {
         left: 46%;
         right: clamp(-8%, -4vw, -1rem);
-        top: clamp(-2rem, -4vh, -0.5rem);
-        bottom: clamp(-2rem, -5vh, -0.75rem);
+        top: clamp(1.25rem, 3.5vh, 2.25rem);
+        bottom: clamp(-1.5rem, -3vh, -0.5rem);
         opacity: 0.45;
-        transform: translate3d(1%, var(--backdrop-parallax-y, 0px), 0) rotate(-6deg) scale(1.05);
+        transform: translate3d(1%, var(--backdrop-parallax-y, 0px), 0) rotate(-6deg) scale(1.02);
     }
 
     .scroll-layer-canopy__plane--rails {
