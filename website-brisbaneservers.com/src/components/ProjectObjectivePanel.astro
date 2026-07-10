@@ -14,12 +14,15 @@ interface Props {
   /** Show full objective block including indicators; compact omits indicator grid */
   variant?: 'full' | 'compact';
   sectionId?: string;
+  /** Capture / contemplation block — omit when the host page renders its own inference section */
+  showTemporalFrame?: boolean;
   showInferenceSources?: boolean;
 }
 
 const {
   variant = 'full',
   sectionId = 'project-objective',
+  showTemporalFrame = true,
   showInferenceSources = true,
 } = Astro.props;
 
@@ -59,17 +62,25 @@ const { businessObjective, indicators, inferenceProgram, primaryOutcome, necessi
       )
     }
 
-    <div class="project-objective-panel__temporal">
-      <h3 class="project-objective-panel__subhead">{inferenceProgram.title}</h3>
-      <p>
-        <strong>Capture:</strong>{' '}
-        <SemanticText text={inferenceProgram.temporalFrame.capture} semanticLevel="normal" isChild={true} />
-      </p>
-      <p>
-        <strong>Contemplation:</strong>{' '}
-        <SemanticText text={inferenceProgram.temporalFrame.contemplation} semanticLevel="normal" isChild={true} />
-      </p>
-    </div>
+    {
+      showTemporalFrame && (
+        <div class="project-objective-panel__temporal">
+          <h3 class="project-objective-panel__subhead">{inferenceProgram.title}</h3>
+          <p>
+            <strong>Capture:</strong>{' '}
+            <SemanticText text={inferenceProgram.temporalFrame.capture} semanticLevel="normal" isChild={true} />
+          </p>
+          <p>
+            <strong>Contemplation:</strong>{' '}
+            <SemanticText
+              text={inferenceProgram.temporalFrame.contemplation}
+              semanticLevel="normal"
+              isChild={true}
+            />
+          </p>
+        </div>
+      )
+    }
 
     {
       showInferenceSources && (
