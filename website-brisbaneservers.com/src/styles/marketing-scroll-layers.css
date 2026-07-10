@@ -109,15 +109,15 @@
     opacity: 1;
 }
 
-/* Bottom-engulf: proof stays locked; only clients panel scrolls over */
+/* Bottom-engulf: normal flow — keep seam space, then white exit scrolls past (no sticky white void) */
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-    top: 0;
+    position: relative;
+    top: auto;
     /* Soft pull-up at the white→dark seam without a large empty header band */
     margin-top: clamp(-1.5rem, -3.5vh, -0.75rem) !important;
     margin-bottom: 0 !important;
-    padding-top: calc(
-        var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(1.35rem, 3.2vh, 2.25rem)
-    ) !important;
+    padding-top: clamp(2.25rem, 5vh, 3.5rem) !important;
+    padding-bottom: clamp(2.5rem, 6vh, 4rem) !important;
 }
 
 /* In-flow header: sticky stages do not reserve fixed-bar clearance */
@@ -127,6 +127,8 @@
 }
 
 .site-shell--header-in-flow .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
+    position: relative;
+    top: auto;
     padding-top: clamp(1.35rem, 3.2vh, 2.25rem) !important;
 }
 
@@ -178,17 +180,17 @@
     will-change: transform;
 }
 
-/* Bottom-engulf exit — runway sized to content, not a half-viewport void */
+/* Bottom-engulf exit — keep seam space, then scroll past (no empty sticky white band) */
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-    padding-bottom: clamp(9rem, 20vh, 15rem) !important;
+    padding-bottom: clamp(2.5rem, 6vh, 4rem) !important;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash .card-grid {
     margin-bottom: clamp(1.5rem, 3vh, 2.25rem);
     position: relative;
     z-index: 0;
-    opacity: calc(1 - var(--deck-cover-progress, 0) * 0.88);
-    transform: translate3d(0, calc(var(--deck-cover-progress, 0) * -10px), 0);
+    opacity: 1;
+    transform: none;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash .card {
@@ -197,22 +199,23 @@
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash .home-info-panel--proof-strip {
-    margin-bottom: clamp(2rem, 4.5vh, 3.25rem);
-    opacity: calc(1 - var(--deck-cover-progress, 0) * 0.92);
-    transform: translate3d(0, calc(var(--deck-cover-progress, 0) * -16px), 0);
+    margin-bottom: clamp(1.5rem, 3.5vh, 2.5rem);
+    opacity: 1;
+    transform: none;
 }
 
 .scroll-transition-deck--bottom-engulf .section-scroll-deck-cover--exit {
-    z-index: 4;
-    margin-top: clamp(2.75rem, 6.5vh, 4.75rem) !important;
-    padding-top: clamp(2.75rem, 6.5vh, 4.25rem);
+    z-index: 2;
+    /* Keep space after dark content, then this panel scrolls past */
+    margin-top: clamp(1.25rem, 3vh, 2rem) !important;
+    padding-top: clamp(1.5rem, 3.5vh, 2.25rem);
     background: #fff !important;
     isolation: isolate;
     border-radius: clamp(1.15rem, 2.4vw, 1.65rem) clamp(1.15rem, 2.4vw, 1.65rem) 0 0 !important;
     box-shadow:
         0 -1px 0 rgba(255, 255, 255, 0.98) inset,
-        0 -36px 72px rgba(8, 12, 24, calc(0.14 + var(--deck-cover-progress, 0) * 0.12)),
-        0 -10px 28px rgba(var(--primary-color-rgb), 0.08) !important;
+        0 -24px 48px rgba(8, 12, 24, 0.1),
+        0 -8px 20px rgba(var(--primary-color-rgb), 0.06) !important;
     transform: none;
     will-change: auto;
 }
@@ -561,11 +564,11 @@
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
+        position: relative;
+        top: auto;
         margin-top: clamp(-1.25rem, -3vh, -0.65rem) !important;
-        padding-top: calc(
-            var(--site-header-clearance, 4.5rem) + var(--space-xs, 0.25rem) + clamp(1.15rem, 2.8vh, 1.85rem)
-        ) !important;
-        padding-bottom: clamp(7rem, 16vh, 12rem) !important;
+        padding-top: clamp(2rem, 4.5vh, 3rem) !important;
+        padding-bottom: clamp(2rem, 5vh, 3.25rem) !important;
         min-height: 0;
     }
 
@@ -574,7 +577,8 @@
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-cover--exit {
-        margin-top: clamp(2rem, 5.5vh, 3.5rem) !important;
+        margin-top: clamp(1rem, 2.5vh, 1.75rem) !important;
+        padding-top: clamp(1.25rem, 3vh, 1.85rem);
         transform: none;
     }
 
@@ -602,7 +606,7 @@
     }
 
     .scroll-transition-deck--bottom-engulf .section-scroll-deck-stage.section-scroll-under.section--hero-wash {
-        padding-bottom: clamp(8rem, 18vh, 12rem) !important;
+        padding-bottom: clamp(2rem, 5vh, 3.25rem) !important;
         min-height: 0;
     }
 

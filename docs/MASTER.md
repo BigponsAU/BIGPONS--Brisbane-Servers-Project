@@ -115,7 +115,7 @@ curl -s https://brisbaneservers.com/robots.txt
 ### 3.3 Open Graph (secondary)
 
 - Default image: `public/og-default.png` (1200×630)
-- Alternates: `public/og-nature.png`, `public/og-southbank.png`
+- Alternates: `public/og-nature.png`
 - Per-page override: pass `ogImage` prop to `SiteShell`
 
 ### 3.4 Pre-build SEO validation
