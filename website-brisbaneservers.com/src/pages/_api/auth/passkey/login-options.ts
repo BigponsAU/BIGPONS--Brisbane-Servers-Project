@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const challengeId = crypto.randomUUID();
-    saveChallenge(challengeId, { challenge: options.challenge, userId: user.id, email: user.email });
+    await saveChallenge(challengeId, { challenge: options.challenge, userId: user.id, email: user.email });
 
     return new Response(
       JSON.stringify({ success: true, options, challengeId }),

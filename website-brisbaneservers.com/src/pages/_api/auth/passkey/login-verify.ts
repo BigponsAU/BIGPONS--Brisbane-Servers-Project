@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const stored = consumeChallenge(body.challengeId);
+    const stored = await consumeChallenge(body.challengeId);
     if (!stored?.challenge) {
       return new Response(JSON.stringify({ error: 'Challenge expired or invalid', success: false }), {
         status: 400,

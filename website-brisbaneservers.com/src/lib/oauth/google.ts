@@ -39,13 +39,13 @@ function getAccountReturnUrl(): string {
   return `${siteUrl}${accountPath}`;
 }
 
-export function startGoogleOAuth(request: Request): Response {
+export async function startGoogleOAuth(request: Request): Promise<Response> {
   if (!isGoogleOAuthEnabled()) {
     return new Response('Google sign-in is not configured', { status: 503 });
   }
 
   const state = crypto.randomBytes(24).toString('hex');
-  saveChallenge(state, { challenge: state, email: 'oauth-google' });
+  await saveChallenge(state, { challenge: state, email: 'oauth-google' });
 
   const params = new URLSearchParams({
     client_id: getGoogleClientId(),
@@ -151,7 +151,7 @@ export async function completeGoogleOAuth(
   state: string
 ): Promise<Response> {
   const cookieState = readOAuthStateCookie(request);
-  const stored = consumeChallenge(state);
+  const stored = await consumeChallenge(state);
   const stateValid =
     (cookieState && cookieState === state) ||
     (stored?.challenge && stored.challenge === state);
