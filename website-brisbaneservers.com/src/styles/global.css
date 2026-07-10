@@ -158,8 +158,8 @@ h6, .h6 {
     position: relative;
 }
 
-/* Header chrome uses rem/em like body so browser zoom (Ctrl±) scales uniformly */
-header {
+/* Site chrome only — nested <header> blocks must not inherit fixed bar styles */
+header[role="banner"] {
     position: relative;
     z-index: 1000;
     transform: none;
@@ -872,7 +872,7 @@ footer {
 
 /* ===== NAVIGATION STYLES ===== */
 
-header {
+header[role="banner"] {
     position: fixed;
     /* Fixed position - anchored to top, relative to viewport */
     top: 0;
@@ -894,7 +894,7 @@ header {
     z-index: 1000;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
     /* Subtle color shadow - additive semantics */
-    transition: var(--transition);
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, backdrop-filter 0.25s ease;
     transform: none;
     transform-origin: top left;
     /* rem so browser zoom affects chrome (accessibility) */
@@ -912,7 +912,7 @@ header {
     isolation: isolate;
 }
 
-header::before {
+header[role="banner"]::before {
     content: '';
     position: absolute;
     top: 0;
@@ -931,8 +931,8 @@ header::before {
 }
 
 .header-angular,
-header .phi-lateral-angular-1,
-header .header-angular.phi-lateral-angular-1 {
+header[role="banner"] .phi-lateral-angular-1,
+header[role="banner"] .header-angular.phi-lateral-angular-1 {
     opacity: 0 !important;
     /* Hide angular pathways in header to prevent visual clutter */
     display: none !important;

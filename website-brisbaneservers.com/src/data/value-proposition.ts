@@ -53,40 +53,40 @@ export const valueProposition = {
       'From public web presence and high-performance sites to integrations, automation, and practical delivery, we define scope and budget early, then deliver with transparent trade-offs, visible costs, and measurable outcomes.',
     coreServicesLead:
       'Technology delivery sized to your business: web presence, automation, and integrations delivered with clear scope, practical sequencing, and decision-ready guidance.',
-    /** Supporting bands: same voice as the rest of the site; display varies, grid stays orderly. */
+    /** Supporting bands — aligned to site voice: context, evidence, action; scope visible before commit. */
     challengePanel: {
       eyebrow: 'Where initiatives stall',
-      lead: 'Most stalled projects share the same early mistakes — not a lack of tools.',
+      lead: 'When modernisation stalls, the cause is usually incomplete context — not a shortage of tools. The same early gaps appear across Australian SMEs.',
       points: [
         {
           title: 'Scope before platforms',
-          body: 'Buying tools before success criteria are written down locks budget into the wrong shape.',
+          body: 'Committing to platforms before success criteria are documented locks budget into the wrong shape.',
         },
         {
           title: 'Grants before spend',
-          body: 'Discovering incentives after capital is committed leaves funding on the table.',
+          body: 'Incentives discovered after capital is committed leave funding unused that could have reduced implementation cost.',
         },
         {
           title: 'Fit over demos',
-          body: 'Vendor demonstrations are not evidence of fit for your operations, compliance, or team capacity.',
+          body: 'Vendor demonstrations are not evidence of fit for your operations, compliance posture, or team capacity.',
         },
       ],
     },
     solutionsPanel: {
       eyebrow: 'How patterns are used',
-      lead: 'Each pattern is a starting frame, not a product catalogue. We adapt it to your scale, budget, and industry rules before recommending spend.',
+      lead: 'Each pattern is a starting frame sized to your industry and constraints — not a product catalogue. We adapt it before recommending spend.',
       points: [
         {
           title: 'Evidence first',
-          body: 'Constraints and operating context lead; tooling follows.',
+          body: 'Operating context and constraints lead; tooling follows only where it earns its place.',
         },
         {
           title: 'Sequencing before tooling',
-          body: 'Phased delivery keeps risk visible and spend testable.',
+          body: 'Phased delivery keeps risk visible and each step testable before further spend.',
         },
         {
           title: 'Measurable outcomes',
-          body: 'Recommendations stay tied to results you can assess.',
+          body: 'Recommendations stay tied to results you can assess against the scope we agreed.',
         },
       ],
     },
@@ -106,23 +106,23 @@ export const valueProposition = {
       {
         title: 'Clear ownership',
         description:
-          'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions stay grounded.',
+          'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions stay grounded in evidence.',
         icon: 'fas fa-handshake',
       },
       {
         title: 'Decision-ready documentation',
         description:
-          'Trade-offs, costs, and sequencing are written down before major spend, so leadership can approve with confidence and revisit as priorities change.',
+          'Trade-offs, costs, and sequencing are documented before major spend, so leadership can approve with confidence and revisit as priorities change.',
         icon: 'fas fa-file-alt',
       },
     ],
     inquiryPanel: {
       eyebrow: 'What happens next',
-      lead: 'We reply with practical next steps sized to what you shared — not a generic sales deck. Scope and costs stay visible before you commit.',
+      lead: 'We respond with practical next steps sized to your industry and constraints — evidence-led guidance, not a generic pitch. Scope and costs stay visible before you commit.',
       points: [
-        'Clarify goals, constraints, and timing',
-        'Map feasible options and rough effort',
-        'Flag grants or compliance notes that may apply',
+        'Clarify goals, constraints, and timing from what you shared',
+        'Map feasible options, sequencing, and rough effort',
+        'Note grants or compliance requirements that may apply',
         'Propose a consultation when a deeper review is warranted',
       ],
       contactEyebrow: 'Direct contact',
@@ -135,15 +135,15 @@ export const valueProposition = {
     },
     proofPanel: {
       eyebrow: 'How engagements stay grounded',
-      lead: 'The same constraints that shape recommendations also shape delivery — so documentation stays useful when priorities change.',
+      lead: 'The same constraints that shape recommendations also shape delivery — so documentation remains useful when priorities change.',
       points: [
         {
           title: 'Senior attention',
-          body: 'A focused portfolio means each engagement gets direct engineering and consulting capacity, not a hand-off chain.',
+          body: 'A focused client portfolio means each engagement receives direct engineering and consulting capacity, not a hand-off chain.',
         },
         {
-          title: 'Modern where it earns',
-          body: 'Tooling is chosen for risk and cost reduction; proven stacks stay where reliability is the responsible choice.',
+          title: 'Tooling where it earns',
+          body: 'Modern tooling is used where it reduces risk and cost; proven technology stays where reliability is the responsible choice.',
         },
         {
           title: 'Documentation you can reuse',
@@ -151,15 +151,15 @@ export const valueProposition = {
         },
       ],
     },
-    /** Homepage thesis — how Brisbane Servers turns noise into agreed, delivered outcomes. */
+    /** Homepage thesis — context, evidence, agreed scope, then delivery that matches. */
     valuePath: {
-      eyebrow: 'How we work',
-      title: 'From operating reality to agreed delivery',
-      lead: 'The homepage promise in one path: clarify what is true for your business, agree scope and cost, then deliver work that matches that agreement.',
+      eyebrow: 'Engagement model',
+      title: 'From operating context to agreed delivery',
+      lead: 'We move from your operating reality to documented scope and cost, then deliver technology that matches what we agreed — with trade-offs visible before major spend.',
       steps: [
         {
           title: 'Clarify',
-          body: 'Map constraints, priorities, and what “good” looks like in your operations — not a vendor catalogue.',
+          body: 'Document constraints, priorities, and what success looks like in your operations — not a vendor catalogue.',
         },
         {
           title: 'Evidence',
@@ -167,21 +167,21 @@ export const valueProposition = {
         },
         {
           title: 'Agree',
-          body: 'Lock scope, sequencing, and costs in writing before major spend — trade-offs visible up front.',
+          body: 'Confirm scope, sequencing, and costs in writing before major spend — trade-offs visible up front.',
         },
         {
           title: 'Deliver',
-          body: 'Build and support what we scoped together: presence, automation, integrations, and documentation you can reuse.',
+          body: 'Build and support what we scoped together: web presence, automation, integrations, and documentation you can reuse.',
         },
       ],
       outcome:
-        'Access to truth in technology means decisions you can defend, delivery you can measure, and a path you can revisit as priorities change.',
+        'Scope, sequencing, and costs stay visible before you commit; delivery follows what we document together — so decisions remain defensible as priorities change.',
     },
     clientsContact: {
-      eyebrow: 'Ready to talk',
-      title: 'Start a conversation',
-      lead: 'Consultations are by appointment. Tell us what you need to achieve and we will map options, effort, and risk so you can decide with confidence.',
-      ctaLabel: 'Start a conversation',
+      eyebrow: 'Next step',
+      title: 'Discuss your industry or initiative',
+      lead: 'Consultations are available by appointment. Tell us what you need to achieve and we will map options, effort, and risk so you can decide with confidence.',
+      ctaLabel: 'Submit an enquiry',
       phone: '+61 490 478 864',
       phoneNote: 'Consultations by appointment',
       email: 'support@brisbaneservers.com',

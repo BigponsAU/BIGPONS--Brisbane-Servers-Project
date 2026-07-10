@@ -1553,15 +1553,15 @@ body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar 
   max-height: calc(100dvh - var(--workspace-chrome-top) - var(--space-xs));
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active header {
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] {
   z-index: 10;
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active header nav {
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] nav {
   padding-block: var(--space-xs) var(--space-sm);
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active header .nav-brand {
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] .nav-brand {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1573,9 +1573,9 @@ body[data-page-id='account'].account-workspace-dashboard-active header .nav-bran
   border: 0;
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active header .nav-brand img,
-body[data-page-id='account'].account-workspace-dashboard-active header .nav-brand-text,
-body[data-page-id='account'].account-workspace-dashboard-active header .nav-tagline {
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] .nav-brand img,
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] .nav-brand-text,
+body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] .nav-tagline {
   display: none;
 }
 

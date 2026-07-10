@@ -1,0 +1,95 @@
+---
+/**
+ * Decorative flanks for the home search band — knowledge-graph motifs that
+ * fill wide gutters and echo semantic discovery without competing with the UI.
+ */
+---
+
+<div class="search-band-atmosphere" aria-hidden="true">
+  <svg
+    class="search-band-atmosphere__flank search-band-atmosphere__flank--left"
+    viewBox="0 0 220 320"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    focusable="false"
+  >
+    <defs>
+      <linearGradient id="sba-left-fade" x1="0" y1="160" x2="220" y2="160" gradientUnits="userSpaceOnUse">
+        <stop stop-color="currentColor" stop-opacity="0.15" />
+        <stop offset="0.35" stop-color="currentColor" stop-opacity="0.7" />
+        <stop offset="1" stop-color="currentColor" stop-opacity="1" />
+      </linearGradient>
+      <radialGradient id="sba-left-glow" cx="90" cy="150" r="110" gradientUnits="userSpaceOnUse">
+        <stop stop-color="currentColor" stop-opacity="0.18" />
+        <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <ellipse cx="90" cy="150" rx="100" ry="120" fill="url(#sba-left-glow)" />
+    <!-- Industry / topic graph flowing toward search -->
+    <g stroke="url(#sba-left-fade)" stroke-width="1.45" stroke-linecap="round">
+      <path class="search-band-atmosphere__edge" d="M28 72 L78 118 L128 98" />
+      <path class="search-band-atmosphere__edge" d="M48 210 L92 168 L138 188" />
+      <path class="search-band-atmosphere__edge" d="M78 118 L92 168" />
+      <path class="search-band-atmosphere__edge" d="M128 98 L168 148 L138 188" />
+      <path class="search-band-atmosphere__edge search-band-atmosphere__edge--signal" d="M168 148 L208 160" stroke-dasharray="3 5" />
+      <path class="search-band-atmosphere__edge" d="M28 72 L48 210" opacity="0.45" />
+      <path class="search-band-atmosphere__edge" d="M18 148 L78 118" opacity="0.4" />
+    </g>
+    <g class="search-band-atmosphere__nodes" fill="currentColor">
+      <circle class="search-band-atmosphere__node" cx="28" cy="72" r="4.2" opacity="0.7" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--pulse" cx="78" cy="118" r="5.5" opacity="0.88" />
+      <circle class="search-band-atmosphere__node" cx="128" cy="98" r="3.6" opacity="0.65" />
+      <circle class="search-band-atmosphere__node" cx="48" cy="210" r="3.8" opacity="0.62" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--pulse" cx="92" cy="168" r="4.8" opacity="0.8" />
+      <circle class="search-band-atmosphere__node" cx="138" cy="188" r="3.4" opacity="0.58" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--hub" cx="168" cy="148" r="6.2" opacity="0.95" />
+      <circle class="search-band-atmosphere__node" cx="18" cy="148" r="2.8" opacity="0.48" />
+    </g>
+    <!-- Soft search lens hint -->
+    <circle class="search-band-atmosphere__lens" cx="168" cy="148" r="18" stroke="currentColor" stroke-width="1.15" opacity="0.32" />
+    <circle class="search-band-atmosphere__lens search-band-atmosphere__lens--delay" cx="168" cy="148" r="28" stroke="currentColor" stroke-width="1" opacity="0.18" />
+  </svg>
+
+  <svg
+    class="search-band-atmosphere__flank search-band-atmosphere__flank--right"
+    viewBox="0 0 220 320"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    focusable="false"
+  >
+    <defs>
+      <linearGradient id="sba-right-fade" x1="220" y1="160" x2="0" y2="160" gradientUnits="userSpaceOnUse">
+        <stop stop-color="currentColor" stop-opacity="0.15" />
+        <stop offset="0.35" stop-color="currentColor" stop-opacity="0.7" />
+        <stop offset="1" stop-color="currentColor" stop-opacity="1" />
+      </linearGradient>
+      <radialGradient id="sba-right-glow" cx="130" cy="170" r="110" gradientUnits="userSpaceOnUse">
+        <stop stop-color="currentColor" stop-opacity="0.18" />
+        <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <ellipse cx="130" cy="170" rx="100" ry="120" fill="url(#sba-right-glow)" />
+    <!-- Evidence / match graph flowing into search -->
+    <g stroke="url(#sba-right-fade)" stroke-width="1.45" stroke-linecap="round">
+      <path class="search-band-atmosphere__edge" d="M192 64 L142 108 L92 88" />
+      <path class="search-band-atmosphere__edge" d="M198 228 L148 186 L98 208" />
+      <path class="search-band-atmosphere__edge" d="M142 108 L148 186" />
+      <path class="search-band-atmosphere__edge" d="M92 88 L52 152 L98 208" />
+      <path class="search-band-atmosphere__edge search-band-atmosphere__edge--signal" d="M52 152 L12 160" stroke-dasharray="3 5" />
+      <path class="search-band-atmosphere__edge" d="M192 64 L198 228" opacity="0.4" />
+      <path class="search-band-atmosphere__edge" d="M210 148 L142 108" opacity="0.38" />
+    </g>
+    <g class="search-band-atmosphere__nodes" fill="currentColor">
+      <circle class="search-band-atmosphere__node" cx="192" cy="64" r="4" opacity="0.68" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--pulse" cx="142" cy="108" r="5.2" opacity="0.86" />
+      <circle class="search-band-atmosphere__node" cx="92" cy="88" r="3.5" opacity="0.62" />
+      <circle class="search-band-atmosphere__node" cx="198" cy="228" r="3.6" opacity="0.58" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--pulse" cx="148" cy="186" r="4.6" opacity="0.78" />
+      <circle class="search-band-atmosphere__node" cx="98" cy="208" r="3.3" opacity="0.55" />
+      <circle class="search-band-atmosphere__node search-band-atmosphere__node--hub" cx="52" cy="152" r="6" opacity="0.92" />
+      <circle class="search-band-atmosphere__node" cx="210" cy="148" r="2.6" opacity="0.45" />
+    </g>
+    <circle class="search-band-atmosphere__lens" cx="52" cy="152" r="18" stroke="currentColor" stroke-width="1.15" opacity="0.32" />
+    <circle class="search-band-atmosphere__lens search-band-atmosphere__lens--delay" cx="52" cy="152" r="28" stroke="currentColor" stroke-width="1" opacity="0.18" />
+  </svg>
+</div>

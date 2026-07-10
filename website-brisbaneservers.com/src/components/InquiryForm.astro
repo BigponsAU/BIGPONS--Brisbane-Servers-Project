@@ -1,5 +1,6 @@
 ---
 import SemanticText from './SemanticText.astro';
+import InquiryAside from './InquiryAside.astro';
 import { valueProposition } from '../data/value-proposition';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
   preferenceField?: boolean;
   defaultIndustry?: string;
   id?: string;
+  /** When true (default), show the brand + “What happens next” panel beside the form. */
+  showAside?: boolean;
 }
 
 const {
@@ -20,10 +23,12 @@ const {
   preferenceField = false,
   defaultIndustry = '',
   id = 'inquiry-section',
+  showAside = true,
 } = Astro.props;
 
 const { inquiry } = valueProposition;
-const hasFlanks = Astro.slots.has('aside-start') || Astro.slots.has('aside-end');
+const hasCustomAside = Astro.slots.has('aside-start') || Astro.slots.has('aside-end');
+const hasFlanks = showAside || hasCustomAside;
 ---
 
 <section class:list={['inquiry-section', hasFlanks && 'inquiry-section--flanked']} id={id}>
@@ -32,7 +37,13 @@ const hasFlanks = Astro.slots.has('aside-start') || Astro.slots.has('aside-end')
       class:list={[hasFlanks && 'home-band-split home-band-split--inquiry']}
       style={hasFlanks ? undefined : 'display: contents'}
     >
-      {hasFlanks && <slot name="aside-start" />}
+      {hasFlanks && (
+        Astro.slots.has('aside-start') ? (
+          <slot name="aside-start" />
+        ) : showAside ? (
+          <InquiryAside />
+        ) : null
+      )}
       <div
         class:list={[hasFlanks && 'home-band-split__form home-band-split__main']}
         style={hasFlanks ? undefined : 'display: contents'}

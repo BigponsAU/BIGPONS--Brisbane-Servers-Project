@@ -3,7 +3,7 @@
  */
 
 /* ─── Header in document flow ─── */
-.site-shell--header-in-flow header {
+.site-shell--header-in-flow header[role="banner"] {
   position: relative !important;
   top: auto !important;
   left: auto !important;

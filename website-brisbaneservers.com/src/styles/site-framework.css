@@ -75,7 +75,12 @@ body {
   );
 }
 
-.site-shell > * {
+/* Dark hero pages: no white wash over the first viewport */
+.site-shell:not(.site-shell--header-in-flow):has(.hero)::before {
+  background: none;
+}
+
+.site-shell > *:not(header[role="banner"]) {
   position: relative;
   z-index: 1;
 }
@@ -98,7 +103,7 @@ body {
   display: none;
 }
 
-.site-shell--portal header nav {
+.site-shell--portal header[role="banner"] nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -129,14 +134,14 @@ body {
   white-space: nowrap;
 }
 
-header {
+header[role="banner"] {
   width: 100%;
   border-bottom: 1px solid var(--border-contrast);
   backdrop-filter: none;
   box-shadow: none;
 }
 
-header nav {
+header[role="banner"] nav {
   width: 100%;
   max-width: var(--site-frame-wide);
   box-sizing: border-box;
@@ -1880,7 +1885,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 @media (max-width: 600px) {
-  header nav {
+  header[role="banner"] nav {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: clamp(0.45rem, 0.6rem, 0.8rem);
     padding-block: clamp(0.35rem, 0.5rem, 0.65rem);
@@ -2429,7 +2434,15 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 }
 
 .home-band-search {
+  position: relative;
   margin-top: clamp(1.35rem, 2.4vw, 2.35rem);
+  isolation: isolate;
+}
+
+.home-band-search .search-bar {
+  position: relative;
+  z-index: 2;
+  margin-block: 0;
 }
 
 .home-band-split {
@@ -2657,6 +2670,21 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
     0 8px 24px rgba(8, 27, 54, 0.05);
 }
 
+.home-inquiry-aside__brand {
+  margin: 0;
+  padding: 0;
+  border-radius: calc(var(--site-panel-radius, 0.85rem) - 0.2rem);
+  overflow: hidden;
+  background: #f4f6f8;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+}
+
+.home-inquiry-aside__brand-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .home-inquiry-aside__eyebrow {
   margin: 0 0 var(--space-sm);
   font-size: var(--text-sm);
@@ -2744,7 +2772,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   font-weight: var(--font-weight-normal);
 }
 
-.main-home .inquiry-section--flanked .container {
+.inquiry-section--flanked .container {
   max-width: var(--site-frame-wide);
 }
 
@@ -2752,17 +2780,17 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   border-top: 0;
 }
 
-.main-home .home-band-split--inquiry .inquiry-form {
+.home-band-split--inquiry .inquiry-form {
   max-width: none;
   width: 100%;
   margin-inline: 0;
   height: 100%;
 }
 
-.main-home .home-band-split--inquiry .inquiry-form-title,
-.main-home .home-band-split--inquiry .inquiry-form-subtitle,
-.main-home .home-band-split--inquiry .inquiry-form > h2,
-.main-home .home-band-split--inquiry .inquiry-form > p {
+.home-band-split--inquiry .inquiry-form-title,
+.home-band-split--inquiry .inquiry-form-subtitle,
+.home-band-split--inquiry .inquiry-form > h2,
+.home-band-split--inquiry .inquiry-form > p {
   text-align: left;
   margin-inline: 0;
 }
@@ -3171,6 +3199,65 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
 .main-home .home-sections-shell .section .card-grid {
   position: relative;
   z-index: 2;
+}
+
+/* ─── Flush nav over dark hero (no white band) ─── */
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) {
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: auto;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"])::before {
+  opacity: 0;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-brand-text,
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-brand-text :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-tagline,
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-tagline :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+  color: rgba(255, 255, 255, 0.78) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-brand:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-menu a:not(.nav-account-cta):not(.nav-inquire-cta),
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-menu a:not(.nav-account-cta):not(.nav-inquire-cta) :is(.semantic-text, .semantic-high, .semantic-medium, .semantic-normal) {
+  color: rgba(255, 255, 255, 0.92) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .nav-dropdown-toggle::after {
+  border-top-color: rgba(255, 255, 255, 0.75);
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) .hamburger span {
+  background: #fff;
+}
+
+/* Solidify after leaving the hero */
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"][data-nav-solid="true"] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, var(--primary-ultra-light) 100%) !important;
+  border-bottom: max(1px, 0.125rem) solid rgba(10, 116, 218, var(--color-intensity-medium));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  isolation: isolate;
+}
+
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"][data-nav-solid="true"]::before {
+  opacity: var(--color-intensity-medium);
 }
 
 @media (prefers-reduced-motion: reduce) {

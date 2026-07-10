@@ -72,11 +72,18 @@ body > footer {
 }
 
 /* Fixed bar above tartan + main; keep paint isolation for solid bar */
-header {
+header[role="banner"] {
   position: fixed;
   z-index: 1000 !important;
   background: linear-gradient(135deg, var(--surface-glass-strong) 0%, var(--primary-ultra-light) 100%) !important;
   isolation: isolate;
+}
+
+/* Flush over dark hero — do not paint the white band */
+.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) {
+  background: transparent !important;
+  background-image: none !important;
+  isolation: auto;
 }
 
 /* Tartan accent on main content area */

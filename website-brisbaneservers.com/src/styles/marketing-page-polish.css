@@ -3,6 +3,157 @@
  * Hero styles intentionally untouched.
  */
 
+/* ─── Search band atmosphere (wide-gutter discovery graphs) ─── */
+.search-band-atmosphere {
+    position: absolute;
+    inset: -1.25rem 0;
+    z-index: 0;
+    pointer-events: none;
+    color: rgb(var(--primary-color-rgb));
+    overflow: visible;
+}
+
+.search-band-atmosphere__flank {
+    position: absolute;
+    top: 50%;
+    width: clamp(8.5rem, 18vw, 14rem);
+    height: auto;
+    max-height: min(24rem, 85%);
+    aspect-ratio: 220 / 320;
+    opacity: 0.88;
+    filter: drop-shadow(0 0 20px rgba(var(--primary-color-rgb), 0.16));
+}
+
+/* Sit in the gutters outside the centered 42rem search panel */
+.search-band-atmosphere__flank--left {
+    left: max(0.25rem, calc(50% - 21rem - 13rem));
+    transform: translateY(-52%);
+}
+
+.search-band-atmosphere__flank--right {
+    right: max(0.25rem, calc(50% - 21rem - 13rem));
+    color: rgb(var(--accent-teal-rgb));
+    transform: translateY(-48%);
+    opacity: 0.82;
+}
+
+.search-band-atmosphere__node--hub {
+    filter: drop-shadow(0 0 6px rgba(var(--primary-color-rgb), 0.35));
+}
+
+.search-band-atmosphere__edge--signal {
+    animation: search-band-signal 2.8s ease-in-out infinite;
+}
+
+.search-band-atmosphere__node--pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: search-band-pulse 3.2s ease-in-out infinite;
+}
+
+.search-band-atmosphere__flank--right .search-band-atmosphere__node--pulse {
+    animation-delay: 0.6s;
+}
+
+.search-band-atmosphere__lens {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: search-band-lens 4.5s ease-out infinite;
+}
+
+.search-band-atmosphere__lens--delay {
+    animation-delay: 1.4s;
+}
+
+@keyframes search-band-signal {
+    0%,
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 0.35;
+    }
+    50% {
+        stroke-dashoffset: -16;
+        opacity: 0.85;
+    }
+}
+
+@keyframes search-band-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+    50% {
+        transform: scale(1.18);
+        opacity: 0.9;
+    }
+}
+
+@keyframes search-band-lens {
+    0% {
+        transform: scale(0.72);
+        opacity: 0.28;
+    }
+    70% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 1100px) {
+    .search-band-atmosphere__flank {
+        width: clamp(5.75rem, 13vw, 9rem);
+        opacity: 0.4;
+    }
+
+    .search-band-atmosphere__flank--left {
+        left: max(0, calc(50% - 21rem - 8.5rem));
+    }
+
+    .search-band-atmosphere__flank--right {
+        right: max(0, calc(50% - 21rem - 8.5rem));
+    }
+}
+
+@media (max-width: 860px) {
+    .search-band-atmosphere {
+        display: none;
+    }
+
+    .home-band-search::before {
+        inset: 12% 4%;
+        opacity: 0.7;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-band-atmosphere__edge--signal,
+    .search-band-atmosphere__node--pulse,
+    .search-band-atmosphere__lens {
+        animation: none;
+    }
+}
+
+/* Soft wash so the search stage is not a flat white void on wide screens */
+.home-band-search::before {
+    content: '';
+    position: absolute;
+    inset: 4% max(2%, calc(50% - 30rem));
+    z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse 72% 60% at 50% 48%,
+        rgba(var(--primary-color-rgb), 0.09) 0%,
+        rgba(237, 244, 255, 0.55) 38%,
+        transparent 76%
+    );
+    pointer-events: none;
+}
+
 /* ─── Search panel ─── */
 .search-bar-panel {
     padding: clamp(1.25rem, 3vw, 1.75rem);

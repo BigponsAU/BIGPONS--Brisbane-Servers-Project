@@ -130,6 +130,14 @@
   box-sizing: border-box;
 }
 
+/* Flanked inquiry (brand panel + form): form fills its column sitewide */
+.site-main--marketing .inquiry-section--flanked .home-band-split--inquiry .inquiry-form,
+.site-main--marketing .marketing-page-bands .inquiry-section--flanked .home-band-split--inquiry .inquiry-form {
+  max-width: none;
+  margin-inline: 0;
+  height: 100%;
+}
+
 .site-main--marketing .inquiry-section .inquiry-form form {
   display: flex;
   flex-direction: column;

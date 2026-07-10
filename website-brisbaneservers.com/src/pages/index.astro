@@ -12,6 +12,7 @@ import HomeInterconnectionRig from '../components/HomeInterconnectionRig.astro';
 import HomeValuePath from '../components/HomeValuePath.astro';
 import MarketingScrollCanopy from '../components/marketing/MarketingScrollCanopy.astro';
 import ScrollTransitionDeck from '../components/marketing/ScrollTransitionDeck.astro';
+import SearchBandAtmosphere from '../components/marketing/SearchBandAtmosphere.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
 import { industries } from '../data/industries';
 import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
@@ -326,6 +327,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         </div>
 
         <div class="home-band-search">
+          <SearchBandAtmosphere />
           <SearchBar />
         </div>
       </div>
@@ -409,46 +411,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     </section>
 
       <div class="home-inquiry-interconnection home-band--inquiry" data-interconnection-node data-interconnection-band="inquiry">
-        <InquiryForm id="inquiry-section">
-          <aside slot="aside-start" class="home-inquiry-aside" aria-label={valueProposition.home.inquiryPanel.eyebrow}>
-            <div>
-              <p class="home-inquiry-aside__eyebrow">{valueProposition.home.inquiryPanel.eyebrow}</p>
-              <p class="home-inquiry-aside__lead">{valueProposition.home.inquiryPanel.lead}</p>
-              <ul class="home-inquiry-aside__list">
-                {valueProposition.home.inquiryPanel.points.map((point) => (
-                  <li>{point}</li>
-                ))}
-              </ul>
-            </div>
-            <dl class="home-inquiry-aside__contact" aria-label={valueProposition.home.inquiryPanel.contactEyebrow}>
-              <div>
-                <dt>Phone</dt>
-                <dd>
-                  <a href={`tel:${valueProposition.home.inquiryPanel.phone.replace(/\s+/g, '')}`}>
-                    {valueProposition.home.inquiryPanel.phone}
-                  </a>
-                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.phoneNote}</span>
-                </dd>
-              </div>
-              <div>
-                <dt>Email</dt>
-                <dd>
-                  <a href={`mailto:${valueProposition.home.inquiryPanel.email}`}>
-                    {valueProposition.home.inquiryPanel.email}
-                  </a>
-                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.emailNote}</span>
-                </dd>
-              </div>
-              <div>
-                <dt>Location</dt>
-                <dd>
-                  {valueProposition.home.inquiryPanel.location}
-                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.locationNote}</span>
-                </dd>
-              </div>
-            </dl>
-          </aside>
-        </InquiryForm>
+        <InquiryForm id="inquiry-section" />
       </div>
     </div>
     </div>
