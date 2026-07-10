@@ -2517,33 +2517,6 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   margin: 0 0 clamp(0.5rem, 1vw, 1rem);
 }
 
-.home-value-path__header {
-  margin-bottom: clamp(1.35rem, 2.5vw, 2.15rem);
-  max-width: min(72ch, 100%);
-}
-
-.home-value-path__eyebrow {
-  margin: 0 0 var(--space-sm);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
-  color: var(--primary-color);
-}
-
-.home-value-path__title {
-  margin: 0 0 var(--space-md);
-  font-size: clamp(1.55rem, 1.25rem + 0.9vw, 2.15rem);
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.home-value-path__lead {
-  margin: 0;
-  font-size: clamp(1rem, 0.92rem + 0.25vw, 1.15rem);
-  line-height: 1.65;
-  color: var(--text-secondary);
-}
-
 .home-value-path__steps {
   list-style: none;
   margin: 0;

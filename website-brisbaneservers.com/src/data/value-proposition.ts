@@ -154,8 +154,6 @@ export const valueProposition = {
     /** Homepage thesis — context, evidence, agreed scope, then delivery that matches. */
     valuePath: {
       eyebrow: 'Engagement model',
-      title: 'From operating context to agreed delivery',
-      lead: 'We move from your operating reality to documented scope and cost, then deliver technology that matches what we agreed — with trade-offs visible before major spend.',
       steps: [
         {
           title: 'Clarify',

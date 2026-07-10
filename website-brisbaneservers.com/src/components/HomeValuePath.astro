@@ -9,17 +9,7 @@ import { valueProposition } from '../data/value-proposition';
 const path = valueProposition.home.valuePath;
 ---
 
-<div class="home-value-path" aria-labelledby="home-value-path-title">
-  <div class="home-value-path__header">
-    <p class="home-value-path__eyebrow">{path.eyebrow}</p>
-    <h2 class="home-value-path__title" id="home-value-path-title">
-      <SemanticText text={path.title} semanticLevel="high" isParent={true} />
-    </h2>
-    <p class="home-value-path__lead">
-      <SemanticText text={path.lead} semanticLevel="normal" isChild={true} />
-    </p>
-  </div>
-
+<div class="home-value-path" aria-label={path.eyebrow}>
   <ol class="home-value-path__steps">
     {path.steps.map((step, index) => (
       <li class="home-value-path__step">
