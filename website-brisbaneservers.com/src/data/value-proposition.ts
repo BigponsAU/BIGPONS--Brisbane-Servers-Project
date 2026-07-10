@@ -53,57 +53,115 @@ export const valueProposition = {
       'From public web presence and high-performance sites to integrations, automation, and practical delivery, we define scope and budget early, then deliver with transparent trade-offs, visible costs, and measurable outcomes.',
     coreServicesLead:
       'Technology delivery sized to your business: web presence, automation, and integrations delivered with clear scope, practical sequencing, and decision-ready guidance.',
-    /** Inline rails that break uniform centered bands without looking like decorative filler. */
-    challengeRail: {
-      kicker: 'Where initiatives stall',
+    /** Supporting bands: same voice as the rest of the site; display varies, grid stays orderly. */
+    challengePanel: {
+      eyebrow: 'Where initiatives stall',
       lead: 'Most stalled projects share the same early mistakes — not a lack of tools.',
       points: [
-        'Buying platforms before scope and success criteria are written down',
-        'Discovering grants after capital is already committed',
-        'Treating vendor demos as evidence of fit for your operations',
+        {
+          title: 'Scope before platforms',
+          body: 'Buying tools before success criteria are written down locks budget into the wrong shape.',
+        },
+        {
+          title: 'Grants before spend',
+          body: 'Discovering incentives after capital is committed leaves funding on the table.',
+        },
+        {
+          title: 'Fit over demos',
+          body: 'Vendor demonstrations are not evidence of fit for your operations, compliance, or team capacity.',
+        },
       ],
     },
-    searchRail: {
-      kicker: 'Start from your sector',
-      lead: 'Industry hubs carry regulations, incentives, and operating constraints that generic advice skips. Pick a sector chip, or search a topic you already have in mind.',
+    solutionsPanel: {
+      eyebrow: 'How patterns are used',
+      lead: 'Each pattern is a starting frame, not a product catalogue. We adapt it to your scale, budget, and industry rules before recommending spend.',
       points: [
-        'Guides stay tied to how Australian SMEs actually operate',
-        'Grants and compliance notes sit beside implementation options',
-        'Enter opens the strongest match from the live index',
+        {
+          title: 'Evidence first',
+          body: 'Constraints and operating context lead; tooling follows.',
+        },
+        {
+          title: 'Sequencing before tooling',
+          body: 'Phased delivery keeps risk visible and spend testable.',
+        },
+        {
+          title: 'Measurable outcomes',
+          body: 'Recommendations stay tied to results you can assess.',
+        },
       ],
     },
-    solutionsRail: {
-      kicker: 'How patterns are used',
-      lead: 'Each pattern is a starting frame — not a product catalogue. We adapt it to your scale, budget, and industry rules before recommending spend.',
+    partnershipCards: [
+      {
+        title: 'Efficient delivery',
+        description:
+          'We run the analysis and preparation work; you focus on decisions. Outputs stay clear, actionable, and implementation-ready.',
+        icon: 'fas fa-bolt',
+      },
+      {
+        title: 'Australian market expertise',
+        description:
+          'Brisbane-based, serving Australian businesses — local market conditions, regulatory requirements, grant programs, and proven implementation strategies.',
+        icon: 'fas fa-map-marker-alt',
+      },
+      {
+        title: 'Clear ownership',
+        description:
+          'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions stay grounded.',
+        icon: 'fas fa-handshake',
+      },
+      {
+        title: 'Decision-ready documentation',
+        description:
+          'Trade-offs, costs, and sequencing are written down before major spend, so leadership can approve with confidence and revisit as priorities change.',
+        icon: 'fas fa-file-alt',
+      },
+    ],
+    inquiryPanel: {
+      eyebrow: 'What happens next',
+      lead: 'We reply with practical next steps sized to what you shared — not a generic sales deck. Scope and costs stay visible before you commit.',
       points: [
-        'Evidence and constraints first',
-        'Sequencing before tooling',
-        'Outcomes you can measure',
+        'Clarify goals, constraints, and timing',
+        'Map feasible options and rough effort',
+        'Flag grants or compliance notes that may apply',
+        'Propose a consultation when a deeper review is warranted',
+      ],
+      contactEyebrow: 'Direct contact',
+      phone: '+61 490 478 864',
+      phoneNote: 'Consultations by appointment',
+      email: 'support@brisbaneservers.com',
+      emailNote: 'Enquiries and support',
+      location: 'Brisbane, Queensland',
+      locationNote: 'Serving businesses across Australia',
+    },
+    proofPanel: {
+      eyebrow: 'How engagements stay grounded',
+      lead: 'The same constraints that shape recommendations also shape delivery — so documentation stays useful when priorities change.',
+      points: [
+        {
+          title: 'Senior attention',
+          body: 'A focused portfolio means each engagement gets direct engineering and consulting capacity, not a hand-off chain.',
+        },
+        {
+          title: 'Modern where it earns',
+          body: 'Tooling is chosen for risk and cost reduction; proven stacks stay where reliability is the responsible choice.',
+        },
+        {
+          title: 'Documentation you can reuse',
+          body: 'Decisions, trade-offs, and sequencing are written so leadership can revisit them without starting from zero.',
+        },
       ],
     },
-    partnershipRail: {
-      kicker: 'What you keep ownership of',
-      lead: 'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions are grounded.',
-    },
-    inquiryRails: {
-      left: {
-        kicker: 'What happens next',
-        lead: 'We reply with practical next steps sized to what you shared — not a generic sales deck.',
-        points: [
-          'Clarify goals, constraints, and timing',
-          'Map feasible options and rough effort',
-          'Flag grants or compliance notes that may apply',
-        ],
-      },
-      right: {
-        kicker: 'Prefer direct contact',
-        phone: '+61 490 478 864',
-        phoneNote: 'Consultations by appointment',
-        email: 'support@brisbaneservers.com',
-        emailNote: 'Enquiries and support',
-        location: 'Brisbane, Queensland',
-        locationNote: 'Serving businesses across Australia',
-      },
+    clientsContact: {
+      eyebrow: 'Ready to talk',
+      title: 'Start a conversation',
+      lead: 'Consultations are by appointment. Tell us what you need to achieve and we will map options, effort, and risk so you can decide with confidence.',
+      ctaLabel: 'Start a conversation',
+      phone: '+61 490 478 864',
+      phoneNote: 'Consultations by appointment',
+      email: 'support@brisbaneservers.com',
+      emailAlt: 'connect@brisbaneservers.com',
+      location: 'Brisbane, Queensland',
+      locationNote: 'Physical and online consultations across Australia',
     },
   },
 

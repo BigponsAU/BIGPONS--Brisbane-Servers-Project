@@ -148,41 +148,57 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         <p class="section-description">
           <SemanticText text="A Brisbane-based consulting practice with a focused client portfolio, so each engagement receives senior attention, modern engineering practices, and documentation you can rely on as priorities change." semanticLevel="normal" isChild={true} />
         </p>
-        
-        <CardGrid layout="grid" columns={2}>
-          <Card
-            title="Innovation-first delivery"
-            description="Solutions are designed for your context, not recycled templates, using modern tooling where it reduces risk and cost, and proven technology where reliability is the responsible choice."
-            icon="fas fa-industry"
-            size="large"
-            emphasis={true}
-          />
-          <Card
-            title="Grants & incentives"
-            description="We map digital transformation grants, tax incentives, and subsidies that match your industry and project shape, so funding opportunities are part of the plan from the start."
-            icon="fas fa-dollar-sign"
-            size="large"
-          />
-          <Card
-            title="Reality-based recommendations"
-            description="Budget, team capacity, compliance, and timeline are first-class inputs. You get what fits your operations, not what a vendor catalogue insists you should buy."
-            icon="fas fa-search"
-            size="large"
-          />
-          <Card
-            title="Your time protected"
-            description="We absorb research, vendor comparison, and technical discernment so leadership can stay on operations while still making informed commitments."
-            icon="fas fa-clock"
-            size="large"
-          />
-        </CardGrid>
+
+        <div class="home-band-split home-band-split--proof">
+          <div class="home-band-split__main">
+            <CardGrid layout="grid" columns={2}>
+              <Card
+                title="Innovation-first delivery"
+                description="Solutions are designed for your context, not recycled templates, using modern tooling where it reduces risk and cost, and proven technology where reliability is the responsible choice."
+                icon="fas fa-industry"
+                size="medium"
+                emphasis={true}
+              />
+              <Card
+                title="Grants & incentives"
+                description="We map digital transformation grants, tax incentives, and subsidies that match your industry and project shape, so funding opportunities are part of the plan from the start."
+                icon="fas fa-dollar-sign"
+                size="medium"
+              />
+              <Card
+                title="Reality-based recommendations"
+                description="Budget, team capacity, compliance, and timeline are first-class inputs. You get what fits your operations, not what a vendor catalogue insists you should buy."
+                icon="fas fa-search"
+                size="medium"
+              />
+              <Card
+                title="Your time protected"
+                description="We absorb research, vendor comparison, and technical discernment so leadership can stay on operations while still making informed commitments."
+                icon="fas fa-clock"
+                size="medium"
+              />
+            </CardGrid>
+          </div>
+          <aside class="home-info-panel home-info-panel--on-dark home-info-panel--proof" aria-label={valueProposition.home.proofPanel.eyebrow}>
+            <p class="home-info-panel__eyebrow">{valueProposition.home.proofPanel.eyebrow}</p>
+            <p class="home-info-panel__lead">{valueProposition.home.proofPanel.lead}</p>
+            <ul class="home-point-strip home-point-strip--stack">
+              {valueProposition.home.proofPanel.points.map((point) => (
+                <li class="home-point-strip__item">
+                  <span class="home-point-strip__title">{point.title}</span>
+                  <p class="home-point-strip__body">{point.body}</p>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
       </div>
     </section>
 
-    <!-- Live sites: concrete proof immediately before contact (trust → conversation). -->
+    <!-- Live sites + contact: proof you can open, then a clear path to talk -->
     <section
       id="client-sites"
-      class="section section-tartan-accent section-home-band--surface home-band--clients section-scroll-deck-cover section-scroll-deck-cover--exit section-scroll-over-panel"
+      class="section section-tartan-accent section-home-band--surface home-band--clients home-band--contact section-scroll-deck-cover section-scroll-deck-cover--exit section-scroll-over-panel"
       data-interconnection-node
       data-interconnection-band="clients"
     >
@@ -192,50 +208,61 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           title="Web presences we have shipped"
           byline="Live sites and applications we have shipped for clients. The list is deliberately small for now: we only showcase work clients are happy to display, and we add entries as new public launches clear that bar."
         />
-        <ClientSitesShowcase />
+        <ClientSitesShowcase layout="featured" showFootnote={false} />
+
+        <div class="home-band-split home-band-split--clients-contact">
+          <aside class="home-inquiry-aside" aria-label="Contact">
+            <p class="home-inquiry-aside__eyebrow">{valueProposition.home.clientsContact.eyebrow}</p>
+            <dl class="home-inquiry-aside__contact home-inquiry-aside__contact--flush">
+              <div>
+                <dt>Phone</dt>
+                <dd>
+                  <a href={`tel:${valueProposition.home.clientsContact.phone.replace(/\s+/g, '')}`}>
+                    {valueProposition.home.clientsContact.phone}
+                  </a>
+                  <span class="home-inquiry-aside__note">{valueProposition.home.clientsContact.phoneNote}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>
+                  <a href={`mailto:${valueProposition.home.clientsContact.email}`}>
+                    {valueProposition.home.clientsContact.email}
+                  </a>
+                  <span class="home-inquiry-aside__note">Support</span>
+                  <a href={`mailto:${valueProposition.home.clientsContact.emailAlt}`}>
+                    {valueProposition.home.clientsContact.emailAlt}
+                  </a>
+                  <span class="home-inquiry-aside__note">General enquiries</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Location</dt>
+                <dd>
+                  {valueProposition.home.clientsContact.location}
+                  <span class="home-inquiry-aside__note">{valueProposition.home.clientsContact.locationNote}</span>
+                </dd>
+              </div>
+            </dl>
+          </aside>
+          <div class="home-clients-cta">
+            <h3 class="home-clients-cta__title">
+              <SemanticText text={valueProposition.home.clientsContact.title} semanticLevel="high" isParent={true} />
+            </h3>
+            <p class="home-clients-cta__lead">
+              <SemanticText text={valueProposition.home.clientsContact.lead} semanticLevel="normal" isChild={true} />
+            </p>
+            <a href="#inquiry-section" class="btn btn-primary">
+              {valueProposition.home.clientsContact.ctaLabel}
+            </a>
+          </div>
+        </div>
+        <p class="client-sites-showcase__note">
+          We keep this list short on purpose. It grows when new launches go live and clients are glad to have them shown here.
+        </p>
       </div>
     </section>
     </ScrollTransitionDeck>
-
-    <!-- Contact Information Section -->
-    <section class="section section-tartan-accent section-home-band--primary-light home-band--contact" data-interconnection-node data-interconnection-band="contact">
-      <div class="container">
-        <SectionSatelliteConstellation variant="contact" semanticKey={HOME_BAND_SEMANTIC_KEYS.contact} />
-        <h2 class="section-title section-title--center">
-          <SemanticText text="Ready to transform your business?" semanticLevel="high" isParent={true} />
-        </h2>
-        <p class="section-description section-description--center">
-          <SemanticText text="Consultations are available by appointment. Tell us what you need to achieve and we will map options, effort, and risk so you can decide with confidence." semanticLevel="normal" isChild={true} />
-        </p>
-        
-        <CardGrid layout="grid" columns={3}>
-          <Card
-            title="Phone"
-            description="<strong>+61 490 478 864</strong><br>Available for consultations by appointment"
-            icon="fas fa-phone"
-            size="medium"
-          />
-          <Card
-            title="Email"
-            description="<strong>support@brisbaneservers.com</strong><br>For inquiries and support<br><strong>connect@brisbaneservers.com</strong><br>For general inquiries"
-            icon="fas fa-envelope"
-            size="medium"
-          />
-          <Card
-            title="Location"
-            description="<strong>Brisbane, Queensland</strong><br>Serving businesses across Australia<br>Physical and online consultations available"
-            icon="fas fa-map-marker-alt"
-            size="medium"
-          />
-        </CardGrid>
-        
-        <div style="text-align: center; margin-top: var(--space-2xl);">
-          <a href="#inquiry-section" class="btn btn-primary">
-            Start a Conversation
-          </a>
-        </div>
-      </div>
-    </section>
 
     <!-- Company Details Section -->
     <section class="section section-tartan-accent home-band--about" data-interconnection-node data-interconnection-band="about">
@@ -279,50 +306,39 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <SemanticText text="Leaders are expected to modernise systems, strengthen security, and evaluate AI while still running daily operations. Without grounded guidance, market noise can become costly missteps and stalled initiatives." semanticLevel="normal" isChild={true} />
         </p>
 
-        <div class="home-band-split home-band-split--challenge">
-          <aside class="home-inline-rail" aria-label={valueProposition.home.challengeRail.kicker}>
-            <p class="home-inline-rail__kicker">{valueProposition.home.challengeRail.kicker}</p>
-            <p class="home-inline-rail__lead">{valueProposition.home.challengeRail.lead}</p>
-            <ul class="home-inline-rail__list">
-              {valueProposition.home.challengeRail.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          </aside>
-          <div class="home-band-split__main">
-            <CardGrid layout="grid" columns={3}>
-              <Card
-                title="Resource constraints"
-                description="Running operations leaves limited time for research, feasibility checks, and vendor evaluation, so decision support must be focused."
-                icon="fas fa-clock"
-              />
-              <Card
-                title="Information complexity"
-                description="Competing tools, changing platforms, and conflicting vendor claims create noise. We isolate what fits your context and what does not."
-                icon="fas fa-info-circle"
-              />
-              <Card
-                title="Strategic assessment"
-                description="We evaluate your scale, budget, grants, and industry constraints to identify options that are both feasible and worthwhile."
-                icon="fas fa-search"
-              />
-            </CardGrid>
-          </div>
+        <CardGrid layout="grid" columns={3}>
+          <Card
+            title="Resource constraints"
+            description="Running operations leaves limited time for research, feasibility checks, and vendor evaluation, so decision support must be focused."
+            icon="fas fa-clock"
+          />
+          <Card
+            title="Information complexity"
+            description="Competing tools, changing platforms, and conflicting vendor claims create noise. We isolate what fits your context and what does not."
+            icon="fas fa-info-circle"
+          />
+          <Card
+            title="Strategic assessment"
+            description="We evaluate your scale, budget, grants, and industry constraints to identify options that are both feasible and worthwhile."
+            icon="fas fa-search"
+          />
+        </CardGrid>
+
+        <div class="home-info-panel" aria-label={valueProposition.home.challengePanel.eyebrow}>
+          <p class="home-info-panel__eyebrow">{valueProposition.home.challengePanel.eyebrow}</p>
+          <p class="home-info-panel__lead">{valueProposition.home.challengePanel.lead}</p>
+          <ul class="home-point-strip">
+            {valueProposition.home.challengePanel.points.map((point) => (
+              <li class="home-point-strip__item">
+                <span class="home-point-strip__title">{point.title}</span>
+                <p class="home-point-strip__body">{point.body}</p>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div class="home-band-split home-band-split--search">
-          <div class="home-band-split__main">
-            <SearchBar />
-          </div>
-          <aside class="home-inline-rail" aria-label={valueProposition.home.searchRail.kicker}>
-            <p class="home-inline-rail__kicker">{valueProposition.home.searchRail.kicker}</p>
-            <p class="home-inline-rail__lead">{valueProposition.home.searchRail.lead}</p>
-            <ul class="home-inline-rail__list">
-              {valueProposition.home.searchRail.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          </aside>
+        <div class="home-band-search">
+          <SearchBar />
         </div>
       </div>
     </section>
@@ -331,51 +347,52 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     <section class="section section-tartan-accent home-band--solutions section--hero-wash" data-interconnection-node data-interconnection-band="solutions">
       <div class="container">
         <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} scale="rim" placement="backdrop" />
-        <div class="home-band-split home-band-split--solutions">
-          <aside class="home-inline-rail home-inline-rail--on-dark" aria-label={valueProposition.home.solutionsRail.kicker}>
-            <h2 class="section-title">
-              <SemanticText text="Proven Solution Patterns" semanticLevel="high" isParent={true} />
-            </h2>
-            <p class="section-description">
-              <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context, so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
-            </p>
-            <p class="home-inline-rail__kicker">{valueProposition.home.solutionsRail.kicker}</p>
-            <p class="home-inline-rail__lead">{valueProposition.home.solutionsRail.lead}</p>
-            <ul class="home-inline-rail__list">
-              {valueProposition.home.solutionsRail.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          </aside>
-          <div class="home-band-split__main">
-            <CardGrid layout="grid" columns={2}>
-              <Card
-                title="Industry Expertise"
-                description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
-                icon="fas fa-industry"
-                size="medium"
-              />
-              <Card
-                title="Financial optimisation"
-                description={`Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="${sitePath('/projects')}" class="evidence-citation">View examples</a>`}
-                icon="fas fa-dollar-sign"
-                size="medium"
-              />
-              <Card
-                title="Process automation"
-                description={`Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="${sitePath('/projects')}" class="evidence-citation">View case studies</a>`}
-                icon="fas fa-cogs"
-                size="medium"
-              />
-              <Card
-                title="Value-based framework"
-                description="Recommendations are grounded in business scale, budget, available grants, industry requirements, and measurable outcomes."
-                icon="fas fa-chart-line"
-                size="medium"
-              />
-            </CardGrid>
-          </div>
+        <h2 class="section-title">
+          <SemanticText text="Proven Solution Patterns" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context, so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
+        </p>
+
+        <div class="home-info-panel home-info-panel--on-dark" aria-label={valueProposition.home.solutionsPanel.eyebrow}>
+          <p class="home-info-panel__eyebrow">{valueProposition.home.solutionsPanel.eyebrow}</p>
+          <p class="home-info-panel__lead">{valueProposition.home.solutionsPanel.lead}</p>
+          <ul class="home-point-strip">
+            {valueProposition.home.solutionsPanel.points.map((point) => (
+              <li class="home-point-strip__item">
+                <span class="home-point-strip__title">{point.title}</span>
+                <p class="home-point-strip__body">{point.body}</p>
+              </li>
+            ))}
+          </ul>
         </div>
+
+        <CardGrid layout="grid" columns={2} style="margin-top: clamp(1.25rem, 2.2vw, 2rem);">
+          <Card
+            title="Industry Expertise"
+            description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
+            icon="fas fa-industry"
+            size="medium"
+          />
+          <Card
+            title="Financial optimisation"
+            description={`Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="${sitePath('/projects')}" class="evidence-citation">View examples</a>`}
+            icon="fas fa-dollar-sign"
+            size="medium"
+          />
+          <Card
+            title="Process automation"
+            description={`Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="${sitePath('/projects')}" class="evidence-citation">View case studies</a>`}
+            icon="fas fa-cogs"
+            size="medium"
+          />
+          <Card
+            title="Value-based framework"
+            description="Recommendations are grounded in business scale, budget, available grants, industry requirements, and measurable outcomes."
+            icon="fas fa-chart-line"
+            size="medium"
+          />
+        </CardGrid>
       </div>
     </section>
 
@@ -383,74 +400,62 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
     <section class="section section-tartan-accent section-home-band--surface home-band--partnership" data-interconnection-node data-interconnection-band="partnership">
       <div class="container">
         <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
-        <div class="home-band-split home-band-split--partnership">
-          <aside class="home-inline-rail" aria-label={valueProposition.home.partnershipRail.kicker}>
-            <h2 class="section-title">
-              <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
-            </h2>
-            <p class="section-description">
-              <SemanticText text="We run the research, vendor comparison, and documentation work so your team can approve direction quickly, with trade-offs, costs, and sequencing clearly documented." semanticLevel="normal" isChild={true} />
-            </p>
-            <p class="home-inline-rail__kicker">{valueProposition.home.partnershipRail.kicker}</p>
-            <p class="home-inline-rail__lead">{valueProposition.home.partnershipRail.lead}</p>
-          </aside>
-          <div class="home-band-split__main">
-            <CardGrid layout="grid" columns={2}>
-              <Card
-                title="Efficient delivery"
-                description="We run the analysis and preparation work; you focus on decisions. Outputs stay clear, actionable, and implementation-ready."
-                icon="fas fa-bolt"
-                size="medium"
-              />
-              <Card
-                title="Australian market expertise"
-                description="Brisbane-based, serving Australian businesses. Deep understanding of local market conditions, regulatory requirements, grant programs, and proven implementation strategies."
-                icon="fas fa-map-marker-alt"
-                size="medium"
-              />
-            </CardGrid>
-          </div>
-        </div>
+        <h2 class="section-title">
+          <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
+        </h2>
+        <p class="section-description">
+          <SemanticText text="We run the research, vendor comparison, and documentation work so your team can approve direction quickly, with trade-offs, costs, and sequencing clearly documented." semanticLevel="normal" isChild={true} />
+        </p>
+
+        <CardGrid layout="grid" columns={2}>
+          {valueProposition.home.partnershipCards.map((card) => (
+            <Card
+              title={card.title}
+              description={card.description}
+              icon={card.icon}
+              size="medium"
+            />
+          ))}
+        </CardGrid>
       </div>
     </section>
 
       <div class="home-inquiry-interconnection home-band--inquiry" data-interconnection-node data-interconnection-band="inquiry">
         <InquiryForm id="inquiry-section">
-          <aside slot="aside-start" class="home-inline-rail" aria-label={valueProposition.home.inquiryRails.left.kicker}>
-            <p class="home-inline-rail__kicker">{valueProposition.home.inquiryRails.left.kicker}</p>
-            <p class="home-inline-rail__lead">{valueProposition.home.inquiryRails.left.lead}</p>
-            <ul class="home-inline-rail__list">
-              {valueProposition.home.inquiryRails.left.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          </aside>
-          <aside slot="aside-end" class="home-inline-rail" aria-label={valueProposition.home.inquiryRails.right.kicker}>
-            <p class="home-inline-rail__kicker">{valueProposition.home.inquiryRails.right.kicker}</p>
-            <dl class="home-inline-rail__contact">
+          <aside slot="aside-start" class="home-inquiry-aside" aria-label={valueProposition.home.inquiryPanel.eyebrow}>
+            <div>
+              <p class="home-inquiry-aside__eyebrow">{valueProposition.home.inquiryPanel.eyebrow}</p>
+              <p class="home-inquiry-aside__lead">{valueProposition.home.inquiryPanel.lead}</p>
+              <ul class="home-inquiry-aside__list">
+                {valueProposition.home.inquiryPanel.points.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
+            <dl class="home-inquiry-aside__contact" aria-label={valueProposition.home.inquiryPanel.contactEyebrow}>
               <div>
                 <dt>Phone</dt>
                 <dd>
-                  <a href={`tel:${valueProposition.home.inquiryRails.right.phone.replace(/\s+/g, '')}`}>
-                    {valueProposition.home.inquiryRails.right.phone}
+                  <a href={`tel:${valueProposition.home.inquiryPanel.phone.replace(/\s+/g, '')}`}>
+                    {valueProposition.home.inquiryPanel.phone}
                   </a>
-                  <span class="home-inline-rail__note">{valueProposition.home.inquiryRails.right.phoneNote}</span>
+                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.phoneNote}</span>
                 </dd>
               </div>
               <div>
                 <dt>Email</dt>
                 <dd>
-                  <a href={`mailto:${valueProposition.home.inquiryRails.right.email}`}>
-                    {valueProposition.home.inquiryRails.right.email}
+                  <a href={`mailto:${valueProposition.home.inquiryPanel.email}`}>
+                    {valueProposition.home.inquiryPanel.email}
                   </a>
-                  <span class="home-inline-rail__note">{valueProposition.home.inquiryRails.right.emailNote}</span>
+                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.emailNote}</span>
                 </dd>
               </div>
               <div>
                 <dt>Location</dt>
                 <dd>
-                  {valueProposition.home.inquiryRails.right.location}
-                  <span class="home-inline-rail__note">{valueProposition.home.inquiryRails.right.locationNote}</span>
+                  {valueProposition.home.inquiryPanel.location}
+                  <span class="home-inquiry-aside__note">{valueProposition.home.inquiryPanel.locationNote}</span>
                 </dd>
               </div>
             </dl>

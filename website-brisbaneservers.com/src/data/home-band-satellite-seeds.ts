@@ -16,9 +16,9 @@ export const HOME_BAND_ORDER: SectionSatelliteVariant[] = [
   'strategy',
   'industry',
   'proof',
-  'contact',
   'about',
   'challenge',
   'solutions',
   'partnership',
+  'contact',
 ];
