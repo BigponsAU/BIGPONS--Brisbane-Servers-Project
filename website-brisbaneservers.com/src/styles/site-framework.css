@@ -136,7 +136,7 @@ body {
 
 header[role="banner"] {
   width: 100%;
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-contrast);
   background: #ffffff;
   background-color: #ffffff;
   backdrop-filter: none;

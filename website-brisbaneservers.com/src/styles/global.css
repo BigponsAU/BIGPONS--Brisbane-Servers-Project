@@ -887,7 +887,7 @@ header[role="banner"] {
     background-color: #ffffff;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border-bottom: none;
+    border-bottom: max(1px, 0.125rem) solid rgba(10, 116, 218, var(--color-intensity-medium));
     /* rem max keeps border visible; scales gently with zoom */
     z-index: 1000;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
