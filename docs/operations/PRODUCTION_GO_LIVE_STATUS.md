@@ -2,7 +2,14 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-11 — marketing chrome + inquiry lockup deploy
+**Last synced:** 2026-07-11 — passkey hardening + edge worker deploy
+
+### 2026-07-11 — Passkey auth hardening (edge)
+
+- **API** — credentials bound by email with auto-rebind; sessions heal stale `user_id` after account re-seed; WebAuthn challenges in Postgres (shared across Worker isolates); one passkey per account enforced.
+- **Data** — relinked orphaned admin passkey to canonical user id; `webauthn_credentials.email` backfilled.
+- **Deploy** — push `0b444e2` → Worker `brisbane-servers-api-edge` (wrangler success). Live login-options for registered accounts returns WebAuthn options + durable challenge rows.
+- **CI** — dashboard probe retries once on Cloudflare 403 so Bot Fight first-hit does not fail the pipeline.
 
 ### 2026-07-11 — Marketing visuals, inquiry lockup, nav chrome
 
