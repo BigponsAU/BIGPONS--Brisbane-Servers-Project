@@ -45,40 +45,11 @@ function initializeNavDismissOnScrollAndNavigation(): void {
     window.addEventListener('pageshow', dismissOpenNav);
 }
 
-/** Solidify flush (transparent) nav once the dark hero scrolls away. */
-function initializeFlushNavOverHero(): void {
-    const header = document.querySelector<HTMLElement>('header[role="banner"]');
-    const hero = document.querySelector<HTMLElement>('main .hero');
-    const shell = document.querySelector('.site-shell');
-    if (!header || !hero || shell?.classList.contains('site-shell--header-in-flow')) return;
-
-    let tick = false;
-    const sync = (): void => {
-        const heroBottom = hero.getBoundingClientRect().bottom;
-        const solid = heroBottom <= header.offsetHeight * 0.55;
-        header.dataset.navSolid = solid ? 'true' : 'false';
-    };
-
-    const onScroll = (): void => {
-        if (tick) return;
-        tick = true;
-        requestAnimationFrame(() => {
-            tick = false;
-            sync();
-        });
-    };
-
-    sync();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-}
-
 // ===== NAVIGATION TOGGLE =====
 document.addEventListener('DOMContentLoaded', function() {
     try { localStorage.removeItem('authToken'); } catch { /* legacy session cleanup */ }
 
     closeDesktopNavDropdowns();
-    initializeFlushNavOverHero();
 
     const hamburger = document.querySelector('.hamburger') as HTMLButtonElement | null;
     const mobileMenu = document.querySelector('.mobile-menu') as HTMLElement | null;

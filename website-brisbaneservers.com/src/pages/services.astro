@@ -9,10 +9,19 @@ import InquiryForm from '../components/InquiryForm.astro';
 import SectionIntro from '../components/SectionIntro.astro';
 import SectionConstellationLayer from '../components/SectionConstellationLayer.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
+import BrandVisual from '../components/BrandVisual.astro';
+import MarketingCapabilityRow from '../components/marketing/MarketingCapabilityRow.astro';
 import { valueProposition } from '../data/value-proposition';
 
 const currentPath = '/services';
 const { sections } = valueProposition.services;
+
+const deliveryCapabilities = [
+  { glyph: 'evidence' as const, label: 'Consultation', detail: 'Context, constraints, documented scope' },
+  { glyph: 'semantic-search' as const, label: 'Analysis', detail: 'Research and feasibility filtering' },
+  { glyph: 'automation' as const, label: 'Implementation', detail: 'Phased delivery aligned to value' },
+  { glyph: 'integration' as const, label: 'Ongoing support', detail: 'Updates and guidance as you grow' },
+];
 ---
 
 <SiteShell
@@ -46,28 +55,37 @@ const { sections } = valueProposition.services;
           title={sections.delivery.title}
           byline={sections.delivery.byline}
         />
-        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
-          <Card
-            title="Consultation"
-            description="Structured in-person or online sessions to map operating context, constraints, and objectives, with scope and trade-offs documented before delivery."
-            featureGlyph="evidence"
-          />
-          <Card
-            title="Analysis"
-            description="We handle technology research, information filtering, and feasibility checks. You stay focused on operations while we identify practical options."
-            featureGlyph="semantic-search"
-          />
-          <Card
-            title="Implementation"
-            description="We build and deploy solutions aligned to your value framework, using phased delivery and grant support where available."
-            featureGlyph="automation"
-          />
-          <Card
-            title="Ongoing support"
-            description="Access to expertise when you need it, including updates, adjustments, and guidance as your business evolves."
-            featureGlyph="integration"
-          />
-        </CardGrid>
+        <div class="section-visual-split">
+          <div class="section-visual-split__visual">
+            <div class="section-visual-split__spine">
+              <MarketingCapabilityRow items={deliveryCapabilities} />
+            </div>
+          </div>
+          <div class="section-visual-split__body">
+            <CardGrid columns={1}>
+              <Card
+                title="Consultation"
+                description="Structured in-person or online sessions to map operating context, constraints, and objectives, with scope and trade-offs documented before delivery."
+                featureGlyph="evidence"
+              />
+              <Card
+                title="Analysis"
+                description="We handle technology research, information filtering, and feasibility checks. You stay focused on operations while we identify practical options."
+                featureGlyph="semantic-search"
+              />
+              <Card
+                title="Implementation"
+                description="We build and deploy solutions aligned to your value framework, using phased delivery and grant support where available."
+                featureGlyph="automation"
+              />
+              <Card
+                title="Ongoing support"
+                description="Access to expertise when you need it, including updates, adjustments, and guidance as your business evolves."
+                featureGlyph="integration"
+              />
+            </CardGrid>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -82,28 +100,38 @@ const { sections } = valueProposition.services;
           title={sections.valueProfile.title}
           byline={sections.valueProfile.byline}
         />
-        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
-          <Card
-            title="Business size and standing"
-            description="Recommendations reflect current capability, foundational gaps, and existing strengths, then scale from your present position."
-          />
-          <Card
-            title="Cost reasonableness"
-            description="Recommendations are tested against your financial position, prioritising sensible investment and measurable return."
-          />
-          <Card
-            title="Grants and incentives"
-            description="We identify grants and tax incentives relevant to your industry and goals, then help you act on viable opportunities."
-          />
-          <Card
-            title="Industry specifics"
-            description="Recommendations account for field-specific requirements, compliance obligations, and what consistently works in your industry."
-          />
-          <Card
-            title="Time savings"
-            description="Automation is applied to repetitive, low-value tasks so your team can focus on higher-value work."
-          />
-        </CardGrid>
+        <div class="section-visual-split section-visual-split--visual-end">
+          <div class="section-visual-split__body">
+            <CardGrid columns={2}>
+              <Card
+                title="Business size and standing"
+                description="Recommendations reflect current capability, foundational gaps, and existing strengths, then scale from your present position."
+              />
+              <Card
+                title="Cost reasonableness"
+                description="Recommendations are tested against your financial position, prioritising sensible investment and measurable return."
+              />
+              <Card
+                title="Grants and incentives"
+                description="We identify grants and tax incentives relevant to your industry and goals, then help you act on viable opportunities."
+              />
+              <Card
+                title="Industry specifics"
+                description="Recommendations account for field-specific requirements, compliance obligations, and what consistently works in your industry."
+              />
+              <Card
+                title="Time savings"
+                description="Automation is applied to repetitive, low-value tasks so your team can focus on higher-value work."
+              />
+            </CardGrid>
+          </div>
+          <div class="section-visual-split__visual">
+            <BrandVisual
+              variant="mark"
+              caption="Recommendations sized to your standing — not a generic stack."
+            />
+          </div>
+        </div>
       </div>
     </section>
 

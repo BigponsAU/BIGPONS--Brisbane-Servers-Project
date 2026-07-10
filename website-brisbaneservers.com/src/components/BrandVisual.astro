@@ -1,0 +1,77 @@
+---
+import { Image } from 'astro:assets';
+import bigponsBanner from '../bigpons-banner.png';
+import bigponsMark from '../bigpons-mark.png';
+
+type Variant = 'banner' | 'mark' | 'place';
+
+interface Props {
+  /** banner = horizontal wordmark; mark = circle icon; place = Brisbane civic photo */
+  variant?: Variant;
+  caption?: string;
+  class?: string;
+  alt?: string;
+  /** Decorative when true (caption still available for sighted users via figcaption). */
+  decorative?: boolean;
+}
+
+const {
+  variant = 'banner',
+  caption,
+  class: className = '',
+  alt,
+  decorative = false,
+} = Astro.props;
+
+const defaults: Record<Variant, string> = {
+  banner:
+    'BIGPONS — Brisbane Servers. Access to truth in technology. Local data pipeline solutions and Brisbane\'s sovereign edge infrastructure.',
+  mark: 'BIGPONS mark',
+  place: 'Brisbane riverfront — South Bank, Queensland',
+};
+
+const resolvedAlt = decorative ? '' : (alt ?? defaults[variant]);
+---
+
+<figure class:list={['brand-visual', `brand-visual--${variant}`, className]}>
+  {
+    variant === 'banner' && (
+      <Image
+        src={bigponsBanner}
+        alt={resolvedAlt}
+        widths={[360, 480, 720]}
+        sizes="(max-width: 900px) 100vw, 28rem"
+        class="brand-visual__img"
+        loading="lazy"
+        decoding="async"
+      />
+    )
+  }
+  {
+    variant === 'mark' && (
+      <Image
+        src={bigponsMark}
+        alt={resolvedAlt}
+        widths={[160, 240, 320]}
+        sizes="(max-width: 900px) 40vw, 12rem"
+        class="brand-visual__img"
+        loading="lazy"
+        decoding="async"
+      />
+    )
+  }
+  {
+    variant === 'place' && (
+      <img
+        src="/og-southbank.png"
+        alt={resolvedAlt}
+        width={1200}
+        height={630}
+        class="brand-visual__img"
+        loading="lazy"
+        decoding="async"
+      />
+    )
+  }
+  {caption && <figcaption class="brand-visual__caption">{caption}</figcaption>}
+</figure>

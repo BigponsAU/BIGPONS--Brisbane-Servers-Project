@@ -9,6 +9,7 @@ import SectionConstellationLayer from '../components/SectionConstellationLayer.a
 import SiteLink from '../components/SiteLink.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import SemanticText from '../components/SemanticText.astro';
+import BrandVisual from '../components/BrandVisual.astro';
 import { valueProposition } from '../data/value-proposition';
 import { portalVoiceRules } from '../lib/portal-voice-framework';
 import { sitePath } from '../lib/site-path';
@@ -181,18 +182,28 @@ const { sections } = valueProposition.about;
           title={sections.bigpons.title}
           byline={sections.bigpons.byline}
         />
-        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
-          <Card
-            title="BIGPONS ABN"
-            description="ABN: 93 297 393 962 — registered Australian business."
-            icon="fas fa-certificate"
-          />
-          <Card
-            title="Location"
-            description="Brisbane, Queensland, Australia — supporting businesses across Australia."
-            icon="fas fa-map-marker-alt"
-          />
-        </CardGrid>
+        <div class="section-visual-split">
+          <div class="section-visual-split__visual">
+            <BrandVisual
+              variant="banner"
+              caption="A BIGPONS project — local data pipeline solutions and Brisbane's sovereign edge infrastructure."
+            />
+          </div>
+          <div class="section-visual-split__body">
+            <CardGrid columns={1}>
+              <Card
+                title="BIGPONS ABN"
+                description="ABN: 93 297 393 962 — registered Australian business."
+                icon="fas fa-certificate"
+              />
+              <Card
+                title="Location"
+                description="Brisbane, Queensland, Australia — supporting businesses across Australia."
+                icon="fas fa-map-marker-alt"
+              />
+            </CardGrid>
+          </div>
+        </div>
       </div>
     </section>
 

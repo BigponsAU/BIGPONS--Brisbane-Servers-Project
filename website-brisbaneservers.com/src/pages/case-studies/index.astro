@@ -9,6 +9,7 @@ import InquiryForm from '../../components/InquiryForm.astro';
 import SectionIntro from '../../components/SectionIntro.astro';
 import MarketingPageBands from '../../components/MarketingPageBands.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ClientSitesShowcase from '../../components/ClientSitesShowcase.astro';
 import { caseStudies } from '../../data/case-studies';
 import { industryHubStatus } from '../../data/site-completeness';
 import { caseStudiesHubSeo } from '../../lib/content-seo';
@@ -57,20 +58,27 @@ const { structuredData, breadcrumbs: breadcrumbItems } = caseStudiesHubSeo(
           byline="Open a study for challenge, approach, outcomes, and lessons, then continue to related industry resources for deeper implementation detail."
         />
 
-        <CardGrid columns={2}>
-          {
-            caseStudies.map((study) => (
-              <Card
-                title={study.cardTitle}
-                description={study.cardDescription}
-                icon={study.icon}
-                href={`/case-studies/${study.slug}`}
-                actionLabel="Read case study"
-                industry={study.industryFilter}
-              />
-            ))
-          }
-        </CardGrid>
+        <div class="section-visual-split case-studies-hub-lead">
+          <div class="section-visual-split__visual">
+            <ClientSitesShowcase layout="featured" showFootnote={false} />
+          </div>
+          <div class="section-visual-split__body">
+            <CardGrid columns={1}>
+              {
+                caseStudies.map((study) => (
+                  <Card
+                    title={study.cardTitle}
+                    description={study.cardDescription}
+                    icon={study.icon}
+                    href={`/case-studies/${study.slug}`}
+                    actionLabel="Read case study"
+                    industry={study.industryFilter}
+                  />
+                ))
+              }
+            </CardGrid>
+          </div>
+        </div>
       </div>
     </section>
 

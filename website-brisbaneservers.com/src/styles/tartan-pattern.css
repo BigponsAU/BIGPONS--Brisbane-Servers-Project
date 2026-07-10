@@ -79,13 +79,6 @@ header[role="banner"] {
   isolation: isolate;
 }
 
-/* Flush over dark hero — do not paint the white band */
-.site-shell:not(.site-shell--header-in-flow):has(.hero) header[role="banner"]:not([data-nav-solid="true"]) {
-  background: transparent !important;
-  background-image: none !important;
-  isolation: auto;
-}
-
 /* Tartan accent on main content area */
 main#main-content::before {
   content: '';
