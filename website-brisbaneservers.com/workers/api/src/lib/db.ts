@@ -155,18 +155,37 @@ export async function getSessionUser(sql: Sql, token: string): Promise<AuthUser 
   await ensureSchema(sql);
   const now = new Date().toISOString();
   const rows = await sql`
-    SELECT s.user_id, s.email, s.role, u.email_verified_at
+    SELECT
+      s.user_id AS session_user_id,
+      COALESCE(u_by_id.id, u_by_email.id) AS canonical_user_id,
+      COALESCE(u_by_id.email, u_by_email.email, s.email) AS email,
+      COALESCE(u_by_id.role, u_by_email.role, s.role) AS role,
+      COALESCE(u_by_id.email_verified_at, u_by_email.email_verified_at) AS email_verified_at
     FROM sessions s
-    LEFT JOIN users u ON u.id = s.user_id
+    LEFT JOIN users u_by_id ON u_by_id.id = s.user_id
+    LEFT JOIN users u_by_email ON lower(u_by_email.email) = lower(s.email)
     WHERE s.token = ${token} AND s.expires_at > ${now}
     LIMIT 1
   `;
   const row = rows[0];
-  if (!row) return null;
+  if (!row?.canonical_user_id) return null;
+
+  const canonicalId = String(row.canonical_user_id);
+  const email = String(row.email);
+  const role = row.role as AuthUser['role'];
+
+  if (String(row.session_user_id) !== canonicalId) {
+    await sql`
+      UPDATE sessions
+      SET user_id = ${canonicalId}, email = ${email}, role = ${role}
+      WHERE token = ${token}
+    `;
+  }
+
   return {
-    id: String(row.user_id),
-    email: String(row.email),
-    role: row.role as AuthUser['role'],
+    id: canonicalId,
+    email,
+    role,
     emailVerified: Boolean(row.email_verified_at),
   };
 }

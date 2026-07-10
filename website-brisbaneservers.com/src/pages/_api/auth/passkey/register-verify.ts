@@ -1,29 +1,33 @@
 import type { APIRoute } from 'astro';
 import { verifyRegistrationResponse, type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { requireAuth } from '~/utils/auth';
-import { listCredentialsForUser, saveWebAuthnCredential } from '~/lib/db/webauthn-store';
+import { listCredentialsForAccount, saveWebAuthnCredential } from '~/lib/db/webauthn-store';
 import { getWebAuthnOrigin, getWebAuthnRpId, isPasskeyEnabled, MAX_PASSKEYS_PER_USER } from '~/lib/webauthn/config';
 import { consumeChallenge } from '~/lib/webauthn/challenges';
 import { logAuthEvent } from '~/lib/auth-audit';
+import { authRateLimitResponse } from '~/lib/auth-rate-limit';
 
 export const POST: APIRoute = async ({ request }) => {
   if (!isPasskeyEnabled()) {
     return new Response(JSON.stringify({ error: 'Passkey auth is disabled', success: false }), {
       status: 503,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  const limited = authRateLimitResponse(request, 'auth-passkey-register-verify', 10, 15 * 60 * 1000);
+  if (limited) return limited;
 
   const authResult = await requireAuth(request);
   if ('error' in authResult) {
     return new Response(JSON.stringify({ error: authResult.error, code: authResult.code, success: false }), {
       status: 401,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
   try {
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       challengeId?: string;
       response?: RegistrationResponseJSON;
     };
@@ -31,27 +35,32 @@ export const POST: APIRoute = async ({ request }) => {
     if (!body.challengeId || !body.response) {
       return new Response(JSON.stringify({ error: 'Missing challenge or response', success: false }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const existing = await listCredentialsForUser(authResult.user.id);
+    const user = authResult.user;
+    const existing = await listCredentialsForAccount(user.id, user.email);
     if (existing.length >= MAX_PASSKEYS_PER_USER) {
       return new Response(
         JSON.stringify({
           error: 'A passkey is already registered. Remove it before adding a new one.',
           code: 'PASSKEY_LIMIT',
-          success: false
+          success: false,
         }),
         { status: 409, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     const stored = await consumeChallenge(body.challengeId);
-    if (!stored?.challenge || stored.userId !== authResult.user.id) {
+    if (
+      !stored?.challenge ||
+      stored.userId !== user.id ||
+      (stored.email && stored.email.toLowerCase() !== user.email.toLowerCase())
+    ) {
       return new Response(JSON.stringify({ error: 'Challenge expired or invalid', success: false }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -60,42 +69,44 @@ export const POST: APIRoute = async ({ request }) => {
       expectedChallenge: stored.challenge,
       expectedOrigin: getWebAuthnOrigin(),
       expectedRPID: getWebAuthnRpId(),
-      requireUserVerification: false
+      requireUserVerification: false,
     });
 
     if (!verification.verified || !verification.registrationInfo) {
       return new Response(JSON.stringify({ error: 'Passkey verification failed', success: false }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
 
     await saveWebAuthnCredential({
-      userId: authResult.user.id,
+      userId: user.id,
+      email: user.email,
       credentialId: credential.id,
       publicKey: Buffer.from(credential.publicKey).toString('base64url'),
       counter: credential.counter,
       transports: body.response.response.transports ?? [],
       deviceType: credentialDeviceType,
-      backedUp: credentialBackedUp
+      backedUp: credentialBackedUp,
     });
 
     await logAuthEvent({
-      userId: authResult.user.id,
-      email: authResult.user.email,
-      eventType: 'auth.passkey.registered'
+      userId: user.id,
+      email: user.email,
+      eventType: 'auth.passkey.registered',
     });
 
     return new Response(JSON.stringify({ success: true, message: 'Passkey registered' }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-  } catch {
+  } catch (error) {
+    console.error('[passkey/register-verify]', error instanceof Error ? error.message : error);
     return new Response(JSON.stringify({ error: 'Invalid passkey registration payload', success: false }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 };

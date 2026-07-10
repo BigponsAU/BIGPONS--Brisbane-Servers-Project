@@ -347,22 +347,46 @@ export async function getSessionUserFromDb(token: string): Promise<AuthUser | nu
   const pool = await getPool();
   await ensureSchema(pool);
   const now = new Date().toISOString();
+  // Prefer the live users row by email so stale session.user_id (re-seeded accounts)
+  // cannot orphan passkeys or other user_id-scoped data.
   const { rows } = await pool.query<{
-    user_id: string;
+    session_user_id: string;
+    canonical_user_id: string | null;
     email: string;
     role: string;
     email_verified_at: string | null;
   }>(
-    `SELECT s.user_id, s.email, s.role, u.email_verified_at
+    `SELECT
+       s.user_id AS session_user_id,
+       COALESCE(u_by_id.id, u_by_email.id) AS canonical_user_id,
+       COALESCE(u_by_id.email, u_by_email.email, s.email) AS email,
+       COALESCE(u_by_id.role, u_by_email.role, s.role) AS role,
+       COALESCE(u_by_id.email_verified_at, u_by_email.email_verified_at) AS email_verified_at
      FROM sessions s
-     LEFT JOIN users u ON u.id = s.user_id
+     LEFT JOIN users u_by_id ON u_by_id.id = s.user_id
+     LEFT JOIN users u_by_email ON lower(u_by_email.email) = lower(s.email)
      WHERE s.token = $1 AND s.expires_at > $2
      LIMIT 1`,
     [token, now]
   );
   const row = rows[0];
-  if (!row) return null;
-  return rowToAuthUser(row);
+  if (!row?.canonical_user_id) return null;
+
+  if (row.session_user_id !== row.canonical_user_id) {
+    await pool.query(`UPDATE sessions SET user_id = $1, email = $2, role = $3 WHERE token = $4`, [
+      row.canonical_user_id,
+      row.email,
+      row.role,
+      token,
+    ]);
+  }
+
+  return rowToAuthUser({
+    user_id: row.canonical_user_id,
+    email: row.email,
+    role: row.role,
+    email_verified_at: row.email_verified_at,
+  });
 }
 
 export async function deleteSessionInDb(token: string): Promise<void> {

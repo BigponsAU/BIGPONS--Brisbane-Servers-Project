@@ -374,8 +374,12 @@ export async function loginWithPasskey(ctx: PortalAccountContext, email: string)
     ctx.setAuthToken(verifyData.token ?? null);
     ctx.showDashboard(verifyData.user);
   } catch (error) {
+    let message = error instanceof Error ? error.message : 'Passkey sign-in failed';
+    if (error instanceof Error && error.name === 'NotAllowedError') {
+      message = 'Passkey sign-in was cancelled or timed out. Try again when ready.';
+    }
     if (errorDiv) {
-      errorDiv.textContent = error instanceof Error ? error.message : 'Passkey sign-in failed';
+      errorDiv.textContent = message;
       errorDiv.classList.add('show');
     }
   }
