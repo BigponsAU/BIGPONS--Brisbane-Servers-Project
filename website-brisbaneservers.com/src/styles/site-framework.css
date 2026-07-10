@@ -2639,6 +2639,21 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   color: var(--text-primary);
 }
 
+.home-value-path__jump {
+  margin: clamp(1.25rem, 2vw, 1.75rem) 0 0;
+}
+
+.home-about-links a {
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.home-about-links a:hover,
+.home-about-links a:focus-visible {
+  text-decoration: underline;
+}
+
 @media (max-width: 1100px) {
   .home-value-path__steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2846,12 +2861,24 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   min-width: 0;
 }
 
-.brand-lockup__mark,
+.brand-lockup__mark.bigpons-brain-mark,
 .bigpons-brain-mark.brand-lockup__mark {
   flex: 0 0 auto;
   width: clamp(3.15rem, 4.2vw, 3.85rem);
-  height: auto;
+  height: clamp(3.15rem, 4.2vw, 3.85rem);
+  overflow: hidden;
+  display: block;
+  border-radius: 0.35rem;
   filter: drop-shadow(0 2px 8px rgba(var(--primary-color-rgb), 0.12));
+}
+
+.bigpons-brain-mark__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scale(1.72);
+  transform-origin: top center;
+  clip-path: inset(0 0 44% 0);
 }
 
 .brand-lockup__copy {

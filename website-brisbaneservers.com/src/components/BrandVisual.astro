@@ -21,7 +21,6 @@ const {
 const bannerLabel =
   alt ??
   "BIGPONS — Brisbane Servers. Access to truth in technology. Local data pipeline solutions and Brisbane's sovereign edge infrastructure.";
-const gradientId = `brand-lockup-gradient-${Math.random().toString(36).slice(2, 11)}`;
 ---
 
 {
@@ -31,7 +30,7 @@ const gradientId = `brand-lockup-gradient-${Math.random().toString(36).slice(2, 
       aria-label={bannerLabel}
     >
       <div class="brand-lockup">
-        <BigponsBrainMark class="brand-lockup__mark" gradientId={gradientId} />
+        <BigponsBrainMark class="brand-lockup__mark" />
         <div class="brand-lockup__copy">
           <p class="brand-lockup__name">BIGPONS</p>
           <p class="brand-lockup__product">Brisbane Servers</p>

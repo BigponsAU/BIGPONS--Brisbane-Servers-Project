@@ -14,7 +14,6 @@ import MarketingScrollCanopy from '../components/marketing/MarketingScrollCanopy
 import ScrollTransitionDeck from '../components/marketing/ScrollTransitionDeck.astro';
 import SearchBandAtmosphere from '../components/marketing/SearchBandAtmosphere.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
-import SectionContextVisual from '../components/SectionContextVisual.astro';
 import { industries } from '../data/industries';
 import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
 import { valueProposition } from '../data/value-proposition';
@@ -203,54 +202,11 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="container">
         <HomeValuePath />
 
-        <div class="home-band-split home-band-split--clients-contact">
-          <aside class="home-inquiry-aside" aria-label="Contact">
-            <SectionContextVisual variant="engagement-proof" />
-            <p class="home-inquiry-aside__eyebrow">{valueProposition.home.clientsContact.eyebrow}</p>
-            <dl class="home-inquiry-aside__contact home-inquiry-aside__contact--flush">
-              <div>
-                <dt>Phone</dt>
-                <dd>
-                  <a href={`tel:${valueProposition.home.clientsContact.phone.replace(/\s+/g, '')}`}>
-                    {valueProposition.home.clientsContact.phone}
-                  </a>
-                  <span class="home-inquiry-aside__note">{valueProposition.home.clientsContact.phoneNote}</span>
-                </dd>
-              </div>
-              <div>
-                <dt>Email</dt>
-                <dd>
-                  <a href={`mailto:${valueProposition.home.clientsContact.email}`}>
-                    {valueProposition.home.clientsContact.email}
-                  </a>
-                  <span class="home-inquiry-aside__note">Support</span>
-                  <a href={`mailto:${valueProposition.home.clientsContact.emailAlt}`}>
-                    {valueProposition.home.clientsContact.emailAlt}
-                  </a>
-                  <span class="home-inquiry-aside__note">General enquiries</span>
-                </dd>
-              </div>
-              <div>
-                <dt>Location</dt>
-                <dd>
-                  {valueProposition.home.clientsContact.location}
-                  <span class="home-inquiry-aside__note">{valueProposition.home.clientsContact.locationNote}</span>
-                </dd>
-              </div>
-            </dl>
-          </aside>
-          <div class="home-clients-cta">
-            <h3 class="home-clients-cta__title">
-              <SemanticText text={valueProposition.home.clientsContact.title} semanticLevel="high" isParent={true} />
-            </h3>
-            <p class="home-clients-cta__lead">
-              <SemanticText text={valueProposition.home.clientsContact.lead} semanticLevel="normal" isChild={true} />
-            </p>
-            <a href="#inquiry-section" class="btn btn-primary">
-              {valueProposition.home.clientsContact.ctaLabel}
-            </a>
-          </div>
-        </div>
+        <p class="home-value-path__jump">
+          <a href="#inquiry-section" class="btn btn-primary">
+            {valueProposition.home.clientsContact.ctaLabel}
+          </a>
+        </p>
       </div>
     </section>
     </ScrollTransitionDeck>
@@ -263,27 +219,28 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <SemanticText text="About Brisbane Servers" semanticLevel="high" isParent={true} />
         </h2>
 
-        <div class="section-visual-split">
-          <div class="section-visual-split__visual">
-            <SectionContextVisual variant="site-offerings" />
-          </div>
-          <div class="section-visual-split__body">
-            <CardGrid layout="grid" columns={1}>
-              <Card
-                title="Our mission"
-                description="Providing access to truth in technology for Australian businesses, while supporting domestic growth through evidence-based solutions."
-                icon="fas fa-bullseye"
-                size="medium"
-              />
-              <Card
-                title="Practical expertise"
-                description="Brisbane Servers is operated by BIGPONS, providing practical technology expertise to Australian businesses — scoped to constraints, not vendor fashion."
-                icon="fas fa-certificate"
-                size="medium"
-              />
-            </CardGrid>
-          </div>
-        </div>
+        <CardGrid layout="grid" columns={2}>
+          <Card
+            title="Our mission"
+            description="Providing access to truth in technology for Australian businesses, while supporting domestic growth through evidence-based solutions."
+            icon="fas fa-bullseye"
+            size="medium"
+          />
+          <Card
+            title="Practical expertise"
+            description="Brisbane Servers is operated by BIGPONS, providing practical technology expertise to Australian businesses — scoped to constraints, not vendor fashion."
+            icon="fas fa-certificate"
+            size="medium"
+          />
+        </CardGrid>
+
+        <p class="section-description home-about-links" style="margin-top: var(--space-xl); max-width: 62ch;">
+          Explore{' '}
+          <a href={sitePath('/resources')}>Resources</a>,{' '}
+          <a href={sitePath('/case-studies')}>case studies</a>, and{' '}
+          <a href={sitePath('/projects')}>Projects</a>{' '}
+          for evidence-led guides and documented delivery — or use the account workspace for reviewed inference.
+        </p>
         
         <div style="text-align: center; margin-top: var(--space-xl);">
           <a href={sitePath('/account')} class="btn btn-secondary">
