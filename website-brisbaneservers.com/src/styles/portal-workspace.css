@@ -1480,7 +1480,7 @@
   }
 
   .client-contributions-card + .client-contributions-card {
-    margin-top: var(--space-lg);
+    margin-top: 0;
   }
 
   .passkey-row,
@@ -1520,7 +1520,7 @@
   }
 
   #revoke-all-sessions-btn {
-    margin-top: var(--space-sm);
+    margin-top: 0;
   }
 
   /* Sierpinski Triangle Accent - positioned using phi paths */
@@ -3927,6 +3927,26 @@
   .markdown-document ul {
     margin: var(--space-md) 0;
     padding-left: var(--space-xl);
+  }
+
+  .markdown-document p {
+    margin: 0 0 0.75em;
+  }
+
+  .markdown-document a {
+    color: var(--portal-primary);
+    text-decoration: underline;
+  }
+
+  .markdown-document code {
+    background: var(--portal-surface-elevated);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+
+  .workspace-markdown-field textarea[hidden] {
+    display: none !important;
   }
 
   .voice-map-semantic-query {

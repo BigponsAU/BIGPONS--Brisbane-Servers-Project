@@ -207,33 +207,63 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
   }
 }
 
+function setPasskeyRegisterAvailability(hasPasskey: boolean): void {
+  const registerBtn = document.getElementById('passkey-register-btn') as HTMLButtonElement | null;
+  const actions = registerBtn?.closest('.insight-card__actions') as HTMLElement | null;
+  if (!registerBtn) return;
+
+  if (hasPasskey) {
+    registerBtn.disabled = true;
+    registerBtn.hidden = true;
+    if (actions) actions.hidden = true;
+  } else {
+    registerBtn.disabled = false;
+    registerBtn.hidden = false;
+    registerBtn.textContent = 'Register passkey';
+    if (actions) actions.hidden = false;
+  }
+}
+
 export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise<void> {
   const container = document.getElementById('passkey-credentials-list');
   if (!container) return;
   if (!hasSession(ctx)) {
-    container.innerHTML = '<p class="status-message">Sign in to manage passkeys.</p>';
+    container.innerHTML = '<p class="status-message">Sign in to manage your passkey.</p>';
+    setPasskeyRegisterAvailability(false);
     return;
   }
 
-  container.innerHTML = '<p class="status-message">Loading passkeys…</p>';
+  container.innerHTML = '<p class="status-message">Loading passkey…</p>';
   try {
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`);
     const data = await res.json();
     if (!res.ok || !data.success) {
-      container.innerHTML = '<p class="status-message">Unable to load passkeys.</p>';
+      container.innerHTML = '<p class="status-message">Unable to load passkey.</p>';
       return;
     }
     const creds = Array.isArray(data.credentials) ? data.credentials : [];
-    if (!creds.length) {
-      container.innerHTML = '<p class="status-message">No passkeys registered. Add one for phishing-resistant sign-in.</p>';
+    const hasPasskey = creds.length > 0;
+    setPasskeyRegisterAvailability(hasPasskey);
+
+    if (!hasPasskey) {
+      container.innerHTML = '<p class="status-message">No passkey yet. Register one for phishing-resistant sign-in.</p>';
       return;
     }
+
+    // One-of capacity going forward; still list all so legacy extras can be removed.
     container.innerHTML = creds.map((c: { id: string; deviceType: string; backedUp: boolean; lastUsedAt?: string | null }) => `
       <motionless class="passkey-row">
         <span>${escapeHtml(c.deviceType)}${c.backedUp ? ' · synced' : ''}${c.lastUsedAt ? ` · last used ${escapeHtml(new Date(c.lastUsedAt).toLocaleDateString())}` : ''}</span>
         <button type="button" class="btn btn-secondary btn-sm" data-passkey-remove="${escapeHtml(c.id)}">Remove</button>
       </motionless>
     `.replaceAll('motionless', 'div')).join('');
+
+    if (creds.length > 1) {
+      const note = document.createElement('p');
+      note.className = 'status-message';
+      note.textContent = 'Only one passkey is kept for sign-in. Remove extras, then keep a single device.';
+      container.appendChild(note);
+    }
 
     container.querySelectorAll('[data-passkey-remove]').forEach((btn) => {
       btn.addEventListener('click', async () => {
@@ -253,7 +283,7 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
       });
     });
   } catch {
-    container.innerHTML = '<p class="status-message">Could not load passkeys.</p>';
+    container.innerHTML = '<p class="status-message">Could not load passkey.</p>';
   }
 }
 
@@ -306,8 +336,10 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
       ctx.showAuthBanner('Passkey registration was cancelled or timed out. Try again when ready.', true);
     }
   } finally {
-    if (registerBtn) {
+    if (registerBtn && !registerBtn.hidden) {
       registerBtn.disabled = false;
+      registerBtn.removeAttribute('aria-busy');
+    } else if (registerBtn) {
       registerBtn.removeAttribute('aria-busy');
     }
   }

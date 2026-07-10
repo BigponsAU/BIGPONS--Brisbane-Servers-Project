@@ -3,7 +3,6 @@ import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
-import SemanticText from '~/components/SemanticText.astro';
 import { getIndustryBySlug, getTopicBySlug } from '~/data/industries';
 import { isIndexableResource } from '~/lib/content-registry';
 import { getPageDescriptor } from '~/lib/page-descriptors';
@@ -11,6 +10,7 @@ import { publishedResourcePageTitle, publishedResourceSeo } from '~/lib/content-
 import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/public-published-resources';
 import { sitePath } from '~/lib/site-path';
 import { normalizeTopicSlug } from '~/lib/resource-slug';
+import { wrapMarkdownDocument } from '~/lib/markdown-render';
 
 export async function getStaticPaths() {
   const resources = (await getPublishedResourcesForPage()).filter(isIndexableResource);
@@ -79,9 +79,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
         )}
       </div>
 
-      <article class="resource-content" style="white-space: pre-wrap; line-height: 1.8; font-size: var(--text-base);">
-        <SemanticText text={resource.content} semanticLevel="normal" isChild={true} />
-      </article>
+      <article class="resource-body" set:html={wrapMarkdownDocument(resource.content)} />
 
       {resource.metadata?.voiceScore && (
         <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">
@@ -105,3 +103,43 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
     defaultIndustry={resource.industry}
   />
 </SiteShell>
+
+<style>
+  .resource-body {
+    line-height: 1.8;
+    font-size: var(--text-base);
+  }
+
+  .resource-body :global(.markdown-document) {
+    color: var(--text-primary);
+  }
+
+  .resource-body :global(.markdown-document h2),
+  .resource-body :global(.markdown-document h3),
+  .resource-body :global(.markdown-document h4) {
+    margin: var(--space-xl) 0 var(--space-md);
+    line-height: 1.3;
+    color: var(--text-primary);
+  }
+
+  .resource-body :global(.markdown-document p) {
+    margin: 0 0 1em;
+  }
+
+  .resource-body :global(.markdown-document ul) {
+    margin: 0 0 1em;
+    padding-left: 1.5em;
+  }
+
+  .resource-body :global(.markdown-document a) {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  .resource-body :global(.markdown-document code) {
+    background: var(--surface-elevated);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+</style>

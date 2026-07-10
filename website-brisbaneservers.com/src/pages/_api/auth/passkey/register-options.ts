@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import { requireAuth } from '~/utils/auth';
 import { listCredentialsForUser } from '~/lib/db/webauthn-store';
-import { getWebAuthnOrigin, getWebAuthnRpId, isPasskeyEnabled } from '~/lib/webauthn/config';
+import { getWebAuthnRpId, isPasskeyEnabled, MAX_PASSKEYS_PER_USER } from '~/lib/webauthn/config';
 import { saveChallenge } from '~/lib/webauthn/challenges';
 import * as crypto from 'crypto';
 
@@ -24,6 +24,19 @@ export const POST: APIRoute = async ({ request }) => {
 
   const user = authResult.user;
   const existing = await listCredentialsForUser(user.id);
+
+  if (existing.length >= MAX_PASSKEYS_PER_USER) {
+    return new Response(
+      JSON.stringify({
+        error: 'A passkey is already registered. Remove it before adding a new one.',
+        code: 'PASSKEY_LIMIT',
+        success: false,
+        count: existing.length,
+        max: MAX_PASSKEYS_PER_USER
+      }),
+      { status: 409, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   const options = await generateRegistrationOptions({
     rpName: 'Brisbane Servers',

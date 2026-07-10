@@ -316,6 +316,8 @@ export function bootAccountWorkspaceDashboard(): void {
       voiceContext,
       getWorkspaceUser: () => workspaceUser,
       hasWorkspaceCapability,
+      updateAnalyticsDisplay,
+      applyDashboardResourceSnapshot,
     },
   };
 

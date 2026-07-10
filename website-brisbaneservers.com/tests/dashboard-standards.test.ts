@@ -62,15 +62,15 @@ describe('dashboard production standards', () => {
     expect(band).toContain('account-workspace-panel-section');
   });
 
-  it('workspace sidebar exposes wired global search markup', async () => {
-    const sidebar = await readFile(
-      path.resolve('src/components/account/AccountWorkspaceSidebar.astro'),
+  it('workspace header exposes wired global search markup', async () => {
+    const header = await readFile(
+      path.resolve('src/components/account/AccountWorkspaceHeader.astro'),
       'utf8',
     );
-    expect(sidebar).toContain('data-workspace-global-search');
-    expect(sidebar).toContain('sidebar-command-band');
-    expect(sidebar).toContain('id="global-search"');
-    expect(sidebar).toContain('id="workspace-global-search-results"');
+    expect(header).toContain('data-workspace-global-search');
+    expect(header).toContain('header-global-search');
+    expect(header).toContain('id="global-search"');
+    expect(header).toContain('id="workspace-global-search-results"');
   });
 
   it('portal markov tracker registers workspace loaders', async () => {

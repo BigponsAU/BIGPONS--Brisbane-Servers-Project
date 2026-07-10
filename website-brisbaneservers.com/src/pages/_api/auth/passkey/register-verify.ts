@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { verifyRegistrationResponse, type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { requireAuth } from '~/utils/auth';
-import { saveWebAuthnCredential } from '~/lib/db/webauthn-store';
-import { getWebAuthnOrigin, getWebAuthnRpId, isPasskeyEnabled } from '~/lib/webauthn/config';
+import { listCredentialsForUser, saveWebAuthnCredential } from '~/lib/db/webauthn-store';
+import { getWebAuthnOrigin, getWebAuthnRpId, isPasskeyEnabled, MAX_PASSKEYS_PER_USER } from '~/lib/webauthn/config';
 import { consumeChallenge } from '~/lib/webauthn/challenges';
 import { logAuthEvent } from '~/lib/auth-audit';
 
@@ -33,6 +33,18 @@ export const POST: APIRoute = async ({ request }) => {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
+    }
+
+    const existing = await listCredentialsForUser(authResult.user.id);
+    if (existing.length >= MAX_PASSKEYS_PER_USER) {
+      return new Response(
+        JSON.stringify({
+          error: 'A passkey is already registered. Remove it before adding a new one.',
+          code: 'PASSKEY_LIMIT',
+          success: false
+        }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     const stored = consumeChallenge(body.challengeId);

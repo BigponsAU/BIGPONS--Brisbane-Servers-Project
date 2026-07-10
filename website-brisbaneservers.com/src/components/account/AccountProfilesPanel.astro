@@ -15,9 +15,9 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
     >
       <div slot="actions" class="section-actions profiles-toolbar-actions">
         <div class="quick-filters profile-filter-chips" role="group" aria-label="Filter profiles">
-          <button id="filter-profiles-all" class="btn btn-sm active" type="button" onclick="filterProfiles('all')">All</button>
-          <button id="filter-profiles-active" class="btn btn-sm" type="button" onclick="filterProfiles('active')">Active</button>
-          <button id="filter-profiles-archived" class="btn btn-sm" type="button" onclick="filterProfiles('archived')">Archived</button>
+          <button id="filter-profiles-all" class="btn btn-secondary btn-sm filter-btn active" type="button" onclick="filterProfiles('all')">All</button>
+          <button id="filter-profiles-active" class="btn btn-secondary btn-sm filter-btn" type="button" onclick="filterProfiles('active')">Active</button>
+          <button id="filter-profiles-archived" class="btn btn-secondary btn-sm filter-btn" type="button" onclick="filterProfiles('archived')">Archived</button>
         </div>
         <button id="refresh-profiles" class="btn btn-secondary btn-sm" type="button" aria-label="Refresh profiles list">
           <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

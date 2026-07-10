@@ -20,7 +20,7 @@ import { getWorkspaceResources, setWorkspaceResources } from './account-workspac
 import { buildResourcesListUrl } from './account-workspace-resource-api';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
-import { mountMarkdownFields, readMarkdownFieldValue } from './workspace-markdown-field';
+import { mountMarkdownFields, readMarkdownFieldValue, setMarkdownFieldValue } from './workspace-markdown-field';
 import { portalActionFailure } from './portal-action';
 import { wrapMarkdownDocument } from '../lib/markdown-render';
 import type { VoiceContextApi } from './account-workspace-voice-context';
@@ -41,6 +41,8 @@ export type ResourcesWorkspaceDeps = {
     user: { role?: string } | null | undefined,
     minRole: 'client' | 'viewer' | 'editor' | 'admin',
   ) => boolean;
+  updateAnalyticsDisplay: (resources: any[]) => void;
+  applyDashboardResourceSnapshot: (resources: any[]) => void;
 };
 
 export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
@@ -58,6 +60,8 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     voiceContext,
     getWorkspaceUser,
     hasWorkspaceCapability,
+    updateAnalyticsDisplay,
+    applyDashboardResourceSnapshot,
   } = deps;
 
   let detailEditResourceId: string | null = null;
@@ -1225,7 +1229,7 @@ function loadResourceDetail(resource: any): void {
       <div>
         <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Content</h4>
         <div style="background: var(--portal-surface-subtle); padding: var(--space-lg); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
-          <pre style="white-space: pre-wrap; font-family: inherit; font-size: var(--text-sm); line-height: 1.6; margin: 0; color: var(--portal-text-primary);">${escapeHtml(resource.content || 'No content available')}</pre>
+          ${resource.content ? wrapMarkdownDocument(resource.content) : '<p style="margin: 0; color: var(--portal-text-secondary);">No content available</p>'}
         </div>
       </div>
       <div class="resource-detail-actions" style="margin-top: var(--space-xl); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
@@ -1286,7 +1290,7 @@ function openDetailEditMode(id: string): void {
       </div>
       <div class="form-group">
         <label for="detail-edit-content">Content</label>
-        <textarea id="detail-edit-content" class="form-control resource-detail-edit-content" rows="16" required>${escapeHtml(resource.content || '')}</textarea>
+        <textarea id="detail-edit-content" class="form-control resource-detail-edit-content" rows="16">${escapeHtml(resource.content || '')}</textarea>
       </div>
       <div class="resource-detail-actions" style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm); flex-wrap: wrap;">
         <button type="submit" class="btn btn-primary">Save changes</button>
@@ -1594,7 +1598,7 @@ function openViewModal(id: string): void {
     </div>
     <div>
       <h3 style="margin-bottom: var(--space-md);">Content</h3>
-      <div style="line-height: 1.8; color: var(--text-primary); white-space: pre-wrap; background: var(--bg-accent); padding: var(--space-lg); border-radius: var(--border-radius); max-height: 400px; overflow-y: auto;">${escapeHtml(resource.content)}</div>
+      <div style="line-height: 1.8; color: var(--text-primary); background: var(--bg-accent); padding: var(--space-lg); border-radius: var(--border-radius); max-height: 400px; overflow-y: auto;">${wrapMarkdownDocument(resource.content || '')}</div>
     </div>
   `;
 
@@ -1635,7 +1639,6 @@ function openEditModal(id: string): void {
   }
   (document.getElementById('edit-resource-topic') as HTMLInputElement)!.value = resource.topic;
   (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value = resource.description;
-  (document.getElementById('edit-resource-content') as HTMLTextAreaElement)!.value = resource.content;
   const statusSelect = document.getElementById('edit-resource-status') as HTMLSelectElement;
   if (statusSelect) {
     statusSelect.value = resource.status;
@@ -1650,6 +1653,7 @@ function openEditModal(id: string): void {
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   mountMarkdownFields(modal);
+  setMarkdownFieldValue('edit-resource-content', resource.content || '');
 }
 
 function closeEditModal(): void {
@@ -2243,7 +2247,7 @@ function initDocumentWorkspace(): void {
         throw new Error(documentApiError(data));
       }
       const ex = data.extraction;
-      if (extractedEl) extractedEl.value = ex.text || '';
+      if (extractedEl) setMarkdownFieldValue('document-extracted-text', ex.text || '');
       const methodHint = ex.method ? ` (${ex.method}${ex.visionModelId ? ` · ${ex.visionModelId}` : ''})` : '';
       const spent = data.tokens?.spent ? ` · ${data.tokens.spent} token(s) spent` : '';
       setStatus(`Extracted ${ex.charCount ?? 0} characters${methodHint}${spent}.`, 'success');
@@ -2259,7 +2263,7 @@ function initDocumentWorkspace(): void {
   });
 
   document.getElementById('document-rewrite-btn')?.addEventListener('click', async () => {
-    const content = extractedEl?.value?.trim() || '';
+    const content = readMarkdownFieldValue('document-extracted-text');
     if (content.length < 32) {
       setStatus('Extract or paste at least 32 characters before rewriting.', 'error');
       return;
@@ -2283,7 +2287,7 @@ function initDocumentWorkspace(): void {
       if (!res.ok || !data.success) {
         throw new Error(documentApiError(data));
       }
-      if (extractedEl) extractedEl.value = data.rewritten?.content || content;
+      if (extractedEl) setMarkdownFieldValue('document-extracted-text', data.rewritten?.content || content);
       const score = data.rewritten?.voiceScore ? Math.round(data.rewritten.voiceScore * 100) : null;
       const mode = data.rewritten?.inference?.mode || '';
       const spent = data.tokens?.spent ? ` · ${data.tokens.spent} token(s) spent` : '';
@@ -2300,7 +2304,7 @@ function initDocumentWorkspace(): void {
   });
 
   document.getElementById('document-create-resource-btn')?.addEventListener('click', async () => {
-    const content = extractedEl?.value?.trim() || '';
+    const content = readMarkdownFieldValue('document-extracted-text');
     const industry = (document.getElementById('document-industry') as HTMLSelectElement | null)?.value;
     const topic = (document.getElementById('document-topic') as HTMLInputElement | null)?.value.trim();
     if (!content || content.length < 32) {
@@ -2351,6 +2355,7 @@ function initDocumentWorkspace(): void {
 }
 
 initDocumentWorkspace();
+mountMarkdownFields(document);
 
 // Upload Resource Handler
 document.getElementById('upload-resource-form')?.addEventListener('submit', async (e) => {
@@ -2525,7 +2530,7 @@ document.getElementById('create-from-content-form')?.addEventListener('submit', 
     statusDiv.className = 'status-message';
   }
   try {
-    const content = (document.getElementById('process-content') as HTMLTextAreaElement)?.value;
+    const content = readMarkdownFieldValue('process-content');
     const industry = (document.getElementById('process-industry') as HTMLSelectElement)?.value;
     const topic = (document.getElementById('process-topic') as HTMLInputElement)?.value;
     const title = (document.getElementById('process-title') as HTMLInputElement)?.value;

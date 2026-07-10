@@ -15,6 +15,52 @@ import { accountWorkspace } from '../../data/account-workspace';
       <h1 class="workspace-toolbar-title">{accountWorkspace.productName}</h1>
     </div>
   </div>
+
+  <div class="header-center">
+    <div class="header-global-search workspace-global-search" data-workspace-global-search>
+      <form
+        class="workspace-global-search__form workspace-global-search__form--header"
+        role="search"
+        autocomplete="off"
+        action="javascript:void(0)"
+        aria-label="Quick find"
+      >
+        <div class="header-search workspace-global-search__wrapper workspace-global-search__wrapper--header">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="M21 21l-4.35-4.35"></path>
+          </svg>
+          <label for="global-search" class="sr-only">Search workspace panels, resources, and profiles</label>
+          <input
+            type="search"
+            id="global-search"
+            class="workspace-global-search__input"
+            placeholder="Search panels, resources, profiles…"
+            aria-label="Search workspace panels, resources, and profiles"
+            aria-autocomplete="list"
+            aria-controls="workspace-global-search-results"
+            aria-expanded="false"
+            enterkeyhint="search"
+            autocomplete="off"
+          />
+          <kbd class="header-global-search__kbd" aria-hidden="true">Ctrl+K</kbd>
+          <button type="submit" class="workspace-global-search__submit" aria-label="Run search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="M13 6l6 6-6 6"></path>
+            </svg>
+          </button>
+        </div>
+        <div
+          id="workspace-global-search-results"
+          class="workspace-global-search__results"
+          role="listbox"
+          aria-label="Workspace search suggestions"
+        ></div>
+      </form>
+    </div>
+  </div>
+
   <div class="header-right">
     <div id="header-workspace-mode-switcher" class="header-workspace-mode-switcher" data-min-role="admin" hidden aria-hidden="true">
       <button type="button" id="header-workspace-mode-creator" class="workspace-mode-btn workspace-mode-btn--compact is-active" data-workspace-mode="creator" aria-pressed="true">Workspace</button>

@@ -1,5 +1,8 @@
 import { getRuntimeEnv } from '~/utils/runtime-env';
 
+/** One passkey per account — sign-in feature, not a multi-device vault. */
+export const MAX_PASSKEYS_PER_USER = 1;
+
 export function getWebAuthnRpId(): string {
   const configured = getRuntimeEnv('WEBAUTHN_RP_ID');
   if (configured) return configured.replace(/^https?:\/\//, '').replace(/\/.*$/, '');

@@ -10,7 +10,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   <!-- Resources Panel Content -->
           <section class="admin-section contributor-resources-note" data-require-role="client" aria-label="Contributor resources note">
             <div class="card profile-guidance-card">
-              <p class="section-subtitle" style="margin: 0;">
+              <p class="section-subtitle">
                 As a <strong>contributor</strong>, you can browse resources and starter blocks from Overview.
                 Upload, generate, and improve require <strong>editor</strong> workspace access — use
                 <strong>Request workspace access</strong> on your account home if you need those tools.
@@ -79,7 +79,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                 </div>
                 <div class="form-group">
                   <label for="document-extracted-text">Extracted / rewritten text</label>
-                  <textarea id="document-extracted-text" rows="12" placeholder="Extract a file to populate this area, or paste text directly…" style="width: 100%; resize: vertical; font-family: var(--font-mono, monospace); font-size: 0.9rem;"></textarea>
+                  <textarea id="document-extracted-text" rows="12" placeholder="Extract a file to populate this area, or paste and edit in the visual editor…" style="width: 100%; resize: vertical;"></textarea>
                 </div>
                 <div class="form-row document-workspace-actions">
                   <button type="button" class="btn btn-secondary" id="document-extract-btn">Extract text</button>
@@ -188,7 +188,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                 <form id="create-from-content-form" class="resource-form" action="javascript:void(0)" aria-label="Create from content form">
                   <div class="form-group">
                     <label for="process-content">Content</label>
-                    <textarea id="process-content" name="content" rows="8" required placeholder="Paste or type your content here..." style="width: 100%; resize: vertical;"></textarea>
+                    <textarea id="process-content" name="content" rows="8" placeholder="Paste or type your content — edit with headings, bold, and lists in the visual editor…" style="width: 100%; resize: vertical;"></textarea>
                   </div>
                   <div class="form-row">
                     <div class="form-group">

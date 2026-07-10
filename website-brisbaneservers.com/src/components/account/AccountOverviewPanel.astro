@@ -83,89 +83,90 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                     </div>
 
                     <div class="client-insights" aria-live="polite">
-                      <div id="client-ai-usage-card" class="client-token-card client-ai-usage-card">
-                        <h3>Daily AI usage</h3>
-                        <p id="client-ai-usage-summary" class="client-token-help">Loading…</p>
+                      <div id="client-ai-usage-card" class="insight-card client-ai-usage-card">
+                        <h3 class="insight-card__title">Daily AI usage</h3>
+                        <p id="client-ai-usage-summary" class="insight-card__body">Loading…</p>
                         <p id="client-ai-usage-meta" class="form-hint"></p>
-                        <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary btn-sm" hidden>
-                          Upgrade AI cap (Stripe)
-                        </button>
+                        <div class="insight-card__actions">
+                          <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary btn-sm" hidden>
+                            Upgrade AI cap (Stripe)
+                          </button>
+                        </div>
                         <p id="client-ai-billing-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
-                      <div class="client-token-card">
-                        <h3>Your contribution tokens</h3>
+                      <div class="insight-card">
+                        <h3 class="insight-card__title">Contribution tokens</h3>
                         <p class="client-token-balance">
                           <span id="client-token-balance">0</span>
                           <span class="client-token-label">tokens</span>
                         </p>
-                        <p class="client-token-help">
-                          Earn tokens when contributions are accepted. Redeem below — simple flat perks, no tiers.
+                        <p class="insight-card__body">
+                          Earn tokens when contributions are accepted. Redeem for flat perks below.
                         </p>
                         <ul id="client-token-perks" class="client-token-perks" aria-live="polite"></ul>
                         <p id="client-token-redeem-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
-                      <div class="client-contributions-card">
-                        <h3>Your recent contributions</h3>
+                      <div class="insight-card">
+                        <h3 class="insight-card__title">Recent contributions</h3>
                         <ul id="client-contributions-list" class="client-contributions-list">
                           <li class="empty-state">
                             No contributions yet. Share context from a topic page to get started.
                           </li>
                         </ul>
                       </div>
-                      <div class="client-contributions-card client-security-card">
-                        <h3>Security</h3>
-                        <div class="security-subsection">
-                          <h4 class="security-subsection-title">Passkeys (recommended)</h4>
-                          <p class="client-token-help">Register a passkey for phishing-resistant sign-in. Bootstrap passwords from your environment are for initial setup only — use passkeys for day-to-day admin access.</p>
-                          <div id="passkey-credentials-list" class="passkey-credentials-list"></div>
-                          <button type="button" id="passkey-register-btn" class="btn btn-secondary btn-sm">Add passkey</button>
-                          <p id="passkey-register-status" class="status-message" role="status" aria-live="polite"></p>
-                        </div>
-                        <div class="security-subsection">
-                          <h4 class="security-subsection-title">Active sessions</h4>
-                          <p class="client-token-help">Revoke all active sessions if you signed in on another machine or want to force a fresh sign-in everywhere.</p>
-                          <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
-                          <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                      <div class="insight-card insight-card--security client-security-card">
+                        <h3 class="insight-card__title">Security</h3>
+                        <div class="security-grid">
+                          <div class="security-subsection">
+                            <h4 class="security-subsection-title">Passkey</h4>
+                            <p class="insight-card__body">One phishing-resistant sign-in for this account. Remove it to register a different device.</p>
+                            <div id="passkey-credentials-list" class="passkey-credentials-list"></div>
+                            <div class="insight-card__actions">
+                              <button type="button" id="passkey-register-btn" class="btn btn-secondary btn-sm">Register passkey</button>
+                            </div>
+                            <p id="passkey-register-status" class="status-message" role="status" aria-live="polite"></p>
+                          </div>
+                          <div class="security-subsection">
+                            <h4 class="security-subsection-title">Sessions</h4>
+                            <p class="insight-card__body">Sign out everywhere if a device is lost or shared.</p>
+                            <div class="insight-card__actions">
+                              <button id="revoke-all-sessions-btn" class="btn btn-secondary btn-sm">Sign out all sessions</button>
+                            </div>
+                            <p id="revoke-all-sessions-status" class="status-message" role="status" aria-live="polite"></p>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <!-- Portal Purpose Guide -->
-                    <div class="portal-purpose-guide">
+                    <details class="portal-purpose-guide">
+                      <summary class="purpose-summary">
+                        <span class="purpose-summary__title">What this workspace is for</span>
+                        <span class="purpose-summary__hint">Create, contribute, and manage voice-aligned content</span>
+                      </summary>
                       <div class="purpose-card">
-                        <div class="purpose-icon">
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="16" x2="12" y2="12"></line>
-                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                          </svg>
-                        </div>
                         <div class="purpose-content">
-                          <h3>What this workspace is for</h3>
-                          <p>Your account workspace gives you a personal place inside Brisbane Servers. Here you can:</p>
                           <ul>
-                            <li><strong>Use starter blocks:</strong> Begin with proven templates and adapt them to your business context</li>
-                            <li><strong>Create and upload resources:</strong> Build new content or bring in existing material for review</li>
-                            <li><strong>Track contributions:</strong> See recent submissions, token balance, and workspace activity in one place</li>
-                            <li><strong>Manage voice profiles:</strong> Keep generated content aligned with the tone you want to use</li>
-                            <li><strong>Review analytics:</strong> Check performance and voice alignment over time</li>
+                            <li><strong>Starter blocks:</strong> Copy proven templates into your library</li>
+                            <li><strong>Resources:</strong> Generate, upload, or paste content for review</li>
+                            <li><strong>Contributions &amp; tokens:</strong> Track submissions and redeem perks</li>
+                            <li><strong>Voice studio:</strong> Keep tone aligned across profiles, lab, and map</li>
+                            <li><strong>Analytics:</strong> Review performance and voice scores over time</li>
                           </ul>
-                          <h4>Voice framework (delivery strategy)</h4>
+                          <h4>Voice framework</h4>
                           <ul>
                             {portalVoiceRules.map((rule) => (
                               <li><strong>{rule.title}:</strong> {rule.description}</li>
                             ))}
                           </ul>
-                          <p class="purpose-tip"><strong>Tip:</strong> Public browsing stays open on the main site. Sign in here when you want to contribute, save work, or manage your own workspace. Use the sidebar to switch sections, and press <kbd>Ctrl+K</kbd> (or <kbd>Cmd+K</kbd> on Mac) to search.</p>
+                          <p class="purpose-tip"><strong>Tip:</strong> Press <kbd>Ctrl+K</kbd> (or <kbd>Cmd+K</kbd>) to search panels and resources.</p>
                         </div>
                       </div>
-                    </div>
+                    </details>
 
-                    <!-- Starter Blocks Section -->
                     <div class="dashboard-starter-blocks">
                       <div class="starter-blocks-header">
                         <div>
-                          <h3>Starter Blocks</h3>
+                          <h3 class="workspace-section-title">Starter Blocks</h3>
                           <p class="starter-blocks-description">Pre-built industry templates you can copy into your library. <span id="starter-blocks-count" class="starter-blocks-count" aria-live="polite"></span></p>
                         </div>
                         <button id="refresh-starter-blocks" class="btn btn-secondary btn-sm" onclick="loadStarterBlocks()" aria-label="Refresh starter blocks">
@@ -182,9 +183,8 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                       </div>
                     </div>
 
-                    <!-- Quick Actions -->
                     <div class="dashboard-quick-actions">
-                      <h3>Quick Actions</h3>
+                      <h3 class="workspace-section-title">Quick Actions</h3>
                       <div class="quick-actions-grid">
                         <button type="button" class="quick-action-card" onclick="navigateToPanel('resources'); setTimeout(() => focusResourceCreationSection('generate'), 100);">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -226,18 +226,16 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                       </div>
                     </div>
 
-                    <!-- Recent Activity -->
                     <div class="dashboard-recent-activity">
-                      <h3>Recent Activity</h3>
+                      <h3 class="workspace-section-title">Recent Activity</h3>
                       <div id="recent-activity-list" class="activity-list">
                         <div class="activity-loading">Loading recent activity...</div>
                       </div>
                     </div>
 
-                    <!-- Resource Preview -->
                     <div class="dashboard-resource-preview">
                       <div class="preview-header">
-                        <h3>My Resources</h3>
+                        <h3 class="workspace-section-title">My Resources</h3>
                         <a href="#" onclick="navigateToPanel('resources'); return false;" class="preview-link">View All →</a>
                       </div>
                       <div id="recent-resources-preview" class="resources-preview-grid">

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '~/utils/auth';
 import { deleteCredentialForUser, listCredentialsForUser } from '~/lib/db/webauthn-store';
+import { MAX_PASSKEYS_PER_USER } from '~/lib/webauthn/config';
 
 export const GET: APIRoute = async ({ request }) => {
   const authResult = await requireAuth(request);
@@ -16,6 +17,7 @@ export const GET: APIRoute = async ({ request }) => {
     JSON.stringify({
       success: true,
       count: credentials.length,
+      max: MAX_PASSKEYS_PER_USER,
       credentials: credentials.map((c) => ({
         id: c.id,
         deviceType: c.deviceType,
