@@ -2861,24 +2861,19 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   min-width: 0;
 }
 
+/* Favicon brain: full width, clip bottom wordmark via fixed aspect box */
 .brand-lockup__mark.bigpons-brain-mark,
-.bigpons-brain-mark.brand-lockup__mark {
+.bigpons-brain-mark.brand-lockup__mark,
+img.bigpons-brain-mark {
   flex: 0 0 auto;
-  width: clamp(3.15rem, 4.2vw, 3.85rem);
-  height: clamp(3.15rem, 4.2vw, 3.85rem);
-  overflow: hidden;
   display: block;
+  width: clamp(3.15rem, 4.2vw, 3.85rem);
+  height: auto;
+  aspect-ratio: 1 / 0.58;
+  object-fit: cover;
+  object-position: top center;
   border-radius: 0.35rem;
   filter: drop-shadow(0 2px 8px rgba(var(--primary-color-rgb), 0.12));
-}
-
-.bigpons-brain-mark__img {
-  display: block;
-  width: 100%;
-  height: auto;
-  transform: scale(1.72);
-  transform-origin: top center;
-  clip-path: inset(0 0 44% 0);
 }
 
 .brand-lockup__copy {
