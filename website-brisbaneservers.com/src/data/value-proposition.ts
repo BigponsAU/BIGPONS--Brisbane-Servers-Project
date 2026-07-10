@@ -201,7 +201,7 @@ export const valueProposition = {
     sections: {
       mission: {
         eyebrow: 'Why we exist',
-        title: 'Our mission foundation',
+        title: 'Our mission',
         byline:
           'Documented, evidence-based technology guidance for Australian businesses, replacing vendor noise with practical, context-aware direction.',
       },
@@ -235,7 +235,7 @@ export const valueProposition = {
   cookies: {
     message:
       'We use cookies for essential operation, preference storage, and aggregate traffic analysis. By continuing, you consent to that use.',
-    acceptLabel: 'Accept All',
+    acceptLabel: 'Accept all',
     declineLabel: 'Decline',
   },
 
@@ -338,7 +338,7 @@ export const valueProposition = {
     messageLabel: 'Your enquiry',
     messagePlaceholder:
       'Outline your goals, constraints, or questions. We will map feasible options and sequencing.',
-    submitLabel: 'Submit enquiry',
+    submitLabel: 'Submit an enquiry',
     disclaimer:
       'We provide evidence-led guidance sized to your industry and budget. Scope and costs stay visible before you commit.',
   },

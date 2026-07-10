@@ -10,7 +10,6 @@ import MarketingPageBands from '../components/MarketingPageBands.astro';
 import SemanticText from '../components/SemanticText.astro';
 import SiteLink from '../components/SiteLink.astro';
 import ProjectObjectivePanel from '../components/ProjectObjectivePanel.astro';
-import BrandVisual from '../components/BrandVisual.astro';
 import { brisbane2032Infrastructure } from '../data/brisbane-2032-infrastructure';
 import { brisbaneServersProjectObjective } from '../data/brisbane-servers-project-objective';
 import { valueProposition } from '../data/value-proposition';
@@ -21,7 +20,7 @@ const { hero, sections, timelineNote } = brisbane2032Infrastructure;
 ---
 
 <SiteShell
-  title="Brisbane 2032 · Network infrastructure"
+  title="Brisbane 2032 · Network Infrastructure"
   description={brisbane2032Infrastructure.metaDescription}
   currentPath={currentPath}
   pageId="brisbane-2032"
@@ -35,7 +34,7 @@ const { hero, sections, timelineNote } = brisbane2032Infrastructure;
     subtitle={hero.subtitle}
     secondaryCtaText="Explore resources"
     secondaryCtaHref="/resources"
-    ctaText="Discuss your initiative"
+    ctaText="Request a consultation"
     ctaHref="/services#consultation"
     scrollTargetId="#2032-moment"
     scrollLabel="Read the context"
@@ -82,23 +81,13 @@ const { hero, sections, timelineNote } = brisbane2032Infrastructure;
           byline={sections.necessity.byline}
           titleId="2032-network-heading"
         />
-        <div class="section-visual-split">
-          <div class="section-visual-split__visual">
-            <BrandVisual
-              variant="place"
-              caption="Civic-scale demand needs deliberate network capacity — not last-minute capacity theatre."
-            />
-          </div>
-          <div class="section-visual-split__body">
-            <CardGrid columns={1}>
-              {
-                sections.necessity.layers.map((layer) => (
-                  <Card title={layer.title} description={layer.description} icon={layer.icon} />
-                ))
-              }
-            </CardGrid>
-          </div>
-        </div>
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+          {
+            sections.necessity.layers.map((layer) => (
+              <Card title={layer.title} description={layer.description} icon={layer.icon} />
+            ))
+          }
+        </CardGrid>
       </div>
     </section>
 
@@ -171,7 +160,7 @@ const { hero, sections, timelineNote } = brisbane2032Infrastructure;
           />
         </p>
         <SiteLink href="/resources" class="btn btn-secondary">
-          Open Resources for inference
+          Open resources for inference
         </SiteLink>
         <SiteLink href="/contribute" class="btn btn-secondary" style="margin-left: var(--space-md);">
           Contribute evidence
@@ -211,7 +200,7 @@ const { hero, sections, timelineNote } = brisbane2032Infrastructure;
             <SiteLink href="/projects" class="btn btn-secondary">Projects</SiteLink>
             <SiteLink href="/resources" class="btn btn-secondary">Resources</SiteLink>
             <SiteLink href="/about" class="btn btn-secondary">About</SiteLink>
-            <SiteLink href="/services#consultation" class="btn btn-primary">Book consultation</SiteLink>
+            <SiteLink href="/services#consultation" class="btn btn-primary">Request a consultation</SiteLink>
           </div>
         </div>
       </div>

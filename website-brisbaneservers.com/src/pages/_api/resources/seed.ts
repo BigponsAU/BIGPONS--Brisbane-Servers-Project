@@ -126,7 +126,7 @@ export const POST: APIRoute = async ({ request }) => {
           id: `${industry.slug}-overview-${Date.now()}`,
           industry: industry.slug,
           topic: 'overview',
-          title: `${industry.name} - Technology Solutions Overview`,
+          title: `${industry.name} — technology solutions overview`,
           description: industry.description,
           content: content,
           generatedAt: new Date().toISOString(),

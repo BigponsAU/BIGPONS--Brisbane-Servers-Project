@@ -70,13 +70,13 @@ export const navigation: NavItem[] = [
       {
         title: 'Industry hubs',
         items: [
-          { label: 'Professional services', href: '/resources/professional-services' },
-          { label: 'Retail and e-commerce', href: '/resources/retail' },
-          { label: 'Healthcare', href: '/resources/healthcare' },
-          { label: 'Hospitality', href: '/resources/hospitality' },
-          { label: 'Construction', href: '/resources/construction' },
-          { label: 'Finance and accounting', href: '/resources/finance' },
-          { label: 'Manufacturing', href: '/resources/manufacturing' },
+          { label: 'Professional Services', href: '/resources/professional-services' },
+          { label: 'Retail & E-commerce', href: '/resources/retail' },
+          { label: 'Healthcare & Medical Practices', href: '/resources/healthcare' },
+          { label: 'Hospitality & Tourism', href: '/resources/hospitality' },
+          { label: 'Construction & Trades', href: '/resources/construction' },
+          { label: 'Finance & Accounting', href: '/resources/finance' },
+          { label: 'Manufacturing & Production', href: '/resources/manufacturing' },
         ],
       },
     ],
@@ -121,7 +121,7 @@ export const navigation: NavItem[] = [
       {
         title: 'Workspace standards',
         items: [
-          { label: 'Voice framework', href: '/account#portal-voice-framework' },
+          { label: 'Portal voice framework', href: '/account#portal-voice-framework' },
         ],
       },
     ],

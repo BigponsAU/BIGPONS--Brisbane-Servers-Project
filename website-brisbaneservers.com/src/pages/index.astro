@@ -14,7 +14,7 @@ import MarketingScrollCanopy from '../components/marketing/MarketingScrollCanopy
 import ScrollTransitionDeck from '../components/marketing/ScrollTransitionDeck.astro';
 import SearchBandAtmosphere from '../components/marketing/SearchBandAtmosphere.astro';
 import SectionSatelliteConstellation from '../components/SectionSatelliteConstellation.astro';
-import BrandVisual from '../components/BrandVisual.astro';
+import SectionContextVisual from '../components/SectionContextVisual.astro';
 import { industries } from '../data/industries';
 import { HOME_BAND_SEMANTIC_KEYS } from '../data/home-band-satellite-seeds';
 import { valueProposition } from '../data/value-proposition';
@@ -63,7 +63,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         <SectionSatelliteConstellation variant="strategy" semanticKey={HOME_BAND_SEMANTIC_KEYS.strategy} />
         <div class="home-phase-indicator home-phase-indicator--strategy" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Our Core Services" semanticLevel="high" isParent={true} />
+          <SemanticText text="Our core services" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text={valueProposition.home.coreServicesLead} semanticLevel="normal" isChild={true} />
@@ -71,19 +71,19 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         
         <CardGrid layout="grid" columns={3}>
           <Card
-            title="Web development & digital presence"
+            title="Web development and digital presence"
             description="High-performance sites, web applications, e-commerce, APIs, and SEO-minded performance work — built for clarity, speed, and conversion where that matters to you."
             featureGlyph="web-presence"
             size="medium"
           />
           <Card
-            title="Automation & custom development"
+            title="Automation and custom development"
             description="Process automation, bespoke software, integrations, and AI-assisted workflows where they earn their keep — scoped in phases, grant-aware when programs apply."
             featureGlyph="automation"
             size="medium"
           />
           <Card
-            title="IT consulting & ongoing support"
+            title="IT consulting and ongoing support"
             description="Strategy, assessments, security-minded reviews, infrastructure direction, and dependable support so your team is not carrying vendor noise alone."
             featureGlyph="integration"
             size="medium"
@@ -98,7 +98,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         <SectionSatelliteConstellation variant="industry" semanticKey={HOME_BAND_SEMANTIC_KEYS.industry} />
         <div class="home-phase-indicator home-phase-indicator--industry" aria-hidden="true"></div>
         <h2 class="section-title">
-          <SemanticText text="Industry Context" semanticLevel="high" isParent={true} />
+          <SemanticText text="Industry context" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="Regulations, incentives, and day-to-day constraints change by sector — retail, healthcare, hospitality, manufacturing, professional services — so recommendations stay tied to how you actually operate, not generic playbooks." semanticLevel="normal" isChild={true} />
@@ -118,7 +118,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
             ))
           ) : (
             <Card
-              title="Industries We Serve"
+              title="Industries we serve"
               description="We support multiple industries with practical technology direction, connected implementation guidance, and measurable improvement pathways."
               icon="fas fa-industry"
               href="/resources"
@@ -130,7 +130,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
         
         <div style="text-align: center; margin-top: var(--space-2xl);">
           <a href={sitePath('/resources')} class="btn btn-secondary">
-            View All Resources
+            View all resources
           </a>
         </div>
       </div>
@@ -159,7 +159,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
             emphasis={true}
           />
           <Card
-            title="Grants & incentives"
+            title="Grants and incentives"
             description="We map digital transformation grants, tax incentives, and subsidies that match your industry and project shape, so funding opportunities are part of the plan from the start."
             icon="fas fa-dollar-sign"
             size="medium"
@@ -205,7 +205,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
 
         <div class="home-band-split home-band-split--clients-contact">
           <aside class="home-inquiry-aside" aria-label="Contact">
-            <BrandVisual variant="banner" class="home-inquiry-aside__brand-visual" />
+            <SectionContextVisual variant="engagement-proof" />
             <p class="home-inquiry-aside__eyebrow">{valueProposition.home.clientsContact.eyebrow}</p>
             <dl class="home-inquiry-aside__contact home-inquiry-aside__contact--flush">
               <div>
@@ -265,15 +265,12 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
 
         <div class="section-visual-split">
           <div class="section-visual-split__visual">
-            <BrandVisual
-              variant="mark"
-              caption="A BIGPONS project — ABN 93 297 393 962."
-            />
+            <SectionContextVisual variant="site-offerings" />
           </div>
           <div class="section-visual-split__body">
             <CardGrid layout="grid" columns={1}>
               <Card
-                title="Our Mission"
+                title="Our mission"
                 description="Providing access to truth in technology for Australian businesses, while supporting domestic growth through evidence-based solutions."
                 icon="fas fa-bullseye"
                 size="medium"
@@ -350,7 +347,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="container">
         <SectionSatelliteConstellation variant="solutions" semanticKey={HOME_BAND_SEMANTIC_KEYS.solutions} scale="rim" placement="backdrop" />
         <h2 class="section-title">
-          <SemanticText text="Proven Solution Patterns" semanticLevel="high" isParent={true} />
+          <SemanticText text="Proven solution patterns" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="Documented implementations, industry playbooks, and strategic guidance shaped to your context, so recommendations stay evidence-led and implementation-ready." semanticLevel="normal" isChild={true} />
@@ -371,7 +368,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
 
         <CardGrid layout="grid" columns={2} style="margin-top: clamp(1.25rem, 2.2vw, 2rem);">
           <Card
-            title="Industry Expertise"
+            title="Industry expertise"
             description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
             icon="fas fa-industry"
             size="medium"
@@ -403,7 +400,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
       <div class="container">
         <SectionSatelliteConstellation variant="partnership" semanticKey={HOME_BAND_SEMANTIC_KEYS.partnership} />
         <h2 class="section-title">
-          <SemanticText text="Strategic Technology Partnership" semanticLevel="high" isParent={true} />
+          <SemanticText text="Strategic technology partnership" semanticLevel="high" isParent={true} />
         </h2>
         <p class="section-description">
           <SemanticText text="We run the research, vendor comparison, and documentation work so your team can approve direction quickly, with trade-offs, costs, and sequencing clearly documented." semanticLevel="normal" isChild={true} />

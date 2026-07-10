@@ -12,7 +12,6 @@ import MarketingPageBands from '../components/MarketingPageBands.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import ProjectObjectivePanel from '../components/ProjectObjectivePanel.astro';
 import SiteLink from '../components/SiteLink.astro';
-import BrandVisual from '../components/BrandVisual.astro';
 import {
   brisbaneServersProjectObjective,
   projectPurposeNav,
@@ -89,33 +88,23 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
           {brisbaneServersProjectObjective.inferenceProgram.temporalFrame.contemplation.toLowerCase()}.
         </p>
 
-        <div class="section-visual-split">
-          <div class="section-visual-split__visual">
-            <BrandVisual
-              variant="place"
-              caption="Brisbane context — guides sized to local operating reality, not generic playbooks."
-            />
-          </div>
-          <div class="section-visual-split__body">
-            <CardGrid columns={1}>
-              <Card
-                title="Inference, not assertion"
-                description={valueProposition.voice.inferenceNotAssertion}
-                icon="fas fa-check-circle"
-              />
-              <Card
-                title="Industry context"
-                description="Retail, healthcare, hospitality, professional services, and more — each hub links recommendations to regulations, incentives, and day-to-day operating reality."
-                icon="fas fa-industry"
-              />
-              <Card
-                title="Action-ready guidance"
-                description={valueProposition.voice.actionablePrimary}
-                icon="fas fa-book"
-              />
-            </CardGrid>
-          </div>
-        </div>
+        <CardGrid columns={3} style="margin-top: var(--space-2xl);">
+          <Card
+            title="Inference, not assertion"
+            description={valueProposition.voice.inferenceNotAssertion}
+            icon="fas fa-check-circle"
+          />
+          <Card
+            title="Industry context"
+            description="Retail, healthcare, hospitality, professional services, and more — each hub links recommendations to regulations, incentives, and day-to-day operating reality."
+            icon="fas fa-industry"
+          />
+          <Card
+            title="Action-ready guidance"
+            description={valueProposition.voice.actionablePrimary}
+            icon="fas fa-book"
+          />
+        </CardGrid>
       </div>
     </section>
 

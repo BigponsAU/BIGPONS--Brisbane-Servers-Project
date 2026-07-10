@@ -22,9 +22,8 @@ const {
   showFooter = true,
 } = Astro.props;
 
-/** Guide routes: header scrolls with the page (no fixed overlap / bleed). */
-const headerInFlow =
-  pageId === 'resource-topic' || pageId === 'resource-industry';
+/** Public/marketing: header scrolls with the page. Account keeps fixed chrome. */
+const headerInFlow = pageId !== 'account' && shellVariant !== 'portal';
 
 const shellClassName = [
   'site-shell',

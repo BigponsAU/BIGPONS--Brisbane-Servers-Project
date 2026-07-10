@@ -11,22 +11,22 @@ const currentPath = '/terms-of-service';
 const pageDescriptor = getPageDescriptor(currentPath);
 
 const toc = [
-  { id: 'eligibility', number: 1, title: 'Eligibility & registration' },
+  { id: 'eligibility', number: 1, title: 'Eligibility and account registration' },
   { id: 'acceptable-use', number: 2, title: 'Acceptable use' },
-  { id: 'user-content', number: 3, title: 'User content & IP' },
-  { id: 'ai-features', number: 4, title: 'Voice studio & AI' },
-  { id: 'billing', number: 5, title: 'Fees & billing' },
-  { id: 'termination', number: 6, title: 'Termination' },
-  { id: 'liability', number: 7, title: 'Disclaimers & liability' },
+  { id: 'user-content', number: 3, title: 'User content and intellectual property' },
+  { id: 'ai-features', number: 4, title: 'Voice studio, AI features and generated output' },
+  { id: 'billing', number: 5, title: 'Fees, billing and paid services' },
+  { id: 'termination', number: 6, title: 'Termination and suspension' },
+  { id: 'liability', number: 7, title: 'Disclaimers and limitation of liability' },
   { id: 'indemnity', number: 8, title: 'Indemnity' },
-  { id: 'governing-law', number: 9, title: 'Governing law' },
-  { id: 'changes', number: 10, title: 'Changes to terms' },
+  { id: 'governing-law', number: 9, title: 'Governing law and disputes' },
+  { id: 'changes', number: 10, title: 'Changes to these terms' },
   { id: 'contact', number: 11, title: 'Contact' },
 ];
 ---
 
 <SiteShell
-  title="Terms of service"
+  title="Terms of Service"
   description="Terms governing use of brisbaneservers.com and the BIGPONS account workspace — eligibility, acceptable use, user content, AI features, billing, and Queensland law."
   currentPath={currentPath}
   pageId={pageDescriptor.pageId}
@@ -48,13 +48,13 @@ const toc = [
     relatedTitle="Privacy Policy"
     relatedDescription="How we collect, use, disclose, and protect personal information across the platform."
   >
-    <LegalSection id="eligibility" number={1} title="Eligibility &amp; Account Registration">
+    <LegalSection id="eligibility" number={1} title="Eligibility and account registration">
       <p class="text-content">
         You must be at least 18 years old and have authority to enter into this agreement on behalf of any organisation you represent. You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account. Notify us immediately of any unauthorised use. We may suspend or terminate accounts that violate these Terms or for platform integrity reasons.
       </p>
     </LegalSection>
 
-    <LegalSection id="acceptable-use" number={2} title="Acceptable Use">
+    <LegalSection id="acceptable-use" number={2} title="Acceptable use">
       <p class="text-content">You agree not to:</p>
       <ul class="legal-list">
         <li>use the Platform for any unlawful purpose or in breach of Australian law (including Privacy Act, Copyright Act, Crimes Act);</li>
@@ -69,31 +69,31 @@ const toc = [
       </p>
     </LegalSection>
 
-    <LegalSection id="user-content" number={3} title="User Content &amp; Intellectual Property">
+    <LegalSection id="user-content" number={3} title="User content and intellectual property">
       <p class="text-content">
         You retain ownership of content you upload or create (&quot;User Content&quot;), subject to any separate agreement for paid services. By uploading or creating User Content you grant BIGPONS a non-exclusive, royalty-free, worldwide licence to host, display, process, moderate, and use that content solely as necessary to provide and improve the Platform and related services. You represent that you have all necessary rights to grant this licence and that User Content does not infringe third-party rights. BIGPONS retains all rights in the Platform, software, voice models, analytics systems, and any generated suggestions or templates (excluding your specific User Content).
       </p>
     </LegalSection>
 
-    <LegalSection id="ai-features" number={4} title="Voice Studio, AI Features &amp; Generated Output">
+    <LegalSection id="ai-features" number={4} title="Voice studio, AI features and generated output">
       <p class="text-content">
         Voice profiles, Markov analysis, topology visualisations, and AI-assisted generation features are provided for legitimate professional and creative use within your organisation. You are responsible for reviewing and approving any generated output before use. BIGPONS does not guarantee accuracy, suitability, or non-infringement of generated content. Do not use these features to create misleading, harmful, or infringing material.
       </p>
     </LegalSection>
 
-    <LegalSection id="billing" number={5} title="Fees, Billing &amp; Paid Services (Future)">
+    <LegalSection id="billing" number={5} title="Fees, billing and paid services">
       <p class="text-content">
         Core platform access is currently provided as part of our technology consulting and Local Data Pipeline Solutions engagement. Paid tiers, billing via Stripe/PayID, and usage-based charges for advanced features will be introduced in accordance with published pricing (Starter/Growth/Enterprise). When billing is enabled, separate or updated terms will apply. You will be notified and given the opportunity to accept before charges commence.
       </p>
     </LegalSection>
 
-    <LegalSection id="termination" number={6} title="Termination &amp; Suspension">
+    <LegalSection id="termination" number={6} title="Termination and suspension">
       <p class="text-content">
         You may terminate your account at any time by contacting us. We may suspend or terminate access if you breach these Terms, for non-payment (once billing is active), or to protect the Platform or other users. Upon termination, your right to use the Platform ends and we may delete or retain User Content in accordance with the Privacy Policy and legal obligations.
       </p>
     </LegalSection>
 
-    <LegalSection id="liability" number={7} title="Disclaimers &amp; Limitation of Liability">
+    <LegalSection id="liability" number={7} title="Disclaimers and limitation of liability">
       <p class="text-content">
         The Platform is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, to the maximum extent permitted by law. We do not warrant uninterrupted or error-free operation or that the Platform will meet your specific requirements. To the maximum extent permitted by Australian Consumer Law and other applicable law, BIGPONS&apos; total liability arising out of or in connection with these Terms or the Platform is limited to the fees you have paid to BIGPONS in the 12 months preceding the claim (or $1,000 if no fees paid). We are not liable for indirect, incidental, special, or consequential damages, including loss of data, profits, or business opportunity, even if advised of the possibility.
       </p>
@@ -105,13 +105,13 @@ const toc = [
       </p>
     </LegalSection>
 
-    <LegalSection id="governing-law" number={9} title="Governing Law &amp; Disputes">
+    <LegalSection id="governing-law" number={9} title="Governing law and disputes">
       <p class="text-content">
         These Terms are governed by the laws of Queensland, Australia. Any dispute arising under or in connection with these Terms or the Platform shall be subject to the exclusive jurisdiction of the courts of Queensland. You agree to attempt good-faith resolution (including mediation if appropriate) before commencing court proceedings.
       </p>
     </LegalSection>
 
-    <LegalSection id="changes" number={10} title="Changes to These Terms">
+    <LegalSection id="changes" number={10} title="Changes to these terms">
       <p class="text-content">
         We may update these Terms from time to time. Material changes will be notified via email to registered users or prominent notice on the Platform. Continued use after the effective date constitutes acceptance of the updated Terms.
       </p>

@@ -1,23 +1,12 @@
 ---
-import { Image } from 'astro:assets';
+import BrandVisual from './BrandVisual.astro';
 import { valueProposition } from '../data/value-proposition';
-import bigponsBanner from '../bigpons-banner.png';
 
 const panel = valueProposition.home.inquiryPanel;
 ---
 
 <aside class="home-inquiry-aside" aria-label={panel.eyebrow}>
-  <figure class="home-inquiry-aside__brand">
-    <Image
-      src={bigponsBanner}
-      alt="BIGPONS — Brisbane Servers. Access to truth in technology. Local data pipeline solutions and Brisbane's sovereign edge infrastructure."
-      widths={[360, 480, 640]}
-      sizes="(max-width: 900px) 100vw, 28rem"
-      class="home-inquiry-aside__brand-img"
-      loading="lazy"
-      decoding="async"
-    />
-  </figure>
+  <BrandVisual variant="banner" />
   <div>
     <p class="home-inquiry-aside__eyebrow">{panel.eyebrow}</p>
     <p class="home-inquiry-aside__lead">{panel.lead}</p>

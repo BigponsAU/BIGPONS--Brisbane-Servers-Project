@@ -1,0 +1,107 @@
+---
+import { valueProposition } from '../data/value-proposition';
+import { sitePath } from '../lib/site-path';
+
+type Variant = 'engagement-proof' | 'site-offerings';
+
+interface Props {
+  variant: Variant;
+  class?: string;
+}
+
+const { variant, class: className = '' } = Astro.props;
+
+const proofPoints = valueProposition.home.proofPanel.points;
+const offerings = [
+  { label: 'Resources', detail: 'Industry guides & evidence', href: sitePath('/resources') },
+  { label: 'Case studies', detail: 'Measurable outcomes', href: sitePath('/case-studies') },
+  { label: 'Projects', detail: 'Live delivery proof', href: sitePath('/projects') },
+  { label: 'Account workspace', detail: 'Reviewed inference corpus', href: sitePath('/account') },
+];
+const uid = `ctx-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<figure
+  class:list={['section-context-visual', `section-context-visual--${variant}`, className]}
+  aria-label={
+    variant === 'engagement-proof'
+      ? 'How engagements stay grounded: senior attention, tooling where it earns, reusable documentation'
+      : 'What Brisbane Servers offers: resources, case studies, projects, and voice portal'
+  }
+>
+  <svg class="section-context-visual__defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id={`${uid}-edge`} x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0A74DA" stop-opacity="0.35" />
+        <stop offset="100%" stop-color="#5B6FD6" stop-opacity="0.5" />
+      </linearGradient>
+    </defs>
+  </svg>
+  {
+    variant === 'engagement-proof' && (
+      <div class="section-context-visual__panel">
+        <p class="section-context-visual__eyebrow">{valueProposition.home.proofPanel.eyebrow}</p>
+        <svg
+          class="section-context-visual__svg"
+          viewBox="0 0 320 200"
+          role="img"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <line x1="60" y1="100" x2="160" y2="55" stroke={`url(#${uid}-edge)`} stroke-width="2" />
+          <line x1="160" y1="55" x2="260" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="2" />
+          <line x1="160" y1="55" x2="160" y2="145" stroke={`url(#${uid}-edge)`} stroke-width="2" />
+          <circle cx="60" cy="100" r="28" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
+          <circle cx="260" cy="100" r="28" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
+          <circle cx="160" cy="55" r="24" fill="#fff" stroke="#5B6FD6" stroke-width="1.5" opacity="0.95" />
+          <circle cx="160" cy="145" r="24" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
+        </svg>
+        <ol class="section-context-visual__list">
+          {proofPoints.map((point, index) => (
+            <li class="section-context-visual__item">
+              <span class="section-context-visual__index" aria-hidden="true">{index + 1}</span>
+              <span class="section-context-visual__copy">
+                <span class="section-context-visual__title">{point.title}</span>
+                <span class="section-context-visual__body">{point.body}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
+
+  {
+    variant === 'site-offerings' && (
+      <div class="section-context-visual__panel">
+        <p class="section-context-visual__eyebrow">What you can explore here</p>
+        <svg
+          class="section-context-visual__svg section-context-visual__svg--grid"
+          viewBox="0 0 320 180"
+          role="img"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <rect x="24" y="24" width="120" height="56" rx="8" fill="#fff" stroke="#0A74DA" stroke-width="1.2" opacity="0.95" />
+          <rect x="176" y="24" width="120" height="56" rx="8" fill="#fff" stroke="#0A74DA" stroke-width="1.2" opacity="0.95" />
+          <rect x="24" y="100" width="120" height="56" rx="8" fill="#fff" stroke="#5B6FD6" stroke-width="1.2" opacity="0.95" />
+          <rect x="176" y="100" width="120" height="56" rx="8" fill="#fff" stroke="#5B6FD6" stroke-width="1.2" opacity="0.95" />
+          <line x1="84" y1="80" x2="84" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
+          <line x1="236" y1="80" x2="236" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
+          <line x1="144" y1="52" x2="176" y2="52" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
+          <line x1="144" y1="128" x2="176" y2="128" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
+        </svg>
+        <ul class="section-context-visual__offerings">
+          {offerings.map((item) => (
+            <li>
+              <a href={item.href} class="section-context-visual__offering">
+                <span class="section-context-visual__title">{item.label}</span>
+                <span class="section-context-visual__body">{item.detail}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+</figure>

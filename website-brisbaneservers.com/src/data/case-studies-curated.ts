@@ -57,7 +57,7 @@ export const curatedCaseStudies: CaseStudy[] = [
     heroSubtitle:
       'Manual tracking replaced with a cloud inventory core, barcode workflows, and real-time sync to the online store — phased so trade never stopped.',
     metaFields: [
-      { label: 'Industry', value: 'Retail and e-commerce' },
+      { label: 'Industry', value: 'Retail & E-commerce' },
       { label: 'Location', value: 'Brisbane, QLD' },
       { label: 'Business size', value: 'Small business' },
       { label: 'Funding', value: 'Grant-assisted' },
@@ -220,7 +220,7 @@ Rollout stayed incremental — the in-room experience unchanged while the online
     heroSubtitle:
       'Compliant digital records, appointment automation, and reporting — implemented in phases so clinical staff could validate each step against Australian Privacy Principles.',
     metaFields: [
-      { label: 'Industry', value: 'Healthcare and medical practices' },
+      { label: 'Industry', value: 'Healthcare & Medical Practices' },
       { label: 'Location', value: 'Brisbane, QLD' },
       { label: 'Compliance', value: 'APP aligned' },
       { label: 'Delivery', value: 'Phased rollout' },

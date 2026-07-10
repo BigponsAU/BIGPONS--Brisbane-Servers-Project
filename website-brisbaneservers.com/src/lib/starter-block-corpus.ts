@@ -110,7 +110,7 @@ function buildIndustryOverviewStarter(industry: Industry): Resource {
     id: `${industry.slug}-overview-${STARTER_BLOCK_BATCH_SUFFIX}`,
     industry: industry.slug,
     topic: 'overview',
-    title: `${industry.name} - Technology Solutions Overview`,
+    title: `${industry.name} — technology solutions overview`,
     description: industry.description,
     content,
     generatedAt: '2026-01-25T00:41:03.783Z',

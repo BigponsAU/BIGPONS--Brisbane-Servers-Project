@@ -12,53 +12,53 @@ export type SiteCompletenessItem = {
   note: string;
 };
 
-/** Industry hubs: topic guides vs overview-only */
+/** Industry hubs: topic guides vs overview-only — labels match industries.ts */
 export const industryHubStatus: SiteCompletenessItem[] = [
   {
     id: 'professional-services',
-    label: 'Professional services',
+    label: 'Professional Services',
     status: 'published',
     href: '/resources/professional-services',
     note: 'Full topic guides published.',
   },
   {
     id: 'retail',
-    label: 'Retail and e-commerce',
+    label: 'Retail & E-commerce',
     status: 'published',
     href: '/resources/retail',
     note: 'Full topic guides published.',
   },
   {
     id: 'healthcare',
-    label: 'Healthcare',
+    label: 'Healthcare & Medical Practices',
     status: 'published',
     href: '/resources/healthcare',
     note: 'Full topic guides published.',
   },
   {
     id: 'hospitality',
-    label: 'Hospitality',
+    label: 'Hospitality & Tourism',
     status: 'published',
     href: '/resources/hospitality',
     note: 'Full topic guides published.',
   },
   {
     id: 'construction',
-    label: 'Construction and trades',
+    label: 'Construction & Trades',
     status: 'published',
     href: '/resources/construction',
     note: 'Industry overview plus topic guides (job costing, site compliance).',
   },
   {
     id: 'finance',
-    label: 'Finance and accounting',
+    label: 'Finance & Accounting',
     status: 'published',
     href: '/resources/finance',
     note: 'Industry overview plus topic guides (reporting, workflow).',
   },
   {
     id: 'manufacturing',
-    label: 'Manufacturing',
+    label: 'Manufacturing & Production',
     status: 'published',
     href: '/resources/manufacturing',
     note: 'Industry overview plus topic guides (shop floor, traceability).',

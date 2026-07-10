@@ -9,7 +9,6 @@ import SectionConstellationLayer from '../components/SectionConstellationLayer.a
 import SiteLink from '../components/SiteLink.astro';
 import MarketingPageBands from '../components/MarketingPageBands.astro';
 import SemanticText from '../components/SemanticText.astro';
-import BrandVisual from '../components/BrandVisual.astro';
 import { valueProposition } from '../data/value-proposition';
 import { portalVoiceRules } from '../lib/portal-voice-framework';
 import { sitePath } from '../lib/site-path';
@@ -60,7 +59,7 @@ const { sections } = valueProposition.about;
             icon="fas fa-handshake"
           />
           <Card
-            title="Brisbane innovation authority"
+            title="Brisbane Innovation Authority"
             description="Contributing to Brisbane's reputation as a centre for quality technology practice and innovation."
             icon="fas fa-city"
           />
@@ -118,7 +117,7 @@ const { sections } = valueProposition.about;
       />
       <div class="container">
         <div class="about-corrections">
-          <p class="about-corrections__eyebrow">Open dialogue</p>
+          <p class="about-corrections__eyebrow">Corrections welcome</p>
           <h2 id="corrections-welcome-heading" class="about-corrections__title">
             <SemanticText text={valueProposition.about.correctionsTitle} semanticLevel="high" isParent={true} />
           </h2>
@@ -165,7 +164,7 @@ const { sections } = valueProposition.about;
         </div>
         <p class="about-portal-voice__cta">
           <a href={sitePath('/account#portal-voice-framework')} class="btn btn-primary">
-            Open account workspace
+            Account workspace
           </a>
         </p>
       </div>
@@ -182,28 +181,18 @@ const { sections } = valueProposition.about;
           title={sections.bigpons.title}
           byline={sections.bigpons.byline}
         />
-        <div class="section-visual-split">
-          <div class="section-visual-split__visual">
-            <BrandVisual
-              variant="banner"
-              caption="A BIGPONS project — local data pipeline solutions and Brisbane's sovereign edge infrastructure."
-            />
-          </div>
-          <div class="section-visual-split__body">
-            <CardGrid columns={1}>
-              <Card
-                title="BIGPONS ABN"
-                description="ABN: 93 297 393 962 — registered Australian business."
-                icon="fas fa-certificate"
-              />
-              <Card
-                title="Location"
-                description="Brisbane, Queensland, Australia — supporting businesses across Australia."
-                icon="fas fa-map-marker-alt"
-              />
-            </CardGrid>
-          </div>
-        </div>
+        <CardGrid columns={2} style="margin-top: var(--space-2xl);">
+          <Card
+            title="BIGPONS ABN"
+            description="ABN: 93 297 393 962 — registered Australian business."
+            icon="fas fa-certificate"
+          />
+          <Card
+            title="Location"
+            description="Brisbane, Queensland, Australia — supporting businesses across Australia."
+            icon="fas fa-map-marker-alt"
+          />
+        </CardGrid>
       </div>
     </section>
 
@@ -247,7 +236,7 @@ const { sections } = valueProposition.about;
             <SiteLink href="/brisbane-2032#project-purpose" class="btn btn-secondary">Project purpose</SiteLink>
             <SiteLink href="/projects" class="btn btn-secondary">Projects</SiteLink>
             <SiteLink href="/resources" class="btn btn-secondary">Resources</SiteLink>
-            <SiteLink href="/services#consultation" class="btn btn-primary">Book consultation</SiteLink>
+            <SiteLink href="/services#consultation" class="btn btn-primary">Request a consultation</SiteLink>
           </div>
         </div>
       </div>

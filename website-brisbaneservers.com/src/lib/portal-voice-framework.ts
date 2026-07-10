@@ -11,25 +11,25 @@ export interface PortalVoiceRule {
 export const portalVoiceRules: PortalVoiceRule[] = [
   {
     id: 'context-clear',
-    title: 'Context Is Explicit',
+    title: 'Context is explicit',
     description:
       'State business context and constraints clearly so recommendations are grounded and specific.',
   },
   {
     id: 'evidence-before-claims',
-    title: 'Evidence Is Concrete',
+    title: 'Evidence is concrete',
     description:
       'Support recommendations with resource evidence, prior outcomes, or measurable signals.',
   },
   {
     id: 'action-ready',
-    title: 'Action Is Immediate',
+    title: 'Action is immediate',
     description:
       'Include clear next actions so users can move from understanding to execution immediately.',
   },
   {
     id: 'topic-stack',
-    title: 'Topic Stack Per Section',
+    title: 'Topic stack per section',
     description:
       'Each section should include context, evidence, and action together, without forcing users to wait for meaning later.',
   },
