@@ -1,17 +1,12 @@
 ---
-import { Image } from 'astro:assets';
-import bigponsMark from '../bigpons-mark.png';
-
-type Variant = 'banner' | 'mark' | 'place';
+type Variant = 'banner';
 
 interface Props {
-  /** banner = native wordmark lockup; mark = circle icon; place = Brisbane civic photo */
+  /** Native HTML wordmark lockup for inquiry panels. */
   variant?: Variant;
   caption?: string;
   class?: string;
   alt?: string;
-  /** Decorative when true (caption still available for sighted users via figcaption). */
-  decorative?: boolean;
 }
 
 const {
@@ -19,23 +14,16 @@ const {
   caption,
   class: className = '',
   alt,
-  decorative = false,
 } = Astro.props;
 
-const defaults: Record<Variant, string> = {
-  banner:
-    'BIGPONS — Brisbane Servers. Access to truth in technology. Local data pipeline solutions and Brisbane\'s sovereign edge infrastructure.',
-  mark: 'BIGPONS mark',
-  place: 'Brisbane riverfront — South Bank, Queensland',
-};
-
-const resolvedAlt = decorative ? '' : (alt ?? defaults[variant]);
-const bannerLabel = alt ?? defaults.banner;
+const bannerLabel =
+  alt ??
+  "BIGPONS — Brisbane Servers. Access to truth in technology. Local data pipeline solutions and Brisbane's sovereign edge infrastructure.";
 const gradientId = `brand-lockup-gradient-${Math.random().toString(36).slice(2, 11)}`;
 ---
 
 {
-  variant === 'banner' ? (
+  variant === 'banner' && (
     <figure
       class:list={['brand-visual', 'brand-visual--banner', className]}
       aria-label={bannerLabel}
@@ -85,36 +73,6 @@ const gradientId = `brand-lockup-gradient-${Math.random().toString(36).slice(2, 
       <p class="brand-lockup__footer">
         Local Data Pipeline Solutions | Brisbane's Sovereign Edge Infrastructure
       </p>
-      {caption && <figcaption class="brand-visual__caption">{caption}</figcaption>}
-    </figure>
-  ) : (
-    <figure class:list={['brand-visual', `brand-visual--${variant}`, className]}>
-      {
-        variant === 'mark' && (
-          <Image
-            src={bigponsMark}
-            alt={resolvedAlt}
-            widths={[160, 240, 320]}
-            sizes="(max-width: 900px) 40vw, 12rem"
-            class="brand-visual__img"
-            loading="lazy"
-            decoding="async"
-          />
-        )
-      }
-      {
-        variant === 'place' && (
-          <img
-            src="/og-southbank.png"
-            alt={resolvedAlt}
-            width={1200}
-            height={630}
-            class="brand-visual__img"
-            loading="lazy"
-            decoding="async"
-          />
-        )
-      }
       {caption && <figcaption class="brand-visual__caption">{caption}</figcaption>}
     </figure>
   )
