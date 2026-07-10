@@ -887,7 +887,7 @@ header[role="banner"] {
     background-color: #ffffff;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border-bottom: max(1px, 0.125rem) solid rgba(10, 116, 218, var(--color-intensity-medium));
+    border-bottom: none;
     /* rem max keeps border visible; scales gently with zoom */
     z-index: 1000;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03), 0 0 0 1px var(--accent-primary-bg);
@@ -971,7 +971,6 @@ nav {
 
 .nav-brand:hover {
     background: var(--surface);
-    transform: translateY(-1px);
 }
 
 .nav-brand img {
@@ -1050,7 +1049,6 @@ nav {
     -webkit-text-fill-color: #fff;
     background: var(--nav-chrome-hover-gradient);
     box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.38);
-    transform: translateY(-1px);
 }
 
 /* Account / workspace — reads as a CTA, not body nav text */
@@ -1075,7 +1073,6 @@ nav {
 .nav-menu a.nav-account-cta:hover,
 .nav-menu a.nav-account-cta.active {
     color: var(--text-on-dark);
-    transform: translateY(-1px);
     box-shadow: 0 8px 20px -6px rgba(var(--accent-violet-rgb), 0.45);
 }
 
@@ -1120,7 +1117,6 @@ nav {
     color: #fff;
     background: linear-gradient(180deg, #0a74da 0%, #0860b8 100%);
     border-color: #0a74da;
-    transform: translateY(-1px);
     box-shadow: 0 8px 20px -6px rgba(10, 116, 218, 0.42);
 }
 
@@ -1154,7 +1150,6 @@ nav {
     -webkit-text-fill-color: #fff;
     background: var(--nav-chrome-hover-gradient);
     box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.35);
-    transform: translateY(-1px);
 }
 
 /* Dropdown chevron: nav-mega-menu.css */

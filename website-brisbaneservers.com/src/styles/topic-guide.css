@@ -30,23 +30,12 @@
   margin-bottom: 0;
   padding-bottom: clamp(2rem, 4vw, 3rem);
   box-shadow: none;
-}
-
-.site-shell--header-in-flow .hero.hero--guide-lead::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: clamp(2.5rem, 6vw, 4rem);
-  background: linear-gradient(
+  --hero-bottom-fade: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(238, 242, 247, 0.55) 45%,
+    rgba(238, 242, 247, 0.45) 58%,
     #eef2f7 100%
   );
-  pointer-events: none;
-  z-index: 4;
 }
 
 .site-main--marketing .marketing-page-bands--guide {

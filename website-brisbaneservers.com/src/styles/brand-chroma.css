@@ -326,19 +326,22 @@ header .nav-mega__link.active {
   }
 }
 
-/* Hero bottom seam — short, soft blend (keeps constellation visible) */
+/* Hero bottom seam — consistent soft blend into the band below */
 .hero::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: clamp(0.35rem, 0.85vw, 0.75rem);
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(248, 249, 252, 0.45) 72%,
-    var(--surface, #f8f9fa) 100%
+  height: var(--hero-bottom-fade-height, clamp(1.25rem, 2.8vw, 2rem));
+  background: var(
+    --hero-bottom-fade,
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(248, 249, 252, 0.42) 58%,
+      var(--surface, #f8f9fa) 100%
+    )
   );
   z-index: 15;
   pointer-events: none;

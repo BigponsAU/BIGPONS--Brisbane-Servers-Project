@@ -60,7 +60,6 @@ body.nav-mobile-open .nav-dropdown {
     -webkit-text-fill-color: #fff;
     background: var(--nav-chrome-hover-gradient);
     box-shadow: 0 4px 14px -4px rgba(var(--accent-violet-rgb), 0.35);
-    transform: translateY(-1px);
   }
 
   .nav-menu a.nav-account-cta,
@@ -86,6 +85,8 @@ body.nav-mobile-open .nav-dropdown {
   padding: var(--space-md);
   border-radius: var(--border-radius);
   overflow: visible;
+  /* Stable panel width — avoid hover reflow / scrollbar stutter */
+  width: max-content;
 }
 
 /* Override global .nav-dropdown-menu constraints for mega panels */
@@ -446,12 +447,18 @@ body.nav-mobile-open .nav-dropdown {
 @media (min-width: 1024px) {
   .nav-dropdown--resources .nav-dropdown-menu--mega {
     min-width: 26rem;
+    width: min(38rem, calc(100vw - 2rem));
+    max-width: min(
+      38rem,
+      calc(100vw - 2rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))
+    );
   }
 
   .nav-dropdown--projects .nav-dropdown-menu--mega {
     left: auto;
     right: 0;
     min-width: min(34rem, calc(100vw - 2.5rem));
+    width: min(38rem, calc(100vw - 2rem));
     max-width: min(
       38rem,
       calc(100vw - 2rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))

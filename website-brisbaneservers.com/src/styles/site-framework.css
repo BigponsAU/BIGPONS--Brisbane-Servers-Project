@@ -37,6 +37,7 @@
 html {
   /* Fixed header + notch: anchors land below the bar */
   scroll-padding-top: calc(var(--site-header-clearance) + var(--space-sm) + var(--safe-area-inset-top));
+  scrollbar-gutter: stable;
 }
 
 html:has(.site-shell--header-in-flow) {
@@ -135,7 +136,7 @@ body {
 
 header[role="banner"] {
   width: 100%;
-  border-bottom: 1px solid var(--border-contrast);
+  border-bottom: none;
   background: #ffffff;
   background-color: #ffffff;
   backdrop-filter: none;
@@ -2845,9 +2846,10 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   min-width: 0;
 }
 
-.brand-lockup__mark {
+.brand-lockup__mark,
+.bigpons-brain-mark.brand-lockup__mark {
   flex: 0 0 auto;
-  width: clamp(3rem, 4.5vw, 3.75rem);
+  width: clamp(3.15rem, 4.2vw, 3.85rem);
   height: auto;
   filter: drop-shadow(0 2px 8px rgba(var(--primary-color-rgb), 0.12));
 }
