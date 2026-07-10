@@ -51,18 +51,24 @@ async function apiFetch(
   return { status: res.status, body, setCookie };
 }
 
-async function corsPreflight(path: string): Promise<boolean> {
+async function corsPreflight(path: string, method = 'POST'): Promise<boolean> {
   const res = await fetch(`${apiBase}${path}`, {
     method: 'OPTIONS',
     headers: {
       Origin: siteOrigin,
-      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Method': method,
       'Access-Control-Request-Headers': 'Content-Type',
     },
   });
   const allowOrigin = res.headers.get('access-control-allow-origin');
   const allowCreds = res.headers.get('access-control-allow-credentials');
-  return res.status === 204 && allowOrigin === siteOrigin && allowCreds === 'true';
+  const allowMethods = (res.headers.get('access-control-allow-methods') || '').toUpperCase();
+  return (
+    res.status === 204 &&
+    allowOrigin === siteOrigin &&
+    allowCreds === 'true' &&
+    allowMethods.includes(method.toUpperCase())
+  );
 }
 
 async function markUserVerified(email: string): Promise<void> {
@@ -112,6 +118,16 @@ async function main(): Promise<void> {
       name: 'CORS preflight POST /auth/login',
       ok: await corsPreflight('/auth/login'),
       detail: 'Origin + credentials headers',
+    });
+    results.push({
+      name: 'CORS preflight PUT /resources/:id',
+      ok: await corsPreflight('/resources/cors-probe', 'PUT'),
+      detail: 'Archive/update must be allowed cross-origin',
+    });
+    results.push({
+      name: 'CORS preflight DELETE /resources/:id',
+      ok: await corsPreflight('/resources/cors-probe', 'DELETE'),
+      detail: 'Delete/bin must be allowed cross-origin',
     });
 
     const oauth = await apiFetch('/auth/oauth/status', { method: 'GET' });
