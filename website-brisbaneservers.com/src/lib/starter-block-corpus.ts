@@ -75,6 +75,7 @@ function applyStarterBlockFields(resource: Resource): Resource {
     status: 'published',
     ownerId: undefined,
     portalRemovedAt: undefined,
+    binnedAt: undefined,
   };
 }
 

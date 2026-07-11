@@ -11,6 +11,8 @@ export interface RagContext {
   contextText: string;
   /** Chunk ids used */
   chunkIds: string[];
+  /** Distinct parent resource ids for chunks used (Markov lineage). */
+  sourceResourceIds: string[];
   /** Latency and debug */
   retrievalMs: number;
   modelId: string;
@@ -58,18 +60,25 @@ export async function buildRagContext(query: string, options?: {
 
   const parts: string[] = [];
   const chunkIds: string[] = [];
+  const sourceIds: string[] = [];
+  const seenSources = new Set<string>();
   let total = 0;
   for (const h of hits) {
     const block = `[${h.chunk.resourceId} #${h.chunk.chunkIndex}] ${h.chunk.text}`;
     if (total + block.length > MAX_CONTEXT_CHARS) break;
     parts.push(block);
     chunkIds.push(h.chunk.id);
+    if (!seenSources.has(h.chunk.resourceId)) {
+      seenSources.add(h.chunk.resourceId);
+      sourceIds.push(h.chunk.resourceId);
+    }
     total += block.length;
   }
 
   return {
     contextText: parts.join('\n\n---\n\n'),
     chunkIds,
+    sourceResourceIds: sourceIds,
     retrievalMs: Date.now() - start,
     modelId: client.modelId
   };

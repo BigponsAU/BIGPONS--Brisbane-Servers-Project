@@ -83,7 +83,10 @@ export const POST: APIRoute = async ({ request }) => {
       status: 'draft',
       metadata: {
         ...starterBlock.metadata,
-        wordCount: (customizations?.content || starterBlock.content).split(/\s+/).length
+        wordCount: (customizations?.content || starterBlock.content).split(/\s+/).length,
+        sourceResourceId: starterBlock.id,
+        sourceResourceIds: [starterBlock.id],
+        sourceKind: 'starter',
       }
     };
 
@@ -130,6 +133,19 @@ export const POST: APIRoute = async ({ request }) => {
       newResource.metadata = {
         ...newResource.metadata,
         voiceScore: voiceValidation.score || 0
+      };
+    } else if (typeof starterBlock.metadata?.voiceScore === 'number') {
+      newResource.metadata = {
+        ...newResource.metadata,
+        voiceScore: starterBlock.metadata.voiceScore,
+      };
+    }
+
+    if (starterBlock.metadata?.voiceProfileId && !newResource.metadata?.voiceProfileId) {
+      newResource.metadata = {
+        ...newResource.metadata,
+        voiceProfileId: starterBlock.metadata.voiceProfileId,
+        voiceProfileResolution: starterBlock.metadata.voiceProfileResolution,
       };
     }
 

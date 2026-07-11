@@ -109,6 +109,14 @@ export const POST: APIRoute = async ({ params, request }) => {
     });
 
     const index = resources.findIndex(r => r.id === id);
+    const priorSourceId = resources[index].metadata?.sourceResourceId;
+    const improveParents = [
+      ...rag.sourceResourceIds.filter((rid) => rid !== id),
+      ...(priorSourceId && priorSourceId !== id ? [priorSourceId] : []),
+      id,
+    ];
+    const uniqueImproveParents = [...new Set(improveParents)];
+
     resources[index] = {
       ...resources[index],
       content: improved.content,
@@ -121,6 +129,9 @@ export const POST: APIRoute = async ({ params, request }) => {
         voiceProfileResolution: resolved.resolution,
         inferenceMode: improved.inferenceMode,
         modelId: improved.modelId,
+        sourceResourceId: uniqueImproveParents[0] || id,
+        sourceResourceIds: uniqueImproveParents,
+        sourceKind: 'improve',
       }) as import('../../../../lib/resource-types').Resource['metadata'],
     };
 
@@ -137,7 +148,12 @@ export const POST: APIRoute = async ({ params, request }) => {
           resolution: resolved.resolution,
           profileId: resolved.voiceProfileId ?? null,
         },
-        rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+        rag: {
+          retrievalMs: rag.retrievalMs,
+          chunkIds: rag.chunkIds,
+          modelId: rag.modelId,
+          sourceResourceIds: rag.sourceResourceIds,
+        },
         inference: {
           mode: improved.inferenceMode,
           modelId: improved.modelId ?? null,

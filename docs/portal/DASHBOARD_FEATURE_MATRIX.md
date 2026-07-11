@@ -27,7 +27,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | **Analytics** | Live | `/api/analytics/suggestions`, `/api/admin/pipeline-config` | `AccountWorkspacePanelBand` |
 | **Voice profiles** | Live | `/api/profiles/**` | Split workspace + band shell |
 | **Voice lab — analyze** | Live | `POST /api/voice/analyze` | Band shell |
-| **Voice lab — Markov** | Live | `portal-markov-tracker.ts` v2 | Extrapolate issues + error-prone transitions |
+| **Voice lab — Markov** | Live | `portal-markov-tracker.ts` v1 resource lineage | Voice share % across creation hops |
 | **Voice map — 2D / depth / 3D** | Live | `/api/voice-map/corpus`, WebGL | Reindex confirm |
 | **Voice map — semantic route** | Live | `GET /api/voice-map/semantic` | k-NN topology + query route plot |
 
@@ -40,8 +40,9 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | **Library growth** | Live | `/api/admin/library-growth` | Semantic dedup + approve/reject/arm/run confirms |
 | **Moderation** | Live | `/api/community/contributions` | Approve/reject confirms |
 | **Site review** | Live | `/api/admin/site-sections`, hosting | Band shell |
-| **Users** | Live | `/api/admin/users`, auth audit | Workspace disable confirm |
-| **Ops & billing** | Live | usage, redemptions, Stripe, PayID grant | Fulfill confirm + AI cap top-up |
+| **Users** | Live | `/api/admin/users`, auth audit | Workspace toggle (role-locked for editors+), soft-remove + restore with backup, paged auth audit |
+| **Ops** | Live | `/api/admin/usage/summary`, corpus, token queue | Site usage snapshot + inference runbooks |
+| **Billing** | Live | `/api/admin/billing/accounts`, usage summary, PayID grant | Subscriber roster + usage-by-user + Stripe Customer Portal on Overview |
 
 ---
 
@@ -54,7 +55,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | Workspace / Admin mode switch | Live | `account-workspace-mode.ts` |
 | Global search | Live | `AccountWorkspaceHeader.astro` — prefixes + panel aliases |
 | API connectivity banner | Live | `account-api-connectivity.ts` |
-| Keyboard shortcuts | Live | `1`–`6` creator / `1`–`5` admin + `Ctrl+K` |
+| Keyboard shortcuts | Live | `1`–`6` creator / `1`–`6` admin + `Ctrl+K` |
 | Token earn / redeem | Live | Overview, `/api/tokens/**` |
 | Dashboard standards CI | Live | `tests/dashboard-standards.test.ts` |
 
@@ -64,12 +65,14 @@ Single reference for every dashboard surface: what ships today, what is partial,
 
 | Capability | Portal |
 |------------|--------|
-| Panel transitions | `trackPortalPanel()` |
-| Action + error tracking | `trackPortalAction()` / `trackPortalError()` |
-| Extrapolate issues (voice API) | Voice lab → Extrapolate issues |
-| Error-prone transitions | Debug insights report |
+| Resource → resource lineage | `trackResourceCreation()` / hydrate from metadata |
+| Voice used + match score per hop | Stored on each edge |
+| Voice share (% of hops matching each voice) | Voice lab summary + debug |
+| Extrapolate lineage / voice drift | Voice lab → Extrapolate lineage |
 | Export / reset | Client JSON download |
-| Storage | `localStorage` `bs-portal-markov-v2` |
+| Storage | `localStorage` `bs-resource-markov-v1` |
+
+Portal navigation is **not** Markov — panel/action click tracking was removed from this model.
 
 ---
 
@@ -92,7 +95,7 @@ npm run verify:dashboard-api -- --api https://api.brisbaneservers.com
 ## Refactor checklist
 
 - [x] `refreshPanelData` handles every navigable panel
-- [x] `trackPortalPanel` on `navigateToPanel`
+- [x] Resource lineage Markov hydrates from resource metadata (not panel nav)
 - [x] `applyRoleAccess` + admin-only filters
 - [x] All panels: `panel-shell` + marketing band
 - [x] Admin destructive actions: styled confirms

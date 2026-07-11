@@ -1,28 +1,26 @@
 /**
- * Admin Ops panel: daily AI usage meter and related ops UI.
+ * Admin Ops panel: site usage snapshot, search corpus, token queue, inference runbooks.
  */
 import { workspaceFetch } from '../lib/client-api';
 import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
-import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
+import { trackPortalAction } from './portal-markov-tracker';
 
-interface UsageMeResponse {
+interface UsageSummaryResponse {
   success: boolean;
   error?: string;
+  day?: string;
   provider?: string;
-  workersAiConfigured?: boolean;
   nvidiaConfigured?: boolean;
   nvidiaModel?: string;
-  stripeConfigured?: boolean;
-  subscription?: { active?: boolean; status?: string; dailyBonusUnits?: number };
-  daily?: {
-    cap: number;
-    used: number;
-    remaining: number;
-    bonus?: number;
-    subscriptionBonus?: number;
-    baseCap?: number;
+  workersAiConfigured?: boolean;
+  totals?: {
+    totalUsed: number;
+    usersWithUsage: number;
+    usersNearCap: number;
+    usersAtCap: number;
+    activeUsers: number;
   };
 }
 
@@ -30,15 +28,10 @@ function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
 }
 
-function setUsageBarLevel(barWrap: HTMLElement, used: number, cap: number): void {
-  if (cap <= 0) {
-    barWrap.removeAttribute('data-level');
-    return;
-  }
-  const ratio = used / cap;
+function setUsageBarLevel(barWrap: HTMLElement, ratio: number): void {
   if (ratio >= 1) {
     barWrap.setAttribute('data-level', 'critical');
-  } else if (ratio >= 0.8) {
+  } else if (ratio >= 0.5) {
     barWrap.setAttribute('data-level', 'warning');
   } else {
     barWrap.removeAttribute('data-level');
@@ -134,62 +127,50 @@ export async function loadTokenRedemptionQueue(ctx?: PortalAccountContext): Prom
   }
 }
 
-export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<void> {
-  trackPortalAction('loadAdminOpsPanel');
+async function loadSiteUsageSnapshot(ctx: PortalAccountContext): Promise<void> {
   const summaryEl = document.getElementById('admin-ops-usage-summary');
   const metaEl = document.getElementById('admin-ops-usage-meta');
   const barWrap = document.getElementById('admin-ops-usage-bar-wrap');
   const barFill = document.getElementById('admin-ops-usage-bar-fill');
   if (!summaryEl) return;
 
-  const accountCtx = ctx ?? (getPortalAccountContext() as unknown as PortalAccountContext);
-
-  if (!hasSession(accountCtx)) {
-    summaryEl.textContent = 'Sign in to load usage meter.';
+  if (!hasSession(ctx)) {
+    summaryEl.textContent = 'Sign in to load site usage.';
     if (metaEl) metaEl.textContent = '';
     if (barWrap) barWrap.hidden = true;
     return;
   }
 
-  summaryEl.textContent = 'Loading daily AI usage…';
+  summaryEl.textContent = 'Loading site usage snapshot…';
   if (metaEl) metaEl.textContent = '';
   if (barWrap) barWrap.hidden = true;
 
   try {
-    const res = await workspaceFetch(`${accountCtx.apiBaseUrl}/usage/me`);
-    const data = (await res.json()) as UsageMeResponse;
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/usage/summary`);
+    const data = (await res.json()) as UsageSummaryResponse;
 
-    if (!res.ok || !data.success || !data.daily) {
-      summaryEl.textContent = data.error || 'Could not load usage.';
+    if (!res.ok || !data.success || !data.totals) {
+      summaryEl.textContent = data.error || 'Could not load site usage.';
       return;
     }
 
-    const { cap, used, remaining } = data.daily;
-    const bonus = data.daily.bonus ?? 0;
-    const subscriptionBonus = data.daily.subscriptionBonus ?? 0;
-    const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
-    const bonusParts: string[] = [];
-    if (bonus > 0) bonusParts.push(`${bonus} token`);
-    if (subscriptionBonus > 0) bonusParts.push(`${subscriptionBonus} subscription`);
-    const bonusLabel = bonusParts.length ? ` (${bonusParts.join(' + ')} bonus)` : '';
-    summaryEl.textContent = `${used} of ${cap} daily AI units used (${remaining} remaining)${bonusLabel}`;
+    const { totalUsed, usersWithUsage, usersNearCap, usersAtCap, activeUsers } = data.totals;
+    summaryEl.textContent = `${totalUsed} AI units used today · ${usersWithUsage} user(s) active · ${usersNearCap} near cap · ${usersAtCap} at cap`;
 
+    const maxBarUnits = Math.max(totalUsed, usersAtCap * 10, 1);
+    const pct = Math.min(100, Math.round((totalUsed / maxBarUnits) * 100));
     if (barWrap && barFill) {
       barWrap.hidden = false;
       barFill.style.width = `${pct}%`;
-      setUsageBarLevel(barWrap, used, cap);
+      setUsageBarLevel(barWrap, usersAtCap > 0 ? 1 : usersNearCap > 0 ? 0.8 : totalUsed / maxBarUnits);
     }
 
     if (metaEl) {
+      const parts: string[] = [`Day: ${data.day ?? 'today'} (UTC).`, `${activeUsers} registered accounts.`];
       const provider = data.provider ?? 'template';
-      const parts: string[] = [`Active provider: ${provider}.`];
+      parts.push(`Active provider: ${provider}.`);
       if (data.nvidiaConfigured) {
         parts.push(`NVIDIA NIM${data.nvidiaModel ? ` (${data.nvidiaModel})` : ''} configured.`);
-      }
-      if (data.subscription?.active) {
-        parts.push(`Stripe AI Boost active (+${data.subscription.dailyBonusUnits ?? 0}/day).`);
-      } else if (data.stripeConfigured) {
-        parts.push('Stripe checkout available for users at cap.');
       }
       if (data.workersAiConfigured) {
         parts.push('Workers AI fallback available.');
@@ -197,80 +178,11 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
       if (!data.nvidiaConfigured && !data.workersAiConfigured) {
         parts.push('No external LLM — template engine only.');
       }
-      parts.push('Generate and Improve share the same daily cap. Resets midnight UTC.');
+      parts.push('Per-user caps and grants live in Billing.');
       metaEl.textContent = parts.join(' ');
     }
   } catch {
-    summaryEl.textContent = 'Could not reach the API to load usage.';
-  }
-
-  await loadTokenRedemptionQueue(accountCtx);
-  await loadSearchCorpusPanel(accountCtx);
-  await loadAdminBillingStatus(accountCtx);
-}
-
-async function loadAdminBillingStatus(ctx: PortalAccountContext): Promise<void> {
-  const el = document.getElementById('admin-ops-stripe-status');
-  if (!el || !hasSession(ctx)) return;
-  try {
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/billing/status`);
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      el.textContent = 'Billing status unavailable.';
-      return;
-    }
-    if (!data.stripeConfigured) {
-      el.textContent =
-        'Stripe not configured — set STRIPE_SECRET_KEY, STRIPE_AI_BOOST_PRICE_ID, and STRIPE_WEBHOOK_SECRET on the edge worker.';
-      return;
-    }
-    el.textContent = data.subscription?.active
-      ? `Your subscription: active (+${data.subscription.dailyBonusUnits ?? 0} daily units).`
-      : 'Stripe checkout is live. Webhook: POST /api/billing/webhook';
-  } catch {
-    el.textContent = 'Could not load billing status.';
-  }
-}
-
-async function submitAdminUsageGrant(ctx: PortalAccountContext, event: Event): Promise<void> {
-  event.preventDefault();
-  const email = (document.getElementById('admin-usage-grant-email') as HTMLInputElement | null)?.value.trim();
-  const units = Number((document.getElementById('admin-usage-grant-units') as HTMLInputElement | null)?.value);
-  const note = (document.getElementById('admin-usage-grant-note') as HTMLInputElement | null)?.value.trim();
-  const statusEl = document.getElementById('admin-usage-grant-status');
-  if (!email || !Number.isFinite(units)) return;
-
-  const ok = await showConfirmDialog({
-    title: 'Grant AI usage units',
-    message: `Grant ${units} bonus AI unit(s) to ${email} for today (UTC)?`,
-    confirmLabel: 'Grant',
-    variant: 'primary',
-  });
-  if (!ok) return;
-
-  trackPortalAction('grantAiUsageUnits');
-  if (statusEl) statusEl.textContent = 'Granting…';
-  try {
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/admin/usage/grant`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, units, note: note || undefined }),
-    });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      trackPortalError('grantAiUsageUnits', new Error(data.error || 'Grant failed'));
-      if (statusEl) statusEl.textContent = data.error || 'Grant failed.';
-      return;
-    }
-    if (statusEl) {
-      statusEl.textContent = `Granted ${data.unitsGranted} unit(s) to ${data.email}.`;
-    }
-    (document.getElementById('admin-usage-grant-form') as HTMLFormElement | null)?.reset();
-    const unitsInput = document.getElementById('admin-usage-grant-units') as HTMLInputElement | null;
-    if (unitsInput) unitsInput.value = '5';
-  } catch (error) {
-    trackPortalError('grantAiUsageUnits', error);
-    if (statusEl) statusEl.textContent = 'Network error.';
+    summaryEl.textContent = 'Could not reach the API to load site usage.';
   }
 }
 
@@ -358,6 +270,14 @@ export async function loadSearchCorpusPanel(ctx?: PortalAccountContext): Promise
   }
 }
 
+export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<void> {
+  trackPortalAction('loadAdminOpsPanel');
+  const accountCtx = ctx ?? (getPortalAccountContext() as unknown as PortalAccountContext);
+  await loadSiteUsageSnapshot(accountCtx);
+  await loadTokenRedemptionQueue(accountCtx);
+  await loadSearchCorpusPanel(accountCtx);
+}
+
 export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('refresh-admin-ops-usage')?.addEventListener('click', () => {
     void loadAdminOpsPanel(resolveCtx());
@@ -367,8 +287,5 @@ export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void 
   });
   document.getElementById('refresh-admin-ops-search-corpus')?.addEventListener('click', () => {
     void loadSearchCorpusPanel(resolveCtx());
-  });
-  document.getElementById('admin-usage-grant-form')?.addEventListener('submit', (e) => {
-    void submitAdminUsageGrant(resolveCtx(), e);
   });
 }

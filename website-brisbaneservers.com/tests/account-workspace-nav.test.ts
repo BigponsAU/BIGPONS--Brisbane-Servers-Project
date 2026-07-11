@@ -18,6 +18,7 @@ const ALL_PANELS: WorkspacePanelId[] = [
   'site-review',
   'admin-users',
   'admin-ops',
+  'admin-billing',
 ];
 
 describe('account workspace navigation', () => {
@@ -35,7 +36,7 @@ describe('account workspace navigation', () => {
       'utf8',
     );
     const start = appSource.indexOf('function refreshPanelData(panelName: string)');
-    const end = appSource.indexOf('(window as any).navigateToPanel = function', start);
+    const end = appSource.indexOf('(window as any).navigateToPanel = navigateToPanel', start);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
     const refreshBlock = appSource.slice(start, end);

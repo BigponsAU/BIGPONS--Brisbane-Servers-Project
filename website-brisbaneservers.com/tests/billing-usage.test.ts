@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STRIPE_SUBSCRIPTION_DAILY_BONUS } from '../src/lib/billing/stripe-config';
+import { STRIPE_SUBSCRIPTION_DAILY_BONUS, getBillingPortalReturnUrl } from '../src/lib/billing/stripe-config';
 
 const EDITOR_BASE_CAP = 8;
 
@@ -16,5 +16,14 @@ describe('billing configuration', () => {
 
   it('defines editor base cap plus subscription bonus', () => {
     expect(EDITOR_BASE_CAP + STRIPE_SUBSCRIPTION_DAILY_BONUS).toBe(23);
+  });
+
+  it('builds portal return URL on account overview', () => {
+    expect(getBillingPortalReturnUrl('https://brisbaneservers.com')).toBe(
+      'https://brisbaneservers.com/account/?billing=portal-return'
+    );
+    expect(getBillingPortalReturnUrl('https://brisbaneservers.com/')).toBe(
+      'https://brisbaneservers.com/account/?billing=portal-return'
+    );
   });
 });

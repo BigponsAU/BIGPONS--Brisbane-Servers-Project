@@ -3,6 +3,7 @@ import { requireEditor } from '../../../utils/auth';
 import { loadResources } from '../../../lib/resources-api';
 import { loadIndex } from '../../../lib/semantic/chunk-index';
 import { getVoiceFramework } from '../../../utils/voice-framework';
+import { industries } from '../../../data/industries';
 import {
   BRISBANE_PROFILE_NAME,
   findBrisbaneProfileMeta,
@@ -16,6 +17,41 @@ import {
 } from '../../../lib/voice-map-projection';
 
 const MAX_CHUNKS = 200;
+
+export type IndustryCoverageStatus = 'gap' | 'sparse' | 'covered';
+
+export type IndustryCoverageItem = {
+  id: string;
+  name: string;
+  indexedCount: number;
+  status: IndustryCoverageStatus;
+};
+
+function normalizeIndustryKey(raw: string | undefined): string {
+  return (raw || 'general').toLowerCase().replace(/\s+/g, '-');
+}
+
+/** Compare indexed resources to the canonical industry catalog for gap callouts. */
+export function buildIndustryCoverage(
+  indexable: { industry?: string }[]
+): IndustryCoverageItem[] {
+  const counts = new Map<string, number>();
+  for (const r of indexable) {
+    const key = normalizeIndustryKey(r.industry);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return industries.map((industry) => {
+    const indexedCount = counts.get(industry.id) ?? counts.get(industry.slug) ?? 0;
+    const status: IndustryCoverageStatus =
+      indexedCount === 0 ? 'gap' : indexedCount < 2 ? 'sparse' : 'covered';
+    return {
+      id: industry.id,
+      name: industry.name,
+      indexedCount,
+      status,
+    };
+  });
+}
 
 /**
  * Unified voice map: semantic resources + Brisbane profile hub + optional chunk detail.
@@ -141,6 +177,7 @@ export const GET: APIRoute = async ({ request, url }) => {
           indexedResources: indexable.length,
           chunksInIndex: allChunks.filter((c) => corpusIds.has(c.resourceId)).length,
           industries: [...new Set(indexable.map((r) => r.industry))].filter(Boolean),
+          industryCoverage: buildIndustryCoverage(indexable),
         },
         total: nodes.length,
       }),

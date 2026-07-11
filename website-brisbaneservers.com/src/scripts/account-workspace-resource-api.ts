@@ -2,6 +2,7 @@
  * Canonical client fetch helpers for /api/resources (avoids duplicate URL logic).
  */
 import { workspaceFetch } from '../lib/client-api';
+import { upsertWorkspaceResource } from './account-workspace-resource-store';
 
 export interface ResourcesFetchResult {
   ok: boolean;
@@ -9,6 +10,47 @@ export interface ResourcesFetchResult {
   resources: unknown[];
   error?: string;
   success?: boolean;
+}
+
+export interface ResourceFetchResult {
+  ok: boolean;
+  status: number;
+  resource?: unknown;
+  error?: string;
+}
+
+/** GET /api/resources/:id — used when the in-memory list cache misses. */
+export async function fetchResourceById(
+  apiBase: string,
+  id: string,
+): Promise<ResourceFetchResult> {
+  const url = `${apiBase.replace(/\/+$/, '')}/resources/${encodeURIComponent(id)}`;
+  const response = await workspaceFetch(url, {
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    let error = `HTTP ${response.status}`;
+    try {
+      const body = await response.json();
+      error = body.error || error;
+    } catch {
+      /* ignore */
+    }
+    return { ok: false, status: response.status, error };
+  }
+
+  const data = await response.json();
+  const resource = data.resource;
+  if (resource) {
+    upsertWorkspaceResource(resource);
+  }
+  return {
+    ok: Boolean(data.success !== false && resource),
+    status: response.status,
+    resource,
+    error: data.error,
+  };
 }
 
 export async function fetchAuthenticatedResources(

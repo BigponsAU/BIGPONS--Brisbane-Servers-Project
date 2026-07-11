@@ -68,6 +68,23 @@ export async function handleLogin(request: Request, env: WorkerEnv): Promise<Res
         return json({ error: 'Invalid credentials', code: 'INVALID_CREDENTIALS', success: false }, 401, cors);
       }
 
+      if (stored.removedAt) {
+        await recordAuthAudit(sql, {
+          userId: stored.id,
+          email: stored.email,
+          eventType: 'auth.login.blocked-removed',
+        });
+        return json(
+          {
+            error: 'This account has been removed. Contact support if you need access restored.',
+            code: 'ACCOUNT_REMOVED',
+            success: false,
+          },
+          403,
+          cors
+        );
+      }
+
       if (!isUserEmailVerified(stored)) {
         await recordAuthAudit(sql, {
           userId: stored.id,

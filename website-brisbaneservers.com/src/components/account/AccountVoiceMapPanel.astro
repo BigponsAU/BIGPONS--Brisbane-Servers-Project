@@ -9,55 +9,98 @@ import { accountWorkspace } from '../../data/account-workspace';
       semanticKey="account-voice-map"
       eyebrow="Voice studio"
       title={accountWorkspace.voiceMapLabel}
-      byline="Corpus topology from published resources. Pair with Voice profiles for detail and Create content for generation."
+      byline="See which industries the Brisbane site voice already covers — click a guide to open it, or fill a gap from Create content."
       titleId="voice-map-heading"
       constellationVariant="strategy"
     >
       <div slot="actions" class="section-header-actions voice-map-toolbar section-actions">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('profiles')">Profiles</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('resources')">Create</button>
-        <select id="voice-map-view" class="form-select" aria-label="Map layer">
-          <option value="corpus-resources">Resources (by industry)</option>
-          <option value="corpus-chunks">Semantic chunks</option>
-          <option value="semantic">Semantic route</option>
-          <option value="principles">Principles</option>
+        <label class="sr-only" for="voice-map-view">What to show</label>
+        <select id="voice-map-view" class="form-select" aria-label="What to show on the map">
+          <option value="corpus-resources">Content by industry</option>
+          <option value="semantic">Find related path</option>
+          <optgroup label="Advanced">
+            <option value="corpus-chunks">Text passages</option>
+            <option value="principles">Writing principles (legacy)</option>
+          </optgroup>
         </select>
-        <button type="button" id="voice-map-view-mode" class="btn btn-secondary btn-sm" aria-pressed="false" title="Toggle isometric depth view">
-          Depth view
-        </button>
-        <button type="button" id="voice-map-3d-btn" class="btn btn-secondary btn-sm" aria-pressed="false" title="Orbit 3D WebGL topology">
-          3D view
-        </button>
         <button type="button" id="voice-map-refresh-btn" class="btn btn-secondary btn-sm">Refresh</button>
         <button type="button" id="voice-map-bootstrap-btn" class="btn btn-primary btn-sm" data-min-role="admin">
-          Reindex corpus
+          Rebuild map
         </button>
       </div>
 
     <section class="admin-section admin-section--in-band" aria-labelledby="voice-map-heading">
+      <details class="panel-guidance-details">
+        <summary>How to read the map</summary>
+        <div class="panel-guidance-details__body">
+          <p>
+            The orange centre is the <strong>Brisbane</strong> site voice. Coloured dots are published guides.
+            Sparse or missing industries appear under <strong>Coverage gaps</strong> — fill them from Create content.
+          </p>
+          <p>
+            Click a guide (or text passage) to inspect it, then open it in Create content.
+            <strong>Find related path</strong> highlights a route through similar topics when you type a query.
+          </p>
+        </div>
+      </details>
+
+      <p id="voice-map-layer-hint" class="voice-map-layer-hint" aria-live="polite">
+        Published guides clustered by industry around the Brisbane voice hub. Click a dot to inspect.
+      </p>
+
+      <div id="voice-map-gaps" class="voice-map-gaps" aria-live="polite" hidden>
+        <div class="voice-map-gaps__label">Coverage gaps</div>
+        <div id="voice-map-gaps-list" class="voice-map-gaps__list"></div>
+      </div>
+
       <div id="voice-map-semantic-query-wrap" class="voice-map-semantic-query hidden" role="search">
-        <label class="sr-only" for="voice-map-semantic-query">Semantic route query</label>
+        <label class="sr-only" for="voice-map-semantic-query">Topic to find a related path for</label>
         <input
           id="voice-map-semantic-query"
           type="search"
           class="form-input voice-map-semantic-query__input"
-          placeholder="Plot semantic route — e.g. patient scheduling compliance"
+          placeholder="e.g. patient scheduling compliance"
           minlength="3"
           autocomplete="off"
         />
         <button type="button" id="voice-map-semantic-route-btn" class="btn btn-secondary btn-sm">
-          Plot route
+          Show path
         </button>
       </div>
+
       <div id="voice-map-legend" class="voice-map-legend" aria-live="polite"></div>
 
-      <div class="voice-map-stage card">
-        <svg id="voice-map-svg" class="voice-map-svg" viewBox="0 0 800 480" role="img" aria-label="Voice topology map">
-          <text x="400" y="240" text-anchor="middle" class="voice-map-placeholder">Loading voice map…</text>
-        </svg>
-        <canvas id="voice-map-canvas" class="voice-map-canvas" width="800" height="480" hidden aria-label="3D voice topology map"></canvas>
-        <p id="voice-map-meta" class="voice-map-meta" aria-live="polite"></p>
+      <div class="voice-map-workspace">
+        <div class="voice-map-stage card">
+          <svg id="voice-map-svg" class="voice-map-svg" viewBox="0 0 800 480" role="img" aria-label="Map of published content around the site voice">
+            <text x="400" y="240" text-anchor="middle" class="voice-map-placeholder">Loading map…</text>
+          </svg>
+          <canvas id="voice-map-canvas" class="voice-map-canvas" width="800" height="480" hidden aria-label="3D content map"></canvas>
+          <p id="voice-map-meta" class="voice-map-meta" aria-live="polite"></p>
+        </div>
+
+        <aside id="voice-map-detail" class="voice-map-detail card" aria-labelledby="voice-map-detail-title">
+          <h3 id="voice-map-detail-title" class="voice-map-detail__title">Selection</h3>
+          <div id="voice-map-detail-body" class="voice-map-detail__body">
+            <p class="voice-map-detail__empty">Click a guide on the map to inspect it here.</p>
+          </div>
+        </aside>
       </div>
+
+      <details class="panel-guidance-details voice-map-advanced">
+        <summary>View options</summary>
+        <div class="panel-guidance-details__body voice-map-advanced__body">
+          <p class="section-subtitle">Depth and 3D are optional. The default flat map is enough for coverage checks.</p>
+          <div class="voice-map-advanced__actions">
+            <button type="button" id="voice-map-view-mode" class="btn btn-secondary btn-sm" aria-pressed="false" title="Lift nodes by depth (isometric)">
+              Depth
+            </button>
+            <button type="button" id="voice-map-3d-btn" class="btn btn-secondary btn-sm" aria-pressed="false" title="Orbit the map in 3D">
+              3D
+            </button>
+          </div>
+        </div>
+      </details>
     </section>
     </AccountWorkspacePanelBand>
   </div>

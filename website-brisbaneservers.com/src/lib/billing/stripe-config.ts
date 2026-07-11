@@ -28,3 +28,8 @@ export function getBillingCancelUrl(siteOrigin: string): string {
   const base = siteOrigin.replace(/\/+$/, '');
   return `${base}/account/?billing=cancel`;
 }
+
+export function getBillingPortalReturnUrl(siteOrigin: string): string {
+  const base = siteOrigin.replace(/\/+$/, '');
+  return `${base}/account/?billing=portal-return`;
+}

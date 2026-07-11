@@ -84,15 +84,24 @@ const probes: Probe[] = [
 
   // —— Users (admin) ——
   { panel: 'admin-users', method: 'GET', path: '/admin/users', expect: [401, 403] },
-  { panel: 'admin-users', method: 'GET', path: '/admin/auth-audit?limit=100', expect: [401, 403] },
+  { panel: 'admin-users', method: 'GET', path: '/admin/users?includeRemoved=1', expect: [401, 403] },
+  { panel: 'admin-users', method: 'GET', path: '/admin/auth-audit?limit=25&offset=0', expect: [401, 403] },
   { panel: 'admin-users', method: 'GET', path: '/admin/vectors-summary', expect: [401, 403] },
   { panel: 'admin-users', method: 'PATCH', path: '/admin/users/00000000-0000-0000-0000-000000000000', expect: [401, 403, 404] },
+  { panel: 'admin-users', method: 'DELETE', path: '/admin/users/00000000-0000-0000-0000-000000000000', expect: [401, 403, 404] },
+  { panel: 'admin-users', method: 'POST', path: '/admin/users/00000000-0000-0000-0000-000000000000', expect: [401, 403, 404] },
 
   // —— Ops (admin) ——
-  { panel: 'admin-ops', method: 'GET', path: '/usage/me', expect: [401] },
+  { panel: 'admin-ops', method: 'GET', path: '/admin/usage/summary', expect: [401, 403] },
   { panel: 'admin-ops', method: 'GET', path: '/admin/token-redemptions', expect: [401, 403] },
   { panel: 'admin-ops', method: 'POST', path: '/admin/token-redemptions/fulfill', expect: [401, 403, 400] },
   { panel: 'admin-ops', method: 'GET', path: '/admin/search-corpus', expect: [401, 403] },
+
+  // —— Billing (admin) ——
+  { panel: 'admin-billing', method: 'GET', path: '/admin/billing/accounts', expect: [401, 403] },
+  { panel: 'admin-billing', method: 'GET', path: '/admin/usage/summary', expect: [401, 403] },
+  { panel: 'admin-billing', method: 'POST', path: '/admin/usage/grant', expect: [401, 403, 400] },
+  { panel: 'admin-billing', method: 'GET', path: '/billing/status', expect: [401] },
 ];
 
 async function main(): Promise<void> {
@@ -133,7 +142,9 @@ async function main(): Promise<void> {
                           ? {}
                           : probe.path.includes('profiles/create-base')
                             ? {}
-                            : { perkId: 'ai-boost' },
+                            : probe.path.includes('/admin/users/')
+                              ? { action: 'restore' }
+                              : { perkId: 'ai-boost' },
         );
       }
       if (probe.method === 'PATCH') {
@@ -143,6 +154,10 @@ async function main(): Promise<void> {
             ? { publicSearchEnabled: true }
             : { workspaceEnabled: true },
         );
+      }
+      if (probe.method === 'DELETE' && probe.path.includes('/admin/users/')) {
+        init.headers = { ...init.headers, 'Content-Type': 'application/json' };
+        init.body = JSON.stringify({ reason: 'probe' });
       }
       const res = await fetch(url, init);
       // Bot Fight sometimes challenges the first CI request; one retry clears it.

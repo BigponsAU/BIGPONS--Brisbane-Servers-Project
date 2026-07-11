@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-11 — passkey hardening + edge worker deploy
+**Last synced:** 2026-07-11 — edge CORS PUT/DELETE fix
+
+### 2026-07-11 — Edge CORS: archive/delete connection errors
+
+- **Root cause** — Worker `Access-Control-Allow-Methods` was `GET, POST, OPTIONS` only. Browser preflight for resource **PUT** (archive) and **DELETE** failed → portal showed “Connection error”.
+- **Fix** — Allow `PUT, PATCH, DELETE` in `workers/api/src/handlers.ts`; verify script checks PUT/DELETE preflight.
+- **Deploy** — push `df752b9` → Worker `brisbane-servers-api-edge` (CI success).
 
 ### 2026-07-11 — Passkey auth hardening (edge)
 

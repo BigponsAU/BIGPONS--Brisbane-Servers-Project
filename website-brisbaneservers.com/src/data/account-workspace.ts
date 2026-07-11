@@ -19,7 +19,8 @@ export type WorkspacePanelId =
   | 'moderation'
   | 'site-review'
   | 'admin-users'
-  | 'admin-ops';
+  | 'admin-ops'
+  | 'admin-billing';
 
 export type WorkspaceNavSection = 'home' | 'create' | 'voice' | 'insights' | 'library' | 'platform';
 
@@ -88,11 +89,13 @@ export const accountWorkspace = {
   voiceLabLabel: 'Voice lab',
   voiceLabDescription: 'Tone, patterns, and voice match',
   voiceMapLabel: 'Voice map',
-  voiceMapDescription: 'Semantic vectors and profile topology',
+  voiceMapDescription: 'See what content the site voice covers',
   adminUsersLabel: 'Users',
   adminUsersDescription: 'Accounts and auth audit',
-  adminOpsLabel: 'Ops & billing',
-  adminOpsDescription: 'Usage, credits, and hosting',
+  adminOpsLabel: 'Ops',
+  adminOpsDescription: 'Platform health and inference',
+  adminBillingLabel: 'Billing',
+  adminBillingDescription: 'Subscriptions, usage caps, PayID',
 } as const;
 
 /** Display name for the site default voice profile (every account). */
@@ -145,11 +148,11 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
   {
     panel: 'voice-map',
     label: accountWorkspace.voiceMapLabel,
-    description: 'Profile topology map',
+    description: 'Coverage of published content',
     minRole: 'editor',
     mode: 'creator',
     section: 'voice',
-    title: 'Voice map — vector and principle topology',
+    title: 'Voice map — see how published content clusters around the site voice',
   },
   {
     panel: 'analytics',
@@ -199,10 +202,19 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
   {
     panel: 'admin-ops',
     label: accountWorkspace.adminOpsLabel,
-    description: 'Usage, credits, hosting',
+    description: accountWorkspace.adminOpsDescription,
     minRole: 'admin',
     mode: 'admin',
     section: 'platform',
-    title: 'Ops — usage, AI gateway, hosting (super-admin sections gated in UI)',
+    title: 'Ops — platform health, search corpus, token queue, inference runbooks',
+  },
+  {
+    panel: 'admin-billing',
+    label: accountWorkspace.adminBillingLabel,
+    description: accountWorkspace.adminBillingDescription,
+    minRole: 'admin',
+    mode: 'admin',
+    section: 'platform',
+    title: 'Billing — Stripe subscribers, daily AI caps, PayID grants',
   },
 ];

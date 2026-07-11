@@ -1,0 +1,102 @@
+---
+import { accountWorkspace } from '../../data/account-workspace';
+import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
+---
+
+<div id="admin-billing-panel" class="portal-panel panel-shell" data-min-role="admin" role="main" aria-label="Admin billing" style="display: none;">
+  <div class="admin-content admin-billing-panel-shell">
+    <AccountWorkspacePanelBand
+      semanticKey="account-admin-billing"
+      eyebrow="Platform"
+      title={accountWorkspace.adminBillingLabel}
+      byline="Stripe AI Boost subscribers, today's usage caps, and PayID manual grants."
+      titleId="admin-billing-heading"
+      variant="primary-light"
+    >
+      <div slot="actions" class="section-actions admin-panel-quick-links admin-billing-toolbar">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-users')">Users</button>
+        <label class="sr-only" for="admin-billing-search">Filter billing tables</label>
+        <input
+          id="admin-billing-search"
+          type="search"
+          class="form-input admin-billing-search"
+          placeholder="Filter by email or status…"
+          autocomplete="off"
+        />
+        <button id="admin-billing-refresh-btn" type="button" class="btn btn-secondary btn-sm">Refresh</button>
+      </div>
+
+    <section class="admin-section admin-section--in-band" aria-labelledby="admin-billing-heading">
+
+      <details class="panel-guidance-details">
+        <summary>Billing overview</summary>
+        <div class="panel-guidance-details__body">
+          <p><strong>Stripe AI Boost</strong> adds +15 daily AI units while a subscription is active or trialing.</p>
+          <p><strong>PayID grants</strong> add bonus units for today (UTC) after manual payment clears.</p>
+          <p>Users manage invoices and cancellation via <strong>Manage subscription</strong> on Overview (Stripe Customer Portal).</p>
+        </div>
+      </details>
+
+      <div id="admin-billing-stripe-status" class="admin-billing-status-card" aria-live="polite" role="status">
+        Loading billing configuration…
+      </div>
+
+      <p id="admin-billing-summary" class="admin-queue-summary" role="status" aria-live="polite">Loading billing data…</p>
+
+      <h3 class="admin-billing-section-title">Subscribers</h3>
+      <div class="admin-billing-table-wrap" role="region" aria-label="Stripe subscribers table" tabindex="0">
+        <table class="admin-billing-table">
+          <thead>
+            <tr>
+              <th scope="col">Email</th>
+              <th scope="col">Status</th>
+              <th scope="col">Daily bonus</th>
+              <th scope="col">Stripe customer</th>
+              <th scope="col">Updated</th>
+            </tr>
+          </thead>
+          <tbody id="admin-billing-subscribers-tbody">
+            <tr><td colspan="5">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="admin-billing-section-title">Today's usage</h3>
+      <div class="admin-billing-table-wrap" role="region" aria-label="Daily AI usage by user" tabindex="0">
+        <table class="admin-billing-table">
+          <thead>
+            <tr>
+              <th scope="col">Email</th>
+              <th scope="col">Used / cap</th>
+              <th scope="col">Remaining</th>
+              <th scope="col">Bonuses</th>
+              <th scope="col">Subscription</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-billing-usage-tbody">
+            <tr><td colspan="6">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="admin-billing-grant-card" class="card admin-billing-grant-card">
+        <h3 class="card-title">PayID manual grant</h3>
+        <p class="form-hint">Add bonus AI units for today (UTC) after PayID payment clears.</p>
+        <form id="admin-billing-grant-form" class="admin-usage-grant-form">
+          <label class="form-label" for="admin-billing-grant-email">User email</label>
+          <input id="admin-billing-grant-email" class="form-input" type="email" required autocomplete="off" />
+          <label class="form-label" for="admin-billing-grant-units">Bonus units (1–50, today UTC)</label>
+          <input id="admin-billing-grant-units" class="form-input" type="number" min="1" max="50" value="5" required />
+          <label class="form-label" for="admin-billing-grant-note">Note (optional)</label>
+          <input id="admin-billing-grant-note" class="form-input" type="text" placeholder="PayID ref BS-user-TOPUP" />
+          <button type="submit" class="btn btn-primary btn-sm">Grant units</button>
+        </form>
+        <p id="admin-billing-grant-status" class="form-hint" role="status" aria-live="polite"></p>
+        <p class="form-hint">PayID reference format: <code>BS-{`{userId}`}-TOPUP</code></p>
+      </div>
+    </section>
+    </AccountWorkspacePanelBand>
+  </div>
+</div>

@@ -1,6 +1,15 @@
 import type { VoiceProfileResolutionKind } from '../resource-types';
 import type { InferenceMode } from './resource-generate';
 
+export type ResourceSourceKind =
+  | 'starter'
+  | 'resource'
+  | 'generate'
+  | 'improve'
+  | 'upload'
+  | 'growth'
+  | 'rag';
+
 export interface InferenceMetadataInput {
   inferenceMode?: InferenceMode;
   modelId?: string;
@@ -10,6 +19,9 @@ export interface InferenceMetadataInput {
   wordCount?: number;
   semanticLevel?: 'high' | 'medium' | 'normal';
   growthKind?: 'case_study';
+  sourceResourceId?: string;
+  sourceResourceIds?: string[];
+  sourceKind?: ResourceSourceKind;
 }
 
 export function mergeInferenceMetadata(
@@ -26,6 +38,9 @@ export function mergeInferenceMetadata(
     inferenceMode: input.inferenceMode,
     inferenceModelId: input.inferenceMode ? (input.modelId ?? null) : base?.inferenceModelId,
     ...(input.growthKind ? { growthKind: input.growthKind } : {}),
+    ...(input.sourceResourceId ? { sourceResourceId: input.sourceResourceId } : {}),
+    ...(input.sourceResourceIds?.length ? { sourceResourceIds: input.sourceResourceIds } : {}),
+    ...(input.sourceKind ? { sourceKind: input.sourceKind } : {}),
   };
 }
 

@@ -57,6 +57,8 @@ Code guards: `normalizeForJsonbStorage` on save, `coerceCorpusPayload` on load (
 
 Vectors are **not** on Cloudflare Vectorize today — they live on the API filesystem next to `resources.json`. **Reindex** after bulk imports or disk restore.
 
+**Bin drafts:** Deleting a draft/archived resource sets `binnedAt` and keeps `status: draft`. The corpus row and semantic chunks stay so the dashboard can keep producing collation data. Query with `?binnedOnly=1`.
+
 ---
 
 ## Library growth flow

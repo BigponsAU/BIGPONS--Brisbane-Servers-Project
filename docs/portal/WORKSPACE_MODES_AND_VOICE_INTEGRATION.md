@@ -12,7 +12,7 @@
 | `voice-framework/dashboard/routes/topology-routes.ts` | 3D principle topology | **Voice map** panel → `GET /api/voice-map/principles` |
 | `voice-framework/storage/semantic-index` + embeddings | Vector corpus | **Voice map** (semantic view) → `GET /api/voice-map/semantic` |
 | `voice-framework/dashboard/public/topology3d.js` | Three.js 3D canvas | **2D SVG map** in portal (no separate host; 3D optional later) |
-| `voice-framework/dashboard/public/markov-chain-tracker.js` | Markov / debug analytics | **Voice lab** — client portal flow summary (`portal-markov-tracker.ts`) |
+| `voice-framework/dashboard/public/markov-chain-tracker.js` | Markov / debug analytics | **Voice lab** — resource lineage + voice match share (`portal-markov-tracker.ts`) |
 | Same dashboard | Library, documents upload, A/B tests | Partially covered by Resources, Profiles, Library growth |
 
 **No Docker/Render required** — all features run on `api.brisbaneservers.com` (Cloudflare Worker + Neon Hyperdrive).
@@ -24,7 +24,7 @@
 For `admin` and `super-admin` (e.g. `bigpons@brisbaneservers.com`):
 
 1. **Workspace** — Overview, Resources, Profiles, Analytics, Voice lab, Voice map  
-2. **Admin console** — Library growth, Moderation, Site review, Ops & billing  
+2. **Admin console** — Library growth, Moderation, Site review, Ops, Billing  
 
 Toggle at top of sidebar slides nav tracks (`workspace-mode-switcher`). Choice persists in `localStorage` (`bs-workspace-nav-mode`).
 
@@ -57,7 +57,7 @@ CLI (`curl -fsSL "https://x.ai/cli/install.sh" | bash`) is for local Grok toolin
 | **Phase 3** | PayID top-up reference → admin manual grant |
 | **After portal stable** | Stripe subscription for over-cap usage (automatic) |
 
-Ops copy lives in **Admin console → Ops & billing** panel.
+Ops and billing live in **Admin console → Ops** and **Admin console → Billing** panels.
 
 ---
 

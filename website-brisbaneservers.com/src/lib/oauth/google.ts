@@ -163,6 +163,15 @@ export async function completeGoogleOAuth(
     const profile = await exchangeCodeForUserInfo(request, code);
     const storedUser = await resolveUserFromGoogle(profile);
 
+    if (storedUser.removedAt) {
+      await logAuthEvent({
+        userId: storedUser.id,
+        email: storedUser.email,
+        eventType: 'auth.oauth.google.blocked-removed',
+      });
+      return Response.redirect(`${getAccountReturnUrl()}?oauth_error=account_removed`, 302);
+    }
+
     const user: AuthUser = {
       id: storedUser.id,
       email: storedUser.email,

@@ -1,8 +1,4 @@
-/**
- * Auth persistence — Postgres only (Neon via Hyperdrive on the edge worker).
- */
-
-export type { AuthAuditEventRecord } from './auth-pg';
+export type { AuthAuditEventRecord, UserAccountBackupRecord } from './auth-pg';
 export { usePostgres } from './pg-pool';
 export {
   listUsersFromDb,
@@ -14,6 +10,9 @@ export {
   updateUserRoleInDb,
   updateUserWorkspaceEnabledInDb,
   deleteUserInDb,
+  softRemoveUserInDb,
+  restoreUserInDb,
+  listUserAccountBackupsInDb,
   listSessionsFromDb,
   createSessionInDb,
   getSessionUserFromDb,
@@ -26,4 +25,5 @@ export {
   pruneAuthTokensInDb,
   recordAuthAuditEvent,
   listRecentAuthAuditEvents,
+  countAuthAuditEvents,
 } from './auth-pg';

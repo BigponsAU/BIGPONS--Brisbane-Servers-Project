@@ -1,6 +1,9 @@
 /**
  * Workspace sidebar command palette — panel jump, resource/profile/voice prefixes.
  * UX mirrors public SemanticSearch: suggestions dropdown, Enter to run, no auto-nav on type.
+ *
+ * Security: panel suggestions and jumps are role-gated via `canAccessPanel`. Aliases must
+ * not leak admin destinations to non-admins. Server APIs remain the real enforcement layer.
  */
 import { workspaceNavItems, type WorkspacePanelId } from '../data/account-workspace';
 
@@ -27,7 +30,8 @@ export const GLOBAL_SEARCH_PANEL_ALIASES: Record<string, WorkspacePanelId> = {
   'admin-users': 'admin-users',
   ops: 'admin-ops',
   'admin-ops': 'admin-ops',
-  billing: 'admin-ops',
+  billing: 'admin-billing',
+  'admin-billing': 'admin-billing',
 };
 
 const PREFIX_HINTS = [
@@ -41,6 +45,8 @@ export interface WorkspaceGlobalSearchDeps {
   navigateToPanel: (panel: string) => void;
   applyResourceSearchQuery: (query: string) => void;
   filterProfileCardsByQuery: (query: string) => void;
+  /** Role gate — required for safe panel jumps/suggestions. */
+  canAccessPanel: (panel: string) => boolean;
 }
 
 type SearchSuggestion =
@@ -58,19 +64,41 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function visiblePanelItems(): typeof workspaceNavItems {
-  return workspaceNavItems.filter((item) => {
+function resolvePanelId(raw: string): WorkspacePanelId | null {
+  const lower = raw.trim().toLowerCase();
+  if (!lower) return null;
+  const aliased = GLOBAL_SEARCH_PANEL_ALIASES[lower];
+  if (aliased) return aliased;
+  if (workspaceNavItems.some((item) => item.panel === lower)) {
+    return lower as WorkspacePanelId;
+  }
+  return null;
+}
+
+function accessibleNavItems(canAccessPanel: (panel: string) => boolean): typeof workspaceNavItems {
+  return workspaceNavItems.filter((item) => canAccessPanel(item.panel));
+}
+
+/** Panels visible in the current sidebar mode (and role-allowed). */
+function visibleAccessiblePanelItems(
+  canAccessPanel: (panel: string) => boolean,
+): typeof workspaceNavItems {
+  return accessibleNavItems(canAccessPanel).filter((item) => {
     const link = document.querySelector<HTMLElement>(
       `.sidebar-nav-item[data-panel="${item.panel}"]`,
     );
-    return link && link.offsetParent !== null && !link.hidden;
+    return Boolean(link && link.offsetParent !== null && !link.hidden && link.style.display !== 'none');
   });
 }
 
-function buildSuggestions(rawQuery: string): SearchSuggestion[] {
+function buildSuggestions(
+  rawQuery: string,
+  canAccessPanel: (panel: string) => boolean,
+): SearchSuggestion[] {
   const query = rawQuery.trim();
   const lower = query.toLowerCase();
   const suggestions: SearchSuggestion[] = [];
+  const allowed = accessibleNavItems(canAccessPanel);
 
   if (!query) {
     for (const hint of PREFIX_HINTS) {
@@ -81,7 +109,7 @@ function buildSuggestions(rawQuery: string): SearchSuggestion[] {
         query: hint.example,
       });
     }
-    for (const item of visiblePanelItems().slice(0, 8)) {
+    for (const item of visibleAccessiblePanelItems(canAccessPanel).slice(0, 8)) {
       suggestions.push({
         kind: 'panel',
         panel: item.panel,
@@ -104,7 +132,7 @@ function buildSuggestions(rawQuery: string): SearchSuggestion[] {
     }
   }
 
-  for (const item of visiblePanelItems()) {
+  for (const item of allowed) {
     const haystack = `${item.label} ${item.panel} ${item.description}`.toLowerCase();
     if (haystack.includes(lower)) {
       suggestions.push({
@@ -117,8 +145,12 @@ function buildSuggestions(rawQuery: string): SearchSuggestion[] {
     }
   }
 
-  const aliasPanel = GLOBAL_SEARCH_PANEL_ALIASES[lower];
-  if (aliasPanel && !suggestions.some((s) => s.kind === 'panel' && s.panel === aliasPanel)) {
+  const aliasPanel = resolvePanelId(lower);
+  if (
+    aliasPanel &&
+    canAccessPanel(aliasPanel) &&
+    !suggestions.some((s) => s.kind === 'panel' && s.panel === aliasPanel)
+  ) {
     const nav = workspaceNavItems.find((item) => item.panel === aliasPanel);
     suggestions.unshift({
       kind: 'panel',
@@ -148,9 +180,11 @@ export function applyGlobalSearchQuery(rawQuery: string, deps: WorkspaceGlobalSe
   const lower = query.toLowerCase();
 
   if (lower.startsWith('panel:')) {
-    const panelQuery = query.slice(6).trim().toLowerCase();
-    const panelTarget = GLOBAL_SEARCH_PANEL_ALIASES[panelQuery] ?? panelQuery;
-    deps.navigateToPanel(panelTarget);
+    const panelQuery = query.slice(6).trim();
+    const panelTarget = resolvePanelId(panelQuery);
+    if (panelTarget && deps.canAccessPanel(panelTarget)) {
+      deps.navigateToPanel(panelTarget);
+    }
     return;
   }
 
@@ -160,6 +194,7 @@ export function applyGlobalSearchQuery(rawQuery: string, deps: WorkspaceGlobalSe
   }
 
   if (lower.startsWith('profile:')) {
+    if (!deps.canAccessPanel('profiles')) return;
     const profileQuery = query.slice(8).trim();
     deps.navigateToPanel('profiles');
     window.setTimeout(() => deps.filterProfileCardsByQuery(profileQuery), 150);
@@ -167,6 +202,7 @@ export function applyGlobalSearchQuery(rawQuery: string, deps: WorkspaceGlobalSe
   }
 
   if (lower.startsWith('voice:')) {
+    if (!deps.canAccessPanel('voice-lab')) return;
     const voiceText = query.slice(6).trim();
     deps.navigateToPanel('voice-lab');
     window.setTimeout(() => {
@@ -176,9 +212,11 @@ export function applyGlobalSearchQuery(rawQuery: string, deps: WorkspaceGlobalSe
     return;
   }
 
-  const panelTarget = GLOBAL_SEARCH_PANEL_ALIASES[lower];
+  const panelTarget = resolvePanelId(lower);
   if (panelTarget) {
-    deps.navigateToPanel(panelTarget);
+    if (deps.canAccessPanel(panelTarget)) {
+      deps.navigateToPanel(panelTarget);
+    }
     return;
   }
 
@@ -240,7 +278,7 @@ export function bootWorkspaceGlobalSearch(deps: WorkspaceGlobalSearchDeps): void
   bound = true;
 
   const refreshSuggestions = (): void => {
-    renderSuggestions(resultsEl, input, buildSuggestions(input.value), (picked) => {
+    renderSuggestions(resultsEl, input, buildSuggestions(input.value, deps.canAccessPanel), (picked) => {
       input.value = picked;
       applyGlobalSearchQuery(picked, deps);
       closeSuggestions(resultsEl, input);

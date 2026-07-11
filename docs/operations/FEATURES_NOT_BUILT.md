@@ -12,11 +12,12 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Why not built yet |
 |---------|--------|-------------------|
-| **Stripe subscription** past daily AI cap | **Live** | Checkout + webhook + `billing-accounts` corpus; +15 daily units when active. Requires `STRIPE_*` secrets on edge worker. |
-| **PayID manual top-up** + admin grant | **Live** | Admin Ops → AI cap top-up form; `POST /api/admin/usage/grant` |
+| **Stripe subscription** past daily AI cap | **Live** | Checkout + webhook + Customer Portal + `billing-accounts` corpus; +15 daily units when active. Requires `STRIPE_*` secrets on edge worker. |
+| **PayID manual top-up** + admin grant | **Live** | Admin Billing → PayID grant form; `POST /api/admin/usage/grant` |
+| **Custom invoice list UI** | Not planned | Users manage invoices via Stripe Customer Portal; admins use subscriber roster + Stripe Dashboard. |
 | **Automated credit purchase** | Not planned (short term) | Daily role-based caps + template fallback already prevent runaway cost on Workers AI free tier. Paid top-up is a business process, not a code gap. |
 
-**What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding, **Stripe AI Boost checkout** (`POST /api/billing/checkout`), **PayID admin grant** (`POST /api/admin/usage/grant`).
+**What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding, **Stripe AI Boost checkout** (`POST /api/billing/checkout`), **Stripe Customer Portal** (`POST /api/billing/portal`), **PayID admin grant** (`POST /api/admin/usage/grant`), **admin billing roster** (`GET /api/admin/billing/accounts`), **admin usage summary** (`GET /api/admin/usage/summary`).
 
 ---
 
@@ -78,7 +79,7 @@ This document records product and platform capabilities that are **deliberately 
 
 Suggested order after portal and edge are stable:
 
-1. **PayID grant admin UI** — shipped in Admin Ops.
+1. **PayID grant admin UI** — shipped in Admin Billing.
 2. **Stripe subscription** past daily AI cap — shipped; configure Stripe secrets on worker.
 3. **Stripe** — if subscription revenue is prioritised over manual PayID.
 4. **Binary DOCX/PDF round-trip** — if customers need original fonts/logos preserved in-file (not markdown structure).

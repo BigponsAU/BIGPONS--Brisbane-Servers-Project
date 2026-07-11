@@ -170,21 +170,31 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     if (updates.restoreToWorkspace === true) {
       const isAdmin = authResult.user.role === 'admin' || authResult.user.role === 'super-admin';
-      if (!isAdmin) {
+      const isOwner = Boolean(authResult.user.id && existing.ownerId === authResult.user.id);
+      const canRestoreRemoved = isAdmin && Boolean(existing.portalRemovedAt);
+      const canRestoreBinned = (isAdmin || isOwner) && Boolean(existing.binnedAt);
+
+      if (!canRestoreRemoved && !canRestoreBinned) {
+        if (!existing.portalRemovedAt && !existing.binnedAt) {
+          return new Response(
+            JSON.stringify({
+              error: 'Resource is not removed or binned',
+              code: 'NOT_REMOVED',
+              success: false,
+            }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } },
+          );
+        }
         return new Response(
-          JSON.stringify({ error: 'Admin only', code: 'FORBIDDEN', success: false }),
+          JSON.stringify({ error: 'Forbidden', code: 'FORBIDDEN', success: false }),
           { status: 403, headers: { 'Content-Type': 'application/json' } },
         );
       }
-      if (!existing.portalRemovedAt) {
-        return new Response(
-          JSON.stringify({ error: 'Resource is not removed from workspace', code: 'NOT_REMOVED', success: false }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } },
-        );
-      }
+
       const restored = {
         ...existing,
-        portalRemovedAt: undefined,
+        portalRemovedAt: canRestoreRemoved ? undefined : existing.portalRemovedAt,
+        binnedAt: canRestoreBinned ? undefined : existing.binnedAt,
         version: existing.version + 1,
       };
       resources[idx] = restored;
@@ -233,6 +243,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
       id: existing.id,
       isStarterBlock: existing.isStarterBlock,
       portalRemovedAt: existing.portalRemovedAt,
+      binnedAt: existing.binnedAt,
       version: existing.version + 1,
       industry: (contentUpdates.industry as string) ?? existing.industry,
       topic: (contentUpdates.topic as string) ?? existing.topic,
@@ -393,13 +404,25 @@ export const DELETE: APIRoute = async ({ params, request }) => {
       );
     }
 
-    const filtered = resources.filter((r) => r.id !== id);
-    await saveResources(filtered);
+    /**
+     * Draft/archived: soft-bin as a draft — keep corpus row + semantic vectors for collation.
+     * Do not call removeChunksForResource; the dashboard is a producer for growing vector data.
+     */
+    const idx = resources.findIndex((r) => r.id === id);
+    resources[idx] = {
+      ...resource,
+      status: 'draft',
+      binnedAt: new Date().toISOString(),
+      version: resource.version + 1,
+    };
+    await saveResources(resources);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Resource deleted'
+        binned: true,
+        message:
+          'Moved to bin as a draft. Semantic vectors are kept for collation.',
       }),
       {
         status: 200,

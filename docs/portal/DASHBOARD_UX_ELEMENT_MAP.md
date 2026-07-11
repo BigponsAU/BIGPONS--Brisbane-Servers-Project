@@ -15,7 +15,7 @@
 | **Home** | Overview | Stats, tokens, contributions, security, starter blocks | `client` |
 | **Create** | Resources | Tree workspace, generate, upload, paste, OCR documents | `client` |
 | **Voice studio** | Voice profiles | Profile library + **inline detail** (rings, matrix, corpus) | `editor` |
-| **Voice studio** | Voice lab | Tone/pattern analysis, Markov flow | `editor` |
+| **Voice studio** | Voice lab | Tone/pattern analysis, resource lineage Markov | `editor` |
 | **Voice studio** | Voice map | 2D / depth / 3D topology | `editor` |
 | **Insights** | Analytics | Corpus stats, suggestions, pipeline config | `editor` |
 
@@ -24,7 +24,7 @@
 | Section | Panel | `minRole` |
 |---------|-------|-----------|
 | **Library** | Library growth, Moderation, Site review | `admin` |
-| **Platform** | Users, Ops & billing | `admin` |
+| **Platform** | Users, Ops, Billing | `admin` |
 
 **Role gating:** Nav items with `minRole: editor` (voice + analytics) are hidden for contributor `client` accounts. Admin mode toggle requires `admin`. Source: `workspaceNavItems` in `src/data/account-workspace.ts`.
 
@@ -55,13 +55,14 @@ Contributor home links to `/resources/`, `/contribute/`, and **Request workspace
 | Resource view / edit modals | Resources → `#view-resource-modal`, `#edit-resource-modal` | Detail pane → **inline edit** (`editResource(id, 'inline')`) |
 | Resource action permissions | `getResourceActionPermissions()` | Delete blocked while **published** (owner); admin **Remove from workspace** = soft delete |
 | Published index retention | `portalRemovedAt` soft delete | Public + search index **unchanged** when admin removes from workspace |
+| Draft bin (collation) | `binnedAt` soft-bin | Corpus row + semantic vectors **kept**; Recent Activity double-click → confirm |
 | Confirm dialogs | `showConfirmDialog()` | All workspace + admin panels (resources, profiles, voice, growth, moderation, ops, users) |
 | Markdown content editor | `workspace-markdown-field.ts` | Visual / Markdown / Preview + format toolbar on content fields |
 | Preview resource modal | `#preview-resource-modal` | Rendered markdown; replaces ad-hoc DOM |
 | Admin removed resources | Tree **Removed** + list filter `removedOnly=1` | Restore via `restoreResource()` |
 | Starter blocks on Overview | Overview → starter blocks card | Same data as `/resources/starter-blocks` |
-| Tokens & perks | Overview → tokens card | Admin ops → usage / redemptions |
-| Markov navigation flow | Voice lab → collapsible | — |
+| Tokens & perks | Overview → tokens card | Admin ops → token queue; Admin billing → usage |
+| Markov resource lineage | Voice lab → collapsible | Creation hops + voice match % |
 | Admin growth config / queue | Library growth → split workspace | Cross-links → Insights, Resources |
 | Moderation preview | Moderation → queue + detail pane | Cross-links → Resources, Library growth |
 | Hosting checklist | Site review → collapsible (super-admin) | Cross-link → Ops |
@@ -76,8 +77,9 @@ Contributor home links to `/resources/`, `/contribute/`, and **Request workspace
 | Library growth | `panel-shell`, collapsible guidance, config \| queue split, cross-links |
 | Moderation | Queue list + inline detail preview, summary count |
 | Site review | Grid cards, hosting in collapsible `<details>` |
-| Users | Guidance, cross-link to Ops, queue-style summary |
-| Ops & billing | Primary usage card, collapsible inference/billing/setup cards |
+| Users | Guidance, cross-links to Ops + Billing, queue-style summary |
+| Ops | Site usage snapshot, corpus, token queue, inference runbooks |
+| Billing | Stripe status, subscriber roster, usage-by-user table, PayID grant form |
 
 ### `panel-shell` + marketing bands
 
@@ -108,7 +110,8 @@ Shared component: `AccountWorkspacePanelBand.astro`
 | `account-library-growth.ts` | Library growth bind + load | Boot (`account-workspace-boot.ts`) |
 | `account-admin-moderation.ts` | Moderation queue | Boot via `portal-account-extensions.ts` |
 | `account-admin-users.ts` | Users table + audit | **First visit to Users** |
-| `account-admin-ops.ts` | Ops & billing cards | Boot |
+| `account-admin-ops.ts` | Ops health cards | Boot |
+| `account-admin-billing.ts` | Billing tables + PayID grant | Boot |
 
 **Build impact (gzip):** app shell ~13 KB; profiles chunk ~12 KB; resources chunk ~15 KB — loaded on demand, not on first paint after sign-in.
 
@@ -132,7 +135,7 @@ Shared component: `AccountWorkspacePanelBand.astro`
 | Voice profile select isolated | Resources voice bar + links to Profiles & Voice lab | Voice sits next to create flow |
 | Analytics under “Content” | **Insights** section | Separates create vs measure |
 | Verbose profile guidance always open | Collapsible `<details>` | Less scroll before library |
-| Markov always visible in Voice lab | Collapsible secondary card | Focus on analyze first |
+| Markov always visible in Voice lab | Collapsible secondary card | Focus on analyze first; lineage is optional |
 
 ---
 
@@ -160,7 +163,7 @@ Repo-ready items (local / CI). **Production** also needs Pages deploy + edge wor
 - [x] Marketing bands + `panel-shell` on all panels
 - [x] Styled confirms on admin approve/reject/arm/run/fulfill
 - [x] Global search prefixes + mode-aware keyboard shortcuts
-- [ ] Payment UI in Admin ops (planned — `FEATURES_NOT_BUILT.md`)
+- [x] Payment UI in Admin Billing + Stripe Customer Portal on Overview
 - [x] Owner backfill — **not needed** on production (4 resources, all `ownerId: system`, 0 orphans). Script: `npm run backfill:resource-owners`
 - [x] Corpus payload repair — use `npm run audit:corpus -- --repair --apply` if string-encoded rows return
 

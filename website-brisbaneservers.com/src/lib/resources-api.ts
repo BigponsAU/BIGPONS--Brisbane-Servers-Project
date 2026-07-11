@@ -8,7 +8,7 @@ import type { Resource } from './resource-types';
 import { normalizeTopicSlug } from './resource-slug';
 
 export type { Resource, Visibility, ProcessingStatus } from './resource-types';
-export { isPublicResource } from './resource-types';
+export { isPublicResource, isVisibleInPortalWorkspace, isBinnedResource } from './resource-types';
 export { normalizeTopicSlug } from './resource-slug';
 export {
   getResourcesFile,

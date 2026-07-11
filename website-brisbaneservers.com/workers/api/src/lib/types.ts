@@ -17,6 +17,10 @@ export interface StoredUser {
   emailVerifiedAt?: string | null;
   updatedAt?: string;
   workspaceEnabled?: boolean;
+  /** Soft-removed accounts cannot sign in until restored. */
+  removedAt?: string | null;
+  removedBy?: string | null;
+  removalReason?: string | null;
 }
 
 export type AuthTokenType = 'email-verify' | 'password-reset';

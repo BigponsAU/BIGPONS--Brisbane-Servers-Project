@@ -9,7 +9,7 @@ import {
   getInMemorySessionToken,
   setAccountNavSignedIn,
 } from '../lib/client-api';
-import { initWorkspaceModeSwitcher } from './account-workspace-mode';
+import { initWorkspaceModeSwitcher, setWorkspaceMode } from './account-workspace-mode';
 import { trackPortalPanel, trackPortalAction, registerPortalWorkspaceFunctions } from './portal-markov-tracker';
 import { closeMobileNav } from './nav-mobile';
 import {
@@ -30,9 +30,10 @@ import {
 import { ensureProfilesPanel, ensureResourcesPanel, registerPanelLoaderStubs } from './account-workspace-panel-loader';
 import { createVoiceContext } from './account-workspace-voice-context';
 import { fetchAuthenticatedResources, fetchStarterBlocks } from './account-workspace-resource-api';
-import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
+import { getWorkspaceResources, setWorkspaceResources, upsertWorkspaceResource } from './account-workspace-resource-store';
 import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy } from './account-workspace-utils';
-import { hasWorkspaceCapability } from '../lib/workspace-roles';
+import { hasWorkspaceCapability, type WorkspaceMinRole } from '../lib/workspace-roles';
+import { workspaceNavItems } from '../data/account-workspace';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import {
   bootWorkspaceGlobalSearch,
@@ -211,6 +212,7 @@ export function bootAccountWorkspaceDashboard(): void {
       navigateToPanel,
       applyResourceSearchQuery,
       filterProfileCardsByQuery,
+      canAccessPanel: canAccessWorkspacePanel,
     });
 
     syncWorkspaceSidebarLayout();
@@ -380,19 +382,59 @@ export function bootAccountWorkspaceDashboard(): void {
       window.__portalAccountExt?.loadHostingStatus(accountCtx);
     } else if (panelName === 'admin-users') {
       trackPortalAction('loadAdminUsersPanel');
-      void import('./account-admin-users.ts').then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()));
+      void import('./account-admin-users.ts')
+        .then((mod) => mod.loadAdminUsersPanel(getVoiceApiUrl()))
+        .catch((err) => {
+          console.error('[Portal] Failed to load admin users panel module:', err);
+          const tbody = document.getElementById('admin-users-tbody');
+          const summary = document.getElementById('admin-users-summary');
+          const auditBody = document.getElementById('admin-auth-audit-tbody');
+          if (tbody) tbody.innerHTML = '<tr><td colspan="5">Could not load users panel.</td></tr>';
+          if (summary) summary.textContent = 'Failed to load users panel.';
+          if (auditBody) auditBody.innerHTML = '<tr><td colspan="4">Could not load auth events.</td></tr>';
+        });
     } else if (panelName === 'admin-ops') {
       trackPortalAction('loadAdminOpsPanel');
       window.__portalAccountExt?.loadAdminOpsPanel(accountCtx);
+    } else if (panelName === 'admin-billing') {
+      trackPortalAction('loadAdminBillingPanel');
+      window.__portalAccountExt?.loadAdminBillingPanel(accountCtx);
     }
   }
 
-  (window as any).navigateToPanel = function(panelName: string): void {
+  function canAccessWorkspacePanel(panelName: string): boolean {
+    const nav = workspaceNavItems.find((item) => item.panel === panelName);
+    const minRole = (document.getElementById(`${panelName}-panel`)?.dataset.minRole ??
+      nav?.minRole) as WorkspaceMinRole | undefined;
+    if (!minRole) return Boolean(nav);
+    return hasWorkspaceCapability(workspaceUser, minRole);
+  }
+
+  function navigateToPanel(panelName: string): void {
     if (import.meta.env.MODE === 'development') {
       console.log('[Portal] Navigating to panel:', panelName);
     }
 
     const targetPanel = document.getElementById(`${panelName}-panel`) as HTMLElement | null;
+    const navMeta = workspaceNavItems.find((item) => item.panel === panelName);
+    const minRole = (targetPanel?.dataset.minRole ?? navMeta?.minRole) as WorkspaceMinRole | undefined;
+    if (minRole && !hasWorkspaceCapability(workspaceUser, minRole)) {
+      if (import.meta.env.MODE === 'development') {
+        console.warn('[Portal] Access denied for panel:', panelName);
+      }
+      if (panelName !== 'dashboard') {
+        navigateToPanel('dashboard');
+      }
+      return;
+    }
+
+    if (navMeta?.mode) {
+      const tracks = document.getElementById('sidebar-nav-tracks');
+      if (tracks?.dataset.workspaceMode !== navMeta.mode) {
+        setWorkspaceMode(navMeta.mode, false);
+      }
+    }
+
     if (targetPanel?.classList.contains('active')) {
       refreshPanelData(panelName);
       return;
@@ -425,14 +467,6 @@ export function bootAccountWorkspaceDashboard(): void {
     // Show selected panel with fade in
     const panel = targetPanel;
     if (panel) {
-      const minRole = panel.dataset.minRole as 'client' | 'viewer' | 'editor' | 'admin' | undefined;
-      if (minRole && workspaceUser && !hasWorkspaceCapability(workspaceUser, minRole)) {
-        if (import.meta.env.MODE === 'development') {
-          console.warn('[Portal] Access denied for panel:', panelName);
-        }
-        navigateToPanel('dashboard');
-        return;
-      }
       panel.style.display = 'block';
       panel.style.opacity = '0';
       panel.style.transform = 'translateY(10px)';
@@ -481,7 +515,19 @@ export function bootAccountWorkspaceDashboard(): void {
     if (panelName === 'voice-lab') {
       void import('./portal-markov-tracker').then((mod) => mod.renderPortalMarkovIntoVoiceLab());
     }
-  };
+  }
+
+  (window as any).navigateToPanel = navigateToPanel;
+
+  // Sidebar nav must bind here (always-loaded), not in the lazy resources chunk —
+  // otherwise Admin console links are dead until Resources has been visited.
+  document.getElementById('portal-sidebar')?.addEventListener('click', (event) => {
+    const item = (event.target as HTMLElement).closest('.sidebar-nav-item[data-panel]') as HTMLElement | null;
+    if (!item) return;
+    event.preventDefault();
+    const panel = item.getAttribute('data-panel');
+    if (panel) navigateToPanel(panel);
+  });
 
   // Sidebar toggle
   document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
@@ -577,8 +623,15 @@ export function bootAccountWorkspaceDashboard(): void {
       const date = new Date(resource.generatedAt || Date.now());
       const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const action = resource.generatedBy === 'system-seed' ? 'Created' : resource.generatedBy ? 'Updated' : 'Created';
+      const canBin = resource.status === 'draft' || resource.status === 'archived';
       return `
-        <div class="activity-item" onclick="navigateToPanel('resources'); setTimeout(() => selectResource('${escapeHtml(resource.id)}'), 100);" style="cursor: pointer;">
+        <div
+          class="activity-item${canBin ? ' activity-item--binnable' : ''}"
+          data-resource-id="${escapeHtml(resource.id)}"
+          data-can-bin="${canBin ? '1' : '0'}"
+          title="${canBin ? 'Click to open · Double-click to move to bin' : 'Click to open'}"
+          style="cursor: pointer;"
+        >
           <div class="activity-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -593,6 +646,41 @@ export function bootAccountWorkspaceDashboard(): void {
         </div>
       `;
     }).join('');
+
+    bindRecentActivityInteractions(activityList);
+  }
+
+  let recentActivityClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function bindRecentActivityInteractions(activityList: HTMLElement): void {
+    activityList.querySelectorAll<HTMLElement>('.activity-item[data-resource-id]').forEach((item) => {
+      const id = item.dataset.resourceId;
+      if (!id) return;
+
+      item.addEventListener('click', (event) => {
+        if ((event as MouseEvent).detail > 1) return;
+        if (recentActivityClickTimer) clearTimeout(recentActivityClickTimer);
+        recentActivityClickTimer = setTimeout(() => {
+          recentActivityClickTimer = null;
+          (window as any).navigateToPanel?.('resources');
+          setTimeout(() => (window as any).selectResource?.(id), 100);
+        }, 280);
+      });
+
+      item.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (recentActivityClickTimer) {
+          clearTimeout(recentActivityClickTimer);
+          recentActivityClickTimer = null;
+        }
+        if (item.dataset.canBin !== '1') {
+          showNotification('Only draft or archived resources can be moved to the bin.', 'warning');
+          return;
+        }
+        void (window as any).deleteResource?.(id);
+      });
+    });
   }
 
   // Update recent resources preview - show user's own resources (not starter blocks)
@@ -625,7 +713,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     previewGrid.innerHTML = recent.map((resource: any) => {
       return `
-        <div class="resource-preview-card" onclick="navigateToPanel('resources'); setTimeout(() => selectResource('${escapeHtml(resource.id)}'), 100);">
+        <div class="resource-preview-card" onclick="navigateToPanel('resources'); setTimeout(() => selectResource('${escapeJsString(resource.id)}'), 100);">
           <h4 class="preview-card-title">${escapeHtml(resource.title || 'Untitled')}</h4>
           <p class="preview-card-meta">${escapeHtml(resource.industry || 'N/A')} • ${escapeHtml(resource.topic || 'N/A')}</p>
           <span class="preview-card-badge badge-${escapeHtml(resource.status || 'draft')}">${escapeHtml((resource.status || 'draft').charAt(0).toUpperCase() + (resource.status || 'draft').slice(1))}</span>
@@ -739,8 +827,8 @@ export function bootAccountWorkspaceDashboard(): void {
       const industryName = String(block.industry ?? 'Uncategorized')
         .replace(/-/g, ' ')
         .replace(/\b\w/g, (l: string) => l.toUpperCase());
-        const descriptionSource = resourceExcerpt(block);
-      const blockId = escapeHtml(block.id);
+        const descriptionSource = resourceExcerpt(block, 320);
+      const blockId = escapeJsString(block.id);
       return `
         <div class="starter-block-card" onclick="createFromStarterBlock('${blockId}')">
           <div class="starter-block-header">
@@ -855,17 +943,17 @@ export function bootAccountWorkspaceDashboard(): void {
               message += ' Base voice profile created automatically.';
             }
             showNotification(message, 'success');
+            if (data.resource) {
+              upsertWorkspaceResource(data.resource);
+            }
             navigateToPanel('resources');
-            setTimeout(() => {
-              if (data.resource?.id) {
-                selectResource(data.resource.id);
-              }
-              loadResources();
-              loadDashboardData();
+            const createdId = data.resource?.id as string | undefined;
+            void loadResources(createdId ? { revealResourceId: createdId } : undefined).then(() => {
+              void loadDashboardData();
               if (data.profileCreated && typeof loadProfiles === 'function') {
                 setTimeout(() => loadProfiles(), 1000);
               }
-            }, 100);
+            });
           } else {
             showNotification(`Failed to create resource: ${data.error || 'Unknown error'}`, 'error');
           }
@@ -951,7 +1039,7 @@ export function bootAccountWorkspaceDashboard(): void {
     if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       const adminMode = document.getElementById('header-workspace-mode-admin')?.classList.contains('is-active');
       const panels = adminMode
-        ? ['library-growth', 'moderation', 'site-review', 'admin-users', 'admin-ops']
+        ? ['library-growth', 'moderation', 'site-review', 'admin-users', 'admin-ops', 'admin-billing']
         : ['dashboard', 'resources', 'profiles', 'voice-lab', 'voice-map', 'analytics'];
       const index = parseInt(e.key, 10) - 1;
       if (panels[index]) {

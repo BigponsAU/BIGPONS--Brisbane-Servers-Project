@@ -91,6 +91,9 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                           <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary btn-sm" hidden>
                             Upgrade AI cap (Stripe)
                           </button>
+                          <button type="button" id="client-ai-manage-btn" class="btn btn-secondary btn-sm" hidden>
+                            Manage subscription
+                          </button>
                         </div>
                         <p id="client-ai-billing-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
@@ -228,6 +231,7 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
 
                     <div class="dashboard-recent-activity">
                       <h3 class="workspace-section-title">Recent Activity</h3>
+                      <p class="workspace-section-hint">Double-click a draft to move it to the bin (vectors kept for collation).</p>
                       <div id="recent-activity-list" class="activity-list">
                         <div class="activity-loading">Loading recent activity...</div>
                       </div>

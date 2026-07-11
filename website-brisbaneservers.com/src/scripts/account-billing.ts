@@ -1,17 +1,9 @@
 /**
- * Client billing helpers — Stripe checkout and overview AI usage card.
+ * Client billing helpers — Stripe checkout, Customer Portal, and overview AI usage card.
  */
 import { workspaceFetch } from '../lib/client-api';
 import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 import type { PortalAccountContext } from './portal-account-extensions';
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
@@ -37,10 +29,31 @@ export async function startStripeCheckout(ctx: PortalAccountContext): Promise<vo
   }
 }
 
+export async function startBillingPortal(ctx: PortalAccountContext): Promise<void> {
+  const statusEl = document.getElementById('client-ai-billing-status');
+  trackPortalAction('startBillingPortal');
+  if (statusEl) statusEl.textContent = 'Opening subscription portal…';
+  try {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/billing/portal`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok || !data.success || !data.portalUrl) {
+      const err = data.error || 'Portal unavailable';
+      trackPortalError('startBillingPortal', new Error(err));
+      if (statusEl) statusEl.textContent = err;
+      return;
+    }
+    window.location.href = data.portalUrl as string;
+  } catch (error) {
+    trackPortalError('startBillingPortal', error);
+    if (statusEl) statusEl.textContent = 'Could not reach billing service.';
+  }
+}
+
 export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<void> {
   const summaryEl = document.getElementById('client-ai-usage-summary');
   const metaEl = document.getElementById('client-ai-usage-meta');
   const upgradeBtn = document.getElementById('client-ai-upgrade-btn') as HTMLButtonElement | null;
+  const manageBtn = document.getElementById('client-ai-manage-btn') as HTMLButtonElement | null;
   const card = document.getElementById('client-ai-usage-card');
   if (!summaryEl || !card) return;
 
@@ -48,6 +61,7 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
     summaryEl.textContent = 'Sign in to view daily AI usage.';
     if (metaEl) metaEl.textContent = '';
     if (upgradeBtn) upgradeBtn.hidden = true;
+    if (manageBtn) manageBtn.hidden = true;
     return;
   }
 
@@ -69,6 +83,7 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
       baseCap?: number;
     };
     const subActive = Boolean(data.subscription?.active);
+    const hasCustomer = Boolean(data.subscription?.stripeCustomerId);
     const parts = [`${used} / ${cap} AI units used today`, `${remaining} remaining`];
     if ((bonus ?? 0) > 0) parts.push(`${bonus} token bonus`);
     if ((subscriptionBonus ?? 0) > 0) parts.push(`${subscriptionBonus} subscription boost`);
@@ -81,6 +96,7 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
         data.stripeConfigured && !subActive && remaining === 0
           ? 'Daily cap reached — upgrade for +15 units/day or redeem tokens.'
           : '',
+        subActive && hasCustomer ? 'Manage invoices and cancellation via the button below.' : '',
       ].filter(Boolean);
       metaEl.textContent = hints.join(' ');
     }
@@ -89,11 +105,23 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
       const showUpgrade = Boolean(data.stripeConfigured) && !subActive;
       upgradeBtn.hidden = !showUpgrade;
       upgradeBtn.disabled = !showUpgrade;
-      upgradeBtn.textContent = subActive ? 'Subscribed' : 'Upgrade AI cap (Stripe)';
+    }
+
+    if (manageBtn) {
+      const showManage = Boolean(data.stripeConfigured) && subActive && hasCustomer;
+      manageBtn.hidden = !showManage;
+      manageBtn.disabled = !showManage;
     }
   } catch {
     summaryEl.textContent = 'Could not reach usage API.';
   }
+}
+
+function clearBillingQueryParam(): void {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('billing');
+  const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
+  window.history.replaceState({}, '', next);
 }
 
 export function bindOverviewBilling(ctx: PortalAccountContext): void {
@@ -101,24 +129,23 @@ export function bindOverviewBilling(ctx: PortalAccountContext): void {
     void startStripeCheckout(ctx);
   });
 
+  document.getElementById('client-ai-manage-btn')?.addEventListener('click', () => {
+    void startBillingPortal(ctx);
+  });
+
   const params = new URLSearchParams(window.location.search);
   const billing = params.get('billing');
   const statusEl = document.getElementById('client-ai-billing-status');
   if (billing === 'success' && statusEl) {
     statusEl.textContent = 'Subscription checkout complete — refresh if cap has not updated yet.';
-    params.delete('billing');
-    const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
-    window.history.replaceState({}, '', next);
+    clearBillingQueryParam();
     void loadOverviewAiBilling(ctx);
   } else if (billing === 'cancel' && statusEl) {
     statusEl.textContent = 'Checkout canceled.';
-    params.delete('billing');
-    const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
-    window.history.replaceState({}, '', next);
+    clearBillingQueryParam();
+  } else if (billing === 'portal-return' && statusEl) {
+    statusEl.textContent = 'Returned from subscription portal.';
+    clearBillingQueryParam();
+    void loadOverviewAiBilling(ctx);
   }
-}
-
-export function renderPayIdReference(ctx: PortalAccountContext, userId?: string): string {
-  const id = userId || 'your-user-id';
-  return `BS-${escapeHtml(id)}-TOPUP`;
 }

@@ -21,7 +21,7 @@ Single schema for hub APIs and public read paths. Extends the TypeScript `Resour
 | `status` | `draft` \| `published` \| `archived` | yes | Lifecycle |
 | `isStarterBlock` | boolean | no | Starter template |
 | `visibility` | `public` \| `private` \| `starter` | no | Missing = legacy public-compatible |
-| `metadata` | object | no | `wordCount`, `semanticLevel`, `voiceScore` |
+| `metadata` | object | no | `wordCount`, `semanticLevel`, `voiceScore`, `voiceProfileId`, `sourceResourceId`, `sourceResourceIds`, `sourceKind` |
 | `embeddingModel` | string | no | Embedding provider model id |
 | `embeddingVersion` | number | no | Integer bump when re-embedding |
 | `chunkIds` | string[] | no | Deterministic chunk ids for this resource |

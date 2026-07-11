@@ -172,6 +172,9 @@ export const POST: APIRoute = async ({ request }) => {
         voiceProfileResolution: resolved.resolution,
         inferenceMode: generated.inferenceMode,
         modelId: generated.modelId,
+        sourceResourceId: rag.sourceResourceIds[0],
+        sourceResourceIds: rag.sourceResourceIds,
+        sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
       }) as import('../../../lib/resource-types').Resource['metadata'];
 
       await saveResources(resources);
@@ -195,7 +198,12 @@ export const POST: APIRoute = async ({ request }) => {
             resolution: resolved.resolution,
             profileId: resolved.voiceProfileId ?? null
           },
-          rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+          rag: {
+            retrievalMs: rag.retrievalMs,
+            chunkIds: rag.chunkIds,
+            modelId: rag.modelId,
+            sourceResourceIds: rag.sourceResourceIds,
+          },
           inference: inferencePayload,
           voiceValidation: {
             score: voiceValidation.score || 0,
@@ -234,6 +242,9 @@ export const POST: APIRoute = async ({ request }) => {
         voiceProfileResolution: resolved.resolution,
         inferenceMode: generated.inferenceMode,
         modelId: generated.modelId,
+        sourceResourceId: rag.sourceResourceIds[0],
+        sourceResourceIds: rag.sourceResourceIds,
+        sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
       }) as import('../../../lib/resource-types').Resource['metadata'],
     };
 
@@ -259,7 +270,12 @@ export const POST: APIRoute = async ({ request }) => {
             resolution: resolved.resolution,
             profileId: resolved.voiceProfileId ?? null
           },
-          rag: { retrievalMs: rag.retrievalMs, chunkIds: rag.chunkIds, modelId: rag.modelId },
+          rag: {
+            retrievalMs: rag.retrievalMs,
+            chunkIds: rag.chunkIds,
+            modelId: rag.modelId,
+            sourceResourceIds: rag.sourceResourceIds,
+          },
           inference: inferencePayload,
           voiceValidation: {
           score: voiceValidation.score || 0,

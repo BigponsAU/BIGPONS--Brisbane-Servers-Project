@@ -16,8 +16,14 @@ import {
   setBulkActionsBusy,
   setElementBusy,
 } from './account-workspace-utils';
-import { getWorkspaceResources, setWorkspaceResources } from './account-workspace-resource-store';
-import { buildResourcesListUrl } from './account-workspace-resource-api';
+import {
+  getWorkspaceResourceById,
+  getWorkspaceResources,
+  removeWorkspaceResource,
+  setWorkspaceResources,
+  upsertWorkspaceResource,
+} from './account-workspace-resource-store';
+import { buildResourcesListUrl, fetchResourceById } from './account-workspace-resource-api';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 import { mountMarkdownFields, readMarkdownFieldValue, setMarkdownFieldValue } from './workspace-markdown-field';
@@ -70,9 +76,28 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     return getResourceActionPermissions(getWorkspaceUser(), resource);
   }
 
+  /**
+   * Resolve a resource for action handlers. Prefer the durable by-id index
+   * (survives filtered list reloads); fall back to GET /resources/:id.
+   */
+  async function resolveWorkspaceResource(id: string): Promise<any | null> {
+    if (!id) return null;
+    const cached = getWorkspaceResourceById<any>(id);
+    if (cached) return cached;
+    try {
+      const result = await fetchResourceById(getVoiceApiUrl(), id);
+      if (result.ok && result.resource) {
+        return result.resource;
+      }
+    } catch (error) {
+      console.warn('[Portal] Failed to fetch resource by id:', id, error);
+    }
+    return null;
+  }
+
   function buildResourceActionsHtml(resource: any, context: 'detail' | 'list'): string {
     const perms = resourcePermissions(resource);
-    const id = escapeHtml(resource.id);
+    const id = escapeJsString(resource.id);
     const sm = context === 'list' ? ' btn-sm' : '';
     const buttons: string[] = [];
 
@@ -110,7 +135,7 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
       buttons.push(`<button class="btn btn-secondary${sm}" onclick="unarchiveResource('${id}')">Unarchive</button>`);
     }
     if (perms.delete) {
-      const deleteLabel = resource.status === 'published' ? 'Remove from workspace' : 'Delete';
+      const deleteLabel = resource.status === 'published' ? 'Remove from workspace' : 'Move to bin';
       buttons.push(`<button class="btn btn-danger${sm}" onclick="deleteResource('${id}')">${deleteLabel}</button>`);
     } else if (perms.deleteReason && context === 'detail') {
       buttons.push(
@@ -123,6 +148,9 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     }
     if (resource.portalRemovedAt) {
       buttons.push(`<span class="resource-action-hint badge badge-archived">Removed from workspace — public page unchanged</span>`);
+    }
+    if (resource.binnedAt) {
+      buttons.push(`<span class="resource-action-hint badge badge-archived">Bin draft — vectors kept for collation</span>`);
     }
 
     return buttons.join('');
@@ -215,6 +243,9 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
       const updateText = data.updated ? ' (updated existing resource)' : '';
       const message = `Resource ${data.updated ? 'updated' : 'generated'}${inferenceMode}${modelHint}.${updateText}${scoreText}`;
       const createdId = data.resource?.id as string | undefined;
+      if (data.resource) {
+        upsertWorkspaceResource(data.resource);
+      }
       
       if (statusDiv) {
         statusDiv.textContent = message;
@@ -356,8 +387,16 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
       console.log('[Portal] Total resources loaded:', resources.length);
     }
     
-    // Store for modal access (before filtering) - include all resources
+    // Snapshot for list/tree + durable by-id index (index is not wiped on filter)
     setWorkspaceResources(resources);
+
+    // Refresh open detail from the durable index so actions stay wired after reloads
+    if (selectedResourceId) {
+      const selected = getWorkspaceResourceById<any>(selectedResourceId);
+      if (selected) {
+        loadResourceDetail(selected);
+      }
+    }
     
     // Separate starter blocks from user resources (declare at function scope)
     const starterBlocks = resources.filter((r: any) => r.isStarterBlock === true);
@@ -490,7 +529,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           const secondaryActions = [];
           
           // Primary actions (always visible on hover)
-          primaryActions.push(`<button class="btn btn-primary btn-sm" onclick="viewResource('${escapeHtml(resource.id)}')" aria-label="View resource">
+          primaryActions.push(`<button class="btn btn-primary btn-sm" onclick="viewResource('${escapeJsString(resource.id)}')" aria-label="View resource">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
@@ -499,7 +538,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           </button>`);
           
           if (resource.status === 'draft' && perms.publish) {
-            primaryActions.push(`<button class="btn btn-success btn-sm" onclick="publishResource('${escapeHtml(resource.id)}')" aria-label="Publish">
+            primaryActions.push(`<button class="btn btn-success btn-sm" onclick="publishResource('${escapeJsString(resource.id)}')" aria-label="Publish">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
@@ -509,7 +548,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           
           // Secondary actions (in dropdown)
           if (perms.edit) {
-          secondaryActions.push(`<button class="btn" onclick="editResource('${escapeHtml(resource.id)}')">
+          secondaryActions.push(`<button class="btn" onclick="editResource('${escapeJsString(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -518,7 +557,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           </button>`);
           }
           
-          secondaryActions.push(`<button class="btn" onclick="previewResource('${escapeHtml(resource.id)}')">
+          secondaryActions.push(`<button class="btn" onclick="previewResource('${escapeJsString(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
               <line x1="8" y1="21" x2="16" y2="21"></line>
@@ -528,7 +567,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           </button>`);
           
           if (resource.status === 'published' && perms.unpublish) {
-            secondaryActions.push(`<button class="btn" onclick="unpublishResource('${escapeHtml(resource.id)}')">
+            secondaryActions.push(`<button class="btn" onclick="unpublishResource('${escapeJsString(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -538,7 +577,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           }
           
           if (perms.improve) {
-          secondaryActions.push(`<button class="btn" onclick="improveResource('${escapeHtml(resource.id)}')">
+          secondaryActions.push(`<button class="btn" onclick="improveResource('${escapeJsString(resource.id)}')">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
               <polyline points="17 6 23 6 23 12"></polyline>
@@ -548,7 +587,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           }
           
           if (resource.status !== 'archived' && perms.archive) {
-            secondaryActions.push(`<button class="btn" onclick="archiveResource('${escapeHtml(resource.id)}')">
+            secondaryActions.push(`<button class="btn" onclick="archiveResource('${escapeJsString(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="21 16 21 22 3 22 3 16"></polyline>
                 <line x1="7" y1="16" x2="7" y2="2"></line>
@@ -557,7 +596,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
               Archive
             </button>`);
           } else if (perms.unarchive) {
-            secondaryActions.push(`<button class="btn" onclick="unarchiveResource('${escapeHtml(resource.id)}')">
+            secondaryActions.push(`<button class="btn" onclick="unarchiveResource('${escapeJsString(resource.id)}')">
               <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="5 8 10 13 19 2"></polyline>
               </svg>
@@ -566,12 +605,12 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           }
           
           if (perms.delete) {
-          secondaryActions.push(`<button class="btn" onclick="deleteResource('${escapeHtml(resource.id)}')" style="color: var(--portal-error);">
+          secondaryActions.push(`<button class="btn" onclick="deleteResource('${escapeJsString(resource.id)}')" style="color: var(--portal-error);">
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
-            Delete
+            ${resource.status === 'published' ? 'Remove' : 'Move to bin'}
           </button>`);
           }
 
@@ -591,11 +630,11 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           <div class="resource-header">
             <h3 class="resource-title">
               ${isStarterBlock ? `
-                <a href="#" class="resource-title-link" onclick="event.preventDefault(); createFromStarterBlock('${escapeHtml(resource.id)}');">
+                <a href="#" class="resource-title-link" onclick="event.preventDefault(); createFromStarterBlock('${escapeJsString(resource.id)}');">
                   ${escapeHtml(resource.title || 'Untitled Resource')}
                 </a>
               ` : `
-                <a href="#" class="resource-title-link" onclick="event.preventDefault(); viewResource('${escapeHtml(resource.id)}');">
+                <a href="#" class="resource-title-link" onclick="event.preventDefault(); viewResource('${escapeJsString(resource.id)}');">
                   ${escapeHtml(resource.title || 'Untitled Resource')}
                 </a>
               `}
@@ -646,14 +685,14 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           <div class="resource-actions" role="group" aria-label="Resource actions">
             ${isStarterBlock ? `
               <div class="resource-actions-primary">
-                <button class="btn btn-primary btn-sm" onclick="createFromStarterBlock('${escapeHtml(resource.id)}')" aria-label="Use this starter block">
+                <button class="btn btn-primary btn-sm" onclick="createFromStarterBlock('${escapeJsString(resource.id)}')" aria-label="Use this starter block">
                   <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                   Use This Block
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="viewResource('${escapeHtml(resource.id)}')" aria-label="Preview starter block">
+                <button class="btn btn-secondary btn-sm" onclick="viewResource('${escapeJsString(resource.id)}')" aria-label="Preview starter block">
                   <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
@@ -761,7 +800,7 @@ function expandTreeAncestorsForResource(resourceId: string): void {
 function queueRevealResourceInTree(resourceId: string): void {
   window.setTimeout(() => {
     expandTreeAncestorsForResource(resourceId);
-    if (getWorkspaceResources().some((r: { id?: string }) => r.id === resourceId)) {
+    if (getWorkspaceResourceById(resourceId)) {
       (window as any).selectResource(resourceId);
     }
     document.querySelector('.resource-workspace-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1067,14 +1106,6 @@ function portalScrollToElement(element: HTMLElement): void {
   openPanel();
 };
 
-document.getElementById('portal-sidebar')?.addEventListener('click', (event) => {
-  const item = (event.target as HTMLElement).closest('.sidebar-nav-item[data-panel]') as HTMLElement | null;
-  if (!item) return;
-  event.preventDefault();
-  const panel = item.getAttribute('data-panel');
-  if (panel) (window as any).navigateToPanel(panel);
-});
-
 // Initialize collapsible sections on page load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeCollapsibleSections);
@@ -1146,11 +1177,12 @@ function initializeCollapsibleSections() {
 };
 
 // Select resource with smooth transition
-(window as any).selectResource = function(resourceId: string) {
+(window as any).selectResource = async function(resourceId: string) {
   selectedResourceId = resourceId;
-  const resource = getWorkspaceResources().find((r: any) => r.id === resourceId);
+  const resource = await resolveWorkspaceResource(resourceId);
   if (!resource) {
     console.warn('[Portal] Resource not found:', resourceId);
+    showNotification('Resource not found.', 'error');
     return;
   }
 
@@ -1250,7 +1282,7 @@ function industrySelectOptions(selectedSlug: string): string {
 }
 
 function openDetailEditMode(id: string): void {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = getWorkspaceResourceById(id);
   if (!resource) {
     showNotification('Resource not found.', 'error');
     return;
@@ -1318,7 +1350,7 @@ async function saveDetailEdit(id: string): Promise<void> {
     return;
   }
 
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = getWorkspaceResourceById(id);
   const submitBtn = document.querySelector('#detail-edit-form button[type="submit"]') as HTMLButtonElement;
   const originalText = submitBtn?.textContent;
   if (submitBtn) {
@@ -1344,7 +1376,7 @@ async function saveDetailEdit(id: string): Promise<void> {
       showNotification('Resource updated successfully.', 'success');
       detailEditResourceId = null;
       await loadResources();
-      const updated = getWorkspaceResources().find((r: any) => r.id === id) || data.resource;
+      const updated = getWorkspaceResourceById(id) || data.resource;
       if (updated) {
         selectedResourceId = id;
         loadResourceDetail(updated);
@@ -1368,7 +1400,7 @@ async function saveDetailEdit(id: string): Promise<void> {
 
 (window as any).cancelDetailEdit = function cancelDetailEdit(): void {
   if (!detailEditResourceId) return;
-  const resource = getWorkspaceResources().find((r: any) => r.id === detailEditResourceId);
+  const resource = getWorkspaceResourceById(detailEditResourceId);
   detailEditResourceId = null;
   if (resource) loadResourceDetail(resource);
 };
@@ -1551,7 +1583,7 @@ document.getElementById('refresh-resources')?.addEventListener('click', loadReso
 
 // View Resource Modal Functions
 function openViewModal(id: string): void {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = getWorkspaceResourceById(id);
   if (!resource) {
     showNotification('Resource not found.', 'error');
     return;
@@ -1565,7 +1597,7 @@ function openViewModal(id: string): void {
   if (!modal || !titleEl || !bodyEl) return;
 
   titleEl.textContent = escapeHtml(resource.title);
-  editBtn!.setAttribute('onclick', `closeViewModal(); editResource('${id}');`);
+  editBtn!.setAttribute('onclick', `closeViewModal(); editResource('${escapeJsString(id)}');`);
 
   const voiceScore = resource.metadata?.voiceScore || 0;
   const voiceScoreClass = voiceScore >= 0.8 ? 'voice-score-high' : voiceScore >= 0.6 ? 'voice-score-medium' : 'voice-score-low';
@@ -1616,7 +1648,7 @@ function closeViewModal(): void {
 
 // Edit Resource Modal Functions
 function openEditModal(id: string): void {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = getWorkspaceResourceById(id);
   if (!resource) {
     showNotification('Resource not found.', 'error');
     return;
@@ -1666,11 +1698,19 @@ function closeEditModal(): void {
 }
 
 // Resource action functions
-(window as any).viewResource = (id: string) => {
+(window as any).viewResource = async (id: string) => {
+  if (!(await resolveWorkspaceResource(id))) {
+    showNotification('Resource not found.', 'error');
+    return;
+  }
   openViewModal(id);
 };
 
-(window as any).editResource = (id: string, mode?: string) => {
+(window as any).editResource = async (id: string, mode?: string) => {
+  if (!(await resolveWorkspaceResource(id))) {
+    showNotification('Resource not found.', 'error');
+    return;
+  }
   if (mode === 'inline') {
     openDetailEditMode(id);
     return;
@@ -1679,10 +1719,15 @@ function closeEditModal(): void {
 };
 
 (window as any).publishResource = async (id: string) => {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = await resolveWorkspaceResource(id);
   const perms = resource ? resourcePermissions(resource) : null;
   if (!perms?.publish) {
-    showNotification('You cannot publish this resource.', 'warning');
+    showNotification(
+      resource
+        ? 'You cannot publish this resource.'
+        : 'Resource not found.',
+      resource ? 'warning' : 'error',
+    );
     return;
   }
 
@@ -1729,10 +1774,13 @@ function closeEditModal(): void {
 };
 
 (window as any).unpublishResource = async (id: string) => {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = await resolveWorkspaceResource(id);
   const perms = resource ? resourcePermissions(resource) : null;
   if (!perms?.unpublish) {
-    showNotification('You cannot unpublish this resource.', 'warning');
+    showNotification(
+      resource ? 'You cannot unpublish this resource.' : 'Resource not found.',
+      resource ? 'warning' : 'error',
+    );
     return;
   }
 
@@ -1866,7 +1914,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
   const form = e.target as HTMLFormElement;
   const formData = new FormData(form);
   const id = (document.getElementById('edit-resource-id') as HTMLInputElement)!.value;
-  const resourceBefore = getWorkspaceResources().find((r: any) => r.id === id);
+  const resourceBefore = getWorkspaceResourceById(id);
   const user = getWorkspaceUser();
   const isAdmin = user?.role === 'admin' || user?.role === 'super-admin';
 
@@ -2005,14 +2053,16 @@ document.addEventListener('keydown', (e) => {
 });
 
 (window as any).improveResource = async (id: string) => {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = await resolveWorkspaceResource(id);
   const perms = resource ? resourcePermissions(resource) : null;
   if (!perms?.improve) {
     showNotification(
-      resource?.status === 'published'
-        ? 'Unpublish before running Improve on a live resource.'
-        : 'You cannot improve this resource.',
-      'warning',
+      !resource
+        ? 'Resource not found.'
+        : resource?.status === 'published'
+          ? 'Unpublish before running Improve on a live resource.'
+          : 'You cannot improve this resource.',
+      resource ? 'warning' : 'error',
     );
     return;
   }
@@ -2065,10 +2115,10 @@ document.addEventListener('keydown', (e) => {
 };
 
 (window as any).deleteResource = async (id: string) => {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = await resolveWorkspaceResource(id);
   const perms = resource ? resourcePermissions(resource) : null;
   if (!perms?.delete) {
-    showNotification(perms?.deleteReason || 'You cannot delete this resource.', 'warning');
+    showNotification(perms?.deleteReason || (resource ? 'You cannot delete this resource.' : 'Resource not found.'), resource ? 'warning' : 'error');
     return;
   }
 
@@ -2077,17 +2127,17 @@ document.addEventListener('keydown', (e) => {
   await runWorkspaceGuardedAction(`resource:delete:${id}`, {
     confirm: () =>
       showConfirmDialog({
-        title: isPublishedRemove ? 'Remove from workspace' : 'Delete resource',
+        title: isPublishedRemove ? 'Remove from workspace' : 'Move to bin',
         message: isPublishedRemove
           ? 'Remove this resource from your workspace?'
-          : 'Delete this resource permanently?',
+          : 'Move this draft to the bin?',
         details: isPublishedRemove
           ? 'The public page and search index stay live. Use Unpublish first if you need to take it off the website.'
-          : 'This action cannot be undone.',
-        confirmLabel: isPublishedRemove ? 'Remove' : 'Delete',
+          : 'It becomes a bin draft. Semantic vectors stay in the corpus for collation — this is not a permanent wipe.',
+        confirmLabel: isPublishedRemove ? 'Remove' : 'Move to bin',
         variant: 'danger',
       }),
-    onBusy: (busy) => setResourceActionButtonsBusy('deleteResource', id, busy, busy ? 'Deleting...' : undefined),
+    onBusy: (busy) => setResourceActionButtonsBusy('deleteResource', id, busy, busy ? 'Binning...' : undefined),
     run: async () => {
       try {
         const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/${id}`, {
@@ -2100,9 +2150,14 @@ document.addEventListener('keydown', (e) => {
           const message =
             data.softDeleted === true
               ? (data.message as string) || 'Removed from workspace. Public page unchanged.'
-              : 'Resource deleted successfully.';
+              : data.binned === true
+                ? (data.message as string) || 'Moved to bin as a draft. Vectors kept for collation.'
+                : 'Resource deleted successfully.';
           showNotification(message, 'success');
-          if (data.softDeleted) {
+          if (data.softDeleted || data.binned) {
+            (window as any).closeResourceDetail?.();
+          } else {
+            removeWorkspaceResource(id);
             (window as any).closeResourceDetail?.();
           }
           setTimeout(() => {
@@ -2705,7 +2760,7 @@ function clearSelection(): void {
   if (ids.length === 0) return;
 
   const deletableIds = ids.filter((id) => {
-    const resource = getWorkspaceResources().find((r: any) => r.id === id);
+    const resource = getWorkspaceResourceById(id);
     return resource && resourcePermissions(resource).delete;
   });
 
@@ -2727,13 +2782,13 @@ function clearSelection(): void {
   await runWorkspaceGuardedAction('bulk:delete', {
     confirm: () =>
       showConfirmDialog({
-        title: 'Delete resources',
-        message: `Delete ${deletableIds.length} resource(s) permanently?`,
-        details: 'This cannot be undone.',
-        confirmLabel: 'Delete all',
+        title: 'Move to bin',
+        message: `Move ${deletableIds.length} resource(s) to the bin as drafts?`,
+        details: 'Semantic vectors stay in the corpus for collation. Restore anytime from a binned view.',
+        confirmLabel: 'Move to bin',
         variant: 'danger',
       }),
-    onBusy: (busy) => setBulkActionsBusy(busy, busy ? 'Deleting...' : undefined),
+    onBusy: (busy) => setBulkActionsBusy(busy, busy ? 'Binning...' : undefined),
     run: async () => {
       try {
         const results = await Promise.all(
@@ -2748,28 +2803,35 @@ function clearSelection(): void {
         const failCount = results.length - successCount;
 
         if (failCount > 0) {
-          showNotification(`Deleted ${successCount} resource(s). ${failCount} failed.`, 'warning');
+          showNotification(`Moved ${successCount} to bin. ${failCount} failed.`, 'warning');
         } else {
-          showNotification(`Successfully deleted ${successCount} resource(s).`, 'success');
+          showNotification(`Moved ${successCount} resource(s) to bin as drafts.`, 'success');
         }
 
-        console.log('[Portal] Bulk delete results:', results);
+        console.log('[Portal] Bulk bin results:', results);
         clearSelection();
-        setTimeout(() => loadResources(), 300);
+        setTimeout(() => {
+          loadResources();
+          loadDashboardData();
+        }, 300);
       } catch (error) {
-        showNotification('Error deleting resources. Please try again.', 'error');
-        console.error('[Portal] Bulk delete error:', error);
+        showNotification('Error moving resources to bin. Please try again.', 'error');
+        console.error('[Portal] Bulk bin error:', error);
       }
     },
   });
 };
 
-(window as any).previewResource = (id: string) => {
+(window as any).previewResource = async (id: string) => {
+  if (!(await resolveWorkspaceResource(id))) {
+    showNotification('Resource not found.', 'error');
+    return;
+  }
   openPreviewModal(id);
 };
 
 function openPreviewModal(id: string): void {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = getWorkspaceResourceById(id);
   if (!resource) {
     showNotification('Resource not found.', 'error');
     return;
@@ -2782,7 +2844,7 @@ function openPreviewModal(id: string): void {
   if (!modal || !titleEl || !bodyEl) return;
 
   titleEl.textContent = resource.title || 'Preview';
-  editBtn?.setAttribute('onclick', `closePreviewModal(); editResource('${id}');`);
+  editBtn?.setAttribute('onclick', `closePreviewModal(); editResource('${escapeJsString(id)}');`);
 
   const voiceScore = resource.metadata?.voiceScore || 0;
   const voiceScoreText = voiceScore ? `${Math.round(voiceScore * 100)}%` : 'N/A';
@@ -2812,10 +2874,10 @@ function closePreviewModal(): void {
 (window as any).closePreviewModal = closePreviewModal;
 
 (window as any).restoreResource = async (id: string) => {
-  const resource = getWorkspaceResources().find((r: any) => r.id === id);
+  const resource = await resolveWorkspaceResource(id);
   const perms = resource ? resourcePermissions(resource) : null;
   if (!perms?.restore) {
-    showNotification('You cannot restore this resource.', 'warning');
+    showNotification(resource ? 'You cannot restore this resource.' : 'Resource not found.', resource ? 'warning' : 'error');
     return;
   }
 
@@ -2823,8 +2885,12 @@ function closePreviewModal(): void {
     confirm: () =>
       showConfirmDialog({
         title: 'Restore to workspace',
-        message: 'Show this resource again in the workspace tree?',
-        details: 'The public page and search index are unchanged.',
+        message: resource?.binnedAt
+          ? 'Restore this bin draft to your active workspace?'
+          : 'Show this resource again in the workspace tree?',
+        details: resource?.binnedAt
+          ? 'Semantic vectors were kept while binned; they remain available for collation.'
+          : 'The public page and search index are unchanged.',
         confirmLabel: 'Restore',
         variant: 'primary',
       }),

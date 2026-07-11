@@ -13,6 +13,7 @@ import {
 import { bindLibraryGrowthPanel, loadLibraryGrowthPanel } from './account-library-growth';
 import { bindVoiceFeaturePanels } from './account-workspace-voice-features';
 import { bindAdminOpsPanel, loadAdminOpsPanel } from './account-admin-ops';
+import { bindAdminBillingPanel, loadAdminBillingPanel } from './account-admin-billing';
 import { syncPortalAccountContext, getPortalAccountContext } from './account-workspace-runtime';
 
 export function bootAccountWorkspaceExtensions(): void {
@@ -46,6 +47,7 @@ export function bootAccountWorkspaceExtensions(): void {
     loadHostingStatus,
     loadLibraryGrowthPanel,
     loadAdminOpsPanel,
+    loadAdminBillingPanel,
   };
 
   const resolveCtx = (): PortalAccountContext => getPortalAccountContext() as unknown as PortalAccountContext;
@@ -54,6 +56,7 @@ export function bootAccountWorkspaceExtensions(): void {
   bindLibraryGrowthPanel(resolveCtx);
   bindVoiceFeaturePanels();
   bindAdminOpsPanel(resolveCtx);
+  bindAdminBillingPanel(resolveCtx);
 
   syncPortalAccountContext();
 }

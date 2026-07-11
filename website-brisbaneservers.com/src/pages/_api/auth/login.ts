@@ -79,6 +79,18 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    if (stored.removedAt) {
+      await logAuthEvent({ userId: stored.id, email: stored.email, eventType: 'auth.login.blocked-removed' });
+      return new Response(
+        JSON.stringify({
+          error: 'This account has been removed. Contact support if you need access restored.',
+          code: 'ACCOUNT_REMOVED',
+          success: false
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!isUserEmailVerified(stored)) {
       await logAuthEvent({ userId: stored.id, email: stored.email, eventType: 'auth.login.blocked-unverified' });
       return new Response(

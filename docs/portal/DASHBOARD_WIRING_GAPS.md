@@ -16,7 +16,7 @@
 | **Styled confirms** | `showConfirmDialog()` — no `window.confirm()` / `window.prompt()` |
 | **Link / prompt input** | `showPromptDialog()` (WYSIWYG link insert) |
 | **Permissions** | `getResourceActionPermissions()` + API mirror for resource actions |
-| **Markov tracking** | `trackPortalPanel()` on nav; `trackPortalAction()` on panel load + destructive/long actions |
+| **Markov tracking** | Resource creation hops + voice match % (`trackResourceCreation` / metadata hydrate) |
 | **Global search** | Prefixes: `profile:`, `voice:`, `panel:`, `resource:`; panel name aliases; default → Resources search |
 | **Keyboard shortcuts** | `Ctrl+K` search; `1`–`6` creator panels; `1`–`5` admin panels (when admin mode active) |
 
@@ -31,10 +31,13 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | Action | Workspace | Public site + search index |
 |--------|-----------|----------------------------|
 | Owner **unpublish** | Draft in library | Removed on next deploy hook |
-| Owner **delete** (draft/archived) | Hard delete | N/A |
+| Owner **delete** (draft/archived) | Soft-bin (`binnedAt`, status → draft) | Vectors **kept** in semantic index for collation |
 | Admin **Remove from workspace** (published) | Soft delete (`portalRemovedAt`) | **Unchanged** |
 | Admin **Restore to workspace** | Clears `portalRemovedAt` | **Unchanged** |
+| Owner **Restore** bin draft | Clears `binnedAt` | Vectors unchanged |
 | Take live page off site | **Unpublish** | Removed on deploy hook |
+
+**Recent Activity:** double-click a draft → confirm → bin draft (same DELETE path).
 
 ---
 
@@ -49,8 +52,8 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | Resource permissions | `resource-permissions.ts` — client + API |
 | Preview modal | `#preview-resource-modal` |
 | Admin **Removed** filter + restore | Tree + `removedOnly=1` + `restoreResource()` |
-| Soft delete API | `portalRemovedAt` on published DELETE |
-| **Markov v2 (deep parity)** | Panel/action/error chain, error-prone transitions, extrapolate issues |
+| Soft delete API | `portalRemovedAt` on published DELETE; `binnedAt` on draft/archived DELETE (vectors retained) |
+| **Markov lineage** | Resource→resource hops, voice share %, extrapolate lineage |
 | **Stripe AI Boost** | Checkout, webhook, overview upgrade CTA, admin PayID grant |
 | **Global search** | Full panel aliases + prefixes |
 | **Keyboard nav** | Mode-aware 1–9 panel shortcuts |
@@ -64,7 +67,7 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | Surface | Notes |
 |---------|--------|
 | Cloudflare Vectorize backend migration | Optional — JSON/Postgres index in use |
-| Stripe Customer Portal (self-serve cancel) | Checkout + webhook live; portal link optional follow-up |
+| Stripe Customer Portal (self-serve cancel) | **Live** — Overview → Manage subscription (`POST /api/billing/portal`) |
 
 ---
 

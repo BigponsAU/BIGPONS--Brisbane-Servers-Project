@@ -23,9 +23,14 @@ export function json(data: unknown, status = 200, extraHeaders: Record<string, s
 }
 
 export function corsHeaders(origin: string | null): Record<string, string> {
-  const allowed = origin && /^https:\/\/(brisbaneservers\.com|.*\.pages\.dev)$/.test(origin)
-    ? origin
-    : 'https://brisbaneservers.com';
+  // Apex, www, and any *.brisbaneservers.com host; Pages preview origins; local Vite.
+  const allowed =
+    origin &&
+    /^https:\/\/([a-z0-9-]+\.)*brisbaneservers\.com$|^https:\/\/[a-z0-9-]+\.pages\.dev$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
+      origin,
+    )
+      ? origin
+      : 'https://brisbaneservers.com';
   return {
     'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Credentials': 'true',

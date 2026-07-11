@@ -83,6 +83,22 @@ async function ensureSchema(sql: Sql): Promise<void> {
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS workspace_enabled BOOLEAN NOT NULL DEFAULT false`.catch(
         () => undefined,
       );
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS removed_at TEXT`.catch(() => undefined);
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS removed_by TEXT`.catch(() => undefined);
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS removal_reason TEXT`.catch(() => undefined);
+      await sql`
+        CREATE TABLE IF NOT EXISTS user_account_backups (
+          id TEXT PRIMARY KEY NOT NULL,
+          user_id TEXT NOT NULL,
+          email TEXT NOT NULL,
+          snapshot TEXT NOT NULL,
+          removed_at TEXT NOT NULL,
+          removed_by TEXT,
+          removal_reason TEXT,
+          restored_at TEXT,
+          created_at TEXT NOT NULL
+        )
+      `.catch(() => undefined);
     })();
   }
   await schemaReady;
@@ -91,7 +107,8 @@ async function ensureSchema(sql: Sql): Promise<void> {
 export async function findUserByEmail(sql: Sql, email: string): Promise<StoredUser | null> {
   await ensureSchema(sql);
   const rows = await sql`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled,
+           removed_at, removed_by, removal_reason
     FROM users WHERE email = ${email.trim().toLowerCase()} LIMIT 1
   `;
   const row = rows[0] as UserRow | undefined;
@@ -102,7 +119,8 @@ export async function findUserByEmail(sql: Sql, email: string): Promise<StoredUs
 export async function findUserById(sql: Sql, id: string): Promise<StoredUser | null> {
   await ensureSchema(sql);
   const rows = await sql`
-    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled
+    SELECT id, email, password_hash, role, created_at, email_verified_at, updated_at, workspace_enabled,
+           removed_at, removed_by, removal_reason
     FROM users WHERE id = ${id} LIMIT 1
   `;
   const row = rows[0] as UserRow | undefined;
@@ -160,7 +178,8 @@ export async function getSessionUser(sql: Sql, token: string): Promise<AuthUser 
       COALESCE(u_by_id.id, u_by_email.id) AS canonical_user_id,
       COALESCE(u_by_id.email, u_by_email.email, s.email) AS email,
       COALESCE(u_by_id.role, u_by_email.role, s.role) AS role,
-      COALESCE(u_by_id.email_verified_at, u_by_email.email_verified_at) AS email_verified_at
+      COALESCE(u_by_id.email_verified_at, u_by_email.email_verified_at) AS email_verified_at,
+      COALESCE(u_by_id.removed_at, u_by_email.removed_at) AS removed_at
     FROM sessions s
     LEFT JOIN users u_by_id ON u_by_id.id = s.user_id
     LEFT JOIN users u_by_email ON lower(u_by_email.email) = lower(s.email)
@@ -169,6 +188,10 @@ export async function getSessionUser(sql: Sql, token: string): Promise<AuthUser 
   `;
   const row = rows[0];
   if (!row?.canonical_user_id) return null;
+  if (row.removed_at) {
+    await sql`DELETE FROM sessions WHERE token = ${token}`;
+    return null;
+  }
 
   const canonicalId = String(row.canonical_user_id);
   const email = String(row.email);
@@ -291,6 +314,9 @@ type UserRow = {
   email_verified_at: string | null;
   updated_at: string | null;
   workspace_enabled: boolean | null;
+  removed_at?: string | null;
+  removed_by?: string | null;
+  removal_reason?: string | null;
 };
 
 function mapUserRow(row: UserRow): StoredUser {
@@ -303,6 +329,9 @@ function mapUserRow(row: UserRow): StoredUser {
     emailVerifiedAt: row.email_verified_at,
     updatedAt: row.updated_at ?? undefined,
     workspaceEnabled: Boolean(row.workspace_enabled),
+    removedAt: row.removed_at ?? null,
+    removedBy: row.removed_by ?? null,
+    removalReason: row.removal_reason ?? null,
   };
 }
 

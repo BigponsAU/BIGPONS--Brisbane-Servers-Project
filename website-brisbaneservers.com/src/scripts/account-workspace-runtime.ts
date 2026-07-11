@@ -10,6 +10,7 @@ import {
   PRODUCTION_API_CUSTOM_DOMAIN,
   isUsableAbsoluteApiBase,
 } from '../lib/client-api';
+import { clearWorkspaceResources } from './account-workspace-resource-store';
 
 export const API_PROBE_TIMEOUT_MS = 8000;
 export const API_PROBE_OVERALL_MS = 12000;
@@ -111,6 +112,7 @@ export function hasWorkspaceSession(): boolean {
 export async function handleWorkspaceSessionExpired(message?: string): Promise<void> {
   const rt = tryGetPortalRuntime();
   clearPersistedSession();
+  clearWorkspaceResources();
   if (rt) rt.sessionActive = false;
 
   try {

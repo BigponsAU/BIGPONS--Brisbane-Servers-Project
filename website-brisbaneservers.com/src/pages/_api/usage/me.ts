@@ -38,6 +38,7 @@ export const GET: APIRoute = async ({ request }) => {
           active: subscriptionActive,
           status: billingAccount?.status ?? 'none',
           dailyBonusUnits: summary.subscriptionBonus,
+          stripeCustomerId: billingAccount?.stripeCustomerId ?? null,
         },
         daily: summary,
       }),

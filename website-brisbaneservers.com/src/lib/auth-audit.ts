@@ -1,4 +1,4 @@
-import { listRecentAuthAuditEvents, recordAuthAuditEvent } from './db/auth-db';
+import { listRecentAuthAuditEvents, countAuthAuditEvents, recordAuthAuditEvent } from './db/auth-db';
 
 export async function logAuthEvent(event: {
   userId?: string | null;
@@ -9,6 +9,10 @@ export async function logAuthEvent(event: {
   await recordAuthAuditEvent(event);
 }
 
-export async function getRecentAuthEvents(limit = 100) {
-  return listRecentAuthAuditEvents(limit);
+export async function getRecentAuthEvents(limit = 25, offset = 0) {
+  return listRecentAuthAuditEvents(limit, offset);
+}
+
+export async function getAuthEventsTotal(): Promise<number> {
+  return countAuthAuditEvents();
 }

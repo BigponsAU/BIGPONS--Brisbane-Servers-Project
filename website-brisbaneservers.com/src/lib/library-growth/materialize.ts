@@ -128,6 +128,7 @@ export async function materializeGrowthProposal(
       voiceProfileResolution: resolved.resolution,
       inferenceMode: generated.inferenceMode,
       modelId: generated.modelId,
+      sourceKind: 'growth',
     }) as Resource['metadata'];
     resource = existing;
   } else {
@@ -150,6 +151,7 @@ export async function materializeGrowthProposal(
         inferenceMode: generated.inferenceMode,
         modelId: generated.modelId,
         growthKind: proposal.kind === 'case_study' ? 'case_study' : undefined,
+        sourceKind: 'growth',
       }) as Resource['metadata'],
     };
     resources.push(resource);

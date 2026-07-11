@@ -1,5 +1,4 @@
 ---
-import { accountWorkspace } from '../../data/account-workspace';
 import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 ---
 
@@ -14,7 +13,8 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       variant="primary-light"
     >
       <div slot="actions" class="section-actions admin-panel-quick-links admin-users-toolbar">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops &amp; billing</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-ops')">Ops</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-billing')">Billing</button>
         <label class="sr-only" for="admin-users-search">Filter users</label>
         <input
           id="admin-users-search"
@@ -32,9 +32,10 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       <details class="panel-guidance-details">
         <summary>Roles &amp; workspace access</summary>
         <div class="panel-guidance-details__body">
-          <p><strong>Client / viewer:</strong> Account home and contributor tools; editors get Create panels.</p>
-          <p><strong>Admin:</strong> Library growth, moderation, site review, and ops panels.</p>
-          <p><strong>Auth audit</strong> below lists recent sign-ins, registrations, and OAuth events.</p>
+          <p><strong>Client / viewer:</strong> Account home by default. Tick Workspace to grant the full creator dashboard.</p>
+          <p><strong>Editor / admin:</strong> Workspace is always on via role (checkbox stays ticked and locked).</p>
+          <p><strong>Remove:</strong> Soft-removes the account with a backup snapshot so it can be restored. Sign-in is blocked until restore.</p>
+          <p><strong>Auth audit</strong> below lists recent sign-ins, registrations, and OAuth events (paged).</p>
         </div>
       </details>
 
@@ -49,23 +50,49 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
               <th scope="col">Verified</th>
               <th scope="col">Joined</th>
               <th scope="col">Workspace access</th>
+              <th scope="col">Account</th>
             </tr>
           </thead>
           <tbody id="admin-users-tbody">
-            <tr><td colspan="5">Loading…</td></tr>
+            <tr><td colspan="6">Loading…</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div id="admin-users-removed-section" class="admin-users-removed-section" hidden>
+        <h3 class="admin-users-removed-heading">Removed accounts</h3>
+        <p class="section-subtitle">Backed up and blocked from sign-in. Restore if access should return.</p>
+        <div class="admin-users-table-wrap" role="region" aria-label="Removed users table" tabindex="0">
+          <table class="admin-users-table">
+            <thead>
+              <tr>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
+                <th scope="col">Removed</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Account</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-removed-tbody">
+              <tr><td colspan="5">None</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
     <section class="admin-section admin-section--nested" aria-labelledby="admin-auth-audit-heading">
-      <div class="section-header">
+      <div class="section-header admin-auth-audit-header">
         <div>
           <h3 id="admin-auth-audit-heading">Recent auth events</h3>
-          <p class="section-subtitle">Logins, registrations, password resets, and OAuth (last 100).</p>
+          <p id="admin-auth-audit-subtitle" class="section-subtitle">Logins, registrations, password resets, and OAuth.</p>
+        </div>
+        <div class="admin-auth-audit-pager">
+          <button id="admin-auth-audit-prev-btn" type="button" class="btn btn-secondary btn-sm" disabled>Previous</button>
+          <button id="admin-auth-audit-next-btn" type="button" class="btn btn-secondary btn-sm" disabled>Next</button>
         </div>
       </div>
-      <div class="admin-users-table-wrap" role="region" aria-label="Auth audit log" tabindex="0">
+      <div class="admin-users-table-wrap admin-auth-audit-scroll" role="region" aria-label="Auth audit log" tabindex="0">
         <table class="admin-users-table admin-auth-audit-table">
           <thead>
             <tr>

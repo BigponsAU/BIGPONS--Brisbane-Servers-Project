@@ -43,6 +43,22 @@ export default defineConfig({
       cssCodeSplit: true,
       cssMinify: true,
       assetsInlineLimit: 4096,
+      rollupOptions: {
+        output: {
+          // Keep shared portal helpers out of account-workspace-app so lazy panels
+          // (admin-users, etc.) do not create a circular chunk import.
+          manualChunks(id) {
+            const normalized = id.replace(/\\/g, '/');
+            if (
+              normalized.includes('/src/scripts/portal-confirm-dialog')
+              || normalized.includes('/src/scripts/portal-markov-tracker')
+              || normalized.includes('/src/scripts/account-workspace-utils')
+            ) {
+              return 'portal-shared';
+            }
+          },
+        },
+      },
     },
     esbuild: {
       target: 'es2020',

@@ -1,6 +1,5 @@
 import { workspaceFetch } from '../lib/client-api';
 import { showConfirmDialog } from './portal-confirm-dialog';
-import { trackPortalAction } from './portal-markov-tracker';
 
 type AdminUserRow = {
   id: string;
@@ -18,8 +17,11 @@ type AuthAuditRow = {
   userId?: string | null;
 };
 
+const LOAD_TIMEOUT_MS = 20_000;
+
 let usersCache: AdminUserRow[] = [];
 let panelBound = false;
+let lastApiBaseUrl = '';
 
 function escapeHtml(value: string): string {
   return value
@@ -41,6 +43,18 @@ function filteredUsers(query: string): AdminUserRow[] {
   const q = query.trim().toLowerCase();
   if (!q) return usersCache;
   return usersCache.filter((u) => u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q));
+}
+
+function setUsersLoadingState(message: string, summaryMessage: string): void {
+  const tbody = document.getElementById('admin-users-tbody');
+  const summary = document.getElementById('admin-users-summary');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="5">${escapeHtml(message)}</td></tr>`;
+  if (summary) summary.textContent = summaryMessage;
+}
+
+function setAuditLoadingState(message: string): void {
+  const tbody = document.getElementById('admin-auth-audit-tbody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="4">${escapeHtml(message)}</td></tr>`;
 }
 
 function renderUsersTable(apiBaseUrl: string, query = ''): void {
@@ -155,42 +169,90 @@ function exportUsersCsv(): void {
 }
 
 function bindAdminUsersPanel(apiBaseUrl: string): void {
+  lastApiBaseUrl = apiBaseUrl;
   if (panelBound) return;
   panelBound = true;
 
   document.getElementById('admin-users-refresh-btn')?.addEventListener('click', () => {
-    void loadAdminUsersPanel(apiBaseUrl);
+    void loadAdminUsersPanel(lastApiBaseUrl || apiBaseUrl);
   });
   document.getElementById('admin-users-export-btn')?.addEventListener('click', exportUsersCsv);
   document.getElementById('admin-users-search')?.addEventListener('input', (e) => {
     const query = (e.target as HTMLInputElement).value;
-    renderUsersTable(apiBaseUrl, query);
+    renderUsersTable(lastApiBaseUrl || apiBaseUrl, query);
   });
 }
 
+async function fetchJsonWithTimeout(
+  url: string,
+  signal: AbortSignal,
+): Promise<{ ok: boolean; status: number; data: Record<string, unknown> | null; error?: string }> {
+  try {
+    const res = await workspaceFetch(url, { signal });
+    const data = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+    if (!res.ok) {
+      const err =
+        data && typeof data.error === 'string'
+          ? data.error
+          : `Request failed (${res.status})`;
+      return { ok: false, status: res.status, data, error: err };
+    }
+    return { ok: true, status: res.status, data };
+  } catch (err) {
+    if (signal.aborted) {
+      return { ok: false, status: 0, data: null, error: 'Timed out waiting for the admin API.' };
+    }
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      error: err instanceof Error ? err.message : 'Network error',
+    };
+  }
+}
+
 export async function loadAdminUsersPanel(apiBaseUrl: string): Promise<void> {
-  trackPortalAction('loadAdminUsersPanel');
-  bindAdminUsersPanel(apiBaseUrl);
-  const tbody = document.getElementById('admin-users-tbody');
-  const summary = document.getElementById('admin-users-summary');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
-  if (summary) summary.textContent = 'Loading users…';
+  const base = (apiBaseUrl || lastApiBaseUrl || '').replace(/\/+$/, '');
+  bindAdminUsersPanel(base);
+  setUsersLoadingState('Loading…', 'Loading users…');
+  setAuditLoadingState('Loading…');
+
+  if (!base) {
+    setUsersLoadingState('Could not load users.', 'API base URL is not configured.');
+    setAuditLoadingState('Could not load auth events.');
+    return;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), LOAD_TIMEOUT_MS);
 
   try {
-    const [usersRes, auditRes] = await Promise.all([
-      workspaceFetch(`${apiBaseUrl}/admin/users`),
-      workspaceFetch(`${apiBaseUrl}/admin/auth-audit?limit=100`),
+    const [usersResult, auditResult] = await Promise.all([
+      fetchJsonWithTimeout(`${base}/admin/users`, controller.signal),
+      fetchJsonWithTimeout(`${base}/admin/auth-audit?limit=100`, controller.signal),
     ]);
-    const usersData = usersRes.ok ? await usersRes.json() : null;
-    const auditData = auditRes.ok ? await auditRes.json() : null;
 
-    usersCache = Array.isArray(usersData?.users) ? usersData.users : [];
-    const search = (document.getElementById('admin-users-search') as HTMLInputElement | null)?.value ?? '';
-    renderUsersTable(apiBaseUrl, search);
-    renderAuditTable(Array.isArray(auditData?.events) ? auditData.events : []);
+    if (!usersResult.ok) {
+      setUsersLoadingState('Could not load users.', usersResult.error || 'Failed to load users.');
+    } else {
+      usersCache = Array.isArray(usersResult.data?.users) ? (usersResult.data.users as AdminUserRow[]) : [];
+      const search = (document.getElementById('admin-users-search') as HTMLInputElement | null)?.value ?? '';
+      renderUsersTable(base, search);
+    }
+
+    if (!auditResult.ok) {
+      setAuditLoadingState(auditResult.error || 'Could not load auth events.');
+    } else {
+      const events = Array.isArray(auditResult.data?.events)
+        ? (auditResult.data.events as AuthAuditRow[])
+        : [];
+      renderAuditTable(events);
+    }
   } catch (err) {
     console.error('[Admin users] load failed:', err);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="5">Could not load users.</td></tr>';
-    if (summary) summary.textContent = 'Failed to load users.';
+    setUsersLoadingState('Could not load users.', 'Failed to load users.');
+    setAuditLoadingState('Could not load auth events.');
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 }

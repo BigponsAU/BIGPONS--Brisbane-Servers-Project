@@ -34,6 +34,22 @@ export interface Resource {
     /** Stored profile id when creation used a saved default or explicit selection. */
     voiceProfileId?: string;
     voiceProfileResolution?: VoiceProfileResolutionKind;
+    /**
+     * Markov lineage: primary resource this one was created / derived from
+     * (starter block, prior resource, or top RAG source).
+     */
+    sourceResourceId?: string;
+    /** Additional upstream resources (e.g. multi-chunk RAG parents). */
+    sourceResourceIds?: string[];
+    /** How this resource was produced relative to its source(s). */
+    sourceKind?:
+      | 'starter'
+      | 'resource'
+      | 'generate'
+      | 'improve'
+      | 'upload'
+      | 'growth'
+      | 'rag';
     /** Set when created via library growth (case study proposals). */
     growthKind?: 'case_study';
     /** Last successful inference path for this resource body. */
@@ -57,6 +73,11 @@ export interface Resource {
   wasEverPublished?: boolean;
   /** Soft-remove from /account workspace; public catalog + search index unchanged when status stays published. */
   portalRemovedAt?: string;
+  /**
+   * Soft-bin timestamp for draft/archived resources removed from the active workspace.
+   * Row + semantic chunks stay in corpus/vector data for collation; hidden from portal lists.
+   */
+  binnedAt?: string;
 }
 
 export function isPublicResource(resource: Resource): boolean {
@@ -73,7 +94,12 @@ export function isPublicResource(resource: Resource): boolean {
   return false;
 }
 
-/** Hidden from /account lists after soft-delete; public plane unaffected when still published. */
+/** Hidden from /account lists after soft-delete or bin; public plane unaffected when still published. */
 export function isVisibleInPortalWorkspace(resource: Resource): boolean {
-  return !resource.portalRemovedAt;
+  return !resource.portalRemovedAt && !resource.binnedAt;
+}
+
+/** Draft/archived row moved to the bin — retained for vector collation, not active workspace. */
+export function isBinnedResource(resource: Resource): boolean {
+  return Boolean(resource.binnedAt);
 }

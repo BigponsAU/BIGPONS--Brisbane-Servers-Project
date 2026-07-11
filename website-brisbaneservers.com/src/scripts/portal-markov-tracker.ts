@@ -1,108 +1,92 @@
 /**
- * Portal navigation + action tracker (legacy markov-chain-tracker parity).
- * Client-only — summarizes panel transitions and workspace actions in Voice lab.
+ * Resource-lineage Markov tracker.
+ *
+ * Models creation of resources from other resources (starter blocks, RAG parents,
+ * generated/improved copies) and which voice profile matched on each hop — not
+ * portal navigation / UI click flow.
  */
 
-const STORAGE_KEY = 'bs-portal-markov-v2';
-const LEGACY_STORAGE_KEY = 'bs-portal-markov-v1';
-const MAX_CHAIN = 300;
-const DEFAULT_PANEL = 'dashboard';
+const STORAGE_KEY = 'bs-resource-markov-v1';
+const LEGACY_PORTAL_KEYS = ['bs-portal-markov-v2', 'bs-portal-markov-v1'] as const;
+const MAX_CHAIN = 400;
+const SEED_NODE = 'seed:blank';
+
+export type ResourceMarkovSourceKind =
+  | 'starter'
+  | 'resource'
+  | 'generate'
+  | 'improve'
+  | 'upload'
+  | 'growth'
+  | 'rag';
+
+export type ResourceMarkovEdge = {
+  fromResourceId: string;
+  fromLabel?: string;
+  toResourceId: string;
+  toLabel?: string;
+  sourceKind: ResourceMarkovSourceKind;
+  voiceProfileId: string | null;
+  voiceScore: number;
+  timestamp: number;
+};
 
 type TransitionMap = Record<string, Record<string, number>>;
 
-export type PortalChainEntry = {
-  state: string;
-  from?: string;
-  timestamp: number;
-  type: 'panel' | 'action' | 'error';
-  panel?: string;
-  error?: string;
-};
-
-export type PortalFunctionUsage = {
-  count: number;
-  errors: number;
-  lastCall: number | null;
-};
-
-export type PortalErrorEntry = {
-  functionName: string;
-  message: string;
-  timestamp: number;
-  panel: string;
-  state: string;
-};
-
 interface MarkovState {
-  current: string;
-  chain: PortalChainEntry[];
+  chain: ResourceMarkovEdge[];
+  /** fromResourceId → toResourceId → count */
   transitions: TransitionMap;
-  errorTransitions: Record<string, number>;
-  functionUsage: Record<string, PortalFunctionUsage>;
-  errorLog: PortalErrorEntry[];
+  /** voiceProfileId → hop count */
+  voiceCounts: Record<string, number>;
+  /** voiceProfileId → sum of voice scores */
+  voiceScoreSums: Record<string, number>;
   startTime: number;
 }
 
-function normalizePanelId(panelId: string): string {
-  const next = panelId.replace(/-panel$/, '') || panelId;
-  return next === 'overview' ? DEFAULT_PANEL : next;
-}
+export type TrackResourceCreationInput = {
+  fromResourceId?: string | null;
+  fromLabel?: string;
+  /** Extra parents (RAG multi-source); primary remains fromResourceId. */
+  fromResourceIds?: string[];
+  toResourceId: string;
+  toLabel?: string;
+  sourceKind: ResourceMarkovSourceKind;
+  voiceProfileId?: string | null;
+  voiceScore?: number;
+};
 
 function emptyState(): MarkovState {
-  const now = Date.now();
   return {
-    current: DEFAULT_PANEL,
-    chain: [{ state: DEFAULT_PANEL, timestamp: now, type: 'panel', panel: DEFAULT_PANEL }],
+    chain: [],
     transitions: {},
-    errorTransitions: {},
-    functionUsage: {},
-    errorLog: [],
-    startTime: now,
+    voiceCounts: {},
+    voiceScoreSums: {},
+    startTime: Date.now(),
   };
 }
 
-function migrateLegacyV1(): MarkovState | null {
+function clearLegacyPortalKeys(): void {
   try {
-    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as {
-      current?: string;
-      chain?: string[];
-      transitions?: TransitionMap;
-    };
-    const state = emptyState();
-    state.current = normalizePanelId(parsed.current || DEFAULT_PANEL);
-    if (Array.isArray(parsed.chain)) {
-      for (const step of parsed.chain) {
-        const panel = normalizePanelId(step);
-        state.chain.push({ state: panel, timestamp: Date.now(), type: 'panel', panel });
-      }
+    for (const key of LEGACY_PORTAL_KEYS) {
+      localStorage.removeItem(key);
     }
-    state.transitions = parsed.transitions || {};
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
-    return state;
   } catch {
-    return null;
+    /* ignore */
   }
 }
 
 function loadState(): MarkovState {
   try {
-    const migrated = migrateLegacyV1();
-    if (migrated) {
-      saveState(migrated);
-      return migrated;
-    }
+    clearLegacyPortalKeys();
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyState();
     const parsed = JSON.parse(raw) as MarkovState;
     return {
-      current: normalizePanelId(parsed.current || DEFAULT_PANEL),
-      chain: Array.isArray(parsed.chain) ? parsed.chain : emptyState().chain,
+      chain: Array.isArray(parsed.chain) ? parsed.chain : [],
       transitions: parsed.transitions || {},
-      errorTransitions: parsed.errorTransitions || {},
-      functionUsage: parsed.functionUsage || {},
-      errorLog: Array.isArray(parsed.errorLog) ? parsed.errorLog : [],
+      voiceCounts: parsed.voiceCounts || {},
+      voiceScoreSums: parsed.voiceScoreSums || {},
       startTime: parsed.startTime || Date.now(),
     };
   } catch {
@@ -123,135 +107,116 @@ function recordTransition(state: MarkovState, from: string, to: string): void {
   state.transitions[from][to] = (state.transitions[from][to] ?? 0) + 1;
 }
 
-function pushChain(state: MarkovState, entry: PortalChainEntry): void {
-  state.chain.push(entry);
+function pushEdge(state: MarkovState, edge: ResourceMarkovEdge): void {
+  const dup = state.chain.some(
+    (e) =>
+      e.toResourceId === edge.toResourceId &&
+      e.fromResourceId === edge.fromResourceId &&
+      e.sourceKind === edge.sourceKind
+  );
+  if (dup) return;
+
+  state.chain.push(edge);
   if (state.chain.length > MAX_CHAIN) {
     state.chain = state.chain.slice(-MAX_CHAIN);
   }
+  recordTransition(state, edge.fromResourceId, edge.toResourceId);
+
+  const voiceKey = edge.voiceProfileId || 'unspecified';
+  state.voiceCounts[voiceKey] = (state.voiceCounts[voiceKey] ?? 0) + 1;
+  state.voiceScoreSums[voiceKey] = (state.voiceScoreSums[voiceKey] ?? 0) + edge.voiceScore;
 }
 
-function getCurrentPanel(): string {
-  if (typeof document === 'undefined') return DEFAULT_PANEL;
-  const active = document.querySelector('.portal-panel.active, .portal-panel[style*="display: block"]');
-  const id = active?.id?.replace(/-panel$/, '');
-  return id ? normalizePanelId(id) : DEFAULT_PANEL;
+function shortId(id: string): string {
+  if (id === SEED_NODE) return 'seed';
+  if (id.length <= 28) return id;
+  return `${id.slice(0, 12)}…${id.slice(-8)}`;
 }
 
-export function trackPortalPanel(panelId: string): void {
-  const next = normalizePanelId(panelId);
+function labelFor(id: string, label?: string): string {
+  if (label?.trim()) return label.trim();
+  return shortId(id);
+}
+
+function scorePct(score: number): string {
+  return `${Math.round(Math.max(0, Math.min(1, score)) * 100)}%`;
+}
+
+/** Record one resource→resource creation hop (Markov edge). */
+export function trackResourceCreation(input: TrackResourceCreationInput): void {
+  if (typeof localStorage === 'undefined') return;
+  const toId = input.toResourceId?.trim();
+  if (!toId) return;
+
+  const parents = [
+    input.fromResourceId,
+    ...(input.fromResourceIds || []),
+  ]
+    .map((id) => (typeof id === 'string' ? id.trim() : ''))
+    .filter(Boolean);
+
+  const uniqueParents = [...new Set(parents)];
+  const fromIds = uniqueParents.length ? uniqueParents : [SEED_NODE];
+  const voiceScore =
+    typeof input.voiceScore === 'number' && Number.isFinite(input.voiceScore)
+      ? Math.max(0, Math.min(1, input.voiceScore))
+      : 0;
+  const voiceProfileId = input.voiceProfileId?.trim() || null;
   const state = loadState();
-  const from = state.current;
-  if (from === next) return;
+  const now = Date.now();
 
-  state.current = next;
-  pushChain(state, {
-    state: next,
-    from,
-    timestamp: Date.now(),
-    type: 'panel',
-    panel: next,
-  });
-  recordTransition(state, from, next);
+  for (const fromId of fromIds) {
+    pushEdge(state, {
+      fromResourceId: fromId,
+      fromLabel: fromId === input.fromResourceId ? input.fromLabel : undefined,
+      toResourceId: toId,
+      toLabel: input.toLabel,
+      sourceKind: input.sourceKind,
+      voiceProfileId,
+      voiceScore,
+      timestamp: now,
+    });
+  }
+
   saveState(state);
 }
 
-export function registerPortalFunction(functionName: string): void {
-  const state = loadState();
-  if (!state.functionUsage[functionName]) {
-    state.functionUsage[functionName] = { count: 0, errors: 0, lastCall: null };
-    saveState(state);
-  }
-}
-
-export function trackPortalAction(functionName: string, context: { panel?: string } = {}): void {
-  const state = loadState();
-  const panel = context.panel ?? getCurrentPanel();
-  const from = state.current;
-
-  if (!state.functionUsage[functionName]) {
-    state.functionUsage[functionName] = { count: 0, errors: 0, lastCall: null };
-  }
-  const usage = state.functionUsage[functionName];
-  usage.count += 1;
-  usage.lastCall = Date.now();
-
-  pushChain(state, {
-    state: functionName,
-    from,
-    timestamp: Date.now(),
-    type: 'action',
-    panel,
-  });
-  recordTransition(state, from, functionName);
-  state.current = functionName;
-  saveState(state);
-}
-
-export function trackPortalError(
-  functionName: string,
-  error: unknown,
-  context: { panel?: string } = {},
+/** Hydrate Markov from persisted resource lineage metadata. */
+export function ingestResourcesIntoMarkov(
+  resources: Array<{
+    id: string;
+    title?: string;
+    isStarterBlock?: boolean;
+    metadata?: {
+      sourceResourceId?: string;
+      sourceResourceIds?: string[];
+      sourceKind?: ResourceMarkovSourceKind;
+      voiceProfileId?: string;
+      voiceScore?: number;
+    };
+  }>
 ): void {
-  const state = loadState();
-  const panel = context.panel ?? getCurrentPanel();
-  const message = error instanceof Error ? error.message : String(error);
+  if (typeof localStorage === 'undefined' || !Array.isArray(resources)) return;
+  const byId = new Map(resources.map((r) => [r.id, r]));
 
-  if (!state.functionUsage[functionName]) {
-    state.functionUsage[functionName] = { count: 0, errors: 0, lastCall: null };
+  for (const resource of resources) {
+    const meta = resource.metadata;
+    if (!meta?.sourceResourceId && !meta?.sourceResourceIds?.length) continue;
+    if (resource.isStarterBlock) continue;
+
+    const fromId = meta.sourceResourceId || meta.sourceResourceIds?.[0] || SEED_NODE;
+    const from = byId.get(fromId);
+    trackResourceCreation({
+      fromResourceId: fromId === SEED_NODE ? null : fromId,
+      fromLabel: from?.title,
+      fromResourceIds: meta.sourceResourceIds,
+      toResourceId: resource.id,
+      toLabel: resource.title,
+      sourceKind: meta.sourceKind || (from?.isStarterBlock ? 'starter' : 'resource'),
+      voiceProfileId: meta.voiceProfileId ?? null,
+      voiceScore: meta.voiceScore ?? 0,
+    });
   }
-  state.functionUsage[functionName].errors += 1;
-
-  const from = state.current;
-  const to = `error:${functionName}`;
-  const errorKey = `${from} → ${to}`;
-  state.errorTransitions[errorKey] = (state.errorTransitions[errorKey] ?? 0) + 1;
-
-  const entry: PortalErrorEntry = {
-    functionName,
-    message,
-    timestamp: Date.now(),
-    panel,
-    state: state.current,
-  };
-  state.errorLog.push(entry);
-  if (state.errorLog.length > 100) {
-    state.errorLog = state.errorLog.slice(-100);
-  }
-
-  pushChain(state, {
-    state: `error:${functionName}`,
-    from: state.current,
-    timestamp: Date.now(),
-    type: 'error',
-    panel,
-    error: message,
-  });
-  recordTransition(state, state.current, `error:${functionName}`);
-  saveState(state);
-}
-
-/** Wrap async workspace handlers for Markov action + error tracking. */
-export function wrapPortalAction<T extends (...args: never[]) => unknown>(
-  functionName: string,
-  fn: T,
-): T {
-  registerPortalFunction(functionName);
-  return ((...args: Parameters<T>) => {
-    trackPortalAction(functionName);
-    try {
-      const result = fn(...args);
-      if (result instanceof Promise) {
-        return result.catch((error: unknown) => {
-          trackPortalError(functionName, error);
-          throw error;
-        });
-      }
-      return result;
-    } catch (error) {
-      trackPortalError(functionName, error);
-      throw error;
-    }
-  }) as T;
 }
 
 function topTransitions(transitions: TransitionMap, limit = 12): string[] {
@@ -262,51 +227,85 @@ function topTransitions(transitions: TransitionMap, limit = 12): string[] {
     }
   }
   pairs.sort((a, b) => b.count - a.count);
-  if (!pairs.length) return ['  (navigate the workspace to collect flow data)'];
-  return pairs.slice(0, limit).map((row) => `  ${row.from} → ${row.to}: ${row.count}`);
+  if (!pairs.length) {
+    return ['  (create or generate a resource from a starter / parent to collect lineage)'];
+  }
+  return pairs
+    .slice(0, limit)
+    .map((row) => `  ${shortId(row.from)} → ${shortId(row.to)}: ${row.count}`);
+}
+
+function voiceMatchBreakdown(state: MarkovState): Array<{
+  voiceProfileId: string;
+  hops: number;
+  sharePercent: number;
+  avgMatchPercent: number;
+}> {
+  const total = Object.values(state.voiceCounts).reduce((a, b) => a + b, 0);
+  if (!total) return [];
+  return Object.keys(state.voiceCounts)
+    .map((voiceProfileId) => {
+      const hops = state.voiceCounts[voiceProfileId] ?? 0;
+      const sum = state.voiceScoreSums[voiceProfileId] ?? 0;
+      return {
+        voiceProfileId,
+        hops,
+        sharePercent: Math.round((hops / total) * 1000) / 10,
+        avgMatchPercent: hops > 0 ? Math.round((sum / hops) * 1000) / 10 : 0,
+      };
+    })
+    .sort((a, b) => b.hops - a.hops || b.avgMatchPercent - a.avgMatchPercent);
 }
 
 export function getPortalMarkovAnalysisReport(): {
   summary: Record<string, string | number>;
+  voiceShares: Array<{
+    voiceProfileId: string;
+    hops: number;
+    sharePercent: number;
+    avgMatchPercent: number;
+  }>;
+  topTransitions: Array<{ from: string; to: string; count: number }>;
+  recentEdges: ResourceMarkovEdge[];
+  /** @deprecated portal-flow fields kept empty for old callers */
   unusedFunctions: string[];
   functionsWithErrors: Array<{ name: string; count: number; errors: number; errorRate: string }>;
   errorProneTransitions: Array<{ transition: string; errorCount: number }>;
-  recentErrors: PortalErrorEntry[];
+  recentErrors: never[];
 } {
   const state = loadState();
-  const registered = Object.keys(state.functionUsage);
-  const unusedFunctions = registered.filter((name) => state.functionUsage[name].count === 0);
-  const functionsWithErrors = registered
-    .filter((name) => state.functionUsage[name].errors > 0)
-    .map((name) => {
-      const usage = state.functionUsage[name];
-      const rate = usage.count > 0 ? ((usage.errors / usage.count) * 100).toFixed(1) : '100.0';
-      return { name, count: usage.count, errors: usage.errors, errorRate: `${rate}%` };
-    })
-    .sort((a, b) => b.errors - a.errors);
+  const voiceShares = voiceMatchBreakdown(state);
+  const pairs: Array<{ from: string; to: string; count: number }> = [];
+  for (const [from, toMap] of Object.entries(state.transitions)) {
+    for (const [to, count] of Object.entries(toMap)) {
+      pairs.push({ from, to, count });
+    }
+  }
+  pairs.sort((a, b) => b.count - a.count);
 
-  const errorProneTransitions = Object.entries(state.errorTransitions)
-    .map(([transition, errorCount]) => ({ transition, errorCount }))
-    .sort((a, b) => b.errorCount - a.errorCount);
-
-  const totalCalls = registered.reduce((sum, name) => sum + state.functionUsage[name].count, 0);
-  const totalErrors = state.errorLog.length;
-  const sessionSeconds = Math.round((Date.now() - state.startTime) / 1000);
+  const avgScore =
+    state.chain.length > 0
+      ? state.chain.reduce((s, e) => s + e.voiceScore, 0) / state.chain.length
+      : 0;
+  const topVoice = voiceShares[0];
 
   return {
     summary: {
-      currentPanel: state.current,
-      chainLength: state.chain.length,
-      registeredFunctions: registered.length,
-      totalCalls,
-      totalErrors,
-      errorRate: totalCalls > 0 ? `${((totalErrors / totalCalls) * 100).toFixed(1)}%` : '0%',
-      sessionSeconds,
+      lineageHops: state.chain.length,
+      distinctSources: Object.keys(state.transitions).length,
+      distinctVoices: Object.keys(state.voiceCounts).length,
+      avgVoiceMatchPercent: Math.round(avgScore * 1000) / 10,
+      dominantVoice: topVoice?.voiceProfileId || '—',
+      dominantVoiceSharePercent: topVoice?.sharePercent ?? 0,
+      sessionSeconds: Math.round((Date.now() - state.startTime) / 1000),
     },
-    unusedFunctions,
-    functionsWithErrors,
-    errorProneTransitions,
-    recentErrors: state.errorLog.slice(-8),
+    voiceShares,
+    topTransitions: pairs.slice(0, 20),
+    recentEdges: state.chain.slice(-12),
+    unusedFunctions: [],
+    functionsWithErrors: [],
+    errorProneTransitions: [],
+    recentErrors: [],
   };
 }
 
@@ -314,112 +313,103 @@ export function getPortalMarkovSummary(): string {
   const state = loadState();
   const report = getPortalMarkovAnalysisReport();
   const lines: string[] = [
-    `Current panel: ${state.current}`,
-    `Steps recorded: ${state.chain.length}`,
-    `Actions tracked: ${report.summary.totalCalls}`,
-    `Errors: ${report.summary.totalErrors}`,
+    `Lineage hops: ${report.summary.lineageHops}`,
+    `Avg voice match: ${report.summary.avgVoiceMatchPercent}%`,
+    `Dominant voice: ${report.summary.dominantVoice} (${report.summary.dominantVoiceSharePercent}% of hops)`,
     '',
-    'Top transitions:',
-    ...topTransitions(state.transitions),
+    'Voice match share (which voice the chain matches most):',
   ];
 
-  const recent = state.chain.slice(-8).map((e) => e.state);
-  lines.push('', `Recent path: ${recent.join(' → ')}`);
+  if (!report.voiceShares.length) {
+    lines.push('  (none yet)');
+  } else {
+    for (const row of report.voiceShares.slice(0, 8)) {
+      lines.push(
+        `  ${row.voiceProfileId}: ${row.sharePercent}% of hops · avg match ${row.avgMatchPercent}%`
+      );
+    }
+  }
+
+  lines.push('', 'Top resource → resource transitions:', ...topTransitions(state.transitions));
+
+  const recent = state.chain.slice(-6).map((e) => {
+    const match = scorePct(e.voiceScore);
+    return `${labelFor(e.fromResourceId, e.fromLabel)} → ${labelFor(e.toResourceId, e.toLabel)} [${e.sourceKind}, ${match}]`;
+  });
+  if (recent.length) {
+    lines.push('', 'Recent lineage:', ...recent.map((r) => `  ${r}`));
+  }
   return lines.join('\n');
 }
 
 export function debugFromPortalMarkov(): string {
   const report = getPortalMarkovAnalysisReport();
   const lines: string[] = [
-    '=== Portal flow debug ===',
-    `Session: ${report.summary.sessionSeconds}s`,
-    `Chain length: ${report.summary.chainLength}`,
-    `Registered functions: ${report.summary.registeredFunctions}`,
-    `Total action calls: ${report.summary.totalCalls}`,
-    `Error rate: ${report.summary.errorRate}`,
+    '=== Resource lineage Markov ===',
+    `Hops: ${report.summary.lineageHops}`,
+    `Sources: ${report.summary.distinctSources}`,
+    `Voices: ${report.summary.distinctVoices}`,
+    `Avg voice match: ${report.summary.avgVoiceMatchPercent}%`,
+    `Dominant voice: ${report.summary.dominantVoice} (${report.summary.dominantVoiceSharePercent}%)`,
     '',
+    'Voice share across Markov hops:',
   ];
 
-  if (report.unusedFunctions.length) {
-    lines.push('Registered but never called:', ...report.unusedFunctions.map((n) => `  • ${n}`), '');
+  if (!report.voiceShares.length) {
+    lines.push('  No creation hops recorded yet.');
   } else {
-    lines.push('All registered functions have been called at least once.', '');
+    for (const row of report.voiceShares) {
+      lines.push(
+        `  • ${row.voiceProfileId}: ${row.hops} hop(s), ${row.sharePercent}% of chain, avg match ${row.avgMatchPercent}%`
+      );
+    }
   }
 
-  if (report.functionsWithErrors.length) {
-    lines.push('Functions with errors:');
-    for (const row of report.functionsWithErrors.slice(0, 10)) {
-      lines.push(`  • ${row.name}: ${row.errors} error(s) / ${row.count} call(s) (${row.errorRate})`);
-    }
-    lines.push('');
+  lines.push('', 'Recent edges:');
+  if (!report.recentEdges.length) {
+    lines.push('  (none)');
   } else {
-    lines.push('No function errors recorded.', '');
-  }
-
-  if (report.errorProneTransitions.length) {
-    lines.push('Error-prone transitions:');
-    for (const row of report.errorProneTransitions.slice(0, 8)) {
-      lines.push(`  • ${row.transition}: ${row.errorCount} error(s)`);
+    for (const e of report.recentEdges) {
+      lines.push(
+        `  • ${shortId(e.fromResourceId)} → ${shortId(e.toResourceId)} · ${e.sourceKind} · voice ${e.voiceProfileId || 'unspecified'} · match ${scorePct(e.voiceScore)}`
+      );
     }
-    lines.push('');
-  }
-
-  if (report.recentErrors.length) {
-    lines.push('Recent errors:');
-    for (const err of report.recentErrors) {
-      lines.push(`  • ${err.functionName} @ ${err.panel}: ${err.message}`);
-    }
-  } else {
-    lines.push('No recent errors.');
   }
 
   return lines.join('\n');
 }
 
 export function buildMarkovExtrapolationPrompt(): string {
-  const state = loadState();
   const report = getPortalMarkovAnalysisReport();
   const lines: string[] = [
-    'Markov Chain Analysis Summary for Brisbane Servers portal debugging:',
+    'Markov Chain Analysis — resource lineage and voice match for Brisbane Servers:',
     '',
-    `Current panel/state: ${state.current}`,
-    `Chain length: ${state.chain.length}`,
-    `Registered functions: ${report.summary.registeredFunctions}`,
-    `Total action calls: ${report.summary.totalCalls}`,
-    `Total errors: ${report.summary.totalErrors}`,
-    `Error rate: ${report.summary.errorRate}`,
+    `Lineage hops: ${report.summary.lineageHops}`,
+    `Avg voice match: ${report.summary.avgVoiceMatchPercent}%`,
+    `Dominant voice: ${report.summary.dominantVoice} (${report.summary.dominantVoiceSharePercent}% of hops)`,
     '',
   ];
 
-  if (report.functionsWithErrors.length) {
-    lines.push('Functions with errors:');
-    for (const row of report.functionsWithErrors.slice(0, 6)) {
-      lines.push(`- ${row.name}: ${row.errors} errors (${row.errorRate})`);
+  if (report.voiceShares.length) {
+    lines.push('Voice share (% of creation hops matching each voice):');
+    for (const row of report.voiceShares.slice(0, 8)) {
+      lines.push(
+        `- ${row.voiceProfileId}: ${row.sharePercent}% of hops, avg match ${row.avgMatchPercent}%`
+      );
     }
     lines.push('');
   }
 
-  if (report.errorProneTransitions.length) {
-    lines.push('Error-prone transitions:');
-    for (const row of report.errorProneTransitions.slice(0, 6)) {
-      lines.push(`- ${row.transition}: ${row.errorCount} error(s)`);
+  if (report.topTransitions.length) {
+    lines.push('Top resource → resource creation transitions:');
+    for (const row of report.topTransitions.slice(0, 10)) {
+      lines.push(`- ${row.from} → ${row.to}: ${row.count}`);
     }
     lines.push('');
   }
 
-  if (report.unusedFunctions.length) {
-    lines.push('Registered but unused functions:');
-    for (const name of report.unusedFunctions.slice(0, 8)) {
-      lines.push(`- ${name}`);
-    }
-    lines.push('');
-  }
-
-  const recentPath = state.chain.slice(-12).map((e) => e.state).join(' → ');
-  lines.push(`Recent navigation path: ${recentPath}`);
-  lines.push('');
   lines.push(
-    'Based on this portal flow data, list likely UX wiring issues, missing error handlers, and suggested fixes for the account workspace. Be specific and actionable.'
+    'Based on this lineage and voice-match distribution, suggest which starter/source resources and voice profiles to reuse next, and where voice match is drifting. Be specific and actionable.'
   );
   return lines.join('\n');
 }
@@ -444,7 +434,8 @@ export function renderPortalMarkovIntoVoiceLab(): void {
   if (summaryEl) summaryEl.textContent = getPortalMarkovSummary();
   const debugEl = document.getElementById('voice-lab-markov-debug');
   if (debugEl && !debugEl.dataset.userTriggered) {
-    debugEl.textContent = 'Click “Debug insights” to analyze function errors and unused registrations.';
+    debugEl.textContent =
+      'Click “Debug insights” for voice-share breakdown across resource creation hops.';
   }
 }
 
@@ -460,6 +451,7 @@ export function exportPortalMarkovData(): void {
   const state = loadState();
   const payload = {
     exportedAt: new Date().toISOString(),
+    kind: 'resource-lineage-markov',
     ...state,
     summary: getPortalMarkovSummary(),
     analysis: getPortalMarkovAnalysisReport(),
@@ -469,7 +461,7 @@ export function exportPortalMarkovData(): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = `portal-markov-flow-${Date.now()}.json`;
+  anchor.download = `resource-markov-lineage-${Date.now()}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
 }
@@ -477,7 +469,7 @@ export function exportPortalMarkovData(): void {
 export function resetPortalMarkovTracker(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    clearLegacyPortalKeys();
   } catch {
     /* ignore */
   }
@@ -488,32 +480,29 @@ export function resetPortalMarkovTracker(): void {
   renderPortalMarkovIntoVoiceLab();
 }
 
-/** Register core workspace loaders for debug “unused function” reporting. */
-export function registerPortalWorkspaceFunctions(): void {
-  const names = [
-    'loadDashboardData',
-    'loadResources',
-    'loadProfiles',
-    'loadAnalytics',
-    'loadVoiceMap',
-    'loadLibraryGrowthPanel',
-    'loadModerationQueue',
-    'loadSiteReviewSections',
-    'loadAdminUsersPanel',
-    'loadAdminOpsPanel',
-    'saveResource',
-    'generateResource',
-    'uploadResource',
-    'improveResource',
-    'deleteResource',
-    'restoreResource',
-    'runLibraryGrowthCycle',
-    'bootstrapVoiceCorpus',
-    'moderateContributionApprove',
-    'moderateContributionReject',
-    'startBillingCheckout',
-    'grantAiUsageUnits',
-    'extrapolateMarkovIssues',
-  ];
-  for (const name of names) registerPortalFunction(name);
+/** @deprecated Portal nav is not Markov — no-op kept for call-site compatibility. */
+export function trackPortalPanel(_panelId: string): void {}
+
+/** @deprecated Portal actions are not Markov — no-op kept for call-site compatibility. */
+export function registerPortalFunction(_functionName: string): void {}
+
+/** @deprecated Portal actions are not Markov — no-op kept for call-site compatibility. */
+export function trackPortalAction(_functionName: string, _context: { panel?: string } = {}): void {}
+
+/** @deprecated Portal errors are not Markov — no-op kept for call-site compatibility. */
+export function trackPortalError(
+  _functionName: string,
+  _error: unknown,
+  _context: { panel?: string } = {}
+): void {}
+
+/** @deprecated */
+export function wrapPortalAction<T extends (...args: never[]) => unknown>(
+  _functionName: string,
+  fn: T
+): T {
+  return fn;
 }
+
+/** @deprecated */
+export function registerPortalWorkspaceFunctions(): void {}

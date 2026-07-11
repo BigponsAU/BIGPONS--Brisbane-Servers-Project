@@ -54,7 +54,9 @@ export function resourceExcerpt(
     if (typeof value !== 'string') return '';
     const trimmed = value.trim();
     if (!trimmed) return '';
-    return trimmed.length > maxLen ? trimmed.substring(0, maxLen) : trimmed;
+    if (trimmed.length <= maxLen) return trimmed;
+    const cut = trimmed.substring(0, Math.max(1, maxLen - 1)).trimEnd();
+    return `${cut}…`;
   };
   return pick(resource.description) || pick(resource.content);
 }

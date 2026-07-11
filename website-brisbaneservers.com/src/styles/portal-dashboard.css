@@ -1737,6 +1737,41 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   white-space: nowrap;
 }
 
+.admin-users-workspace-note {
+  font-size: var(--text-xs);
+  color: var(--portal-text-tertiary, var(--text-tertiary));
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.35rem;
+}
+
+.admin-users-removed-section {
+  margin-top: var(--space-lg);
+}
+
+.admin-users-removed-heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--text-lg);
+}
+
+.admin-auth-audit-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.admin-auth-audit-pager {
+  display: inline-flex;
+  gap: var(--space-xs);
+}
+
+.admin-auth-audit-scroll {
+  max-height: 22rem;
+  overflow: auto;
+}
+
 .admin-users-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -2792,6 +2827,17 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   color: var(--text-secondary);
 }
 
+.account-workspace-shell .workspace-section-hint {
+  margin: calc(var(--space-md) * -0.5) 0 var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary, var(--portal-text-tertiary));
+  line-height: 1.4;
+}
+
+.account-workspace-shell .activity-item--binnable:active {
+  border-color: rgba(var(--primary-color-rgb), 0.4);
+}
+
 .account-workspace-shell .admin-ops-card--collapsible > summary.card-title {
   margin-bottom: 0;
 }
@@ -2963,9 +3009,51 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   gap: var(--space-md);
 }
 
-.account-workspace-shell .resources-preview-grid,
-.account-workspace-shell .starter-blocks-grid {
+.account-workspace-shell .resources-preview-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+.account-workspace-shell .starter-blocks-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.account-workspace-shell .starter-block-card {
+  overflow: visible;
+  min-height: 14rem;
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .starter-block-title {
+  font-size: var(--text-base);
+  line-height: 1.35;
+  padding-right: 0;
+}
+
+.account-workspace-shell .starter-block-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  min-height: 5.5em;
+}
+
+.account-workspace-shell .starter-block-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: auto;
+}
+
+.account-workspace-shell .starter-block-actions .btn {
+  flex: none;
+  width: 100%;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: visible;
+  min-width: 0;
 }
 
 .account-workspace-shell .activity-item {
@@ -3191,4 +3279,86 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   padding: var(--space-lg);
   color: var(--text-secondary);
   font-size: var(--text-sm);
+}
+
+/* Admin billing panel */
+.account-workspace-shell .admin-billing-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .admin-billing-search {
+  min-width: min(100%, 14rem);
+  max-width: 18rem;
+}
+
+.account-workspace-shell .admin-billing-status-card {
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface-elevated);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-md);
+}
+
+.account-workspace-shell .admin-billing-section-title {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: var(--text-base);
+}
+
+.account-workspace-shell .admin-billing-table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--space-md);
+}
+
+.account-workspace-shell .admin-billing-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  overflow: hidden;
+  background: var(--surface-elevated);
+}
+
+.account-workspace-shell .admin-billing-grant-card {
+  margin-top: var(--space-lg);
+}
+
+.account-workspace-shell .admin-billing-badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.25rem;
+  font-size: var(--text-xs);
+  text-transform: lowercase;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.account-workspace-shell .admin-billing-badge--active,
+.account-workspace-shell .admin-billing-badge--trialing {
+  border-color: rgba(var(--primary-color-rgb), 0.35);
+  background: rgba(var(--primary-color-rgb), 0.08);
+}
+
+.account-workspace-shell .admin-billing-badge--past_due,
+.account-workspace-shell .admin-billing-badge--canceled {
+  border-color: rgba(var(--danger-color-rgb, 220 53 69), 0.35);
+}
+
+.account-workspace-shell .admin-billing-cap--warning {
+  color: var(--warning-text, #b45309);
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-workspace-shell .admin-billing-cap--critical {
+  color: var(--danger, #dc3545);
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-workspace-shell .client-ai-usage-card .insight-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }

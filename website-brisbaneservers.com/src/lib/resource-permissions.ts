@@ -51,6 +51,7 @@ export function getResourceActionPermissions(
   const archived = resource.status === 'archived';
   const draft = resource.status === 'draft';
   const removed = Boolean(resource.portalRemovedAt);
+  const binned = Boolean(resource.binnedAt);
   const canMutate = admin || owner;
 
   if (removed) {
@@ -66,6 +67,22 @@ export function getResourceActionPermissions(
       restore: admin,
       editReason: admin ? undefined : 'Only admins can edit removed resources.',
       deleteReason: 'Use Restore to workspace or Unpublish on the live site.',
+    };
+  }
+
+  if (binned) {
+    return {
+      view: true,
+      edit: false,
+      publish: false,
+      unpublish: false,
+      archive: false,
+      unarchive: false,
+      improve: false,
+      delete: false,
+      restore: canMutate,
+      editReason: 'Restore this bin draft before editing.',
+      deleteReason: 'This draft is already in the bin. Restore it or leave it for collation.',
     };
   }
 

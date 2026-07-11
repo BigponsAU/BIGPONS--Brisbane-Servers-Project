@@ -4,14 +4,12 @@ import {
   debugFromPortalMarkov,
   getPortalMarkovAnalysisReport,
   getPortalMarkovSummary,
-  registerPortalFunction,
+  ingestResourcesIntoMarkov,
   resetPortalMarkovTracker,
-  trackPortalAction,
-  trackPortalError,
-  trackPortalPanel,
+  trackResourceCreation,
 } from '../src/scripts/portal-markov-tracker';
 
-const STORAGE_KEY = 'bs-portal-markov-v2';
+const STORAGE_KEY = 'bs-resource-markov-v1';
 
 function createStorage(): Storage {
   const store = new Map<string, string>();
@@ -37,7 +35,7 @@ function createStorage(): Storage {
   };
 }
 
-describe('portal-markov-tracker', () => {
+describe('portal-markov-tracker (resource lineage)', () => {
   beforeEach(() => {
     vi.stubGlobal('localStorage', createStorage());
   });
@@ -47,47 +45,94 @@ describe('portal-markov-tracker', () => {
     vi.unstubAllGlobals();
   });
 
-  it('tracks panel transitions', () => {
-    trackPortalPanel('dashboard');
-    trackPortalPanel('resources');
-    trackPortalPanel('profiles');
-    const summary = getPortalMarkovSummary();
-    expect(summary).toContain('dashboard → resources');
-    expect(summary).toContain('resources → profiles');
-    expect(summary).toContain('Current panel: profiles');
-  });
+  it('tracks resource creation hops with voice match', () => {
+    trackResourceCreation({
+      fromResourceId: 'starter-a',
+      fromLabel: 'Starter A',
+      toResourceId: 'draft-b',
+      toLabel: 'Draft B',
+      sourceKind: 'starter',
+      voiceProfileId: 'brisbane',
+      voiceScore: 0.82,
+    });
+    trackResourceCreation({
+      fromResourceId: 'draft-b',
+      toResourceId: 'draft-c',
+      sourceKind: 'rag',
+      voiceProfileId: 'brisbane',
+      voiceScore: 0.74,
+    });
+    trackResourceCreation({
+      fromResourceId: 'starter-a',
+      toResourceId: 'draft-d',
+      sourceKind: 'generate',
+      voiceProfileId: 'alt-voice',
+      voiceScore: 0.61,
+    });
 
-  it('tracks actions and errors for debug report', () => {
-    registerPortalFunction('loadResources');
-    registerPortalFunction('saveResource');
-    trackPortalAction('loadResources');
-    trackPortalAction('saveResource');
-    trackPortalError('saveResource', new Error('network failed'));
+    const summary = getPortalMarkovSummary();
+    expect(summary).toContain('Lineage hops: 3');
+    expect(summary).toContain('brisbane');
+    expect(summary).toContain('alt-voice');
+    expect(summary).toContain('starter-a');
+    expect(summary).toContain('draft-b');
 
     const report = getPortalMarkovAnalysisReport();
-    expect(report.summary.totalCalls).toBe(2);
-    expect(report.summary.totalErrors).toBe(1);
-    expect(report.functionsWithErrors[0]?.name).toBe('saveResource');
-
-    const debug = debugFromPortalMarkov();
-    expect(debug).toContain('saveResource');
-    expect(debug).toContain('network failed');
-    expect(debug).toContain('Error-prone transitions');
+    expect(report.summary.lineageHops).toBe(3);
+    expect(report.voiceShares[0]?.voiceProfileId).toBe('brisbane');
+    expect(report.voiceShares[0]?.hops).toBe(2);
+    expect(Number(report.summary.dominantVoiceSharePercent)).toBeGreaterThan(50);
   });
 
-  it('builds extrapolation prompt from chain data', () => {
-    registerPortalFunction('loadResources');
-    trackPortalAction('loadResources');
-    trackPortalError('loadResources', new Error('timeout'));
+  it('ingests lineage from resource metadata', () => {
+    ingestResourcesIntoMarkov([
+      {
+        id: 'child-1',
+        title: 'Child',
+        metadata: {
+          sourceResourceId: 'parent-1',
+          sourceKind: 'starter',
+          voiceProfileId: 'brisbane',
+          voiceScore: 0.9,
+        },
+      },
+      {
+        id: 'parent-1',
+        title: 'Parent',
+        isStarterBlock: true,
+        metadata: { voiceScore: 0.95 },
+      },
+    ]);
+
+    const debug = debugFromPortalMarkov();
+    expect(debug).toContain('parent-1');
+    expect(debug).toContain('child-1');
+    expect(debug).toContain('90%');
+  });
+
+  it('builds extrapolation prompt from lineage + voice share', () => {
+    trackResourceCreation({
+      fromResourceId: 'a',
+      toResourceId: 'b',
+      sourceKind: 'rag',
+      voiceProfileId: 'brisbane',
+      voiceScore: 0.7,
+    });
     const prompt = buildMarkovExtrapolationPrompt();
-    expect(prompt).toContain('Markov Chain Analysis');
-    expect(prompt).toContain('loadResources');
+    expect(prompt).toContain('resource lineage');
+    expect(prompt).toContain('brisbane');
+    expect(prompt).toContain('Voice share');
   });
 
   it('reset clears stored state', () => {
-    trackPortalPanel('voice-lab');
+    trackResourceCreation({
+      fromResourceId: 'a',
+      toResourceId: 'b',
+      sourceKind: 'generate',
+      voiceScore: 0.5,
+    });
     resetPortalMarkovTracker();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
-    expect(getPortalMarkovSummary()).toContain('Steps recorded: 1');
+    expect(getPortalMarkovSummary()).toContain('Lineage hops: 0');
   });
 });

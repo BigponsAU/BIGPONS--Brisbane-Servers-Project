@@ -20,6 +20,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/usage/me', loadModule: () => import('../src/pages/_api/usage/me') },
   { path: '/api/billing/checkout', loadModule: () => import('../src/pages/_api/billing/checkout') },
   { path: '/api/billing/status', loadModule: () => import('../src/pages/_api/billing/status') },
+  { path: '/api/billing/portal', loadModule: () => import('../src/pages/_api/billing/portal') },
   { path: '/api/billing/webhook', loadModule: () => import('../src/pages/_api/billing/webhook') },
   { path: '/api/voice/analyze', loadModule: () => import('../src/pages/_api/voice/analyze') },
   { path: '/api/voice/extrapolate', loadModule: () => import('../src/pages/_api/voice/extrapolate') },
@@ -88,4 +89,6 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/admin/token-redemptions', loadModule: () => import('../src/pages/_api/admin/token-redemptions') },
   { path: '/api/admin/token-redemptions/fulfill', loadModule: () => import('../src/pages/_api/admin/token-redemptions/fulfill') },
   { path: '/api/admin/usage/grant', loadModule: () => import('../src/pages/_api/admin/usage/grant') },
+  { path: '/api/admin/usage/summary', loadModule: () => import('../src/pages/_api/admin/usage/summary') },
+  { path: '/api/admin/billing/accounts', loadModule: () => import('../src/pages/_api/admin/billing/accounts') },
 ];

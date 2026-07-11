@@ -14,6 +14,7 @@ import AccountAdminUsersPanel from './AccountAdminUsersPanel.astro';
 import AccountVoiceLabPanel from './AccountVoiceLabPanel.astro';
 import AccountVoiceMapPanel from './AccountVoiceMapPanel.astro';
 import AccountAdminOpsPanel from './AccountAdminOpsPanel.astro';
+import AccountAdminBillingPanel from './AccountAdminBillingPanel.astro';
 import AccountResourceModals from './AccountResourceModals.astro';
 import { accountWorkspace } from '../../data/account-workspace';
 import { resolvePublicApiUrl, resolvePublicSitePath } from '../../lib/api-config';
@@ -84,6 +85,7 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       <AccountVoiceLabPanel />
       <AccountVoiceMapPanel />
       <AccountAdminOpsPanel />
+      <AccountAdminBillingPanel />
     </AccountWorkspaceShell>
     <AccountResourceModals />
     <div id="portal-confirm-host"></div>

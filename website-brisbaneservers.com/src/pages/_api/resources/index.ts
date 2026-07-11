@@ -36,6 +36,8 @@ export const GET: APIRoute = async ({ request }) => {
     const status = url.searchParams.get('status');
     const includeRemoved = url.searchParams.get('includeRemoved') === '1';
     const removedOnly = url.searchParams.get('removedOnly') === '1';
+    const includeBinned = url.searchParams.get('includeBinned') === '1';
+    const binnedOnly = url.searchParams.get('binnedOnly') === '1';
     const isAdmin =
       authResult.user.role === 'admin' || authResult.user.role === 'super-admin';
 
@@ -54,6 +56,8 @@ export const GET: APIRoute = async ({ request }) => {
     resources = filterResourcesForUser(authResult.user, resources, {
       includeRemoved,
       removedOnly,
+      includeBinned,
+      binnedOnly,
     });
 
     // Query filters

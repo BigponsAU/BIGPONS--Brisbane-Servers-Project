@@ -35,18 +35,21 @@ import { accountWorkspace } from '../../data/account-workspace';
       </div>
 
       <details class="panel-guidance-details voice-lab-markov-details">
-        <summary>Portal flow (Markov) — optional</summary>
+        <summary>Resource lineage (Markov) — optional</summary>
         <div class="panel-guidance-details__body">
-          <p class="section-subtitle">Panel navigation patterns recorded as you move through the workspace (this browser only).</p>
+          <p class="section-subtitle">
+            Tracks resources created from starters or other resources, the voice used on each hop,
+            and which voice the chain matches most (this browser only).
+          </p>
           <div class="voice-lab-actions voice-lab-markov-actions">
             <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
             <button type="button" id="voice-lab-markov-debug" class="btn btn-secondary btn-sm">Debug insights</button>
-            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-secondary btn-sm">Extrapolate issues</button>
+            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-secondary btn-sm">Extrapolate lineage</button>
             <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
             <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
           </div>
-          <pre id="voice-lab-markov-summary" class="voice-lab-output-pre" aria-live="polite">Navigate the workspace to collect flow data.</pre>
-          <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Click “Debug insights” to analyze function errors and unused registrations.</pre>
+          <pre id="voice-lab-markov-summary" class="voice-lab-output-pre" aria-live="polite">Create or generate a resource from a starter / parent to collect lineage.</pre>
+          <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Click “Debug insights” for voice-share breakdown across creation hops.</pre>
         </div>
       </details>
     </section>

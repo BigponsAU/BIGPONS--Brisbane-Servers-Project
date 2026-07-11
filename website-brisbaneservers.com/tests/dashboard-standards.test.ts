@@ -11,6 +11,7 @@ const ACCOUNT_SCRIPTS = [
   'account-library-growth.ts',
   'account-admin-moderation.ts',
   'account-admin-ops.ts',
+  'account-admin-billing.ts',
   'account-admin-users.ts',
 ];
 
@@ -26,6 +27,7 @@ const PANEL_FILES = [
   'AccountSiteReviewPanel.astro',
   'AccountAdminUsersPanel.astro',
   'AccountAdminOpsPanel.astro',
+  'AccountAdminBillingPanel.astro',
 ];
 
 describe('dashboard production standards', () => {
@@ -38,7 +40,7 @@ describe('dashboard production standards', () => {
   });
 
   it('admin moderation and growth use styled confirms', async () => {
-    for (const file of ['account-admin-moderation.ts', 'account-library-growth.ts', 'account-admin-ops.ts']) {
+    for (const file of ['account-admin-moderation.ts', 'account-library-growth.ts', 'account-admin-ops.ts', 'account-admin-billing.ts']) {
       const source = await readFile(path.resolve('src/scripts', file), 'utf8');
       expect(source).toContain('showConfirmDialog');
     }
@@ -73,10 +75,10 @@ describe('dashboard production standards', () => {
     expect(header).toContain('id="workspace-global-search-results"');
   });
 
-  it('portal markov tracker registers workspace loaders', async () => {
+  it('portal markov tracker exposes resource lineage API', async () => {
     const source = await readFile(path.resolve('src/scripts/portal-markov-tracker.ts'), 'utf8');
+    expect(source).toContain('trackResourceCreation');
+    expect(source).toContain('getPortalMarkovSummary');
     expect(source).toContain('registerPortalWorkspaceFunctions');
-    expect(source).toContain('loadModerationQueue');
-    expect(source).toContain('bootstrapVoiceCorpus');
   });
 });
