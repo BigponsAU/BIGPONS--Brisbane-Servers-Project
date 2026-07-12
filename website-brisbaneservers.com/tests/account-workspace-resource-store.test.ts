@@ -32,7 +32,7 @@ describe('workspace resource store', () => {
 
   it('upserts a newly created resource before list reload', () => {
     upsertWorkspaceResource({ id: 'new-1', status: 'draft', title: 'Fresh' });
-    expect(getWorkspaceResourceById('new-1')?.title).toBe('Fresh');
+    expect(getWorkspaceResourceById<{ id: string; title: string }>('new-1')?.title).toBe('Fresh');
     expect(getWorkspaceResources()).toHaveLength(1);
   });
 

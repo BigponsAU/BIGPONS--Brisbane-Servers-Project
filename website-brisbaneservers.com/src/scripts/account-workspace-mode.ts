@@ -35,7 +35,7 @@ export function setWorkspaceMode(mode: WorkspaceMode, navigate = true): void {
   root?.classList.toggle('account-workspace-root--admin-console', mode === 'admin');
   if (tracks) tracks.dataset.workspaceMode = mode;
 
-  document.querySelectorAll<HTMLElement>('[data-workspace-mode]').forEach((btn) => {
+  document.querySelectorAll<HTMLElement>('button[data-workspace-mode]').forEach((btn) => {
     const isActive = btn.dataset.workspaceMode === mode;
     btn.classList.toggle('is-active', isActive);
     btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');

@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-11 — edge CORS PUT/DELETE fix
+**Last synced:** 2026-07-12 — workspace sidebar nav + search icon
+
+### 2026-07-12 — Workspace Admin menu dead links + search icon
+
+- **Root cause** — Sidebar click binding lived only in the lazy Resources chunk, so Admin console links did nothing until Resources was visited. Pages deploy for `a5f11e7` (which moved the binding) failed pre-build TypeScript (`getWorkspaceResourceById()?.title`).
+- **Fix** — Keep always-loaded `portal-sidebar` listener; add inline `onclick` on nav items; inset search icon + hide native webkit search decorations; type the resource-store test.
+- **Deploy** — push after this entry → Cloudflare Pages production (monitor build).
 
 ### 2026-07-11 — Edge CORS: archive/delete connection errors
 

@@ -52,12 +52,13 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
               {
                 group.items.map((item, index) => (
                   <a
-                    href="#"
+                    href={`#${item.panel}`}
                     class={`sidebar-nav-item${item.featured ? ' sidebar-nav-item--featured' : ''}${groupIndex === 0 && index === 0 ? ' active' : ''}`}
                     data-panel={item.panel}
                     data-min-role={item.minRole}
                     data-nav-mode="creator"
                     title={item.title}
+                    onclick={`event.preventDefault(); event.stopPropagation(); window.navigateToPanel && window.navigateToPanel('${item.panel}')`}
                   >
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       {item.panel === 'dashboard' && (
@@ -122,12 +123,13 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
               {
                 group.items.map((item) => (
                   <a
-                    href="#"
+                    href={`#${item.panel}`}
                     class="sidebar-nav-item"
                     data-panel={item.panel}
                     data-min-role={item.minRole}
                     data-nav-mode="admin"
                     title={item.title}
+                    onclick={`event.preventDefault(); event.stopPropagation(); window.navigateToPanel && window.navigateToPanel('${item.panel}')`}
                   >
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       {item.panel === 'library-growth' && (

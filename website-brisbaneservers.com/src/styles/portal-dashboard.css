@@ -1381,7 +1381,7 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 .account-workspace-shell .workspace-global-search__input {
   width: 100%;
   box-sizing: border-box;
-  padding: 0.55rem 4.6rem 0.55rem calc(0.65rem + 16px + 0.35rem);
+  padding: 0.55rem 4.6rem 0.55rem 2.35rem;
   font-size: var(--text-sm);
   border-radius: calc(var(--site-panel-radius) * 0.65);
   border: 1px solid rgba(var(--primary-color-rgb), 0.22);
@@ -1389,6 +1389,17 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   color: var(--text-primary);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 1px 2px rgba(8, 27, 54, 0.04);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.account-workspace-shell .workspace-global-search__input::-webkit-search-decoration,
+.account-workspace-shell .workspace-global-search__input::-webkit-search-cancel-button,
+.account-workspace-shell .workspace-global-search__input::-webkit-search-results-button,
+.account-workspace-shell .workspace-global-search__input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 .account-workspace-shell .workspace-global-search__input:focus {
@@ -1405,10 +1416,12 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 .account-workspace-shell .header-global-search .search-icon {
   position: absolute;
   top: 50%;
-  left: 0.65rem;
+  left: 0.85rem;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+  flex-shrink: 0;
   pointer-events: none;
   z-index: 1;
   color: var(--text-secondary);

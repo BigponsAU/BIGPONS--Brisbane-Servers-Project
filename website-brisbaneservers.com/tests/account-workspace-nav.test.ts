@@ -47,4 +47,14 @@ describe('account workspace navigation', () => {
       ).toBe(true);
     }
   });
+
+  it('binds sidebar navigation in the always-loaded app bundle', async () => {
+    const appSource = await readFile(
+      path.resolve('src/scripts/account-workspace-app.ts'),
+      'utf8',
+    );
+    expect(appSource).toContain("getElementById('portal-sidebar')");
+    expect(appSource).toContain('.sidebar-nav-item[data-panel]');
+    expect(appSource).toContain('navigateToPanel(panel)');
+  });
 });
