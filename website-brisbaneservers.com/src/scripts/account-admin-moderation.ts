@@ -3,7 +3,7 @@
  */
 import { workspaceFetch } from '../lib/client-api';
 import { escapeHtml, runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
-import { getPortalAccountContext } from './account-workspace-runtime';
+import { getPortalAccountContext, showAuthBanner } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction } from './portal-markov-tracker';
@@ -14,6 +14,11 @@ export type ModerationItem = {
   resourceId: string;
   type: string;
   createdAt?: string;
+  tokensAwarded?: number;
+  analysis?: {
+    voiceScore?: number;
+    notes?: string;
+  };
   payload?: {
     title?: string;
     industry?: string;
@@ -24,6 +29,12 @@ export type ModerationItem = {
 
 function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
+}
+
+function suggestedTokenAward(item: ModerationItem, multiplier = 10): number {
+  const score = item.analysis?.voiceScore;
+  if (typeof score !== 'number') return 0;
+  return Math.round(Math.max(0, score) * multiplier);
 }
 
 function setQueueSummary(count: number): void {
@@ -50,6 +61,12 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
 
   const snippet = item.payload?.contentSnippet || '';
   const created = item.createdAt ? new Date(item.createdAt).toLocaleString() : '—';
+  const voiceScore =
+    typeof item.analysis?.voiceScore === 'number'
+      ? item.analysis.voiceScore.toFixed(2)
+      : '—';
+  const tokensOnApprove = suggestedTokenAward(item);
+  const alreadyAwarded = item.tokensAwarded ?? 0;
 
   panel.innerHTML = `
     <header class="moderation-detail-header">
@@ -60,10 +77,19 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
       <div><dt>User</dt><dd><code>${escapeHtml(item.userId)}</code></dd></div>
       <div><dt>Resource ID</dt><dd><code>${escapeHtml(item.resourceId || '—')}</code></dd></div>
       <div><dt>Submitted</dt><dd>${escapeHtml(created)}</dd></div>
+      <div><dt>Voice score</dt><dd>${escapeHtml(voiceScore)}</dd></div>
+      <div><dt>Tokens on approve</dt><dd>${escapeHtml(String(tokensOnApprove))}${
+        alreadyAwarded > 0 ? ` <span class="form-hint">(ledger already has ${alreadyAwarded})</span>` : ''
+      }</dd></div>
     </dl>
     <div class="moderation-detail-body">
       <h4>Content preview</h4>
       <pre class="moderation-detail-snippet">${escapeHtml(snippet || 'No preview text supplied.')}</pre>
+      ${
+        item.analysis?.notes
+          ? `<p class="form-hint">${escapeHtml(item.analysis.notes)}</p>`
+          : ''
+      }
     </div>
     <footer class="moderation-detail-actions">
       <button type="button" class="btn btn-primary btn-sm" data-moderation-approve="${escapeHtml(item.id)}">Approve</button>
@@ -84,7 +110,10 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
         showConfirmDialog({
           title: 'Approve upload',
           message: 'Publish this community contribution?',
-          details: 'Approved items become available in Resources and may appear on the public site when published.',
+          details:
+            tokensOnApprove > 0
+              ? `Awards about ${tokensOnApprove} tokens to the contributor (if not already granted), then publishes the resource.`
+              : 'Approved items become available in Resources and may appear on the public site when published.',
           confirmLabel: 'Approve',
           variant: 'primary',
         }),
@@ -102,7 +131,11 @@ function renderModerationDetail(item: ModerationItem, ctx: PortalAccountContext)
       confirm: () =>
         showConfirmDialog({
           title: 'Reject upload',
-          message: 'Remove this contribution from the moderation queue?',
+          message: 'Reject this contribution and archive its draft?',
+          details:
+            alreadyAwarded > 0
+              ? `Any tokens already granted for this upload (${alreadyAwarded}) will be clawed back.`
+              : 'Removes it from the moderation queue without publishing. Draft resource is archived.',
           confirmLabel: 'Reject',
           variant: 'danger',
         }),
@@ -131,15 +164,54 @@ async function moderateContribution(
     if (container) {
       container.innerHTML = '<p class="status-message">Sign in again to moderate uploads.</p>';
     }
+    showAuthBanner('Sign in again to moderate uploads.', 'error');
     return;
   }
   const endpoint = action === 'approve' ? 'approve' : 'reject';
   trackPortalAction(action === 'approve' ? 'moderateContributionApprove' : 'moderateContributionReject');
-  await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contributionId }),
-  });
+
+  try {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/community/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contributionId }),
+    });
+    const data = (await res.json().catch(() => ({}))) as {
+      success?: boolean;
+      error?: string;
+      tokensAwarded?: number;
+      tokensGrantedNow?: number;
+      tokensClawedBack?: number;
+    };
+
+    if (!res.ok || data.success === false) {
+      const message = data.error || `Could not ${action} contribution (${res.status}).`;
+      showAuthBanner(message, 'error');
+      await loadModerationQueue(ctx);
+      return;
+    }
+
+    if (action === 'approve') {
+      const granted = data.tokensGrantedNow ?? data.tokensAwarded ?? 0;
+      showAuthBanner(
+        granted > 0
+          ? `Contribution approved. ${granted} token${granted === 1 ? '' : 's'} granted.`
+          : 'Contribution approved and published.',
+        'success',
+      );
+    } else {
+      const clawed = data.tokensClawedBack ?? 0;
+      showAuthBanner(
+        clawed > 0
+          ? `Contribution rejected. ${clawed} token${clawed === 1 ? '' : 's'} clawed back.`
+          : 'Contribution rejected and draft archived.',
+        'success',
+      );
+    }
+  } catch {
+    showAuthBanner(`Could not reach API to ${action} contribution.`, 'error');
+  }
+
   await loadModerationQueue(ctx);
 }
 
@@ -182,7 +254,11 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
     container.innerHTML = items
       .map((item) => {
         const title = item.payload?.title || 'Untitled upload';
-        const meta = `${item.type} · ${item.payload?.industry || '—'}`;
+        const score =
+          typeof item.analysis?.voiceScore === 'number'
+            ? ` · voice ${item.analysis.voiceScore.toFixed(2)}`
+            : '';
+        const meta = `${item.type} · ${item.payload?.industry || '—'}${score}`;
         return `
         <button type="button" class="moderation-queue-item" data-contribution-id="${escapeHtml(item.id)}" aria-label="Review ${escapeHtml(title)}">
           <span class="moderation-queue-item__title">${escapeHtml(title)}</span>

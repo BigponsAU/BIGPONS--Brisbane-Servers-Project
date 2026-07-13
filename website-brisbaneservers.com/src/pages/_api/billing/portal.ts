@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { requireAuth } from '../../../utils/auth';
 import { findBillingAccountByUserId } from '../../../lib/billing/billing-accounts';
-import { getBillingPortalReturnUrl, isStripeConfigured } from '../../../lib/billing/stripe-config';
+import {
+  getBillingPortalReturnUrl,
+  getBillingSiteOrigin,
+  isStripeConfigured,
+} from '../../../lib/billing/stripe-config';
 import { getStripeClient } from '../../../lib/billing/stripe-client';
 
 /**
@@ -49,7 +53,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   }
 
   try {
-    const origin = url.origin;
+    const origin = getBillingSiteOrigin(url.origin);
     const session = await stripe.billingPortal.sessions.create({
       customer: account.stripeCustomerId,
       return_url: getBillingPortalReturnUrl(origin),

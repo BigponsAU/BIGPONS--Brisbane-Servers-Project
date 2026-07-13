@@ -53,6 +53,7 @@ const probes: Probe[] = [
   { panel: 'profiles', method: 'POST', path: '/profiles/create-base', expect: [401, 403] },
 
   // —— Analytics ——
+  { panel: 'analytics', method: 'GET', path: '/analytics/corpus', expect: [200, 401, 403] },
   { panel: 'analytics', method: 'GET', path: '/analytics/suggestions', expect: [200, 401, 403] },
   { panel: 'analytics', method: 'PATCH', path: '/admin/pipeline-config', expect: [401, 403, 405] },
 

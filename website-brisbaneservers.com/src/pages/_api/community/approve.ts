@@ -3,18 +3,18 @@ import { requireAdmin } from '../../../utils/auth';
 import {
   loadResources,
   saveResources,
-  isPublicResource
 } from '../../../lib/resources-api';
 import {
   updateContributionStatus
 } from '../../../lib/contributions';
-import { addLedgerEntry } from '../../../lib/token-ledger';
+import { awardTokensOnAccept } from '../../../lib/contribution-tokens';
 import { schedulePublicSurfaceUpdate } from '../../../lib/deploy-rebuild';
 
 /**
- * Approve a contribution and optionally adjust tokens.
+ * Approve a contribution, publish its resource, and award tokens (idempotent).
  * POST /api/community/approve
  * Body: { contributionId: string, tokenDelta?: number }
+ * tokenDelta is an optional extra moderation adjustment after the standard award.
  */
 export const POST: APIRoute = async ({ request }) => {
   const authResult = await requireAdmin(request);
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
       contributionId,
       'accepted',
       undefined,
-      tokenDelta
+      undefined
     );
 
     if (!updated) {
@@ -83,25 +83,30 @@ export const POST: APIRoute = async ({ request }) => {
       resources[resourceIdx] = {
         ...res,
         status: 'published',
-        visibility: 'public'
+        visibility: 'public',
+        wasEverPublished: true,
+        binnedAt: undefined,
       };
       await saveResources(resources);
       schedulePublicSurfaceUpdate(before, resources[resourceIdx], `community-approve-${updated.resourceId}`);
     }
 
-    if (typeof tokenDelta === 'number' && tokenDelta !== 0) {
-      await addLedgerEntry({
-        userId: updated.userId,
-        delta: tokenDelta,
-        reason: tokenDelta > 0 ? 'moderation_adjustment' : 'admin_revoke',
-        resourceId: updated.resourceId,
-        contributionId: updated.id
-      });
-    }
+    const award = await awardTokensOnAccept(updated, {
+      tokenDelta: typeof tokenDelta === 'number' ? tokenDelta : undefined,
+    });
+
+    const contribution = await updateContributionStatus(
+      contributionId,
+      'accepted',
+      undefined,
+      award.tokensAwarded
+    );
 
     return new Response(
       JSON.stringify({
-        contribution: updated,
+        contribution: contribution ?? { ...updated, tokensAwarded: award.tokensAwarded },
+        tokensAwarded: award.tokensAwarded,
+        tokensGrantedNow: award.awarded + award.adjustment,
         success: true
       }),
       {
@@ -124,4 +129,3 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
-

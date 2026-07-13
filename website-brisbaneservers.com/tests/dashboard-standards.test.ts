@@ -46,6 +46,13 @@ describe('dashboard production standards', () => {
     }
   });
 
+  it('moderation client checks API success and surfaces errors', async () => {
+    const source = await readFile(path.resolve('src/scripts/account-admin-moderation.ts'), 'utf8');
+    expect(source).toContain('!res.ok');
+    expect(source).toContain('showAuthBanner');
+    expect(source).toContain('Tokens on approve');
+  });
+
   it('every panel uses panel-shell or marketing band wrapper', async () => {
     const componentsDir = path.resolve('src/components/account');
     for (const file of PANEL_FILES) {

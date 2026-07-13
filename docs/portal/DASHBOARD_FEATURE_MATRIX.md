@@ -24,7 +24,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 |-------|--------|---------------|-------|
 | **Overview** | Live | `/api/resources`, `/api/tokens/*`, `/api/community/my-contributions` | Marketing band + `panel-shell` |
 | **Resources** | Live | `/api/resources/**`, `/api/documents/**` | TipTap WYSIWYG + dual marketing bands |
-| **Analytics** | Live | `/api/analytics/suggestions`, `/api/admin/pipeline-config` | `AccountWorkspacePanelBand` |
+| **Analytics** | Live | `/api/analytics/corpus`, `/api/analytics/suggestions`, `/api/admin/pipeline-config` | `AccountWorkspacePanelBand` |
 | **Voice profiles** | Live | `/api/profiles/**` | Split workspace + band shell |
 | **Voice lab — analyze** | Live | `POST /api/voice/analyze` | Band shell |
 | **Voice lab — Markov** | Live | `portal-markov-tracker.ts` v1 resource lineage | Voice share % across creation hops |
@@ -38,7 +38,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | Panel | Status | API / scripts | Notes |
 |-------|--------|---------------|-------|
 | **Library growth** | Live | `/api/admin/library-growth` | Semantic dedup + approve/reject/arm/run confirms |
-| **Moderation** | Live | `/api/community/contributions` | Approve/reject confirms |
+| **Moderation** | Live | `/api/community/contributions` | Approve awards tokens; reject archives draft + clawback; error banners |
 | **Site review** | Live | `/api/admin/site-sections`, hosting | Band shell |
 | **Users** | Live | `/api/admin/users`, auth audit | Workspace toggle (role-locked for editors+), soft-remove + restore with backup, paged auth audit |
 | **Ops** | Live | `/api/admin/usage/summary`, corpus, token queue | Site usage snapshot + inference runbooks |

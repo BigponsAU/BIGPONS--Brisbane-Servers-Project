@@ -96,6 +96,10 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
   const perksEl = document.getElementById('client-token-perks');
   const redeemStatus = document.getElementById('client-token-redeem-status');
 
+  // Always refresh AI usage — do not leave Overview stuck on "Loading…"
+  // if tokens/contributions fail or the session path returns early.
+  void loadOverviewAiBilling(ctx);
+
   if (!hasSession(ctx)) {
     if (balanceEl) balanceEl.textContent = '—';
     if (perksEl) perksEl.innerHTML = '';
@@ -195,8 +199,6 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
         }).join('');
       }
     }
-
-    await loadOverviewAiBilling(ctx);
   } catch (error) {
     console.warn('[Portal] Client workspace data failed:', error);
     if (balanceEl) balanceEl.textContent = '—';

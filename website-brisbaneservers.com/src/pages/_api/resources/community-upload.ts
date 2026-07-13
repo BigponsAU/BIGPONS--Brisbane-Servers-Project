@@ -9,9 +9,10 @@ import {
 } from '../../../lib/resources-api';
 import {
   createContribution,
+  updateContributionStatus,
   type ContributionType
 } from '../../../lib/contributions';
-import { addLedgerEntry } from '../../../lib/token-ledger';
+import { awardTokensOnAccept, computeContributionTokenAward } from '../../../lib/contribution-tokens';
 import { loadPipelineConfig } from '../../../lib/pipeline-config';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { isDevelopmentMode } from '../../../utils/runtime-env';
@@ -120,12 +121,13 @@ export const POST: APIRoute = async ({ request }) => {
       await saveResources(resources);
     }
 
+    const autoAccepted = voiceScore >= config.autoPublishThreshold;
     const contributionType: ContributionType = 'new_upload';
-    const contribution = await createContribution({
+    let contribution = await createContribution({
       userId: user.id,
       resourceId: resource.id,
       type: contributionType,
-      status: voiceScore >= config.autoPublishThreshold ? 'accepted' : 'pending',
+      status: autoAccepted ? 'accepted' : 'pending',
       payload: {
         industry,
         topic: topicSlug,
@@ -134,29 +136,35 @@ export const POST: APIRoute = async ({ request }) => {
       },
       analysis: {
         voiceScore,
-        notes: voiceScore >= 0.8 ? 'Auto-approved based on strong voice match' : 'Queued for review'
+        notes: autoAccepted
+          ? 'Auto-approved based on strong voice match'
+          : 'Queued for review — tokens awarded when accepted'
       },
       tokensAwarded: undefined
     });
 
-    // Initial token scoring: scale by voice score and configurable multiplier
-    const tokenDelta = Math.round(Math.max(0, voiceScore) * config.tokenMultiplier);
-    if (tokenDelta > 0) {
-      await addLedgerEntry({
-        userId: user.id,
-        delta: tokenDelta,
-        reason: 'initial_contribution',
-        resourceId: resource.id,
-        contributionId: contribution.id
+    // Tokens only on acceptance (auto-publish or later admin approve) — never while pending.
+    let tokensAwarded = 0;
+    if (autoAccepted) {
+      const award = await awardTokensOnAccept(contribution, {
+        tokenMultiplier: config.tokenMultiplier,
       });
+      tokensAwarded = award.tokensAwarded;
+      contribution = {
+        ...contribution,
+        tokensAwarded,
+      };
+      await updateContributionStatus(contribution.id, 'accepted', undefined, tokensAwarded);
     }
+
+    const pendingPreview = computeContributionTokenAward(voiceScore, config.tokenMultiplier);
 
     const duration = Date.now() - startTime;
     if (isDevelopmentMode()) {
       console.log(
         `[API] POST /api/resources/community-upload - Success (${duration}ms, voiceScore=${voiceScore.toFixed(
           2
-        )}, tokens=${tokenDelta})`
+        )}, tokens=${tokensAwarded}, pendingPreview=${pendingPreview})`
       );
     }
 
@@ -170,7 +178,8 @@ export const POST: APIRoute = async ({ request }) => {
           issues: voiceValidation.issues ?? [],
           strengths: voiceValidation.strengths ?? []
         },
-        tokensAwarded: tokenDelta,
+        tokensAwarded,
+        tokensPendingApproval: autoAccepted ? 0 : pendingPreview,
         success: true
       }),
       {

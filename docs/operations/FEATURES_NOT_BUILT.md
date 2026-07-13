@@ -38,11 +38,11 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Earn tokens** | **Live** | Approved contributions + moderation adjustments |
+| **Earn tokens** | **Live** | Awarded on **accepted** contributions (auto-publish or admin approve); reject claws back |
 | **Redeem flat perks** | **Live** | Overview panel — AI boost, spotlight, office hours (no tiers) |
-| **Stripe / paid top-up** | **Live** | See billing section above |
+| **Stripe / paid community-token top-up** | **Not built** | Stripe/PayID top up **AI daily units** only — not the community token ledger |
 
-**What ships today:** `GET /api/tokens/me`, `GET /api/tokens/perks`, `POST /api/tokens/redeem`, ledger in `token-ledger.ts`.
+**What ships today:** `GET /api/tokens/me`, `GET /api/tokens/perks`, `POST /api/tokens/redeem`, ledger in `token-ledger.ts`; earn via `contribution-tokens.ts` on accept.
 
 ---
 

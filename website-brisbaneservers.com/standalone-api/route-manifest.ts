@@ -59,6 +59,7 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/community/approve', loadModule: () => import('../src/pages/_api/community/approve') },
   { path: '/api/community/reject', loadModule: () => import('../src/pages/_api/community/reject') },
 
+  { path: '/api/analytics/corpus', loadModule: () => import('../src/pages/_api/analytics/corpus') },
   { path: '/api/analytics/suggestions', loadModule: () => import('../src/pages/_api/analytics/suggestions') },
   { path: '/api/admin/users', loadModule: () => import('../src/pages/_api/admin/users') },
   { path: '/api/admin/users/:id', loadModule: () => import('../src/pages/_api/admin/users/[id]') },

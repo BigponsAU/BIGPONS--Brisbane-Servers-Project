@@ -361,13 +361,7 @@ export function bootAccountWorkspaceDashboard(): void {
       }, 100);
     } else if (panelName === 'analytics') {
       trackPortalAction('loadAnalytics');
-      if (getWorkspaceResources().length > 0) {
-        updateAnalyticsDisplay(getWorkspaceResources());
-        loadAnalyticsSuggestions();
-        loadAdminMeta();
-      } else {
-        loadAnalytics();
-      }
+      loadAnalytics();
     } else if (panelName === 'voice-map' || panelName === 'voice-lab') {
       void import('./account-workspace-voice-features.ts').then((mod) => mod.onVoicePanelShown(panelName));
     } else if (panelName === 'library-growth') {
@@ -770,7 +764,6 @@ export function bootAccountWorkspaceDashboard(): void {
         : `${Math.round(stats.avgScoreRaw * 100)}%`;
     }
 
-    updateAnalyticsDisplay(resources);
     updateRecentActivity(resources.filter((r: any) => !r.isStarterBlock));
     updateRecentResourcesPreview(resources.filter((r: any) => !r.isStarterBlock));
 
@@ -1116,64 +1109,236 @@ export function bootAccountWorkspaceDashboard(): void {
     });
   });
 
-  // Build / refresh BIGPONS profile from on-repo resources (optional industry slice)
-  // Load Analytics (synced with dashboard)
+  let analyticsTopicRows: any[] = [];
+
+  function formatVoiceScore(score: number | null | undefined): string {
+    if (typeof score !== 'number' || Number.isNaN(score)) return '—';
+    return `${Math.round(score * 100)}%`;
+  }
+
+  function formatPercent(rate: number | null | undefined): string {
+    if (typeof rate !== 'number' || Number.isNaN(rate)) return '—';
+    return `${Math.round(rate * 100)}%`;
+  }
+
+  function setAnalyticsText(id: string, value: string): void {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function revealAnalyticsSection(id: string, show: boolean): void {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.hidden = !show;
+    if (show) el.removeAttribute('hidden');
+  }
+
+  function renderAnalyticsGaps(gaps: any[]): void {
+    const list = document.getElementById('analytics-gaps-list');
+    if (!list) return;
+    if (!Array.isArray(gaps) || gaps.length === 0) {
+      list.innerHTML = '<p class="form-hint">No priority gaps — catalog slots look covered.</p>';
+      return;
+    }
+    list.innerHTML = gaps
+      .map((row) => {
+        const tone = row.status === 'gap' ? 'gap' : row.status === 'sparse' ? 'sparse' : 'pending';
+        const metaParts = [
+          row.status === 'covered' ? 'covered' : row.status,
+          `${row.published} published`,
+          row.pending > 0 ? `${row.pending} pending` : null,
+          row.drafts > 0 ? `${row.drafts} draft${row.drafts === 1 ? '' : 's'}` : null,
+        ].filter(Boolean);
+        return `<button type="button" class="analytics-gap-chip analytics-gap-chip--${tone}" data-industry="${escapeHtml(row.industry)}" data-topic="${escapeHtml(row.topic)}" title="Open Library growth for ${escapeHtml(row.topicName)}">
+          <span class="analytics-gap-chip__name">${escapeHtml(row.industryName)} · ${escapeHtml(row.topicName)}</span>
+          <span class="analytics-gap-chip__meta">${escapeHtml(metaParts.join(' · '))}</span>
+        </button>`;
+      })
+      .join('');
+    list.querySelectorAll('.analytics-gap-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        (window as any).navigateToPanel?.('library-growth');
+      });
+    });
+  }
+
+  function renderAnalyticsTopics(filter = 'all'): void {
+    const body = document.getElementById('analytics-topics-body');
+    if (!body) return;
+    const rows = analyticsTopicRows.filter((row) => {
+      if (filter === 'all') return true;
+      if (filter === 'pending') return row.pending > 0;
+      return row.status === filter;
+    });
+    if (rows.length === 0) {
+      body.innerHTML = '<tr><td colspan="9" class="form-hint">No topics match this filter.</td></tr>';
+      return;
+    }
+    body.innerHTML = rows
+      .map((row) => {
+        const voice = row.avgResourceVoiceScore ?? row.avgVoiceScore;
+        return `<tr data-status="${escapeHtml(row.status)}">
+          <td>${escapeHtml(row.industryName)}</td>
+          <td>${escapeHtml(row.topicName)}</td>
+          <td><span class="analytics-status analytics-status--${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
+          <td>${row.published}</td>
+          <td>${row.drafts}</td>
+          <td>${row.pending}</td>
+          <td>${row.accepted}</td>
+          <td>${row.rejected}</td>
+          <td>${formatVoiceScore(voice)}</td>
+        </tr>`;
+      })
+      .join('');
+  }
+
+  function renderCorpusAnalytics(data: any): void {
+    const statusEl = document.getElementById('analytics-load-status');
+    if (statusEl) statusEl.hidden = true;
+
+    const coverage = data.coverage || {};
+    const corpus = data.corpus || {};
+    const global = data.summary?.global || {};
+
+    setAnalyticsText('analytics-kpi-coverage', `${coverage.coveragePercent ?? 0}%`);
+    setAnalyticsText(
+      'analytics-kpi-coverage-meta',
+      `${coverage.covered ?? 0} covered · ${coverage.sparse ?? 0} sparse · ${coverage.totalSlots ?? 0} slots`
+    );
+    setAnalyticsText('analytics-kpi-gaps', String(coverage.gap ?? 0));
+    setAnalyticsText('analytics-kpi-gaps-meta', `${coverage.sparse ?? 0} sparse topics`);
+    setAnalyticsText('analytics-kpi-contributions', String(global.totalContributions ?? 0));
+    setAnalyticsText(
+      'analytics-kpi-contributions-meta',
+      `${global.totalPending ?? 0} pending · ${global.totalAccepted ?? 0} accepted`
+    );
+    setAnalyticsText('analytics-kpi-acceptance', formatPercent(global.acceptanceRate));
+    setAnalyticsText(
+      'analytics-kpi-acceptance-meta',
+      `${global.totalRejected ?? 0} rejected · voice ${formatVoiceScore(global.avgVoiceScore)}`
+    );
+    setAnalyticsText('analytics-kpi-published', String(corpus.published ?? 0));
+    setAnalyticsText(
+      'analytics-kpi-published-meta',
+      `${corpus.drafts ?? 0} drafts · ${corpus.starters ?? 0} starters`
+    );
+    setAnalyticsText('analytics-kpi-voice', formatVoiceScore(corpus.avgVoiceScore));
+    setAnalyticsText('analytics-kpi-voice-meta', 'Published + draft resource average');
+
+    revealAnalyticsSection('analytics-kpi-grid', true);
+    revealAnalyticsSection('analytics-gaps-section', true);
+    revealAnalyticsSection('analytics-topics-section', true);
+
+    analyticsTopicRows = Array.isArray(data.topics) ? data.topics : [];
+    renderAnalyticsGaps(Array.isArray(data.gaps) ? data.gaps : []);
+    const filterEl = document.getElementById('analytics-topic-filter') as HTMLSelectElement | null;
+    renderAnalyticsTopics(filterEl?.value || 'all');
+
+    const isAdmin = workspaceUser?.role === 'admin' || workspaceUser?.role === 'super-admin';
+    const indexSection = document.getElementById('analytics-index-section');
+    const indexBody = document.getElementById('analytics-index-body');
+    if (isAdmin && indexSection && indexBody) {
+      revealAnalyticsSection('analytics-index-section', true);
+      const index = data.index || {};
+      const models = index.embeddingModels && typeof index.embeddingModels === 'object'
+        ? Object.entries(index.embeddingModels)
+            .map(([model, count]) => `${model}: ${count}`)
+            .join(', ')
+        : '—';
+      const publishCoverage =
+        typeof index.publishCoveragePercent === 'number'
+          ? `${index.publishCoveragePercent}% of published guides indexed`
+          : 'No published guides to compare';
+      indexBody.innerHTML = `<dl class="analytics-index-dl">
+        <div><dt>Semantic chunks</dt><dd>${index.chunkCount ?? 0}</dd></div>
+        <div><dt>Indexed resources</dt><dd>${index.indexedResources ?? 0}</dd></div>
+        <div><dt>Publish → index</dt><dd>${escapeHtml(publishCoverage)}</dd></div>
+        <div><dt>Embedding models</dt><dd>${escapeHtml(models)}</dd></div>
+      </dl>`;
+    } else if (indexSection) {
+      revealAnalyticsSection('analytics-index-section', false);
+    }
+  }
+
   async function loadAnalytics(): Promise<void> {
+    const statusEl = document.getElementById('analytics-load-status');
+    if (statusEl) {
+      statusEl.hidden = false;
+      statusEl.textContent = 'Loading corpus analytics…';
+    }
     try {
-      console.log('[Portal] Loading analytics...');
-      
-      // Use current resources if available (synced with dashboard), otherwise fetch
-      let resources = getWorkspaceResources();
-      
-      if (resources.length === 0) {
-        // Reload resources to ensure we have the latest data
-        const statusFilter = (document.getElementById('status-filter') as HTMLSelectElement)?.value;
-        const result = await fetchAuthenticatedResources(getVoiceApiUrl(), {
-          status: statusFilter || undefined,
-        });
-
-        if (!result.ok) {
-          console.error('[Portal] Failed to load resources for analytics:', result.status);
-          updateAnalyticsDisplay([]);
-          return;
+      console.log('[Portal] Loading corpus analytics...');
+      const res = await workspaceFetch(`${getVoiceApiUrl()}/analytics/corpus`);
+      if (!res.ok) {
+        if (statusEl) {
+          statusEl.hidden = false;
+          statusEl.textContent =
+            res.status === 401 || res.status === 403
+              ? 'Corpus analytics requires an editor or admin session.'
+              : 'Unable to load corpus analytics.';
         }
-
-        resources = result.resources as any[];
-        setWorkspaceResources(resources);
+        revealAnalyticsSection('analytics-kpi-grid', false);
+        revealAnalyticsSection('analytics-gaps-section', false);
+        revealAnalyticsSection('analytics-topics-section', false);
+        return;
       }
-      
-      updateAnalyticsDisplay(resources);
+      const data = await res.json();
+      if (!data.success) {
+        if (statusEl) {
+          statusEl.hidden = false;
+          statusEl.textContent = data.error || 'Unable to load corpus analytics.';
+        }
+        return;
+      }
+      renderCorpusAnalytics(data);
       loadAnalyticsSuggestions();
-      loadAdminMeta();
     } catch (error) {
       console.error('[Portal] Error loading analytics:', error);
-      // Fallback to current resources if available
-      const resources = getWorkspaceResources();
-      updateAnalyticsDisplay(resources);
-      loadAdminMeta();
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent = 'Could not load corpus analytics.';
+      }
     }
   }
 
   async function loadAnalyticsSuggestions(): Promise<void> {
+    const section = document.getElementById('analytics-suggestions-section');
     const configEl = document.getElementById('analytics-config-display');
     const listEl = document.getElementById('analytics-suggestions-list');
     if (!configEl || !listEl) return;
+
+    const isAdmin = workspaceUser?.role === 'admin' || workspaceUser?.role === 'super-admin';
+    if (!isAdmin) {
+      if (section) revealAnalyticsSection('analytics-suggestions-section', false);
+      return;
+    }
+    if (section) revealAnalyticsSection('analytics-suggestions-section', true);
+
     try {
-      const res = await workspaceFetch(`${getVoiceApiUrl()}/analytics/suggestions`, {
-      });
-      if (!res.ok) { configEl.innerHTML = '<p>Unable to load suggestions (admin only).</p>'; listEl.innerHTML = ''; return; }
+      const res = await workspaceFetch(`${getVoiceApiUrl()}/analytics/suggestions`);
+      if (!res.ok) {
+        configEl.innerHTML = '<p class="form-hint">Unable to load pipeline suggestions.</p>';
+        listEl.innerHTML = '';
+        return;
+      }
       const data = await res.json();
-      if (!data.success) { configEl.innerHTML = ''; listEl.innerHTML = ''; return; }
+      if (!data.success) {
+        configEl.innerHTML = '';
+        listEl.innerHTML = '';
+        return;
+      }
       const cfg = data.config || {};
       configEl.innerHTML = `<p><strong>Current pipeline:</strong> autoPublishThreshold = ${cfg.autoPublishThreshold ?? '—'}, tokenMultiplier = ${cfg.tokenMultiplier ?? '—'}</p>`;
       const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
       if (suggestions.length === 0) {
-        listEl.innerHTML = '<p>No suggestions right now. Keep contributing to get data-driven recommendations.</p>';
+        listEl.innerHTML = '<p class="form-hint">No suggestions right now — contribution quality looks aligned with the threshold.</p>';
         return;
       }
       listEl.innerHTML = suggestions.map((s: any) => {
-        const applyBtn = s.recommendedChange ? `<button class="btn btn-secondary btn-sm apply-suggestion-btn" data-key="${s.recommendedChange.configKey}" data-value="${s.recommendedChange.newValue}">Apply</button>` : '';
-        return `<div class="suggestion-card"><p>${s.message || ''}</p>${applyBtn}</div>`;
+        const applyBtn = s.recommendedChange
+          ? `<button type="button" class="btn btn-secondary btn-sm apply-suggestion-btn" data-key="${escapeHtml(s.recommendedChange.configKey)}" data-value="${s.recommendedChange.newValue}">Apply</button>`
+          : '';
+        return `<div class="suggestion-card"><p>${escapeHtml(s.message || '')}</p>${applyBtn}</div>`;
       }).join('');
       listEl.querySelectorAll('.apply-suggestion-btn').forEach((btn) => {
         btn.addEventListener('click', async () => {
@@ -1198,112 +1363,22 @@ export function bootAccountWorkspaceDashboard(): void {
         });
       });
     } catch (e) {
-      configEl.innerHTML = '<p>Could not load suggestions.</p>';
+      configEl.innerHTML = '<p class="form-hint">Could not load suggestions.</p>';
       listEl.innerHTML = '';
     }
   }
 
-  async function loadAdminMeta(): Promise<void> {
-    const container = document.getElementById('analytics-users-vectors');
-    const section = document.getElementById('analytics-admin-meta');
-    if (!container) return;
-
-    const user = workspaceUser;
-    const isAdmin = user?.role === 'admin' || user?.role === 'super-admin';
-    if (!isAdmin) {
-      if (section) section.hidden = true;
-      return;
-    }
-    if (section) {
-      section.hidden = false;
-      section.removeAttribute('hidden');
-    }
-
-    container.innerHTML = '<p style="color: var(--text-secondary); font-size: var(--text-sm);">Loading users and vector summary…</p>';
-    try {
-      const [usersRes, vectorsRes] = await Promise.all([
-        workspaceFetch(`${getVoiceApiUrl()}/admin/users`),
-        workspaceFetch(`${getVoiceApiUrl()}/admin/vectors-summary`)
-      ]);
-      if (!usersRes.ok && !vectorsRes.ok) {
-        container.innerHTML =
-          '<p>Admin summary unavailable. Check that you are signed in as an admin.</p>';
-        return;
-      }
-      const usersData = usersRes.ok ? await usersRes.json() : null;
-      const vectorsData = vectorsRes.ok ? await vectorsRes.json() : null;
-      const userCount = usersData?.count ?? '—';
-      const semantic = vectorsData?.semanticIndex;
-      const chunkCount = semantic?.chunkCount ?? vectorsData?.total ?? '—';
-      const resourceIds = semantic?.resourceIds ?? vectorsData?.byKind?.resource ?? '—';
-      const legacyTotal = vectorsData?.legacyVectors?.total ?? 0;
-      const legacyNote =
-        typeof legacyTotal === 'number' && legacyTotal > 0
-          ? ` &nbsp;|&nbsp; legacy score vectors: ${legacyTotal}`
-          : '';
-      container.innerHTML = `<p><strong>Registered users:</strong> ${userCount} &nbsp;|&nbsp; <strong>Semantic chunks:</strong> ${chunkCount} &nbsp;|&nbsp; <strong>Indexed resources:</strong> ${resourceIds}${legacyNote}</p>`;
-    } catch {
-      container.innerHTML = '<p>Could not load users/vectors summary.</p>';
-    }
+  /** Kept for resource-panel deps; Insights loads from `/analytics/corpus` only. */
+  function updateAnalyticsDisplay(_resources: any[]): void {
+    // Intentionally empty — Overview owns personal resource stats.
   }
 
-  // Update analytics display
-  function updateAnalyticsDisplay(resources: any[]): void {
-    try {
-      const stats = computeWorkspaceResourceStats(resources);
+  document.getElementById('analytics-topic-filter')?.addEventListener('change', (event) => {
+    const value = (event.target as HTMLSelectElement).value || 'all';
+    renderAnalyticsTopics(value);
+  });
 
-      const totalEl = document.getElementById('stat-total-resources');
-      const publishedEl = document.getElementById('stat-published');
-      const draftsEl = document.getElementById('stat-drafts');
-      const avgScoreEl = document.getElementById('stat-avg-score');
-
-      if (totalEl) {
-        totalEl.textContent = stats.userTotal.toString();
-        const desc = totalEl.parentElement?.querySelector('.stat-description');
-        if (desc) {
-          desc.textContent = stats.starterBlocks > 0
-            ? `Your content (+${stats.starterBlocks} starter blocks in library)`
-            : 'Your content items';
-        }
-        totalEl.parentElement?.setAttribute(
-          'title',
-          `Your resources: ${stats.userTotal} (${stats.starterBlocks} starter blocks in library, ${stats.total} total in API)`
-        );
-        if (stats.userTotal > 9999) {
-          totalEl.textContent = (stats.userTotal / 1000).toFixed(1) + 'k';
-        }
-      }
-      if (publishedEl) {
-        publishedEl.textContent = stats.published.toString();
-        publishedEl.parentElement?.setAttribute('title', `${stats.published} published resources`);
-        if (stats.published > 9999) {
-          publishedEl.textContent = (stats.published / 1000).toFixed(1) + 'k';
-        }
-      }
-      if (draftsEl) {
-        draftsEl.textContent = stats.drafts.toString();
-        draftsEl.parentElement?.setAttribute('title', `${stats.drafts} draft resources`);
-        if (stats.drafts > 9999) {
-          draftsEl.textContent = (stats.drafts / 1000).toFixed(1) + 'k';
-        }
-      }
-      if (avgScoreEl) {
-        const scoreText = stats.avgScorePercent === 'N/A' ? 'N/A' : `${stats.avgScorePercent}%`;
-        avgScoreEl.textContent = scoreText;
-        avgScoreEl.parentElement?.setAttribute(
-          'title',
-          `Average voice score: ${stats.avgScorePercent === 'N/A' ? 'N/A' : stats.avgScorePercent + '%'}`
-        );
-        if (scoreText.length > 8) {
-          avgScoreEl.style.fontSize = 'clamp(var(--text-lg), 3vw, var(--text-2xl))';
-        }
-      }
-
-      console.log('[Portal] Analytics updated:', stats);
-    } catch (error) {
-      console.error('[Portal] Error updating analytics display:', error);
-    }
-  }
+  (window as any).loadAnalytics = loadAnalytics;
 
 
   // Toggle Information Card

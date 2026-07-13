@@ -15,7 +15,7 @@ Use this file to track **dashboard completion** across chat sessions. Items mark
 | Capability | Status | Notes |
 |------------|--------|-------|
 | Collect contribution data | **Done** | Contributions, tokens, moderation panel |
-| Analytics → understand gaps | **Done** | Topic metrics + pipeline suggestions |
+| Analytics → understand gaps | **Done** | Coverage matrix + contribution funnel (`/api/analytics/corpus`) + pipeline suggestions |
 | **Auto-generate materials** (resources, guides, case study copy) | **Done** | Growth queue + approve → `materializeGrowthProposal` |
 | **Voice profiles per area** | **Manual only** | Profiles panel — **not** created by library growth |
 | Voice-aligned generation | **Done** | Growth uses **default** or bundled profile only |

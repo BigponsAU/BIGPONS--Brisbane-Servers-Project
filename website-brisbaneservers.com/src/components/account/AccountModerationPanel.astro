@@ -21,8 +21,8 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       <details class="panel-guidance-details">
         <summary>Moderation workflow</summary>
         <div class="panel-guidance-details__body">
-          <p><strong>Approve</strong> publishes the contribution and links it to the contributor&apos;s resource.</p>
-          <p><strong>Reject</strong> removes it from the pending queue without publishing.</p>
+          <p><strong>Approve</strong> publishes the contribution, awards tokens from voice score × multiplier (if not already granted), and links it to the contributor&apos;s resource.</p>
+          <p><strong>Reject</strong> archives the draft resource, removes it from the pending queue, and claws back any tokens already granted for that upload.</p>
           <p><strong>Open in Resources</strong> jumps to the draft tree when a resource ID is attached.</p>
         </div>
       </details>

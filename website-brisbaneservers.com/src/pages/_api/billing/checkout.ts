@@ -8,6 +8,7 @@ import {
   isStripeConfigured,
   STRIPE_SUBSCRIPTION_DAILY_BONUS,
   getBillingCancelUrl,
+  getBillingSiteOrigin,
   getBillingSuccessUrl,
 } from '../../../lib/billing/stripe-config';
 import { getStripeClient } from '../../../lib/billing/stripe-client';
@@ -72,7 +73,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       });
     }
 
-    const origin = url.origin;
+    const origin = getBillingSiteOrigin(url.origin);
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,

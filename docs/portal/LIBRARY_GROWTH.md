@@ -19,7 +19,7 @@ Library growth **does not** create, name, or persist new voice profiles for each
 |-------|------|
 | **Community contributions** | Public/authored input → pending queue → admin approve/reject (`/api/community/*`) |
 | **Manual generate/upload** | Editors create resources in the Resources panel |
-| **Analytics** | Topic metrics and pipeline suggestions (`/api/analytics/suggestions`) |
+| **Analytics** | Topic coverage matrix, contribution funnel, gaps (`/api/analytics/corpus`); pipeline suggestions (`/api/analytics/suggestions`) |
 | **Library growth (new)** | Plans gaps → proposals queue → approve materializes via voice stack |
 
 ### Growth cycle flow

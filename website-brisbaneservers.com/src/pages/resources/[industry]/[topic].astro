@@ -341,7 +341,12 @@ const { structuredData, breadcrumbs: breadcrumbItems } = topicGuideSeo(
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            statusEl.textContent = 'Thank you — recorded for review.';
+            statusEl.textContent =
+              typeof data.tokensAwarded === 'number' && data.tokensAwarded > 0
+                ? `Thank you — accepted. ${data.tokensAwarded} token${data.tokensAwarded === 1 ? '' : 's'} awarded.`
+                : typeof data.tokensPendingApproval === 'number' && data.tokensPendingApproval > 0
+                  ? `Thank you — recorded for review. About ${data.tokensPendingApproval} tokens when approved.`
+                  : 'Thank you — recorded for review.';
             form.reset();
             loadCommunityPairs();
           } else {

@@ -17,7 +17,7 @@
 | **Voice studio** | Voice profiles | Profile library + **inline detail** (rings, matrix, corpus) | `editor` |
 | **Voice studio** | Voice lab | Tone/pattern analysis, resource lineage Markov | `editor` |
 | **Voice studio** | Voice map | 2D / depth / 3D topology | `editor` |
-| **Insights** | Analytics | Corpus stats, suggestions, pipeline config | `editor` |
+| **Insights** | Analytics | Topic coverage, contribution funnel, pipeline suggestions | `editor` |
 
 ## Navigation (admin mode)
 

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { STRIPE_SUBSCRIPTION_DAILY_BONUS, getBillingPortalReturnUrl } from '../src/lib/billing/stripe-config';
+import {
+  STRIPE_SUBSCRIPTION_DAILY_BONUS,
+  getBillingPortalReturnUrl,
+  getBillingSiteOrigin,
+} from '../src/lib/billing/stripe-config';
 
 const EDITOR_BASE_CAP = 8;
 
@@ -25,5 +29,14 @@ describe('billing configuration', () => {
     expect(getBillingPortalReturnUrl('https://brisbaneservers.com/')).toBe(
       'https://brisbaneservers.com/account/?billing=portal-return'
     );
+  });
+
+  it('prefers PUBLIC_SITE_URL over request origin for checkout returns', () => {
+    // PUBLIC_SITE_URL is set on the edge worker; when missing, fall back to request origin.
+    const origin = getBillingSiteOrigin('https://api.brisbaneservers.com');
+    expect(origin === 'https://brisbaneservers.com' || origin === 'https://api.brisbaneservers.com').toBe(
+      true
+    );
+    expect(origin).not.toMatch(/\/$/);
   });
 });

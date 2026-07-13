@@ -1,12 +1,15 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../utils/auth';
 import { updateContributionStatus } from '../../../lib/contributions';
-import { addLedgerEntry } from '../../../lib/token-ledger';
+import { revokeTokensOnReject } from '../../../lib/contribution-tokens';
+import { loadResources, saveResources } from '../../../lib/resources-api';
+import { schedulePublicSurfaceUpdate } from '../../../lib/deploy-rebuild';
 
 /**
- * Reject a contribution and optionally adjust tokens.
+ * Reject a contribution, archive its draft resource, and claw back any tokens.
  * POST /api/community/reject
  * Body: { contributionId: string, tokenDelta?: number }
+ * Without tokenDelta, any ledger net for this contribution is clawed back.
  */
 export const POST: APIRoute = async ({ request }) => {
   const authResult = await requireAdmin(request);
@@ -50,7 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
       contributionId,
       'rejected',
       undefined,
-      tokenDelta
+      undefined
     );
 
     if (!updated) {
@@ -67,19 +70,38 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    if (typeof tokenDelta === 'number' && tokenDelta !== 0) {
-      await addLedgerEntry({
-        userId: updated.userId,
-        delta: tokenDelta,
-        reason: tokenDelta > 0 ? 'moderation_adjustment' : 'admin_revoke',
-        resourceId: updated.resourceId,
-        contributionId: updated.id
-      });
+    const resources = await loadResources();
+    const resourceIdx = resources.findIndex((r) => r.id === updated.resourceId);
+    if (resourceIdx !== -1) {
+      const res = resources[resourceIdx];
+      // Only archive unpublished drafts — never yank something already live.
+      if (res.status !== 'published') {
+        const before = { ...res };
+        resources[resourceIdx] = {
+          ...res,
+          status: 'archived',
+          visibility: 'private',
+        };
+        await saveResources(resources);
+        schedulePublicSurfaceUpdate(before, resources[resourceIdx], `community-reject-${updated.resourceId}`);
+      }
     }
+
+    const revoke = await revokeTokensOnReject(updated, {
+      tokenDelta: typeof tokenDelta === 'number' ? tokenDelta : undefined,
+    });
+
+    const contribution = await updateContributionStatus(
+      contributionId,
+      'rejected',
+      undefined,
+      revoke.tokensAwarded
+    );
 
     return new Response(
       JSON.stringify({
-        contribution: updated,
+        contribution: contribution ?? { ...updated, tokensAwarded: revoke.tokensAwarded },
+        tokensClawedBack: revoke.clawedBack,
         success: true
       }),
       {
@@ -102,4 +124,3 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
-

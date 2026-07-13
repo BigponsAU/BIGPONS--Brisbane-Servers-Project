@@ -147,7 +147,8 @@ Related: `related`, `seed`, `deduplicate`, `community-upload` — admin/editor w
 - `/api/semantic/search` — search / RAG-style usage from portal when wired.
 - `/api/voice/analyze` — Voice lab tone/pattern analysis.
 - `/api/voice-map/principles`, `/api/voice-map/semantic` — Voice map visualisation.
-- `/api/analytics/suggestions` — suggestions panel.
+- `/api/analytics/corpus` — coverage, contribution funnel, topic table for Insights.
+- `/api/analytics/suggestions` — pipeline suggestions (admin).
 - `/api/community/*` — contributions moderation.
 - `/api/admin/*` — users, auth audit, pipeline config, reindex, vectors summary, **library-growth**, **growth-proposals** (role-protected).
 - `/api/cron/library-growth` — secured growth cycle (`CRON_SECRET`).

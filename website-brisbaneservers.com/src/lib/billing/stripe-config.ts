@@ -19,6 +19,14 @@ export function isStripeConfigured(): boolean {
   return Boolean(getStripeSecretKey() && getStripeAiBoostPriceId());
 }
 
+/** Prefer PUBLIC_SITE_URL so checkout returns to the site, not api.brisbaneservers.com. */
+export function getBillingSiteOrigin(requestOrigin?: string): string {
+  const configured = getRuntimeEnv('PUBLIC_SITE_URL');
+  if (configured) return configured.replace(/\/+$/, '');
+  if (requestOrigin) return requestOrigin.replace(/\/+$/, '');
+  return 'https://brisbaneservers.com';
+}
+
 export function getBillingSuccessUrl(siteOrigin: string): string {
   const base = siteOrigin.replace(/\/+$/, '');
   return `${base}/account/?billing=success`;

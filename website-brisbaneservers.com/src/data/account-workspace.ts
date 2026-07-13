@@ -157,11 +157,11 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
   {
     panel: 'analytics',
     label: 'Analytics',
-    description: 'Performance & gaps',
+    description: 'Coverage & contribution funnel',
     minRole: 'editor',
     mode: 'creator',
     section: 'insights',
-    title: 'Analytics — resource performance and statistics',
+    title: 'Analytics — corpus coverage, contribution funnel, and topic gaps',
   },
   {
     panel: 'library-growth',
