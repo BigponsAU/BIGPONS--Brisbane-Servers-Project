@@ -8,7 +8,7 @@ Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPAC
 
 - **Root cause** — `syncApiConnectivityBanner` briefly set `warn` and showed `https://api.brisbaneservers.com/api` on every `/account` load before hiding on success.
 - **Fix** — Keep the banner hidden unless the API is unreachable; only surface the endpoint on real errors.
-- **Deploy** — push to `main` → Cloudflare Pages (UI-only; no worker change).
+- **Deploy** — push `97c914e` → Cloudflare Pages production `c7756b78` (**success**, 2026-07-15). Live: `https://brisbaneservers.com`.
 
 ### 2026-07-12 — Workspace Admin menu dead links + search icon
 
