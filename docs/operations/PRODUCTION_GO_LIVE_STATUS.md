@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-12 — workspace sidebar nav + search icon
+**Last synced:** 2026-07-15 — hide /account API connectivity flash
+
+### 2026-07-15 — Hide healthy-path API connectivity banner on /account
+
+- **Root cause** — `syncApiConnectivityBanner` briefly set `warn` and showed `https://api.brisbaneservers.com/api` on every `/account` load before hiding on success.
+- **Fix** — Keep the banner hidden unless the API is unreachable; only surface the endpoint on real errors.
+- **Deploy** — push to `main` → Cloudflare Pages (UI-only; no worker change).
 
 ### 2026-07-12 — Workspace Admin menu dead links + search icon
 

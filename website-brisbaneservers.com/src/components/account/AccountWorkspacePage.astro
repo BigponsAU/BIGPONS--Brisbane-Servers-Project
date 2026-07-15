@@ -63,8 +63,9 @@ const pageTitleSignedIn = `${accountWorkspace.productNameShort} · ${accountWork
       role="status"
       aria-live="polite"
       hidden
+      aria-hidden="true"
     >
-      <span data-connectivity-message>Checking API connectivity…</span>
+      <span data-connectivity-message>Cannot reach the API. Sign-in may be unavailable.</span>
       <code class="api-connectivity-endpoint"></code>
       <button type="button" id="api-connectivity-retry" class="btn btn-secondary btn-sm">Retry</button>
     </div>

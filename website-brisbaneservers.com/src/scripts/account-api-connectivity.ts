@@ -1,5 +1,6 @@
 /**
  * API connectivity banner — surfaces reachability of the edge API on /account.
+ * Stays hidden on the healthy path so sign-in does not flash an API endpoint strip.
  */
 import { getPortalRuntime, isApiBaseHealthy } from './account-workspace-runtime';
 
@@ -14,8 +15,9 @@ function setBannerState(state: BannerState, message: string, endpoint: string): 
   if (!banner) return;
 
   banner.dataset.state = state;
-  banner.hidden = state === 'ok';
-  banner.setAttribute('aria-hidden', state === 'ok' ? 'true' : 'false');
+  // Only surface the banner when the API is unreachable — never during routine checks.
+  banner.hidden = state !== 'error';
+  banner.setAttribute('aria-hidden', state === 'error' ? 'false' : 'true');
 
   const messageEl = banner.querySelector('[data-connectivity-message]');
   if (messageEl) messageEl.textContent = message;
@@ -30,8 +32,6 @@ export async function syncApiConnectivityBanner(): Promise<void> {
 
   const rt = getPortalRuntime();
   const endpoint = (rt.voiceApiUrl || '/api').replace(/\/+$/, '');
-
-  setBannerState('warn', 'Checking API connectivity…', endpoint);
 
   const healthy = await isApiBaseHealthy(endpoint);
   if (healthy) {
