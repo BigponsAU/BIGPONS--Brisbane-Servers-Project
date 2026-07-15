@@ -34,7 +34,7 @@
 
 | Surface | Component / script | When shown |
 |---------|-------------------|------------|
-| Sign-in (email, Google, passkeys) | `AccountSignIn.astro`, `account-auth.ts` | Unsigned visitor |
+| Sign-in (email, Google, passkeys) | `AccountSignIn.astro`, `account-auth.ts`, `account-passkey-login.ts` | Unsigned visitor |
 | Contributor home | `AccountBasicHome.astro` (`#account-basic-home`) | Signed-in `client` without editor workspace |
 | Full workspace shell | `AccountWorkspacePage.astro`, `account-workspace-app.ts` | `editor` or `admin` |
 

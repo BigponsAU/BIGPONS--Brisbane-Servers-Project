@@ -50,7 +50,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 
 | Feature | Status | Location |
 |---------|--------|----------|
-| Sign-in (password, passkeys, OAuth) | Live | `account-auth.ts` |
+| Sign-in (password, passkeys, OAuth) | Live | `account-auth.ts` + `account-passkey-login.ts` (register: extensions) |
 | Contributor home | Live | `AccountBasicHome.astro` |
 | Workspace / Admin mode switch | Live | `account-workspace-mode.ts` |
 | Global search | Live | `AccountWorkspaceHeader.astro` — prefixes + panel aliases |

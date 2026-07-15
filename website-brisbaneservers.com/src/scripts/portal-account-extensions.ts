@@ -1,7 +1,7 @@
 /**
  * Account workspace extensions: passkeys, moderation, site review, client insights.
  */
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import { startRegistration } from '@simplewebauthn/browser';
 import { workspaceFetch } from '../lib/client-api';
 import {
   isAdminMailboxKey,
@@ -21,7 +21,7 @@ export interface PortalAccountContext {
   setAuthToken: (token: string | null) => void;
   showDashboard: (user: { email?: string; role?: string }) => void;
   showLogin: () => void;
-  showAuthBanner: (message: string, isError?: boolean) => void;
+  showAuthBanner: (message: string, variant?: 'success' | 'error' | 'info' | 'warning') => void;
   navigateToPanel: (panel: string) => void;
   selectResource?: (resourceId: string) => void;
 }
@@ -296,14 +296,14 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
   if (!hasSession(ctx)) {
     const message = 'Sign in again to register a passkey.';
     if (statusEl) statusEl.textContent = message;
-    ctx.showAuthBanner(message, true);
+    ctx.showAuthBanner(message, 'error');
     return;
   }
 
   if (!ctx.apiBaseUrl) {
     const message = 'Account API is not configured. Refresh the page and try again.';
     if (statusEl) statusEl.textContent = message;
-    ctx.showAuthBanner(message, true);
+    ctx.showAuthBanner(message, 'error');
     return;
   }
 
@@ -335,7 +335,7 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
     const message = error instanceof Error ? error.message : 'Passkey registration failed.';
     if (statusEl) statusEl.textContent = message;
     if (error instanceof Error && error.name === 'NotAllowedError') {
-      ctx.showAuthBanner('Passkey registration was cancelled or timed out. Try again when ready.', true);
+      ctx.showAuthBanner('Passkey registration was cancelled or timed out. Try again when ready.', 'error');
     }
   } finally {
     if (registerBtn && !registerBtn.hidden) {
@@ -343,46 +343,6 @@ export async function registerPasskey(ctx: PortalAccountContext): Promise<void> 
       registerBtn.removeAttribute('aria-busy');
     } else if (registerBtn) {
       registerBtn.removeAttribute('aria-busy');
-    }
-  }
-}
-
-export async function loginWithPasskey(ctx: PortalAccountContext, email: string): Promise<void> {
-  const errorDiv = document.getElementById('login-error');
-  if (errorDiv) errorDiv.classList.remove('show');
-
-  try {
-    const optRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/login-options`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.trim().toLowerCase() })
-    });
-    const optData = await optRes.json();
-    if (!optRes.ok || !optData.success) {
-      throw new Error(optData.error || 'Passkey sign-in unavailable for this account');
-    }
-
-    const assertion = await startAuthentication({ optionsJSON: optData.options });
-    const verifyRes = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/login-verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ challengeId: optData.challengeId, response: assertion })
-    });
-    const verifyData = await verifyRes.json();
-    if (!verifyRes.ok || !verifyData.success) {
-      throw new Error(verifyData.error || 'Passkey sign-in failed');
-    }
-
-    ctx.setAuthToken(verifyData.token ?? null);
-    ctx.showDashboard(verifyData.user);
-  } catch (error) {
-    let message = error instanceof Error ? error.message : 'Passkey sign-in failed';
-    if (error instanceof Error && error.name === 'NotAllowedError') {
-      message = 'Passkey sign-in was cancelled or timed out. Try again when ready.';
-    }
-    if (errorDiv) {
-      errorDiv.textContent = message;
-      errorDiv.classList.add('show');
     }
   }
 }
@@ -525,16 +485,7 @@ export function bindPortalAccountExtensions(resolveCtx: () => PortalAccountConte
   bindAdminEmailPrefs();
   bindOverviewBilling(resolveCtx());
 
-  document.getElementById('passkey-login-btn')?.addEventListener('click', () => {
-    const ctx = resolveCtx();
-    const email = (document.getElementById('email') as HTMLInputElement | null)?.value?.trim();
-    if (!email) {
-      ctx.showAuthBanner('Enter your email first, then use passkey sign-in.', true);
-      return;
-    }
-    void loginWithPasskey(ctx, email);
-  });
-
+  // Passkey *login* is bound in account-auth.ts (always-loaded). Registration stays here.
   document.getElementById('passkey-register-btn')?.addEventListener('click', () => void registerPasskey(resolveCtx()));
   document.getElementById('refresh-moderation-btn')?.addEventListener('click', () => void loadModerationQueue(resolveCtx()));
   document.getElementById('refresh-site-review-btn')?.addEventListener('click', () => void loadSiteReviewSections(resolveCtx()));

@@ -272,7 +272,8 @@ export function syncPortalAccountContext(): void {
     },
     showDashboard: (user: unknown) => bridge?.showDashboard?.(user),
     showLogin: () => bridge?.showLogin?.(),
-    showAuthBanner: (message: string, isError?: boolean) => bridge?.showAuthBanner?.(message, isError),
+    showAuthBanner: (message: string, variant?: 'success' | 'error' | 'info' | 'warning') =>
+      (bridge?.showAuthBanner as ((m: string, v?: string) => void) | undefined)?.(message, variant),
     navigateToPanel: (panel: string) => (window as Window & { navigateToPanel?: (p: string) => void }).navigateToPanel?.(panel),
     selectResource: (id: string) => (window as Window & { selectResource?: (id: string) => void }).selectResource?.(id),
   };

@@ -1,5 +1,6 @@
 /**
- * Secondary account workspace modules (passkeys, moderation, library growth).
+ * Secondary account workspace modules (passkey registration, moderation, library growth).
+ * Passkey *login* is wired in account-auth.ts so it works while signed out.
  */
 import {
   bindPortalAccountExtensions,
@@ -27,8 +28,11 @@ export function bootAccountWorkspaceExtensions(): void {
     showDashboard: (user) =>
       (bridge()?.showDashboard as (u: { email?: string; role?: string }) => void)?.(user),
     showLogin: () => (bridge()?.showLogin as () => void)?.(),
-    showAuthBanner: (message, isError) =>
-      (bridge()?.showAuthBanner as (m: string, e?: boolean) => void)?.(message, isError),
+    showAuthBanner: (message, variant) =>
+      (bridge()?.showAuthBanner as (m: string, v?: 'success' | 'error' | 'info' | 'warning') => void)?.(
+        message,
+        variant,
+      ),
     navigateToPanel: (panel) => (bridge()?.navigateToPanel as (p: string) => void)?.(panel),
     selectResource: (id) => (bridge()?.selectResource as (id: string) => void)?.(id),
   });

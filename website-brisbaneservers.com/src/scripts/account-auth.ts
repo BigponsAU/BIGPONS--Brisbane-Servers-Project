@@ -30,6 +30,7 @@ import {
   handleWorkspaceSessionExpired,
 } from './account-workspace-runtime';
 import { initApiConnectivityBanner, syncApiConnectivityBanner } from './account-api-connectivity';
+import { bindPasskeyLogin } from './account-passkey-login';
 
 export type { AccountWorkspaceBootConfig };
 
@@ -488,6 +489,10 @@ async function waitForInlineOAuth(maxMs = 10000): Promise<void> {
 
 function bindAuthForms(): void {
   const rt = getPortalRuntime();
+
+  bindPasskeyLogin({
+    showDashboard: (user) => showDashboard(user),
+  });
 
   document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();

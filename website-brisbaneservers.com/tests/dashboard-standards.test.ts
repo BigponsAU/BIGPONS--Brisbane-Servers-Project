@@ -88,4 +88,21 @@ describe('dashboard production standards', () => {
     expect(source).toContain('getPortalMarkovSummary');
     expect(source).toContain('registerPortalWorkspaceFunctions');
   });
+
+  it('passkey login binds in the always-loaded auth chunk, not post-auth extensions', async () => {
+    const auth = await readFile(path.resolve('src/scripts/account-auth.ts'), 'utf8');
+    const passkeyLogin = await readFile(path.resolve('src/scripts/account-passkey-login.ts'), 'utf8');
+    const extensions = await readFile(path.resolve('src/scripts/portal-account-extensions.ts'), 'utf8');
+    const signIn = await readFile(path.resolve('src/components/account/AccountSignIn.astro'), 'utf8');
+
+    expect(signIn).toContain('id="passkey-login-btn"');
+    expect(auth).toContain("from './account-passkey-login'");
+    expect(auth).toContain('bindPasskeyLogin');
+    expect(passkeyLogin).toContain('passkey-login-btn');
+    expect(passkeyLogin).toContain('/auth/passkey/login-options');
+    expect(passkeyLogin).toContain('/auth/passkey/login-verify');
+    expect(extensions).not.toContain('passkey-login-btn');
+    expect(extensions).not.toContain('loginWithPasskey');
+    expect(extensions).toContain('passkey-register-btn');
+  });
 });
