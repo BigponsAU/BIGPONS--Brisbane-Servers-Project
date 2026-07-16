@@ -36,7 +36,11 @@ let voiceMapCache: {
   meta: string;
   routeNodeIds?: Set<string>;
 } | null = null;
-let voiceMapWebGl: { render: () => void; destroy: () => void } | null = null;
+let voiceMapWebGl: {
+  render: () => void;
+  destroy: () => void;
+  setSelectedId: (id: string | null) => void;
+} | null = null;
 
 const INDUSTRY_COLORS: Record<string, string> = {
   profile: 'rgba(249, 115, 22, 0.95)',
@@ -271,10 +275,12 @@ function selectMapNode(nodeId: string | null): void {
   renderSelectionDetail(node);
 
   const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
-  if (!svg || !voiceMapCache) return;
-  svg.querySelectorAll('.voice-map-node').forEach((el) => {
-    el.classList.toggle('voice-map-node--selected', el.getAttribute('data-node-id') === nodeId);
-  });
+  if (svg && voiceMapCache) {
+    svg.querySelectorAll('.voice-map-node').forEach((el) => {
+      el.classList.toggle('voice-map-node--selected', el.getAttribute('data-node-id') === nodeId);
+    });
+  }
+  voiceMapWebGl?.setSelectedId(nodeId);
 }
 
 function applyVoiceMapViewMode(): void {
@@ -305,7 +311,22 @@ async function renderVoiceMap3d(nodes: MapNode[], edges: MapEdge[]): Promise<voi
   destroyVoiceMapWebGl();
   try {
     const { mountVoiceMapWebGl } = await import('./voice-map-webgl');
-    voiceMapWebGl = mountVoiceMapWebGl(canvas, nodes, edges);
+    voiceMapWebGl = mountVoiceMapWebGl(canvas, nodes, edges, {
+      selectedId: voiceMapSelectedId,
+      onSelect: (nodeId) => {
+        selectMapNode(nodeId);
+      },
+      onActivate: (nodeId) => {
+        const node = nodes.find((n) => n.id === nodeId);
+        if (!node) return;
+        selectMapNode(nodeId);
+        const resourceId = resolveResourceId(node);
+        if (resourceId) openResourceInCreate(resourceId);
+        else if (node.kind === 'profile') {
+          (window as Window & { navigateToPanel?: (p: string) => void }).navigateToPanel?.('profiles');
+        }
+      },
+    });
   } catch (err) {
     const metaEl = document.getElementById('voice-map-meta');
     if (metaEl) {
@@ -427,9 +448,7 @@ function renderVoiceMapSvg(
 
   const metaEl = document.getElementById('voice-map-meta');
   if (metaEl) {
-    metaEl.textContent = voiceMap3dMode
-      ? `${meta} · Click nodes in 2D to inspect (3D is orbit-only)`
-      : `${meta} · Click to inspect · Double-click to open`;
+    metaEl.textContent = `${meta} · Click to inspect · Double-click to open`;
   }
 
   if (voiceMapSelectedId && !nodes.some((n) => n.id === voiceMapSelectedId)) {
@@ -550,10 +569,15 @@ export async function loadVoiceMap(): Promise<void> {
 
     voiceMapCache = { nodes, edges, meta: metaParts.join(' · '), routeNodeIds };
     if (voiceMap3dMode) {
+      applyVoiceMapViewMode();
       await renderVoiceMap3d(nodes, edges);
       const metaEl = document.getElementById('voice-map-meta');
       if (metaEl) {
-        metaEl.textContent = `${voiceMapCache.meta} · Switch to 2D to click and inspect nodes`;
+        metaEl.textContent = `${voiceMapCache.meta} · Drag to orbit · Click to inspect · Double-click to open`;
+      }
+      if (voiceMapSelectedId) {
+        const selected = nodes.find((n) => n.id === voiceMapSelectedId) ?? null;
+        renderSelectionDetail(selected);
       }
     } else {
       destroyVoiceMapWebGl();
@@ -661,13 +685,15 @@ export function bindVoiceFeaturePanels(): void {
     applyVoiceMapViewMode();
     if (voiceMapCache) {
       if (voiceMap3dMode) {
+        applyVoiceMapViewMode();
         void renderVoiceMap3d(voiceMapCache.nodes, voiceMapCache.edges);
         const metaEl = document.getElementById('voice-map-meta');
         if (metaEl) {
-          metaEl.textContent = `${voiceMapCache.meta} · Switch to 2D to click and inspect nodes`;
+          metaEl.textContent = `${voiceMapCache.meta} · Drag to orbit · Click to inspect · Double-click to open`;
         }
       } else {
         destroyVoiceMapWebGl();
+        applyVoiceMapViewMode();
         const svg = document.getElementById('voice-map-svg') as SVGSVGElement | null;
         if (svg) {
           renderVoiceMapSvg(svg, voiceMapCache.nodes, voiceMapCache.edges, voiceMapCache.meta, voiceMapCache.routeNodeIds);
@@ -734,8 +760,8 @@ export function bindVoiceFeaturePanels(): void {
     void (async () => {
       const ok = await showConfirmDialog({
         title: 'Reset flow tracking',
-        message: 'Reset all portal flow tracking data for this browser?',
-        details: 'Markov navigation stats will be cleared locally. This cannot be undone.',
+        message: 'Reset resource lineage Markov data for this browser?',
+        details: 'Voice match history and resource→resource hops stored locally will be cleared. This cannot be undone.',
         confirmLabel: 'Reset',
         variant: 'danger',
       });

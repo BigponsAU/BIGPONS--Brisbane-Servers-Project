@@ -122,7 +122,11 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
       if (data.success) {
         balance = Number(data.balance ?? 0);
         if (balanceEl) balanceEl.textContent = String(balance);
+      } else if (balanceEl) {
+        balanceEl.textContent = '—';
       }
+    } else if (balanceEl) {
+      balanceEl.textContent = '—';
     }
 
     if (perksRes.ok && perksEl) {
@@ -140,7 +144,7 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
               <span class="client-token-perk-cost">${p.cost} tokens</span>
               <p class="client-token-perk-desc">${escapeHtml(p.description)}</p>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" data-redeem-perk="${escapeHtml(p.id)}" ${
+            <button type="button" class="btn btn-secondary btn-sm" data-redeem-perk="${escapeHtml(p.id)}" data-perk-cost="${p.cost}" ${
               balance < p.cost ? 'disabled' : ''
             }>Redeem</button>
           </li>`
@@ -150,6 +154,7 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
         perksEl.querySelectorAll<HTMLButtonElement>('[data-redeem-perk]').forEach((btn) => {
           btn.addEventListener('click', async () => {
             const perkId = btn.getAttribute('data-redeem-perk');
+            const perkCost = Number(btn.getAttribute('data-perk-cost') ?? 0);
             if (!perkId) return;
             btn.disabled = true;
             if (redeemStatus) redeemStatus.textContent = 'Redeeming…';
@@ -162,7 +167,7 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
               const data = await res.json();
               if (!res.ok || !data.success) {
                 if (redeemStatus) redeemStatus.textContent = data.error || 'Could not redeem.';
-                btn.disabled = balance < Number(btn.closest('.client-token-perk')?.querySelector('.client-token-perk-cost')?.textContent?.split(' ')[0] ?? 0);
+                btn.disabled = balance < perkCost;
                 return;
               }
               if (redeemStatus) redeemStatus.textContent = data.message || 'Redeemed.';
@@ -198,6 +203,9 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
           return `<li><strong>${escapeHtml(title)}</strong> — ${escapeHtml(item.status)}${meta ? ` · ${escapeHtml(meta)}` : ''}${date ? ` · ${escapeHtml(date)}` : ''}</li>`;
         }).join('');
       }
+    } else if (listEl) {
+      listEl.innerHTML =
+        '<li class="empty-state">Could not load contributions. Try Refresh, or check API connectivity.</li>';
     }
   } catch (error) {
     console.warn('[Portal] Client workspace data failed:', error);
@@ -271,17 +279,35 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
       btn.addEventListener('click', async () => {
         const id = (btn as HTMLElement).getAttribute('data-passkey-remove');
         if (!id) return;
-        await runWorkspaceGuardedAction(`passkey:remove:${id}`, {
-          onBusy: (busy) => setElementBusy(btn as HTMLButtonElement, busy, busy ? 'Removing…' : 'Remove'),
-          run: async () => {
-            await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ credentialId: id }),
-            });
-            await loadPasskeyCredentials(ctx);
-          },
-        });
+        const statusEl = document.getElementById('passkey-register-status');
+        try {
+          await runWorkspaceGuardedAction(`passkey:remove:${id}`, {
+            onBusy: (busy) => setElementBusy(btn as HTMLButtonElement, busy, busy ? 'Removing…' : 'Remove'),
+            run: async () => {
+              const res = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credentialId: id }),
+              });
+              if (!res.ok) {
+                let message = 'Could not remove passkey.';
+                try {
+                  const data = await res.json();
+                  if (data?.error) message = String(data.error);
+                } catch {
+                  /* keep default */
+                }
+                throw new Error(message);
+              }
+              if (statusEl) statusEl.textContent = '';
+              await loadPasskeyCredentials(ctx);
+            },
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Could not remove passkey.';
+          if (statusEl) statusEl.textContent = message;
+          ctx.showAuthBanner(message, 'error');
+        }
       });
     });
   } catch {
@@ -483,7 +509,7 @@ export async function emailHostingChecklist(ctx: PortalAccountContext): Promise<
 
 export function bindPortalAccountExtensions(resolveCtx: () => PortalAccountContext): void {
   bindAdminEmailPrefs();
-  bindOverviewBilling(resolveCtx());
+  bindOverviewBilling(resolveCtx);
 
   // Passkey *login* is bound in account-auth.ts (always-loaded). Registration stays here.
   document.getElementById('passkey-register-btn')?.addEventListener('click', () => void registerPasskey(resolveCtx()));

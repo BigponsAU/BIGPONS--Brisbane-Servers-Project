@@ -49,6 +49,15 @@ export async function startBillingPortal(ctx: PortalAccountContext): Promise<voi
   }
 }
 
+const USAGE_FETCH_TIMEOUT_MS = 12000;
+
+function setBillingButtonVisibility(btn: HTMLButtonElement | null, visible: boolean): void {
+  if (!btn) return;
+  btn.hidden = !visible;
+  btn.disabled = !visible;
+  btn.setAttribute('aria-hidden', visible ? 'false' : 'true');
+}
+
 export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<void> {
   const summaryEl = document.getElementById('client-ai-usage-summary');
   const metaEl = document.getElementById('client-ai-usage-meta');
@@ -60,17 +69,29 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
   if (!hasSession(ctx)) {
     summaryEl.textContent = 'Sign in to view daily AI usage.';
     if (metaEl) metaEl.textContent = '';
-    if (upgradeBtn) upgradeBtn.hidden = true;
-    if (manageBtn) manageBtn.hidden = true;
+    setBillingButtonVisibility(upgradeBtn, false);
+    setBillingButtonVisibility(manageBtn, false);
+    return;
+  }
+
+  const apiBase = (ctx.apiBaseUrl || '').replace(/\/+$/, '');
+  if (!apiBase) {
+    summaryEl.textContent = 'Account API is not configured.';
+    setBillingButtonVisibility(upgradeBtn, false);
+    setBillingButtonVisibility(manageBtn, false);
     return;
   }
 
   summaryEl.textContent = 'Loading daily AI usage…';
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), USAGE_FETCH_TIMEOUT_MS);
   try {
-    const res = await workspaceFetch(`${ctx.apiBaseUrl}/usage/me`);
-    const data = await res.json();
+    const res = await workspaceFetch(`${apiBase}/usage/me`, { signal: controller.signal });
+    const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success || !data.daily) {
       summaryEl.textContent = data.error || 'Could not load usage.';
+      setBillingButtonVisibility(upgradeBtn, false);
+      setBillingButtonVisibility(manageBtn, false);
       return;
     }
 
@@ -101,19 +122,17 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
       metaEl.textContent = hints.join(' ');
     }
 
-    if (upgradeBtn) {
-      const showUpgrade = Boolean(data.stripeConfigured) && !subActive;
-      upgradeBtn.hidden = !showUpgrade;
-      upgradeBtn.disabled = !showUpgrade;
-    }
-
-    if (manageBtn) {
-      const showManage = Boolean(data.stripeConfigured) && subActive && hasCustomer;
-      manageBtn.hidden = !showManage;
-      manageBtn.disabled = !showManage;
-    }
-  } catch {
-    summaryEl.textContent = 'Could not reach usage API.';
+    setBillingButtonVisibility(upgradeBtn, Boolean(data.stripeConfigured) && !subActive);
+    setBillingButtonVisibility(manageBtn, Boolean(data.stripeConfigured) && subActive && hasCustomer);
+  } catch (error) {
+    const timedOut = error instanceof DOMException && error.name === 'AbortError';
+    summaryEl.textContent = timedOut
+      ? 'Usage API timed out — try refreshing Overview.'
+      : 'Could not reach usage API.';
+    setBillingButtonVisibility(upgradeBtn, false);
+    setBillingButtonVisibility(manageBtn, false);
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 
@@ -124,13 +143,13 @@ function clearBillingQueryParam(): void {
   window.history.replaceState({}, '', next);
 }
 
-export function bindOverviewBilling(ctx: PortalAccountContext): void {
+export function bindOverviewBilling(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('client-ai-upgrade-btn')?.addEventListener('click', () => {
-    void startStripeCheckout(ctx);
+    void startStripeCheckout(resolveCtx());
   });
 
   document.getElementById('client-ai-manage-btn')?.addEventListener('click', () => {
-    void startBillingPortal(ctx);
+    void startBillingPortal(resolveCtx());
   });
 
   const params = new URLSearchParams(window.location.search);
@@ -139,13 +158,13 @@ export function bindOverviewBilling(ctx: PortalAccountContext): void {
   if (billing === 'success' && statusEl) {
     statusEl.textContent = 'Subscription checkout complete — refresh if cap has not updated yet.';
     clearBillingQueryParam();
-    void loadOverviewAiBilling(ctx);
+    void loadOverviewAiBilling(resolveCtx());
   } else if (billing === 'cancel' && statusEl) {
     statusEl.textContent = 'Checkout canceled.';
     clearBillingQueryParam();
   } else if (billing === 'portal-return' && statusEl) {
     statusEl.textContent = 'Returned from subscription portal.';
     clearBillingQueryParam();
-    void loadOverviewAiBilling(ctx);
+    void loadOverviewAiBilling(resolveCtx());
   }
 }

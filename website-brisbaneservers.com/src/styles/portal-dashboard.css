@@ -3383,3 +3383,8 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   flex-wrap: wrap;
   gap: var(--space-xs);
 }
+
+/* `.btn { display: inline-flex }` overrides the UA [hidden] rule — keep CTAs truly hidden. */
+.account-workspace-shell .client-ai-usage-card .insight-card__actions .btn[hidden] {
+  display: none !important;
+}

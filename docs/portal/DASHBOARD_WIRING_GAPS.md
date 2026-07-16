@@ -18,7 +18,7 @@
 | **Permissions** | `getResourceActionPermissions()` + API mirror for resource actions |
 | **Markov tracking** | Resource creation hops + voice match % (`trackResourceCreation` / metadata hydrate) |
 | **Global search** | Prefixes: `profile:`, `voice:`, `panel:`, `resource:`; panel name aliases; default → Resources search |
-| **Keyboard shortcuts** | `Ctrl+K` search; `1`–`6` creator panels; `1`–`5` admin panels (when admin mode active) |
+| **Keyboard shortcuts** | `Ctrl+K` search; `1`–`6` creator panels; `1`–`6` admin panels (when admin mode active) |
 
 **CI guard:** `tests/dashboard-standards.test.ts` + `tests/account-workspace-nav.test.ts`
 
@@ -56,7 +56,7 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | **Markov lineage** | Resource→resource hops, voice share %, extrapolate lineage |
 | **Stripe AI Boost** | Checkout, webhook, overview upgrade CTA, admin PayID grant |
 | **Global search** | Full panel aliases + prefixes |
-| **Keyboard nav** | Mode-aware 1–9 panel shortcuts |
+| **Keyboard nav** | Mode-aware 1–6 panel shortcuts |
 | **Growth semantic dedup** | `library-growth/dedup.ts` — vector similarity before materialize |
 | **Voice map semantic route** | `GET /api/voice-map/semantic` + query UI in Voice map panel |
 
@@ -67,7 +67,8 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | Surface | Notes |
 |---------|--------|
 | Cloudflare Vectorize backend migration | Optional — JSON/Postgres index in use |
-| Stripe Customer Portal (self-serve cancel) | **Live** — Overview → Manage subscription (`POST /api/billing/portal`) |
+
+Stripe Customer Portal is **Live** (Overview → Manage subscription via `POST /api/billing/portal`).
 
 ---
 

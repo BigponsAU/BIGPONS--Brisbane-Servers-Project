@@ -149,12 +149,41 @@ export function bootAccountWorkspaceDashboard(): void {
   function ensureWorkspaceExtensions(): Promise<void> {
     if (extensionsBooted && extensionsBootPromise) return extensionsBootPromise;
     if (!extensionsBootPromise) {
-      extensionsBootPromise = import('./account-workspace-boot.ts').then((mod) => {
-        mod.bootAccountWorkspaceExtensions();
-        extensionsBooted = true;
-      });
+      extensionsBootPromise = import('./account-workspace-boot.ts')
+        .then((mod) => {
+          mod.bootAccountWorkspaceExtensions();
+          extensionsBooted = true;
+        })
+        .catch((error) => {
+          // Allow a later Overview refresh to retry after a transient chunk/bind failure.
+          extensionsBootPromise = null;
+          extensionsBooted = false;
+          throw error;
+        });
     }
     return extensionsBootPromise;
+  }
+
+  async function loadOverviewClientInsights(): Promise<void> {
+    syncPortalAccountContext();
+    const accountCtx = getPortalAccountContext();
+    try {
+      await ensureWorkspaceExtensions();
+      window.__portalAccountExt?.loadClientWorkspaceData(accountCtx);
+      window.__portalAccountExt?.loadPasskeyCredentials(accountCtx);
+    } catch (error) {
+      console.error('[Portal] Workspace extensions failed; loading AI usage fallback:', error);
+      try {
+        const billing = await import('./account-billing.ts');
+        await billing.loadOverviewAiBilling(accountCtx as Parameters<typeof billing.loadOverviewAiBilling>[0]);
+      } catch (fallbackError) {
+        console.error('[Portal] AI usage fallback failed:', fallbackError);
+        const summaryEl = document.getElementById('client-ai-usage-summary');
+        if (summaryEl && /loading/i.test(summaryEl.textContent || '')) {
+          summaryEl.textContent = 'Could not load usage.';
+        }
+      }
+    }
   }
 
   function showLogin(): void {
@@ -235,12 +264,11 @@ export function bootAccountWorkspaceDashboard(): void {
         listView.classList.add('hidden');
       }
 
-      // Set up search and filter event listeners
-      setupResourceFilters();
-      syncPortalAccountContext();
-      const accountCtx = getPortalAccountContext();
-      window.__portalAccountExt?.loadClientWorkspaceData(accountCtx);
-      window.__portalAccountExt?.loadPasskeyCredentials(accountCtx);
+      // Resource filters bind when the Resources chunk loads (setupResourceFilters there).
+      void loadOverviewClientInsights();
+    }).catch((error) => {
+      console.error('[Portal] Workspace extensions boot failed:', error);
+      void loadOverviewClientInsights();
     });
   }
 
@@ -340,10 +368,10 @@ export function bootAccountWorkspaceDashboard(): void {
   let panelNavGeneration = 0;
 
   function refreshPanelData(panelName: string): void {
-    const accountCtx = getPortalAccountContext();
     if (panelName === 'dashboard') {
       trackPortalAction('loadDashboardData');
       loadDashboardData();
+      void loadOverviewClientInsights();
     } else if (panelName === 'resources') {
       trackPortalAction('loadResources');
       const workspace = document.getElementById('resource-workspace');
@@ -366,14 +394,27 @@ export function bootAccountWorkspaceDashboard(): void {
       void import('./account-workspace-voice-features.ts').then((mod) => mod.onVoicePanelShown(panelName));
     } else if (panelName === 'library-growth') {
       trackPortalAction('loadLibraryGrowthPanel');
-      window.__portalAccountExt?.loadLibraryGrowthPanel(accountCtx);
+      void ensureWorkspaceExtensions().then(() => {
+        window.__portalAccountExt?.loadLibraryGrowthPanel(getPortalAccountContext());
+      }).catch((err) => {
+        console.error('[Portal] Failed to boot extensions for library growth:', err);
+      });
     } else if (panelName === 'moderation') {
       trackPortalAction('loadModerationQueue');
-      window.__portalAccountExt?.loadModerationQueue(accountCtx);
+      void ensureWorkspaceExtensions().then(() => {
+        window.__portalAccountExt?.loadModerationQueue(getPortalAccountContext());
+      }).catch((err) => {
+        console.error('[Portal] Failed to boot extensions for moderation:', err);
+      });
     } else if (panelName === 'site-review') {
       trackPortalAction('loadSiteReviewSections');
-      window.__portalAccountExt?.loadSiteReviewSections(accountCtx);
-      window.__portalAccountExt?.loadHostingStatus(accountCtx);
+      void ensureWorkspaceExtensions().then(() => {
+        const ctx = getPortalAccountContext();
+        window.__portalAccountExt?.loadSiteReviewSections(ctx);
+        window.__portalAccountExt?.loadHostingStatus(ctx);
+      }).catch((err) => {
+        console.error('[Portal] Failed to boot extensions for site review:', err);
+      });
     } else if (panelName === 'admin-users') {
       trackPortalAction('loadAdminUsersPanel');
       void import('./account-admin-users.ts')
@@ -389,10 +430,18 @@ export function bootAccountWorkspaceDashboard(): void {
         });
     } else if (panelName === 'admin-ops') {
       trackPortalAction('loadAdminOpsPanel');
-      window.__portalAccountExt?.loadAdminOpsPanel(accountCtx);
+      void ensureWorkspaceExtensions().then(() => {
+        window.__portalAccountExt?.loadAdminOpsPanel(getPortalAccountContext());
+      }).catch((err) => {
+        console.error('[Portal] Failed to boot extensions for admin ops:', err);
+      });
     } else if (panelName === 'admin-billing') {
       trackPortalAction('loadAdminBillingPanel');
-      window.__portalAccountExt?.loadAdminBillingPanel(accountCtx);
+      void ensureWorkspaceExtensions().then(() => {
+        window.__portalAccountExt?.loadAdminBillingPanel(getPortalAccountContext());
+      }).catch((err) => {
+        console.error('[Portal] Failed to boot extensions for admin billing:', err);
+      });
     }
   }
 
@@ -987,6 +1036,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
   // Make loadDashboardData globally accessible
   (window as any).loadDashboardData = loadDashboardData;
+  (window as any).refreshOverviewPanel = () => {
+    trackPortalAction('refreshOverviewPanel');
+    void loadDashboardData();
+    void loadOverviewClientInsights();
+  };
 
   function filterProfileCardsByQuery(query: string): void {
     const needle = query.trim().toLowerCase();
@@ -1049,16 +1103,22 @@ export function bootAccountWorkspaceDashboard(): void {
         return;
       }
 
-      // Close modals
+      // Close modals (handlers live on window after Resources chunk / local assignment)
+      const win = window as Window & {
+        closeViewModal?: () => void;
+        closeEditModal?: () => void;
+        closePreviewModal?: () => void;
+        toggleInfoCard?: () => void;
+      };
       const modals = document.querySelectorAll('.modal[aria-hidden="false"]');
       modals.forEach((modal: Element) => {
         const modalId = (modal as HTMLElement).id;
         if (modalId === 'view-resource-modal') {
-          closeViewModal();
+          win.closeViewModal?.();
         } else if (modalId === 'edit-resource-modal') {
-          closeEditModal();
+          win.closeEditModal?.();
         } else if (modalId === 'preview-resource-modal') {
-          closePreviewModal();
+          win.closePreviewModal?.();
         } else if (modalId === 'portal-confirm-host' || modal.classList.contains('portal-confirm-modal')) {
           document.getElementById('portal-confirm-host')!.innerHTML = '';
           document.body.style.overflow = '';
@@ -1068,46 +1128,12 @@ export function bootAccountWorkspaceDashboard(): void {
       // Close info card
       const infoCard = document.getElementById('info-card');
       if (infoCard && infoCard.classList.contains('active')) {
-        toggleInfoCard();
+        win.toggleInfoCard?.();
       }
     }
   });
 
-  // Navigation Tabs
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const targetTab = tab.dataset.tab;
-      
-      // Update tab states
-      document.querySelectorAll('.nav-tab').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      
-      // Update panel visibility
-      document.querySelectorAll('.portal-panel').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = 'none';
-      });
-      
-      const targetPanel = document.getElementById(`${targetTab}-panel`);
-      if (targetPanel) {
-        targetPanel.classList.add('active');
-        targetPanel.style.display = 'block';
-        
-        // Load content when panel is shown
-        if (targetTab === 'profiles') {
-          console.log('[Portal] Loading profiles panel');
-          loadProfiles();
-        } else if (targetTab === 'analytics') {
-          console.log('[Portal] Loading analytics panel');
-          loadAnalytics();
-        }
-      }
-    });
-  });
+  // Navigation Tabs — legacy .nav-tab UI removed; sidebar uses navigateToPanel.
 
   let analyticsTopicRows: any[] = [];
 
@@ -1157,7 +1183,15 @@ export function bootAccountWorkspaceDashboard(): void {
       .join('');
     list.querySelectorAll('.analytics-gap-chip').forEach((btn) => {
       btn.addEventListener('click', () => {
-        (window as any).navigateToPanel?.('library-growth');
+        if (!canAccessWorkspacePanel('library-growth')) {
+          showNotification(
+            'Library growth is admin-only. Open Resources to draft coverage for this gap.',
+            'info',
+          );
+          navigateToPanel('resources');
+          return;
+        }
+        navigateToPanel('library-growth');
       });
     });
   }
@@ -1531,61 +1565,39 @@ export function bootAccountWorkspaceDashboard(): void {
     });
   };
 
-  // Set initial filter button state
-  // Reset any stuck modals/overlays on page load
-  document.addEventListener('DOMContentLoaded', () => {
-    // Ensure body is scrollable and interactive
+  // Reset stuck overlays when this module boots (dashboard loads after DOMContentLoaded).
+  function resetStuckOverlays(): void {
     document.body.style.overflow = '';
     document.body.style.pointerEvents = '';
-    
-    // Close any stuck modals - be aggressive
-    const allModals = document.querySelectorAll('.modal');
-    allModals.forEach((modal: Element) => {
+
+    document.querySelectorAll('.modal').forEach((modal: Element) => {
       const htmlModal = modal as HTMLElement;
       htmlModal.setAttribute('aria-hidden', 'true');
       htmlModal.style.display = 'none';
       htmlModal.classList.remove('active');
     });
-    
-    // Remove any stuck modal overlays
-    const overlays = document.querySelectorAll('.modal-overlay');
-    overlays.forEach((overlay: Element) => {
+
+    document.querySelectorAll('.modal-overlay').forEach((overlay: Element) => {
       const htmlOverlay = overlay as HTMLElement;
       htmlOverlay.style.pointerEvents = 'none';
       htmlOverlay.style.display = 'none';
     });
-    
-    // Ensure info-card is closed
+
     const infoCard = document.getElementById('info-card');
     if (infoCard) {
       infoCard.classList.remove('active', 'railed');
       infoCard.setAttribute('aria-hidden', 'true');
       (infoCard as HTMLElement).style.pointerEvents = 'none';
     }
-    
-    // Ensure main content areas are interactive
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-      (mainContent as HTMLElement).style.pointerEvents = '';
-    }
-    
-    const adminPortal = document.getElementById('admin-portal');
-    if (adminPortal) {
-      (adminPortal as HTMLElement).style.pointerEvents = '';
-    }
-    
-    const loginScreen = document.getElementById('login-screen');
-    if (loginScreen) {
-      (loginScreen as HTMLElement).style.pointerEvents = '';
-    }
-    
-    const adminDashboard = document.getElementById('admin-dashboard');
-    if (adminDashboard) {
-      (adminDashboard as HTMLElement).style.pointerEvents = '';
-    }
-  });
 
-  document.addEventListener('DOMContentLoaded', () => {
+    for (const id of ['main-content', 'admin-portal', 'login-screen', 'admin-dashboard']) {
+      const el = document.getElementById(id);
+      if (el) (el as HTMLElement).style.pointerEvents = '';
+    }
+  }
+
+  function initWorkspaceShellAfterDomReady(): void {
+    resetStuckOverlays();
     const filterAll = document.getElementById('filter-all');
     if (filterAll) filterAll.classList.add('active');
     voiceContext.initWorkspaceVoiceProfileSelect();
@@ -1594,7 +1606,13 @@ export function bootAccountWorkspaceDashboard(): void {
     if (dashboard && dashboard.style.display !== 'none') {
       syncWorkspaceSidebarLayout();
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWorkspaceShellAfterDomReady);
+  } else {
+    initWorkspaceShellAfterDomReady();
+  }
 
   window.addEventListener('resize', () => {
     const dashboard = document.getElementById('admin-dashboard');

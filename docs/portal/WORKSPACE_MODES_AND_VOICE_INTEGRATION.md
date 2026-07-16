@@ -11,7 +11,7 @@
 | `voice-framework/dashboard/` (Docker / Render port 3001) | Tone analysis, pattern extract | **Voice lab** panel → `POST /api/voice/analyze` |
 | `voice-framework/dashboard/routes/topology-routes.ts` | 3D principle topology | **Voice map** panel → `GET /api/voice-map/principles` |
 | `voice-framework/storage/semantic-index` + embeddings | Vector corpus | **Voice map** (semantic view) → `GET /api/voice-map/semantic` |
-| `voice-framework/dashboard/public/topology3d.js` | Three.js 3D canvas | **2D SVG map** in portal (no separate host; 3D optional later) |
+| `voice-framework/dashboard/public/topology3d.js` | Three.js 3D canvas | **Voice map** panel → WebGL 3D (`voice-map-webgl.ts`) with pick/inspect |
 | `voice-framework/dashboard/public/markov-chain-tracker.js` | Markov / debug analytics | **Voice lab** — resource lineage + voice match share (`portal-markov-tracker.ts`) |
 | Same dashboard | Library, documents upload, A/B tests | Partially covered by Resources, Profiles, Library growth |
 

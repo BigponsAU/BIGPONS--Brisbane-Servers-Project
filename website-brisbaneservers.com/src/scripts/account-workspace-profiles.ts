@@ -1598,5 +1598,9 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
 };
   document.getElementById('refresh-profiles')?.addEventListener('click', loadProfiles);
 
+  // Inline onclick handlers (e.g. createBaseProfile) and lazy stubs resolve via window.
+  (window as any).loadProfiles = loadProfiles;
+  (window as any).createBaseProfile = createBaseProfile;
+
   return { loadProfiles, createBaseProfile };
 }

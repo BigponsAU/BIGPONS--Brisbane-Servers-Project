@@ -18,31 +18,13 @@ import { bindAdminBillingPanel, loadAdminBillingPanel } from './account-admin-bi
 import { syncPortalAccountContext, getPortalAccountContext } from './account-workspace-runtime';
 
 export function bootAccountWorkspaceExtensions(): void {
-  const bridge = () => (window as unknown as { __portalBridge?: Record<string, unknown> }).__portalBridge;
-
-  const ctx = (): PortalAccountContext => ({
-    apiBaseUrl: (bridge()?.apiBaseUrl as string) ?? '',
-    getAuthToken: () => (bridge()?.getAuthToken as () => string | null)?.() ?? null,
-    hasWorkspaceSession: () => (bridge()?.hasWorkspaceSession as () => boolean)?.() ?? false,
-    setAuthToken: (token) => (bridge()?.setAuthToken as (t: string | null) => void)?.(token),
-    showDashboard: (user) =>
-      (bridge()?.showDashboard as (u: { email?: string; role?: string }) => void)?.(user),
-    showLogin: () => (bridge()?.showLogin as () => void)?.(),
-    showAuthBanner: (message, variant) =>
-      (bridge()?.showAuthBanner as (m: string, v?: 'success' | 'error' | 'info' | 'warning') => void)?.(
-        message,
-        variant,
-      ),
-    navigateToPanel: (panel) => (bridge()?.navigateToPanel as (p: string) => void)?.(panel),
-    selectResource: (id) => (bridge()?.selectResource as (id: string) => void)?.(id),
-  });
-
   const win = window as unknown as {
     __portalAccountExt?: Record<string, unknown>;
     __portalAccountCtx?: PortalAccountContext;
     __portalBridge?: Record<string, unknown>;
   };
 
+  // Register loaders first so Overview can still refresh if a later bind throws.
   win.__portalAccountExt = {
     loadClientWorkspaceData,
     loadPasskeyCredentials,
@@ -56,11 +38,19 @@ export function bootAccountWorkspaceExtensions(): void {
 
   const resolveCtx = (): PortalAccountContext => getPortalAccountContext() as unknown as PortalAccountContext;
 
-  bindPortalAccountExtensions(resolveCtx);
-  bindLibraryGrowthPanel(resolveCtx);
-  bindVoiceFeaturePanels();
-  bindAdminOpsPanel(resolveCtx);
-  bindAdminBillingPanel(resolveCtx);
+  const bindSafely = (label: string, run: () => void): void => {
+    try {
+      run();
+    } catch (error) {
+      console.error(`[Portal] Failed to bind ${label}:`, error);
+    }
+  };
+
+  bindSafely('portal account extensions', () => bindPortalAccountExtensions(resolveCtx));
+  bindSafely('library growth', () => bindLibraryGrowthPanel(resolveCtx));
+  bindSafely('voice feature panels', () => bindVoiceFeaturePanels());
+  bindSafely('admin ops', () => bindAdminOpsPanel(resolveCtx));
+  bindSafely('admin billing', () => bindAdminBillingPanel(resolveCtx));
 
   syncPortalAccountContext();
 }

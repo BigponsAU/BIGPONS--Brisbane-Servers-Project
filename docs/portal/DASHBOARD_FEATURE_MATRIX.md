@@ -28,7 +28,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | **Voice profiles** | Live | `/api/profiles/**` | Split workspace + band shell |
 | **Voice lab — analyze** | Live | `POST /api/voice/analyze` | Band shell |
 | **Voice lab — Markov** | Live | `portal-markov-tracker.ts` v1 resource lineage | Voice share % across creation hops |
-| **Voice map — 2D / depth / 3D** | Live | `/api/voice-map/corpus`, WebGL | Reindex confirm |
+| **Voice map — 2D / depth / 3D** | Live | `/api/voice-map/corpus`, WebGL | Click/dblclick inspect + orbit/zoom in 3D |
 | **Voice map — semantic route** | Live | `GET /api/voice-map/semantic` | k-NN topology + query route plot |
 
 ---
