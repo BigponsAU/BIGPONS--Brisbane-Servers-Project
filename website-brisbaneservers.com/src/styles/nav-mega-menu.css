@@ -25,6 +25,19 @@
   }
 }
 
+/*
+ * Dimmer lives after the footer in .site-shell. Global `button { display: inline-flex }`
+ * overrides the UA [hidden] rule, so without an always-on hide it paints a light 44px
+ * strip under the footer on desktop (mobile rules only apply ≤1023px).
+ */
+.site-shell > .nav-mobile-dimmer {
+  display: none !important;
+}
+
+body.nav-mobile-open .site-shell > .nav-mobile-dimmer.is-visible {
+  display: block !important;
+}
+
 body.nav-mobile-open .nav-menu,
 body.nav-mobile-open .nav-dropdown-menu {
   display: none !important;
@@ -626,9 +639,9 @@ body.nav-mobile-open .nav-dropdown {
     Real DOM dimmer (not body::before). Pseudo dimmers competed with header
     isolation / shell stacking and stole or ghosted taps on phones.
     Menu is reparented to document.body while open (see nav-mobile.ts).
+    Display on/off is set above (all viewports); positioning is mobile-only.
   */
   .site-shell > .nav-mobile-dimmer {
-    display: none;
     position: fixed;
     top: var(--site-header-clearance, 4.5rem);
     left: 0;
@@ -645,10 +658,6 @@ body.nav-mobile-open .nav-dropdown {
     cursor: pointer;
     pointer-events: auto;
     touch-action: manipulation;
-  }
-
-  body.nav-mobile-open .site-shell > .nav-mobile-dimmer.is-visible {
-    display: block;
   }
 
   body.nav-mobile-open header[role='banner'] {
