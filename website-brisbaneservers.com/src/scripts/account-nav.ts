@@ -1,9 +1,10 @@
 /** Minimal header nav for /account — avoids loading full main.ts on sign-in. */
-import { bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
+import { bindMobileMenuAccordions, bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
 
 document.addEventListener('DOMContentLoaded', () => {
   closeMobileNav();
   bindNavMobileDimmer();
+  bindMobileMenuAccordions();
 
   document.addEventListener(
     'click',

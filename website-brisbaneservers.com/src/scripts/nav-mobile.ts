@@ -98,3 +98,17 @@ export function bindNavMobileDimmer(): void {
     closeMobileNav();
   });
 }
+
+export function bindMobileMenuAccordions(): void {
+  const menuPanel = document.querySelector('.mobile-menu') as HTMLElement | null;
+  if (!menuPanel || menuPanel.dataset.accordionBound === '1') return;
+  menuPanel.dataset.accordionBound = '1';
+  menuPanel.addEventListener('toggle', (event) => {
+    const details = event.target as HTMLDetailsElement;
+    if (!details?.classList?.contains('mobile-menu__feature') || !details.open) return;
+    // Keep expanded section in view inside the scrollable panel.
+    window.requestAnimationFrame(() => {
+      details.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  });
+}

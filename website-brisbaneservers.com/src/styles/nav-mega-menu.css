@@ -226,10 +226,17 @@ body.nav-mobile-open .nav-dropdown {
   flex-direction: column;
   gap: var(--space-md);
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   padding: var(--space-md) var(--space-md) max(var(--space-xl), env(safe-area-inset-bottom, 0px));
+}
+
+/* Never let section cards shrink — that clipped link lists under overflow:hidden. */
+.mobile-menu__inner > * {
+  flex: 0 0 auto;
+  min-height: 0;
 }
 
 .mobile-menu__kicker {
@@ -242,12 +249,12 @@ body.nav-mobile-open .nav-dropdown {
   color: var(--text-secondary);
 }
 
-/* Feature card: Resources, Projects, About */
+/* Feature card: Resources, Projects, About (native expand/collapse) */
 .mobile-menu__feature {
   border: 1px solid rgba(var(--primary-color-rgb), 0.14);
   border-radius: var(--border-radius);
   background: #ffffff;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 2px 10px rgba(8, 27, 54, 0.05);
 }
 
@@ -261,17 +268,34 @@ body.nav-mobile-open .nav-dropdown {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
+  min-height: 44px;
   padding: var(--space-md) var(--space-lg);
   font-size: 1rem;
   font-weight: var(--font-weight-semibold);
   color: var(--primary-ink);
   text-decoration: none;
+  list-style: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   background: linear-gradient(
     90deg,
     rgba(var(--primary-color-rgb), 0.06) 0%,
     rgba(var(--accent-violet-rgb), 0.04) 100%
   );
-  border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  border-bottom: 1px solid transparent;
+}
+
+.mobile-menu__feature[open] > .mobile-menu__feature-title {
+  border-bottom-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.mobile-menu__feature-title::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-menu__feature-title::marker {
+  content: '';
 }
 
 .mobile-menu__feature-title.is-active {
@@ -284,8 +308,13 @@ body.nav-mobile-open .nav-dropdown {
   height: 0.45rem;
   border-right: 2px solid var(--primary-color);
   border-bottom: 2px solid var(--primary-color);
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
   opacity: 0.7;
+  transition: transform 0.15s ease;
+}
+
+.mobile-menu__feature[open] > .mobile-menu__feature-title .mobile-menu__feature-chevron {
+  transform: rotate(225deg);
 }
 
 .mobile-menu__feature-body {
@@ -544,7 +573,8 @@ body.nav-mobile-open .nav-dropdown {
   }
 
   /* Full panel under header — fixed so the dimmer cannot steal link taps */
-  .mobile-menu.active {
+  .mobile-menu.active,
+  body > .mobile-menu.active {
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -552,8 +582,8 @@ body.nav-mobile-open .nav-dropdown {
     left: 0;
     right: 0;
     width: 100%;
-    min-height: min(18rem, 52vh);
-    max-height: min(92dvh, calc(100dvh - var(--site-header-clearance, 4.5rem)));
+    height: auto;
+    max-height: min(92dvh, calc(100dvh - var(--site-header-clearance, 4.5rem) - env(safe-area-inset-bottom, 0px)));
     overflow: hidden;
     z-index: 1006;
     touch-action: manipulation;
@@ -563,14 +593,21 @@ body.nav-mobile-open .nav-dropdown {
       inset 0 1px 0 rgba(255, 255, 255, 0.9);
   }
 
-  .mobile-menu.active .mobile-menu__inner {
+  .mobile-menu.active .mobile-menu__inner,
+  body > .mobile-menu.active .mobile-menu__inner {
     flex: 1 1 auto;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y manipulation;
     pointer-events: auto;
+  }
+
+  .mobile-menu.active .mobile-menu__inner > *,
+  body > .mobile-menu.active .mobile-menu__inner > * {
+    flex-shrink: 0;
   }
 
   .mobile-menu.active a {

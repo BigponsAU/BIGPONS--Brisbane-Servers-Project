@@ -1,7 +1,7 @@
 // Simplified main script — navigation, search, forms, progressive disclosure.
 // Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
-import { bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
+import { bindMobileMenuAccordions, bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
 import { resolveInquiryScrollTarget } from '../lib/inquiry-nav';
 import { resolveContentPath } from '../lib/site-path';
 import { bootMarketingScrollLayers } from './marketing-scroll-layers';
@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ensure closed on load (stale SSR/hydration or cached body class).
         closeMobileNav();
         bindNavMobileDimmer();
+        bindMobileMenuAccordions();
 
         const desktopNavMq = window.matchMedia('(min-width: 1024px)');
         const onViewportNavMode = (): void => {

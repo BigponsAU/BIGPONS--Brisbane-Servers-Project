@@ -152,7 +152,15 @@ header .mobile-menu__strip-link:hover,
 header .mobile-menu__strip-link:focus-visible,
 header .mobile-menu__strip-link.is-active,
 header .mobile-menu__feature-title:hover,
-header .mobile-menu__feature-title:focus-visible {
+header .mobile-menu__feature-title:focus-visible,
+body > .mobile-menu .mobile-menu__block-link:hover,
+body > .mobile-menu .mobile-menu__block-link:focus-visible,
+body > .mobile-menu .mobile-menu__block-link.is-active,
+body > .mobile-menu .mobile-menu__strip-link:hover,
+body > .mobile-menu .mobile-menu__strip-link:focus-visible,
+body > .mobile-menu .mobile-menu__strip-link.is-active,
+body > .mobile-menu .mobile-menu__feature-title:hover,
+body > .mobile-menu .mobile-menu__feature-title:focus-visible {
   background-image: none !important;
   background-color: rgba(var(--primary-color-rgb), 0.1) !important;
   color: var(--primary-dark) !important;

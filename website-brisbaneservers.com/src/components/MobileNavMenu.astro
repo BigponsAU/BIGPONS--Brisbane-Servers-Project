@@ -40,15 +40,11 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
     featureItems.map((item) => {
       const active = navDropdownToggleIsActive(item, currentPath);
       return (
-        <section class:list={['mobile-menu__feature', active && 'mobile-menu__feature--active']}>
-          <a
-            href={sitePath(item.href)}
-            class:list={['mobile-menu__feature-title', active && 'is-active']}
-            role="menuitem"
-          >
+        <details class:list={['mobile-menu__feature', active && 'mobile-menu__feature--active']} open={active || undefined}>
+          <summary class:list={['mobile-menu__feature-title', active && 'is-active']}>
             <span>{item.label}</span>
             <span class="mobile-menu__feature-chevron" aria-hidden="true" />
-          </a>
+          </summary>
           <div class="mobile-menu__feature-body">
             {item.groups
               ? item.groups.map((group) => (
@@ -87,7 +83,7 @@ const featureItems = navItems.filter((item) => item.groups?.length || item.child
                   </div>
                 )}
           </div>
-        </section>
+        </details>
       );
     })
   }
