@@ -888,24 +888,55 @@
   .site-shell--marketing .account-workspace-shell .portal-sidebar,
 .site-shell--portal .portal-sidebar {
     position: fixed;
-    top: var(--site-main-offset-top);
+    top: 0;
     left: 0;
     bottom: 0;
-    width: min(100%, var(--portal-sidebar-width));
+    /* Wide enough to read; do not inherit the narrow desktop clamp on phones. */
+    width: min(20.5rem, calc(100vw - 2.5rem));
+    max-width: calc(100vw - 2.5rem);
     max-height: none;
-    height: calc(100dvh - var(--site-main-offset-top));
-    transform: translateX(-100%);
+    height: 100dvh;
+    height: 100svh;
+    padding-top: var(--safe-area-inset-top, 0px);
+    padding-bottom: var(--safe-area-inset-bottom, 0px);
+    transform: translateX(-105%);
     z-index: 120;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
   }
 
   .site-shell--marketing .account-workspace-shell .portal-sidebar.open,
 .site-shell--portal .portal-sidebar.open {
     transform: translateX(0);
+    overflow: hidden;
+    pointer-events: auto;
+  }
+
+  .site-shell--marketing .account-workspace-shell .portal-sidebar .sidebar-nav-viewport,
+.site-shell--portal .portal-sidebar .sidebar-nav-viewport {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-description,
+.site-shell--portal .sidebar-nav-item .nav-description {
+    display: none;
   }
 
   .site-shell--marketing .account-workspace-shell .portal-sidebar.open ~ .portal-main::before,
 .site-shell--portal .portal-sidebar.open ~ .portal-main::before {
-    top: var(--site-main-offset-top);
+    top: 0;
+    z-index: 110;
+  }
+
+  body.portal-mobile-nav-open {
+    overflow: hidden;
+    touch-action: none;
   }
 }
 
@@ -939,16 +970,34 @@ body[data-page-id='account'] {
   gap: var(--space-lg);
 }
 
-.account-workspace-shell .login-form input,
-.account-workspace-shell .login-form textarea,
-.account-workspace-shell .login-form select {
-  font-size: 1rem;
-}
-
 .account-workspace-shell .login-subtitle,
 .account-workspace-shell .login-note {
   font-size: var(--text-sm);
   line-height: 1.55;
+}
+
+.account-workspace-shell .login-note--signup-jump {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border);
+}
+
+.account-workspace-shell .login-note--signup-jump a {
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.account-workspace-shell #create-account-section {
+  scroll-margin-top: calc(var(--site-header-clearance) + var(--space-md));
+}
+
+.account-workspace-shell .login-form input,
+.account-workspace-shell .login-form textarea,
+.account-workspace-shell .login-form select,
+.account-workspace-shell .auth-help-form input {
+  font-size: 1rem; /* iOS: avoid focus zoom shrinking the layout */
+  min-height: 2.75rem;
 }
 
 .account-workspace-shell .auth-help-stack {
@@ -963,13 +1012,6 @@ body[data-page-id='account'] {
 .account-workspace-shell .account-workspace-panels,
 .account-workspace-shell .account-workspace-panels > .portal-panels {
   overflow: visible;
-}
-
-@media (max-width: 1023px) {
-  .site-shell--marketing .account-workspace-shell .portal-sidebar.open {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
 }
 
 /* Desktop: keep sidebar in grid flow (override legacy fixed positioning) */
@@ -1690,10 +1732,22 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   .account-workspace-shell .portal-header {
     flex-wrap: wrap;
     row-gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
   }
 
   .account-workspace-shell .header-left {
     flex: 0 0 auto;
+    gap: var(--space-sm);
+  }
+
+  .account-workspace-shell .header-title-mobile .workspace-toolbar-title {
+    font-size: var(--text-sm);
+    line-height: 1.2;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .account-workspace-shell .header-right {
@@ -1701,6 +1755,7 @@ body[data-page-id='account'] .site-shell--marketing > footer {
     width: auto;
     margin-left: auto;
     margin-top: 0;
+    gap: var(--space-xs);
   }
 
   .account-workspace-shell .header-center {
@@ -1720,6 +1775,8 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   .account-workspace-shell .header-search #global-search,
   .account-workspace-shell .workspace-global-search__input {
     padding-right: 2.55rem;
+    min-height: 2.75rem;
+    font-size: 1rem; /* iOS: avoid input zoom */
   }
 
   .account-workspace-shell .header-info-btn__label {
@@ -1727,12 +1784,26 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   }
 
   .account-workspace-shell .header-user-info {
-    max-width: 8rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: var(--text-xs);
-    color: var(--text-secondary);
+    display: none;
+  }
+
+  .account-workspace-shell .header-logout-btn {
+    padding-inline: 0.65rem;
+  }
+}
+
+/* Narrow phones: burger + actions on one row; search full-width below */
+@media (max-width: 430px) {
+  .account-workspace-shell .header-title-mobile {
+    display: none;
+  }
+
+  .account-workspace-shell .portal-header {
+    padding: var(--space-sm);
+  }
+
+  .account-workspace-shell .header-workspace-mode-switcher {
+    display: none;
   }
 }
 
@@ -1851,13 +1922,16 @@ body[data-page-id='account'].account-workspace-dashboard-active .portal-layout {
   padding-bottom: var(--space-xl);
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar,
 body[data-page-id='account'].account-workspace-dashboard-active .portal-header {
   top: var(--workspace-chrome-top);
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
-  max-height: calc(100dvh - var(--workspace-chrome-top) - var(--space-xs));
+/* Desktop sticky sidebar height only — mobile drawer uses full viewport (see max-width: 1023px). */
+@media (min-width: 1024px) {
+  body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
+    top: var(--workspace-chrome-top);
+    max-height: calc(100dvh - var(--workspace-chrome-top) - var(--space-xs));
+  }
 }
 
 body[data-page-id='account'].account-workspace-dashboard-active header[role="banner"] {
@@ -1886,8 +1960,50 @@ body[data-page-id='account'].account-workspace-dashboard-active header[role="ban
   display: none;
 }
 
-body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
-  z-index: 30;
+/* Desktop sticky sidebar only — must not override the mobile drawer (z-index 120). */
+@media (min-width: 1024px) {
+  body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
+    z-index: 30;
+  }
+}
+
+/* Phones: one burger (workspace), not the marketing header + buried drawer. */
+@media (max-width: 1023px) {
+  body[data-page-id='account'].account-workspace-dashboard-active {
+    --workspace-chrome-top: var(--safe-area-inset-top, 0px);
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active header[role='banner'] {
+    display: none;
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar {
+    top: 0;
+    bottom: 0;
+    height: 100dvh;
+    height: 100svh;
+    max-height: none;
+    z-index: 120;
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar.open ~ .portal-main::before {
+    top: 0;
+    z-index: 110;
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active .mobile-menu-toggle {
+    display: flex;
+    position: relative;
+    z-index: 130;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active .mobile-menu-toggle svg,
+  body[data-page-id='account'].account-workspace-dashboard-active .mobile-menu-toggle svg * {
+    pointer-events: none;
+  }
 }
 
 /* Signed-in workspace: keep focus on the dashboard, not the marketing footer below. */

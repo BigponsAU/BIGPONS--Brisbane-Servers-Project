@@ -25,7 +25,8 @@ function initializeNavDismissOnScrollAndNavigation(): void {
             scrollTick = true;
             requestAnimationFrame(() => {
                 scrollTick = false;
-                dismissOpenNav();
+                // Keep the phone burger open — iOS rubber-band / URL-bar scroll would slam it shut.
+                closeDesktopNavDropdowns();
             });
         },
         { passive: true },

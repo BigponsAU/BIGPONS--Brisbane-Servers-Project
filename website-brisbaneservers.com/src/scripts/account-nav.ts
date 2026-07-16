@@ -63,9 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener(
     'scroll',
     () => {
-      closeMobileNav();
+      // Do not close the phone burger on scroll — iOS chrome/rubber-band fires spurious scrolls.
       closeDesktopNavDropdowns();
     },
     { passive: true },
   );
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
+      setMobileNavOpen(false);
+      menuButton.focus();
+    }
+  });
 });

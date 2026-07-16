@@ -130,17 +130,36 @@ export function bootAccountWorkspaceDashboard(): void {
     }
   }
 
-  function syncWorkspaceSidebarLayout(): void {
+  let workspaceSidebarViewportMode: 'desktop' | 'mobile' | null = null;
+
+  function setMobileSidebarOpen(open: boolean): void {
+    const sidebar = document.getElementById('portal-sidebar');
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (!sidebar) return;
+    sidebar.classList.toggle('open', open);
+    // Keep closed drawer from intercepting taps on the page/header.
+    sidebar.style.pointerEvents = open || window.innerWidth >= 1024 ? '' : 'none';
+    document.body.classList.toggle('portal-mobile-nav-open', open && window.innerWidth <= 1023);
+    const expanded = open ? 'true' : 'false';
+    mobileToggle?.setAttribute('aria-expanded', expanded);
+    sidebarToggle?.setAttribute('aria-expanded', expanded);
+  }
+
+  function syncWorkspaceSidebarLayout(force = false): void {
     const sidebar = document.getElementById('portal-sidebar');
     if (!sidebar) return;
     sidebar.style.removeProperty('transform');
     sidebar.style.removeProperty('display');
     sidebar.style.removeProperty('position');
-    if (window.innerWidth >= 1024) {
-      sidebar.classList.add('open');
-    } else {
-      sidebar.classList.remove('open');
+    const nextMode = window.innerWidth >= 1024 ? 'desktop' : 'mobile';
+    // iOS URL-bar show/hide fires resize — only reset open state when crossing breakpoints.
+    if (!force && workspaceSidebarViewportMode === nextMode) {
+      if (nextMode === 'desktop') setMobileSidebarOpen(true);
+      return;
     }
+    workspaceSidebarViewportMode = nextMode;
+    setMobileSidebarOpen(nextMode === 'desktop');
   }
 
   let extensionsBooted = false;
@@ -218,6 +237,7 @@ export function bootAccountWorkspaceDashboard(): void {
       dashboardEl.style.display = 'block';
     }
     document.body.classList.add('account-workspace-dashboard-active');
+    closeMobileNav();
 
     const greeting = document.getElementById('workspace-greeting');
     if (greeting) {
@@ -480,6 +500,7 @@ export function bootAccountWorkspaceDashboard(): void {
 
     if (targetPanel?.classList.contains('active')) {
       refreshPanelData(panelName);
+      if (window.innerWidth <= 1023) setMobileSidebarOpen(false);
       return;
     }
 
@@ -540,16 +561,15 @@ export function bootAccountWorkspaceDashboard(): void {
       navItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Close mobile sidebar if open
-    const sidebar = document.getElementById('portal-sidebar');
-    if (sidebar && window.innerWidth <= 1023) {
-      sidebar.classList.remove('open');
-    }
-
-    // Ensure sidebar is visible on desktop
-    if (sidebar && window.innerWidth >= 1024) {
-      sidebar.style.transform = 'translateX(0)';
-      sidebar.style.display = 'flex';
+    // Close mobile drawer after navigation; keep desktop sidebar visible.
+    if (window.innerWidth <= 1023) {
+      setMobileSidebarOpen(false);
+    } else {
+      const sidebar = document.getElementById('portal-sidebar');
+      if (sidebar) {
+        sidebar.style.transform = 'translateX(0)';
+        sidebar.style.display = 'flex';
+      }
     }
 
     refreshPanelData(panelName);
@@ -572,37 +592,55 @@ export function bootAccountWorkspaceDashboard(): void {
     if (panel) navigateToPanel(panel);
   });
 
-  // Sidebar toggle
-  document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
-    const sidebar = document.getElementById('portal-sidebar');
-    if (sidebar) {
-      sidebar.classList.toggle('open');
-    }
-  });
+  // Sidebar / mobile menu toggle — direct bind + capture delegation for iOS reliability.
+  const isSidebarToggleTarget = (target: EventTarget | null): boolean => {
+    const el = target as Element | null;
+    if (!el || typeof (el as Element).closest !== 'function') return false;
+    return Boolean((el as Element).closest('#mobile-menu-toggle, #sidebar-toggle, .mobile-menu-toggle, .sidebar-toggle'));
+  };
 
-  // Mobile menu toggle
-  document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
-    const sidebar = document.getElementById('portal-sidebar');
-    if (sidebar) {
-      sidebar.classList.toggle('open');
-    }
-  });
+  let lastSidebarToggleAt = 0;
 
-  // Close sidebar when clicking overlay (mobile)
+  const toggleMobileSidebar = (event?: Event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    // Guard: iOS can fire pointerup + click for one tap.
+    const now = Date.now();
+    if (now - lastSidebarToggleAt < 450) return;
+    lastSidebarToggleAt = now;
+    const sidebar = document.getElementById('portal-sidebar');
+    if (!sidebar) return;
+    setMobileSidebarOpen(!sidebar.classList.contains('open'));
+  };
+
+  const bindSidebarToggle = (el: Element | null) => {
+    if (!el || (el as HTMLElement).dataset.sidebarToggleBound === '1') return;
+    (el as HTMLElement).dataset.sidebarToggleBound = '1';
+    el.addEventListener('click', toggleMobileSidebar);
+  };
+
+  bindSidebarToggle(document.getElementById('mobile-menu-toggle'));
+  bindSidebarToggle(document.getElementById('sidebar-toggle'));
+
+  document.addEventListener(
+    'click',
+    (e) => {
+      if (!isSidebarToggleTarget(e.target)) return;
+      const btn = (e.target as Element).closest('#mobile-menu-toggle, #sidebar-toggle');
+      if (btn && (btn as HTMLElement).dataset.sidebarToggleBound === '1') return;
+      toggleMobileSidebar(e);
+    },
+    true,
+  );
+
+  // Close sidebar when clicking overlay / outside (mobile)
   document.addEventListener('click', (e) => {
     const sidebar = document.getElementById('portal-sidebar');
-    const mobileToggle = document.getElementById('mobile-menu-toggle');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    
-    if (sidebar && sidebar.classList.contains('open') && window.innerWidth <= 1023) {
-      const target = e.target as HTMLElement;
-      if (!sidebar.contains(target) && 
-          target !== mobileToggle && 
-          !mobileToggle?.contains(target) &&
-          target !== sidebarToggle &&
-          !sidebarToggle?.contains(target)) {
-        sidebar.classList.remove('open');
-      }
+    if (!sidebar?.classList.contains('open') || window.innerWidth > 1023) return;
+    if (isSidebarToggleTarget(e.target)) return;
+    const target = e.target as Node | null;
+    if (target && !sidebar.contains(target)) {
+      setMobileSidebarOpen(false);
     }
   });
 
@@ -1569,6 +1607,7 @@ export function bootAccountWorkspaceDashboard(): void {
   function resetStuckOverlays(): void {
     document.body.style.overflow = '';
     document.body.style.pointerEvents = '';
+    document.body.classList.remove('portal-mobile-nav-open');
 
     document.querySelectorAll('.modal').forEach((modal: Element) => {
       const htmlModal = modal as HTMLElement;
