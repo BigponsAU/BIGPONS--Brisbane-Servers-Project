@@ -1,8 +1,9 @@
 /** Minimal header nav for /account — avoids loading full main.ts on sign-in. */
-import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
+import { bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
 
 document.addEventListener('DOMContentLoaded', () => {
   closeMobileNav();
+  bindNavMobileDimmer();
 
   document.addEventListener(
     'click',
@@ -24,20 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuPanel = document.querySelector('.mobile-menu') as HTMLElement | null;
   if (!menuButton || !menuPanel) return;
 
-  function setMobileNavOpen(open: boolean): void {
-    if (!menuButton || !menuPanel) return;
-    if (!open) {
-      closeMobileNav();
-      return;
-    }
-    menuButton.classList.add('active');
-    menuPanel.classList.add('active');
-    menuButton.setAttribute('aria-expanded', 'true');
-    menuPanel.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('nav-mobile-open');
-    closeDesktopNavDropdowns();
-  }
-
   menuButton.addEventListener('click', (e) => {
     e.stopPropagation();
     const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
@@ -47,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (menuButton.getAttribute('aria-expanded') !== 'true') return;
     const target = e.target as HTMLElement;
+    if (target.closest?.('#nav-mobile-dimmer')) return;
     if (!menuButton.contains(target) && !menuPanel.contains(target)) {
       setMobileNavOpen(false);
     }

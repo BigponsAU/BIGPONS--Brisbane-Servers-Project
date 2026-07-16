@@ -931,7 +931,10 @@
   .site-shell--marketing .account-workspace-shell .portal-sidebar.open ~ .portal-main::before,
 .site-shell--portal .portal-sidebar.open ~ .portal-main::before {
     top: 0;
+    left: min(18rem, 86vw);
     z-index: 110;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   body.portal-mobile-nav-open {

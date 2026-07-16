@@ -1,7 +1,7 @@
 // Simplified main script — navigation, search, forms, progressive disclosure.
 // Layout breakpoints: CSS media queries only (browser full-page zoom; no JS tier / zoom modeling).
 
-import { closeDesktopNavDropdowns, closeMobileNav } from './nav-mobile';
+import { bindNavMobileDimmer, closeDesktopNavDropdowns, closeMobileNav, setMobileNavOpen } from './nav-mobile';
 import { resolveInquiryScrollTarget } from '../lib/inquiry-nav';
 import { resolveContentPath } from '../lib/site-path';
 import { bootMarketingScrollLayers } from './marketing-scroll-layers';
@@ -63,26 +63,20 @@ document.addEventListener('DOMContentLoaded', function() {
             closeDesktopNavDropdowns();
         }
 
-        function setMobileNavOpen(open: boolean) {
-            if (!open) {
-                closeMobileNav();
-                return;
-            }
-            menuButton.classList.add('active');
-            menuPanel.classList.add('active');
-            menuButton.setAttribute('aria-expanded', 'true');
-            menuPanel.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('nav-mobile-open');
+        function setOpen(open: boolean) {
+            setMobileNavOpen(open);
+            if (!open) return;
             closeAllDesktopDropdowns();
         }
 
         // Ensure closed on load (stale SSR/hydration or cached body class).
         closeMobileNav();
+        bindNavMobileDimmer();
 
         const desktopNavMq = window.matchMedia('(min-width: 1024px)');
         const onViewportNavMode = (): void => {
             if (desktopNavMq.matches && menuButton.getAttribute('aria-expanded') === 'true') {
-                setMobileNavOpen(false);
+                setOpen(false);
             }
         };
         desktopNavMq.addEventListener('change', onViewportNavMode);
@@ -92,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
             const next = !isExpanded;
-            setMobileNavOpen(next);
+            setOpen(next);
             if (next) {
                 const firstLink = menuPanel.querySelector('a') as HTMLElement;
                 firstLink?.focus();
@@ -105,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 menuButton.click();
             }
             if (e.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') {
-                setMobileNavOpen(false);
+                setOpen(false);
                 menuButton.focus();
             }
         });
@@ -113,8 +107,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('click', function (e: MouseEvent) {
             if (menuButton.getAttribute('aria-expanded') !== 'true') return;
             const target = e.target as HTMLElement;
+            if (target.closest?.('#nav-mobile-dimmer')) return;
             if (!menuButton.contains(target) && !menuPanel.contains(target)) {
-                setMobileNavOpen(false);
+                setOpen(false);
             }
         });
 
@@ -123,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!link) return;
             const href = link.getAttribute('href') ?? '';
             if (href.startsWith('#')) return;
-            setMobileNavOpen(false);
+            setOpen(false);
         });
 
     }

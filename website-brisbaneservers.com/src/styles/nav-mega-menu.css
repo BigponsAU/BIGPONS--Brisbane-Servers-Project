@@ -585,24 +585,45 @@ body.nav-mobile-open .nav-dropdown {
     /* Do not use touch-action: none — it blocks link taps on iOS. */
   }
 
-  /* Visual dimmer only — pointer-events must stay none or iOS/Android taps never reach menu links. */
-  body.nav-mobile-open::before {
-    content: '';
+  /*
+    Real DOM dimmer (not body::before). Pseudo dimmers competed with header
+    isolation / shell stacking and stole or ghosted taps on phones.
+    Menu is reparented to document.body while open (see nav-mobile.ts).
+  */
+  .site-shell > .nav-mobile-dimmer {
+    display: none;
     position: fixed;
-    inset: 0;
-    z-index: 1000;
+    top: var(--site-header-clearance, 4.5rem);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1005;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    appearance: none;
+    -webkit-appearance: none;
     background: rgba(8, 27, 54, 0.42);
-    pointer-events: none;
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  body.nav-mobile-open .site-shell > .nav-mobile-dimmer.is-visible {
+    display: block;
   }
 
   body.nav-mobile-open header[role='banner'] {
+    isolation: auto !important;
     z-index: 1010 !important;
     overflow: visible;
     pointer-events: auto;
   }
 
   body.nav-mobile-open .mobile-menu,
-  body.nav-mobile-open .mobile-menu.active {
+  body.nav-mobile-open .mobile-menu.active,
+  body > .mobile-menu.active {
     z-index: 1011 !important;
     pointer-events: auto !important;
   }

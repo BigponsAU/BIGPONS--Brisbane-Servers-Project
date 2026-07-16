@@ -47,4 +47,13 @@ const mainClassName = [
     <slot />
   </main>
   {showFooter && <Footer />}
+  {/* Last in shell so it paints above main; real button (not ::before) so taps close menu. */}
+  <button
+    type="button"
+    id="nav-mobile-dimmer"
+    class="nav-mobile-dimmer"
+    aria-label="Close menu"
+    aria-hidden="true"
+    hidden
+  ></button>
 </div>

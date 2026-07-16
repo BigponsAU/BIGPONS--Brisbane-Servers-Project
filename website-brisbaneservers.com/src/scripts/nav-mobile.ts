@@ -19,23 +19,82 @@ export function closeDesktopNavDropdowns(exceptParent?: HTMLElement | null): voi
   });
 }
 
-export function closeMobileNav(): void {
+let mobileMenuHome: Element | null = null;
+
+function syncNavMobileDimmer(open: boolean): void {
+  const dimmer = document.getElementById('nav-mobile-dimmer') as HTMLButtonElement | null;
+  if (!dimmer) return;
+  dimmer.hidden = !open;
+  dimmer.setAttribute('aria-hidden', open ? 'false' : 'true');
+  dimmer.classList.toggle('is-visible', open);
+}
+
+/** Ensure the panel escapes header/shell stacking contexts on phones. */
+function syncMobileMenuMount(menuPanel: HTMLElement, open: boolean): void {
+  if (open) {
+    if (menuPanel.parentElement !== document.body) {
+      mobileMenuHome = menuPanel.parentElement;
+      document.body.appendChild(menuPanel);
+    }
+    return;
+  }
+  if (menuPanel.parentElement === document.body && mobileMenuHome?.isConnected) {
+    mobileMenuHome.appendChild(menuPanel);
+    mobileMenuHome = null;
+    return;
+  }
+  if (menuPanel.parentElement === document.body) {
+    const nav = document.querySelector('header[role="banner"] nav');
+    (nav || document.querySelector('header[role="banner"]'))?.appendChild(menuPanel);
+  }
+}
+
+export function setMobileNavOpen(open: boolean): void {
   if (typeof document === 'undefined') return;
 
   const menuButton = document.querySelector('.hamburger') as HTMLButtonElement | null;
   const menuPanel = document.querySelector('.mobile-menu') as HTMLElement | null;
   if (!menuButton || !menuPanel) return;
 
-  menuButton.classList.remove('active');
-  menuPanel.classList.remove('active');
-  menuButton.setAttribute('aria-expanded', 'false');
-  menuPanel.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('nav-mobile-open');
-  document.body.style.overflow = '';
-  document.body.style.touchAction = '';
+  if (!open) {
+    menuButton.classList.remove('active');
+    menuPanel.classList.remove('active');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuPanel.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('nav-mobile-open');
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    syncNavMobileDimmer(false);
+    syncMobileMenuMount(menuPanel, false);
+    return;
+  }
+
+  menuButton.classList.add('active');
+  menuPanel.classList.add('active');
+  menuButton.setAttribute('aria-expanded', 'true');
+  menuPanel.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('nav-mobile-open');
+  syncMobileMenuMount(menuPanel, true);
+  syncNavMobileDimmer(true);
+  closeDesktopNavDropdowns();
+}
+
+export function closeMobileNav(): void {
+  setMobileNavOpen(false);
 }
 
 export function isMobileNavOpen(): boolean {
   const menuButton = document.querySelector('.hamburger') as HTMLButtonElement | null;
   return menuButton?.getAttribute('aria-expanded') === 'true';
+}
+
+export function bindNavMobileDimmer(): void {
+  const dimmer = document.getElementById('nav-mobile-dimmer');
+  if (!dimmer || (dimmer as HTMLElement).dataset.bound === '1') return;
+  (dimmer as HTMLElement).dataset.bound = '1';
+  dimmer.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeMobileNav();
+  });
 }

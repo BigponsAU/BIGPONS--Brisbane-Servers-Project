@@ -7536,17 +7536,20 @@
       display: block;
     }
 
-    /* Sidebar overlay when open on mobile */
+    /* Sidebar overlay when open on mobile — start after drawer so taps hit nav */
     .portal-sidebar.open ~ .portal-main::before {
       content: '';
       position: fixed;
       top: 0;
-      left: 0;
+      left: min(18rem, 86vw);
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.5);
       z-index: 99;
-      backdrop-filter: blur(4px);
+      pointer-events: auto;
+      /* Avoid backdrop-filter on iOS — it can create a tap-stealing layer. */
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     .dashboard-stats-grid {
