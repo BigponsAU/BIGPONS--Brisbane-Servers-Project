@@ -394,6 +394,21 @@ body.nav-mobile-open .nav-dropdown {
   gap: var(--space-sm);
 }
 
+.mobile-menu__cache-reset {
+  margin: var(--space-sm) 0 0;
+  padding: 0 var(--space-xs);
+  text-align: center;
+}
+
+.mobile-menu__cache-reset a {
+  display: inline-block;
+  padding: 0.55rem var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 @media (max-width: 380px) {
   .mobile-menu__footer--dual {
     grid-template-columns: 1fr;
@@ -528,18 +543,21 @@ body.nav-mobile-open .nav-dropdown {
     z-index: 1004;
   }
 
-  /* Full panel under header — not a single strip (avoid fixed + wrong top offset) */
+  /* Full panel under header — fixed so the dimmer cannot steal link taps */
   .mobile-menu.active {
     display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: var(--site-header-clearance, 4.5rem);
     left: 0;
     right: 0;
     width: 100%;
     min-height: min(18rem, 52vh);
     max-height: min(92dvh, calc(100dvh - var(--site-header-clearance, 4.5rem)));
     overflow: hidden;
+    z-index: 1006;
+    touch-action: manipulation;
+    pointer-events: auto;
     box-shadow:
       0 16px 48px rgba(8, 27, 54, 0.16),
       inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -551,28 +569,46 @@ body.nav-mobile-open .nav-dropdown {
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y manipulation;
+    pointer-events: auto;
+  }
+
+  .mobile-menu.active a {
+    touch-action: manipulation;
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
   }
 
   body.nav-mobile-open {
     overflow: hidden;
-    touch-action: none;
+    /* Do not use touch-action: none — it blocks link taps on iOS. */
   }
 
+  /* Visual dimmer only — pointer-events must stay none or iOS/Android taps never reach menu links. */
   body.nav-mobile-open::before {
     content: '';
     position: fixed;
     inset: 0;
-    z-index: 999;
+    z-index: 1000;
     background: rgba(8, 27, 54, 0.42);
-    pointer-events: auto;
+    pointer-events: none;
   }
 
   body.nav-mobile-open header[role='banner'] {
-    z-index: 1005;
+    z-index: 1010 !important;
     overflow: visible;
+    pointer-events: auto;
   }
 
-  body.nav-mobile-open .mobile-menu {
-    z-index: 1006;
+  body.nav-mobile-open .mobile-menu,
+  body.nav-mobile-open .mobile-menu.active {
+    z-index: 1011 !important;
+    pointer-events: auto !important;
+  }
+
+  body.nav-mobile-open .hamburger {
+    z-index: 1012 !important;
+    pointer-events: auto !important;
   }
 }

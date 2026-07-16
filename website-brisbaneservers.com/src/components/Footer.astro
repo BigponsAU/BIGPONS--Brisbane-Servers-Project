@@ -144,6 +144,14 @@ import SemanticText from './SemanticText.astro';
           <div class="footer-legal">
             <a href={sitePath('/privacy-policy')} class="footer-legal-link">Privacy Policy</a>
             <a href={sitePath('/terms-of-service')} class="footer-legal-link">Terms of Service</a>
+            <a
+              href="?refresh=1"
+              class="footer-legal-link"
+              data-site-cache-refresh
+              title="Clear cached site files and reload the latest version"
+            >
+              Refresh site
+            </a>
           </div>
         </div>
       </div>

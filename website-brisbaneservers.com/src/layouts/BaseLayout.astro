@@ -85,10 +85,15 @@ const jsonLd = mergeJsonLdGraph(
 
 /** Account workspace uses inline SVG/icons — skip Font Awesome CDN (~70KB). */
 const skipFontAwesome = pageId === 'account';
+/** Cloudflare Pages sets CF_PAGES_COMMIT_SHA at build; fall back for local/dev. */
+const siteBuildStamp =
+  (import.meta.env.CF_PAGES_COMMIT_SHA as string | undefined)?.slice(0, 12) ||
+  (import.meta.env.PUBLIC_BUILD_ID as string | undefined) ||
+  'local-dev';
 ---
 
 <!doctype html>
-<html lang="en-AU">
+<html lang="en-AU" data-build={siteBuildStamp}>
   <head>
     <meta charset="UTF-8" />
     {immediateRedirectUrl && (
@@ -131,6 +136,73 @@ const skipFontAwesome = pageId === 'account';
     {pageId === 'account' && (
       <script src="/account-inline-boot.js" data-cfasync="false" />
     )}
+    {/* Build-aware cache reset — runs before modules so phones leave stale shells. */}
+    <script is:inline data-cfasync="false" define:vars={{ siteBuildStamp }}>
+      (function () {
+        'use strict';
+        var BUILD = String(siteBuildStamp || 'dev');
+        var KEY = 'bs.siteBuild';
+        var GUARD = 'bs.cacheReloadOnce';
+        var params = new URLSearchParams(location.search);
+        var force = params.has('refresh') || params.get('cache') === 'reset';
+        var prev = null;
+        try {
+          prev = localStorage.getItem(KEY);
+        } catch (e) {}
+        function clearCaches(done) {
+          var finish = function () {
+            try {
+              localStorage.setItem(KEY, BUILD);
+              sessionStorage.setItem(GUARD, '1');
+            } catch (e) {}
+            var u = new URL(location.href);
+            u.searchParams.delete('refresh');
+            u.searchParams.delete('cache');
+            u.searchParams.set('_v', BUILD.slice(0, 12));
+            location.replace(u.toString());
+          };
+          if (!(window.caches && caches.keys)) {
+            finish();
+            return;
+          }
+          caches
+            .keys()
+            .then(function (keys) {
+              return Promise.all(
+                keys.map(function (k) {
+                  return caches.delete(k);
+                }),
+              );
+            })
+            .then(finish, finish);
+        }
+        window.__bsRefreshSite = function () {
+          try {
+            localStorage.removeItem(KEY);
+          } catch (e) {}
+          var u = new URL(location.href);
+          u.searchParams.set('refresh', '1');
+          location.assign(u.toString());
+        };
+        if (force || (prev && prev !== BUILD)) {
+          // Avoid infinite reload loops if storage is blocked.
+          var looping = false;
+          try {
+            looping = sessionStorage.getItem(GUARD) === BUILD;
+          } catch (e) {}
+          if (!looping) {
+            try {
+              sessionStorage.setItem(GUARD, BUILD);
+            } catch (e) {}
+            clearCaches();
+            return;
+          }
+        }
+        try {
+          if (!prev) localStorage.setItem(KEY, BUILD);
+        } catch (e) {}
+      })();
+    </script>
     {/* Immediate cleanup script - runs before any cached scripts */}
     <script is:inline data-cfasync="false">
       // Force cleanup immediately - Chrome cache workaround
@@ -227,10 +299,15 @@ const skipFontAwesome = pageId === 'account';
     data-value-profile={valueProfile ?? descriptor.valueProfile}
     data-page-density={density ?? descriptor.density}
     data-site-base={import.meta.env.BASE_URL}
+    data-build={siteBuildStamp}
   >
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <slot />
     <CookieConsent />
+    <script>
+      import { installSiteCacheRefreshApi } from '../scripts/site-cache-refresh';
+      installSiteCacheRefreshApi();
+    </script>
   </body>
 </html>

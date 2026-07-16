@@ -936,7 +936,13 @@
 
   body.portal-mobile-nav-open {
     overflow: hidden;
-    touch-action: none;
+  }
+
+  body.portal-mobile-nav-open .portal-sidebar.open,
+  body.portal-mobile-nav-open .portal-sidebar.open a,
+  body.portal-mobile-nav-open .mobile-menu-toggle {
+    touch-action: manipulation;
+    pointer-events: auto;
   }
 }
 

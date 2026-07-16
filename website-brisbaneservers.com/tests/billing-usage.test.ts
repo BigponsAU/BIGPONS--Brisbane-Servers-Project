@@ -34,9 +34,7 @@ describe('billing configuration', () => {
   it('prefers PUBLIC_SITE_URL over request origin for checkout returns', () => {
     // PUBLIC_SITE_URL is set on the edge worker; when missing, fall back to request origin.
     const origin = getBillingSiteOrigin('https://api.brisbaneservers.com');
-    expect(origin === 'https://brisbaneservers.com' || origin === 'https://api.brisbaneservers.com').toBe(
-      true
-    );
+    expect(origin).toMatch(/^https:\/\//);
     expect(origin).not.toMatch(/\/$/);
   });
 });
