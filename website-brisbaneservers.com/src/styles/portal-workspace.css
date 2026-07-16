@@ -7541,7 +7541,7 @@
       content: '';
       position: fixed;
       top: 0;
-      left: min(18rem, 86vw);
+      left: var(--portal-drawer-width, min(20.5rem, calc(100vw - 2.5rem)));
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.5);
@@ -7550,6 +7550,13 @@
       /* Avoid backdrop-filter on iOS — it can create a tap-stealing layer. */
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+    }
+
+    /* Account workspace owns its own phone header chrome — don't force full-width actions. */
+    .account-workspace-shell .header-right {
+      width: auto;
+      margin-top: 0;
+      justify-content: flex-end;
     }
 
     .dashboard-stats-grid {

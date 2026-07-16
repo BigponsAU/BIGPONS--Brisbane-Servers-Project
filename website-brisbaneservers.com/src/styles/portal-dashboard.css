@@ -892,7 +892,7 @@
     left: 0;
     bottom: 0;
     /* Wide enough to read; do not inherit the narrow desktop clamp on phones. */
-    width: min(20.5rem, calc(100vw - 2.5rem));
+    width: var(--portal-drawer-width, min(20.5rem, calc(100vw - 2.5rem)));
     max-width: calc(100vw - 2.5rem);
     max-height: none;
     height: 100dvh;
@@ -931,7 +931,8 @@
   .site-shell--marketing .account-workspace-shell .portal-sidebar.open ~ .portal-main::before,
 .site-shell--portal .portal-sidebar.open ~ .portal-main::before {
     top: 0;
-    left: min(18rem, 86vw);
+    /* Match drawer width exactly — mismatched left left a tap/ghost strip. */
+    left: var(--portal-drawer-width, min(20.5rem, calc(100vw - 2.5rem)));
     z-index: 110;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -939,6 +940,12 @@
 
   body.portal-mobile-nav-open {
     overflow: hidden;
+  }
+
+  /* Keep sticky header + burger above the scrim (header creates its own stacking context). */
+  body.portal-mobile-nav-open .account-workspace-shell .portal-header,
+  body.portal-mobile-nav-open.account-workspace-dashboard-active .portal-header {
+    z-index: 125;
   }
 
   body.portal-mobile-nav-open .portal-sidebar.open,
@@ -954,6 +961,7 @@ body[data-page-id='account'] {
   --page-density-multiplier: 1;
   --page-measure-max: min(44rem, 100%);
   --portal-sidebar-width: clamp(13.5rem, 14vw, 16.5rem);
+  --portal-drawer-width: min(20.5rem, calc(100vw - 2.5rem));
 }
 
 .main-phi-chassis.account-workspace-shell {
@@ -1740,30 +1748,47 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 
   .account-workspace-shell .portal-header {
     flex-wrap: wrap;
+    align-items: center;
     row-gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     gap: var(--space-sm);
   }
 
   .account-workspace-shell .header-left {
-    flex: 0 0 auto;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
     gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .account-workspace-shell .header-title-mobile {
+    display: block;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .account-workspace-shell .header-title-mobile .workspace-toolbar-title {
+    margin: 0;
     font-size: var(--text-sm);
-    line-height: 1.2;
-    max-width: 9rem;
+    line-height: 1.25;
+    max-width: none;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: left;
   }
 
+  /* Beat legacy portal-workspace `header-right { width: 100% }` on phones. */
   .account-workspace-shell .header-right {
+    display: flex;
     flex: 0 0 auto;
-    width: auto;
+    width: auto !important;
+    max-width: 100%;
     margin-left: auto;
-    margin-top: 0;
+    margin-top: 0 !important;
+    justify-content: flex-end;
+    align-items: center;
     gap: var(--space-xs);
   }
 
@@ -1771,10 +1796,12 @@ body[data-page-id='account'] .site-shell--marketing > footer {
     flex: 1 1 100%;
     order: 3;
     justify-content: stretch;
+    min-width: 0;
   }
 
   .account-workspace-shell .header-global-search {
     max-width: none;
+    width: 100%;
   }
 
   .account-workspace-shell .header-global-search__kbd {
@@ -1799,20 +1826,91 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   .account-workspace-shell .header-logout-btn {
     padding-inline: 0.65rem;
   }
-}
 
-/* Narrow phones: burger + actions on one row; search full-width below */
-@media (max-width: 430px) {
-  .account-workspace-shell .header-title-mobile {
+  /* Overview / panel copy: left stack, no marketing flourish collision */
+  .account-workspace-shell .section-header--workspace {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .account-workspace-shell .section-header--workspace .section-intro,
+  .account-workspace-shell .section-header--workspace .section-intro--recurrent {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .account-workspace-shell .section-header--workspace .section-title,
+  .account-workspace-shell .section-header--workspace .section-intro__byline,
+  .account-workspace-shell .section-header--workspace .section-intro__eyebrow {
+    text-align: left;
+    max-width: 100%;
+  }
+
+  .account-workspace-shell .section-header--workspace .section-intro-flourish {
     display: none;
   }
 
+  .account-workspace-shell .section-header--workspace > .btn {
+    align-self: flex-start;
+  }
+
+  .account-workspace-shell .dashboard-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .account-workspace-shell .stat-card {
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    min-width: 0;
+  }
+
+  .account-workspace-shell .stat-content {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .account-workspace-shell .stat-content h3,
+  .account-workspace-shell .stat-description {
+    overflow-wrap: anywhere;
+  }
+
+  .account-workspace-shell .passkey-row,
+  .account-workspace-shell .client-token-perk {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .account-workspace-shell .resources-create-panel .section-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .account-workspace-shell .resources-create-panel .section-header h2 {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Narrow phones: tighter chrome; keep a short title for orientation */
+@media (max-width: 430px) {
   .account-workspace-shell .portal-header {
     padding: var(--space-sm);
   }
 
   .account-workspace-shell .header-workspace-mode-switcher {
     display: none;
+  }
+
+  .account-workspace-shell .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-workspace-shell .header-title-mobile .workspace-toolbar-title {
+    font-size: 0.8125rem;
   }
 }
 
@@ -1997,7 +2095,16 @@ body[data-page-id='account'].account-workspace-dashboard-active header[role="ban
 
   body[data-page-id='account'].account-workspace-dashboard-active .portal-sidebar.open ~ .portal-main::before {
     top: 0;
+    left: var(--portal-drawer-width, min(20.5rem, calc(100vw - 2.5rem)));
     z-index: 110;
+  }
+
+  body[data-page-id='account'].account-workspace-dashboard-active .portal-header {
+    z-index: 40;
+  }
+
+  body.portal-mobile-nav-open[data-page-id='account'].account-workspace-dashboard-active .portal-header {
+    z-index: 125;
   }
 
   body[data-page-id='account'].account-workspace-dashboard-active .mobile-menu-toggle {
