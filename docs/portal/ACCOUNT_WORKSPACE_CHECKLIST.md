@@ -18,7 +18,7 @@ Use this file to track **dashboard completion** across chat sessions. Items mark
 | Analytics → understand gaps | **Done** | Coverage matrix + contribution funnel (`/api/analytics/corpus`) + pipeline suggestions |
 | **Auto-generate materials** (resources, guides, case study copy) | **Done** | Growth queue + approve → `materializeGrowthProposal` |
 | **Voice profiles per area** | **Manual only** | Profiles panel — **not** created by library growth |
-| Voice-aligned generation | **Done** | Growth uses **default** or bundled profile only |
+| Voice-aligned generation | **Done** | Growth uses workspace **default** / consulting site voice only |
 | User approval before publish | **Done** | Moderation + growth proposal queue |
 | Scheduled / cycle growth | **Done (v1)** | Save settings → **Activate schedule** (physical) → cron/scheduler; **Run cycle now** always manual |
 | Case studies auto-created | **Partial** | `case_study` proposals + draft JSON + build merge; promote curated entries manually — Approve ≠ live flagship page |
@@ -88,4 +88,4 @@ Still optional if maintainability needs it:
 
 ---
 
-**Last updated:** 2026-05-24 (go-live artifacts)
+**Last updated:** 2026-07-28 (Ops redesign + unnecessary deferred items)

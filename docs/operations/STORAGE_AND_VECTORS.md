@@ -52,10 +52,10 @@ Code guards: `normalizeForJsonbStorage` on save, `coerceCorpusPayload` on load (
 | Index file | `semantic-index.json` |
 | Indexing | `src/lib/semantic/pipeline.ts` after resource create/update |
 | Search API | `POST /api/semantic/search` |
-| Admin UI | Account → Vectors summary, Reindex resource |
+| Admin UI | Account → **Ops → Search corpus** (identity / chunk stats). Reindex is an API/ops action after bulk import — not a separate Ops “Vectors” card |
 | Embeddings | `EMBEDDING_PROVIDER=openai` + `OPENAI_API_KEY`, or **hash** fallback (dev-quality) |
 
-Vectors are **not** on Cloudflare Vectorize today — they live on the API filesystem next to `resources.json`. **Reindex** after bulk imports or disk restore.
+Vectors are **not** on Cloudflare Vectorize today — they live with the API corpus next to `resources.json`. Vectorize migration is **unnecessary** for current product scope. Reindex after bulk imports or disk restore via the semantic pipeline / API (see [SEMANTIC_RUNBOOK.md](SEMANTIC_RUNBOOK.md)).
 
 **Bin drafts:** Deleting a draft/archived resource sets `binnedAt` and keeps `status: draft`. The corpus row and semantic chunks stay so the dashboard can keep producing collation data. Query with `?binnedOnly=1`.
 

@@ -1,6 +1,6 @@
 # Account dashboard — feature matrix
 
-**URL:** `/account` · **Last updated:** 2026-06-29
+**URL:** `/account` · **Last updated:** 2026-07-28
 
 Single reference for every dashboard surface: what ships today, what is partial, and what is intentionally deferred.
 

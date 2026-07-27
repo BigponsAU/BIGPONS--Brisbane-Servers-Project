@@ -78,7 +78,7 @@ Contributor home links to `/resources/`, `/contribute/`, and **Request workspace
 | Moderation | Queue list + inline detail preview, summary count |
 | Site review | Grid cards, hosting in collapsible `<details>` |
 | Users | Guidance, cross-links to Ops + Billing, queue-style summary |
-| Ops | Site usage snapshot, corpus, token queue, inference runbooks |
+| Ops | Usage strip, search corpus, perk redemption queue; provider notes secondary |
 | Billing | Stripe status, subscriber roster, usage-by-user table, PayID grant form |
 
 ### `panel-shell` + marketing bands

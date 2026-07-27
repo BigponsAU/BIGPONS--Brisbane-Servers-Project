@@ -119,11 +119,11 @@ Phase 2: semantic vector similarity via `/api/semantic/search`.
 | **Cloudflare Pages** | Static marketing site + account workspace shell |
 | **Cloudflare deploy hook** | Rebuild Pages after API publish (SEO prerender) |
 | **Cloudflare Email / DNS** | Optional receiving + DNS (see [CLOUDFLARE_EMAIL.md](../operations/CLOUDFLARE_EMAIL.md)) |
-| **Cloudflare Vectorize / Workers AI** | **Not used** for the public site corpus today |
+| **Cloudflare Vectorize / Workers AI** | **Not used** for the public site corpus today — Vectorize migration is **unnecessary** for this product line ([FEATURES_NOT_BUILT.md](../operations/FEATURES_NOT_BUILT.md)) |
 
-**Semantic index (account workspace + RAG):** chunk embeddings on the **standalone API host** — `semantic-index.json` (or SQLite), `EMBEDDING_PROVIDER` (`openai` or `hash` fallback). Admin surfaces: **Analytics**, **Vectors summary**, **Reindex resource** in `/account`. See [SEMANTIC_RUNBOOK.md](../operations/SEMANTIC_RUNBOOK.md).
+**Semantic index (account workspace + RAG):** chunk embeddings on the **API / corpus store** — `semantic-index.json` (or Neon), `EMBEDDING_PROVIDER` (`openai` or `hash` fallback). Day-to-day admin surface: **Ops → Search corpus** (plus Analytics coverage). See [SEMANTIC_RUNBOOK.md](../operations/SEMANTIC_RUNBOOK.md) and [STORAGE_AND_VECTORS.md](../operations/STORAGE_AND_VECTORS.md).
 
-Phase 2 could move embeddings to Cloudflare Vectorize; the admin panel would stay the control surface.
+Embeddings stay on the API-host index; do not treat Vectorize as unfinished dashboard work.
 
 ## Related
 
