@@ -2813,6 +2813,21 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .account-workspace-shell .profiles-list-sidebar .profile-card-v1 {
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.account-workspace-shell .profiles-list-sidebar .profile-card-v1__header {
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .profiles-list-sidebar .profile-card-v1__heading {
+  min-width: 0;
+}
+
+.account-workspace-shell .profiles-list-sidebar .profile-item-badge {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .account-workspace-shell .profile-actions-bar--compact {

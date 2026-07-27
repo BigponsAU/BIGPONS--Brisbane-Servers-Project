@@ -133,17 +133,31 @@ function renderProfileCardV1(profile: Record<string, unknown>): string {
     stats.corpusResourceCount ??
     (Array.isArray(profile.corpusResourceIds) ? profile.corpusResourceIds.length : 0);
   const linkedCount = stats.linkedResourceCount ?? 0;
-  const desc = typeof profile.description === 'string' ? profile.description : '';
+  const name = String(profile.name || 'Unnamed Profile').trim();
+  const voiceName = String(profile.voiceName || '').trim();
+  const rawDesc = typeof profile.description === 'string' ? profile.description.trim() : '';
+  // Skip voice/desc lines that only repeat the title or look like internal resource ids.
+  const showVoice =
+    Boolean(voiceName) &&
+    voiceName.toLowerCase() !== name.toLowerCase() &&
+    !/^starter-block[-_]/i.test(voiceName);
+  const showDesc =
+    Boolean(rawDesc) &&
+    rawDesc.toLowerCase() !== name.toLowerCase() &&
+    !/^starter-block[-_]/i.test(rawDesc) &&
+    rawDesc.length < 180;
   const pid = escapeHtml(String(profile.id));
 
   return (
-    `<article class="${cardClass}" data-profile-id="${pid}" data-archived="${isArchived}" role="button" tabindex="0" aria-label="Voice profile ${escapeHtml(String(profile.name || 'Unnamed'))}" onclick="selectProfile('${pid}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProfile('${pid}');}">` +
+    `<article class="${cardClass}" data-profile-id="${pid}" data-archived="${isArchived}" role="button" tabindex="0" aria-label="Voice profile ${escapeHtml(name)}" title="${escapeHtml(name)}" onclick="selectProfile('${pid}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProfile('${pid}');}">` +
     `<div class="profile-card-v1__header">` +
-    `<div><h3 class="profile-card-v1__title">${escapeHtml(String(profile.name || 'Unnamed Profile'))}</h3>` +
-    `<p class="profile-card-v1__voice">${escapeHtml(String(profile.voiceName || 'Voice'))}</p></div>` +
+    `<div class="profile-card-v1__heading">` +
+    `<h3 class="profile-card-v1__title">${escapeHtml(name)}</h3>` +
+    (showVoice ? `<p class="profile-card-v1__voice">${escapeHtml(voiceName)}</p>` : '') +
+    `</div>` +
     `<span class="profile-item-badge ${badgeClass}">${badgeText}</span>` +
     `</div>` +
-    (desc ? `<p class="profile-card-v1__desc">${escapeHtml(desc)}</p>` : '') +
+    (showDesc ? `<p class="profile-card-v1__desc">${escapeHtml(rawDesc)}</p>` : '') +
     `<div class="profile-card-v1__tone">${renderProfileToneChips(profile.characteristics as Record<string, unknown>)}</div>` +
     `<div class="profile-card-v1__stats">` +
     `<div class="profile-card-v1__stat"><span class="profile-card-v1__stat-label">Corpus</span><span class="profile-card-v1__stat-value">${corpusCount}</span></div>` +
