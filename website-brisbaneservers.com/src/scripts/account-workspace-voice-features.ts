@@ -786,48 +786,140 @@ async function runVoiceLab(mode: 'tone' | 'patterns'): Promise<void> {
 
   const text = textarea.value.trim();
   if (text.length < 10) {
-    output.textContent = 'Enter at least 10 characters to analyze.';
+    output.innerHTML = '<p class="form-hint">Enter at least 10 characters to analyze.</p>';
     return;
   }
 
-  output.textContent = 'Analyzing…';
+  const profileSel =
+    (document.getElementById('sidebar-voice-profile-select') as HTMLSelectElement | null) ||
+    (document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null);
+  const profileId = profileSel?.value?.trim() || '';
+  const profileLabel = profileSel?.selectedOptions?.[0]?.textContent?.trim() || 'Auto';
+
+  const hint = document.getElementById('voice-lab-profile-hint');
+  if (hint) {
+    hint.textContent = `Analysis uses: ${profileLabel} (sidebar create profile).`;
+  }
+
+  output.innerHTML = '<p class="form-hint">Analyzing…</p>';
   try {
     const res = await workspaceJsonFetch('/voice/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, mode: mode === 'patterns' ? 'patterns' : 'tone' }),
+      body: JSON.stringify({
+        text,
+        mode: mode === 'patterns' ? 'patterns' : 'tone',
+        ...(profileId ? { profileId } : {}),
+      }),
     });
     const data = await readJsonSafe(res);
     if (!res.ok || !data.success) {
-      output.textContent =
-        (typeof data.error === 'string' && data.error) || `Analysis failed (${res.status || 'error'}).`;
+      output.innerHTML = `<p class="form-hint">${escapeHtml(
+        (typeof data.error === 'string' && data.error) || `Analysis failed (${res.status || 'error'}).`
+      )}</p>`;
       return;
     }
-    const score =
-      typeof data.score === 'number'
-        ? data.score
-        : typeof (data.tone as { overallScore?: unknown } | undefined)?.overallScore === 'number'
-          ? (data.tone as { overallScore: number }).overallScore
-          : typeof (data.validation as { score?: unknown } | undefined)?.score === 'number'
-            ? (data.validation as { score: number }).score
-            : null;
-    const profileHint =
-      (data.voiceProfile as { profileId?: string } | undefined)?.profileId ||
-      (typeof data.profileId === 'string' ? data.profileId : null) ||
-      'resolved profile';
-    const lines = [
-      `Voice lab analysis (${mode})`,
-      `Profile: ${profileHint}`,
-      score != null ? `Score: ${Math.round(Number(score) * 100)}%` : null,
-      '',
-      'Detail (JSON):',
-      JSON.stringify(data, null, 2),
-    ].filter((line) => line !== null);
-    output.textContent = lines.join('\n');
+    output.innerHTML = renderVoiceLabResultsHtml(mode, data, profileLabel);
   } catch (err) {
     const detail = err instanceof Error ? err.message : 'Unknown error';
-    output.textContent = `Could not analyze voice: ${detail}`;
+    output.innerHTML = `<p class="form-hint">Could not analyze voice: ${escapeHtml(detail)}</p>`;
   }
+}
+
+function renderVoiceLabResultsHtml(
+  mode: 'tone' | 'patterns',
+  data: Record<string, unknown>,
+  profileLabel: string
+): string {
+  const match = data.match as Record<string, unknown> | undefined;
+  const analysis = data.analysis as Record<string, unknown> | undefined;
+  const patterns = data.patterns as Record<string, unknown> | undefined;
+  const resolvedProfile =
+    (typeof data.profileId === 'string' && data.profileId) ||
+    ((data.voiceProfile as { profileId?: string } | undefined)?.profileId ?? '');
+
+  if (mode === 'tone') {
+    const scoreRaw =
+      typeof match?.overallMatch === 'number'
+        ? match.overallMatch
+        : typeof match?.score === 'number'
+          ? match.score
+          : typeof data.score === 'number'
+            ? data.score
+            : null;
+    const scorePct = scoreRaw != null ? Math.round(Number(scoreRaw) * 100) : null;
+    const structural = (analysis?.structuralPatterns || {}) as Record<string, unknown>;
+    const chips: string[] = [];
+    if (typeof analysis?.technicalTermDensity === 'number') {
+      chips.push(`Technical density ${Math.round(analysis.technicalTermDensity * 100)}%`);
+    }
+    if (typeof analysis?.vocabularyMatch === 'number') {
+      chips.push(`Vocabulary ${Math.round(analysis.vocabularyMatch * 100)}%`);
+    }
+    if (typeof analysis?.voiceMarkerPresence === 'number') {
+      chips.push(`Voice markers ${Math.round(analysis.voiceMarkerPresence * 100)}%`);
+    }
+    if (structural.hasHeaders) chips.push('Has headers');
+    if (structural.hasLists) chips.push('Has lists');
+    if (structural.hasHierarchy) chips.push('Hierarchical');
+    if (analysis?.designJargonHit) chips.push('Design jargon flagged');
+
+    return `<div class="voice-lab-result">
+      <div class="voice-lab-result__hero">
+        <span class="voice-lab-result__score">${scorePct != null ? `${scorePct}%` : '—'}</span>
+        <div>
+          <p class="voice-lab-result__label">Voice match</p>
+          <p class="voice-lab-result__meta">Profile: <strong>${escapeHtml(profileLabel)}</strong>${
+            resolvedProfile ? ` · <code>${escapeHtml(String(resolvedProfile))}</code>` : ''
+          }</p>
+        </div>
+      </div>
+      ${
+        chips.length
+          ? `<div class="voice-lab-result__chips">${chips
+              .map((c) => `<span class="voice-lab-result__chip">${escapeHtml(c)}</span>`)
+              .join('')}</div>`
+          : ''
+      }
+      <p class="form-hint">Higher match means this copy sits closer to the selected create profile.</p>
+      <details class="voice-lab-result__raw">
+        <summary>Technical detail</summary>
+        <pre class="voice-lab-output-pre">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+      </details>
+    </div>`;
+  }
+
+  const sentence = Array.isArray(patterns?.sentencePatterns) ? patterns.sentencePatterns.length : 0;
+  const phrase = Array.isArray(patterns?.phrasePatterns) ? patterns.phrasePatterns.length : 0;
+  const terminology = Array.isArray(patterns?.terminologyPatterns)
+    ? patterns.terminologyPatterns.length
+    : 0;
+  const structural = (patterns?.structuralPatterns || {}) as Record<string, unknown>;
+  const structBits = [
+    structural.hasHeaders ? 'headers' : null,
+    structural.hasLists ? 'lists' : null,
+    structural.hasSections ? 'sections' : null,
+  ].filter(Boolean);
+
+  return `<div class="voice-lab-result">
+    <div class="voice-lab-result__hero">
+      <span class="voice-lab-result__score">${sentence + phrase + terminology}</span>
+      <div>
+        <p class="voice-lab-result__label">Patterns found</p>
+        <p class="voice-lab-result__meta">Profile: <strong>${escapeHtml(profileLabel)}</strong></p>
+      </div>
+    </div>
+    <ul class="voice-lab-result__list">
+      <li><strong>${sentence}</strong> sentence patterns</li>
+      <li><strong>${phrase}</strong> phrase patterns</li>
+      <li><strong>${terminology}</strong> terminology patterns</li>
+      <li>Structure: ${structBits.length ? escapeHtml(structBits.join(', ')) : 'no strong markers'}</li>
+    </ul>
+    <details class="voice-lab-result__raw">
+      <summary>Technical detail</summary>
+      <pre class="voice-lab-output-pre">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+    </details>
+  </div>`;
 }
 
 export function bindVoiceFeaturePanels(): void {

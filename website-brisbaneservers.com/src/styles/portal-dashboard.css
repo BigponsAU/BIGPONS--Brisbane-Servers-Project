@@ -3545,6 +3545,119 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   max-height: 24rem;
 }
 
+.account-workspace-shell .voice-lab-profile-hint {
+  margin: 0 0 var(--space-md);
+}
+
+.account-workspace-shell .voice-lab-results {
+  min-height: 8rem;
+}
+
+.account-workspace-shell .voice-lab-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .voice-lab-result__hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .voice-lab-result__score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
+  min-height: 4.5rem;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  background: color-mix(in srgb, var(--primary-color, #0a74da) 12%, var(--surface, #fff));
+  color: var(--primary-dark, #0858a8);
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-workspace-shell .voice-lab-result__label {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .voice-lab-result__meta {
+  margin: 0.2rem 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .voice-lab-result__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.account-workspace-shell .voice-lab-result__chip {
+  display: inline-flex;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface, #fff);
+  font-size: var(--text-xs);
+}
+
+.account-workspace-shell .voice-lab-result__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .voice-lab-result__raw {
+  margin-top: var(--space-xs);
+}
+
+.account-workspace-shell .voice-lab-result__raw summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .voice-lab-lineage {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+.account-workspace-shell .voice-lab-lineage__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.account-workspace-shell .voice-lab-lineage__header .section-subtitle {
+  margin: 0.25rem 0 0;
+}
+
+.account-workspace-shell .voice-lab-markov-details {
+  margin-top: var(--space-md);
+}
+
+.account-workspace-shell .markov-transition-list__edge {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.account-workspace-shell .markov-share-row__label > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .account-workspace-shell .voice-lab-actions,
 .account-workspace-shell .voice-lab-markov-actions {
   display: flex;

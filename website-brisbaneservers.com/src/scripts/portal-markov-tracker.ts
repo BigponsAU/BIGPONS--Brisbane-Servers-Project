@@ -122,20 +122,68 @@ function pushEdge(state: MarkovState, edge: ResourceMarkovEdge): void {
   }
   recordTransition(state, edge.fromResourceId, edge.toResourceId);
 
-  const voiceKey = edge.voiceProfileId || 'unspecified';
+  const voiceKey = normalizeVoiceKey(edge.voiceProfileId);
   state.voiceCounts[voiceKey] = (state.voiceCounts[voiceKey] ?? 0) + 1;
   state.voiceScoreSums[voiceKey] = (state.voiceScoreSums[voiceKey] ?? 0) + edge.voiceScore;
 }
 
 function shortId(id: string): string {
-  if (id === SEED_NODE) return 'seed';
+  if (id === SEED_NODE) return 'Blank seed';
   if (id.length <= 28) return id;
   return `${id.slice(0, 12)}…${id.slice(-8)}`;
 }
 
+function normalizeVoiceKey(voiceProfileId: string | null | undefined): string {
+  const raw = typeof voiceProfileId === 'string' ? voiceProfileId.trim() : '';
+  if (!raw || raw === 'undefined' || raw === 'null' || raw === 'NaN') return 'unspecified';
+  return raw;
+}
+
+function humanizeResourceId(id: string): string {
+  if (id === SEED_NODE) return 'Blank seed';
+  let s = id
+    .replace(/^starter-block[-_]?/i, '')
+    .replace(/[-_]?\d{10,}$/g, '')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+  if (!s) return shortId(id);
+  return s.replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+
 function labelFor(id: string, label?: string): string {
   if (label?.trim()) return label.trim();
-  return shortId(id);
+  return humanizeResourceId(id);
+}
+
+function buildResourceLabelIndex(state: MarkovState): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const edge of state.chain) {
+    if (edge.fromLabel?.trim()) map.set(edge.fromResourceId, edge.fromLabel.trim());
+    if (edge.toLabel?.trim()) map.set(edge.toResourceId, edge.toLabel.trim());
+  }
+  return map;
+}
+
+function resolveResourceLabel(id: string, labels: Map<string, string>): string {
+  return labels.get(id) || humanizeResourceId(id);
+}
+
+function resolveVoiceLabel(voiceProfileId: string): string {
+  const key = normalizeVoiceKey(voiceProfileId);
+  if (key === 'unspecified') return 'Unspecified voice';
+  try {
+    const profiles = (
+      window as unknown as {
+        allProfiles?: Array<{ id?: string; name?: string; voiceName?: string }>;
+      }
+    ).allProfiles;
+    const hit = profiles?.find((p) => p.id === key);
+    if (hit) return String(hit.name || hit.voiceName || key);
+  } catch {
+    /* ignore */
+  }
+  if (/brisbane/i.test(key)) return 'Brisbane';
+  return shortId(key);
 }
 
 function scorePct(score: number): string {
@@ -161,7 +209,8 @@ export function trackResourceCreation(input: TrackResourceCreationInput): void {
     typeof input.voiceScore === 'number' && Number.isFinite(input.voiceScore)
       ? Math.max(0, Math.min(1, input.voiceScore))
       : 0;
-  const voiceProfileId = input.voiceProfileId?.trim() || null;
+  const voiceKey = normalizeVoiceKey(input.voiceProfileId);
+  const voiceProfileId = voiceKey === 'unspecified' ? null : voiceKey;
   const state = loadState();
   const now = Date.now();
 
@@ -241,12 +290,20 @@ function voiceMatchBreakdown(state: MarkovState): Array<{
   sharePercent: number;
   avgMatchPercent: number;
 }> {
-  const total = Object.values(state.voiceCounts).reduce((a, b) => a + b, 0);
+  // Merge legacy bad keys ("undefined") into unspecified when reading.
+  const counts: Record<string, number> = {};
+  const sums: Record<string, number> = {};
+  for (const [rawKey, hops] of Object.entries(state.voiceCounts)) {
+    const key = normalizeVoiceKey(rawKey);
+    counts[key] = (counts[key] ?? 0) + hops;
+    sums[key] = (sums[key] ?? 0) + (state.voiceScoreSums[rawKey] ?? 0);
+  }
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
   if (!total) return [];
-  return Object.keys(state.voiceCounts)
+  return Object.keys(counts)
     .map((voiceProfileId) => {
-      const hops = state.voiceCounts[voiceProfileId] ?? 0;
-      const sum = state.voiceScoreSums[voiceProfileId] ?? 0;
+      const hops = counts[voiceProfileId] ?? 0;
+      const sum = sums[voiceProfileId] ?? 0;
       return {
         voiceProfileId,
         hops,
@@ -295,7 +352,8 @@ export function getPortalMarkovAnalysisReport(): {
       distinctSources: Object.keys(state.transitions).length,
       distinctVoices: Object.keys(state.voiceCounts).length,
       avgVoiceMatchPercent: Math.round(avgScore * 1000) / 10,
-      dominantVoice: topVoice?.voiceProfileId || '—',
+      dominantVoice: topVoice ? resolveVoiceLabel(topVoice.voiceProfileId) : '—',
+      dominantVoiceId: topVoice?.voiceProfileId || 'unspecified',
       dominantVoiceSharePercent: topVoice?.sharePercent ?? 0,
       sessionSeconds: Math.round((Date.now() - state.startTime) / 1000),
     },
@@ -312,6 +370,7 @@ export function getPortalMarkovAnalysisReport(): {
 export function getPortalMarkovSummary(): string {
   const state = loadState();
   const report = getPortalMarkovAnalysisReport();
+  const labels = buildResourceLabelIndex(state);
   const lines: string[] = [
     `Lineage hops: ${report.summary.lineageHops}`,
     `Avg voice match: ${report.summary.avgVoiceMatchPercent}%`,
@@ -325,12 +384,21 @@ export function getPortalMarkovSummary(): string {
   } else {
     for (const row of report.voiceShares.slice(0, 8)) {
       lines.push(
-        `  ${row.voiceProfileId}: ${row.sharePercent}% of hops · avg match ${row.avgMatchPercent}%`
+        `  ${resolveVoiceLabel(row.voiceProfileId)}: ${row.sharePercent}% of hops · avg match ${row.avgMatchPercent}%`
       );
     }
   }
 
-  lines.push('', 'Top resource → resource transitions:', ...topTransitions(state.transitions));
+  lines.push('', 'Top resource → resource transitions:');
+  if (!report.topTransitions.length) {
+    lines.push('  (create or generate a resource from a starter / parent to collect lineage)');
+  } else {
+    for (const row of report.topTransitions.slice(0, 12)) {
+      lines.push(
+        `  ${resolveResourceLabel(row.from, labels)} → ${resolveResourceLabel(row.to, labels)}: ${row.count}`
+      );
+    }
+  }
 
   const recent = state.chain.slice(-6).map((e) => {
     const match = scorePct(e.voiceScore);
@@ -352,10 +420,13 @@ function escapeMarkovHtml(value: string): string {
 
 /** Rich HTML summary for Voice lab — bars + stats instead of plain pre text. */
 export function renderPortalMarkovSummaryHtml(): string {
+  const state = loadState();
   const report = getPortalMarkovAnalysisReport();
+  const labels = buildResourceLabelIndex(state);
   const hops = Number(report.summary.lineageHops) || 0;
   const avg = Number(report.summary.avgVoiceMatchPercent) || 0;
-  const dominant = String(report.summary.dominantVoice || '—');
+  const dominantId = String(report.summary.dominantVoiceId || report.summary.dominantVoice || 'unspecified');
+  const dominant = resolveVoiceLabel(dominantId);
   const dominantShare = Number(report.summary.dominantVoiceSharePercent) || 0;
 
   const shareRows = report.voiceShares.length
@@ -363,9 +434,10 @@ export function renderPortalMarkovSummaryHtml(): string {
         .slice(0, 6)
         .map((row) => {
           const width = Math.max(4, Math.min(100, row.sharePercent));
+          const name = resolveVoiceLabel(row.voiceProfileId);
           return `<div class="markov-share-row">
             <div class="markov-share-row__label">
-              <span>${escapeMarkovHtml(row.voiceProfileId)}</span>
+              <span title="${escapeMarkovHtml(row.voiceProfileId)}">${escapeMarkovHtml(name)}</span>
               <span class="markov-share-row__meta">${row.sharePercent}% · avg ${row.avgMatchPercent}%</span>
             </div>
             <div class="markov-share-row__track" aria-hidden="true">
@@ -379,10 +451,11 @@ export function renderPortalMarkovSummaryHtml(): string {
   const transitionRows = report.topTransitions.length
     ? `<ul class="markov-transition-list">${report.topTransitions
         .slice(0, 5)
-        .map(
-          (t) =>
-            `<li><span class="markov-transition-list__edge">${escapeMarkovHtml(t.from)} → ${escapeMarkovHtml(t.to)}</span><span class="markov-transition-list__count">${t.count}</span></li>`
-        )
+        .map((t) => {
+          const from = resolveResourceLabel(t.from, labels);
+          const to = resolveResourceLabel(t.to, labels);
+          return `<li><span class="markov-transition-list__edge" title="${escapeMarkovHtml(t.from)} → ${escapeMarkovHtml(t.to)}">${escapeMarkovHtml(from)} → ${escapeMarkovHtml(to)}</span><span class="markov-transition-list__count">${t.count}</span></li>`;
+        })
         .join('')}</ul>`
     : '';
 
@@ -399,7 +472,7 @@ export function renderPortalMarkovSummaryHtml(): string {
       </div>
       <div class="markov-stat markov-stat--wide">
         <span class="markov-stat__label">Dominant voice</span>
-        <span class="markov-stat__value markov-stat__value--sm">${escapeMarkovHtml(dominant)}</span>
+        <span class="markov-stat__value markov-stat__value--sm" title="${escapeMarkovHtml(dominantId)}">${escapeMarkovHtml(dominant)}</span>
         <span class="markov-stat__meta">${dominantShare}% of hops</span>
       </div>
     </div>
@@ -410,7 +483,7 @@ export function renderPortalMarkovSummaryHtml(): string {
     ${
       transitionRows
         ? `<div class="markov-panel">
-      <h4 class="markov-panel__title">Top resource → resource transitions</h4>
+      <h4 class="markov-panel__title">Top creation transitions</h4>
       ${transitionRows}
     </div>`
         : ''
@@ -419,7 +492,9 @@ export function renderPortalMarkovSummaryHtml(): string {
 }
 
 export function debugFromPortalMarkov(): string {
+  const state = loadState();
   const report = getPortalMarkovAnalysisReport();
+  const labels = buildResourceLabelIndex(state);
   const lines: string[] = [
     '=== Resource lineage Markov ===',
     `Hops: ${report.summary.lineageHops}`,
@@ -436,7 +511,7 @@ export function debugFromPortalMarkov(): string {
   } else {
     for (const row of report.voiceShares) {
       lines.push(
-        `  • ${row.voiceProfileId}: ${row.hops} hop(s), ${row.sharePercent}% of chain, avg match ${row.avgMatchPercent}%`
+        `  • ${resolveVoiceLabel(row.voiceProfileId)}: ${row.hops} hop(s), ${row.sharePercent}% of chain, avg match ${row.avgMatchPercent}%`
       );
     }
   }
@@ -447,7 +522,7 @@ export function debugFromPortalMarkov(): string {
   } else {
     for (const e of report.recentEdges) {
       lines.push(
-        `  • ${shortId(e.fromResourceId)} → ${shortId(e.toResourceId)} · ${e.sourceKind} · voice ${e.voiceProfileId || 'unspecified'} · match ${scorePct(e.voiceScore)}`
+        `  • ${resolveResourceLabel(e.fromResourceId, labels)} → ${resolveResourceLabel(e.toResourceId, labels)} · ${e.sourceKind} · voice ${resolveVoiceLabel(e.voiceProfileId || 'unspecified')} · match ${scorePct(e.voiceScore)}`
       );
     }
   }
@@ -470,16 +545,20 @@ export function buildMarkovExtrapolationPrompt(): string {
     lines.push('Voice share (% of creation hops matching each voice):');
     for (const row of report.voiceShares.slice(0, 8)) {
       lines.push(
-        `- ${row.voiceProfileId}: ${row.sharePercent}% of hops, avg match ${row.avgMatchPercent}%`
+        `- ${resolveVoiceLabel(row.voiceProfileId)}: ${row.sharePercent}% of hops, avg match ${row.avgMatchPercent}%`
       );
     }
     lines.push('');
   }
 
   if (report.topTransitions.length) {
+    const state = loadState();
+    const labels = buildResourceLabelIndex(state);
     lines.push('Top resource → resource creation transitions:');
     for (const row of report.topTransitions.slice(0, 10)) {
-      lines.push(`- ${row.from} → ${row.to}: ${row.count}`);
+      lines.push(
+        `- ${resolveResourceLabel(row.from, labels)} → ${resolveResourceLabel(row.to, labels)}: ${row.count}`
+      );
     }
     lines.push('');
   }

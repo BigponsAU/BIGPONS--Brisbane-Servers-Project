@@ -9,7 +9,7 @@ import { accountWorkspace } from '../../data/account-workspace';
       semanticKey="account-voice-lab"
       eyebrow="Voice studio"
       title={accountWorkspace.voiceLabLabel}
-      byline="Tone analysis and pattern extraction. Pair with Voice profiles and Create content for end-to-end voice control."
+      byline="Check how copy matches the selected create profile, then review which voices your recent creations leaned toward."
       titleId="voice-lab-heading"
       constellationVariant="partnership"
     >
@@ -19,6 +19,9 @@ import { accountWorkspace } from '../../data/account-workspace';
       </div>
 
     <section class="admin-section admin-section--in-band" aria-labelledby="voice-lab-heading">
+      <p id="voice-lab-profile-hint" class="form-hint voice-lab-profile-hint">
+        Analysis uses the voice profile selected in the sidebar.
+      </p>
       <div class="voice-lab-grid voice-lab-grid--primary">
         <div class="voice-lab-input card">
           <label for="voice-lab-text" class="form-label">Text to analyze</label>
@@ -30,30 +33,38 @@ import { accountWorkspace } from '../../data/account-workspace';
         </div>
         <div class="voice-lab-output card">
           <h3 class="card-title">Results</h3>
-          <pre id="voice-lab-output" class="voice-lab-output-pre" aria-live="polite">Run analysis to see tone scores and voice match.</pre>
+          <div id="voice-lab-output" class="voice-lab-results" aria-live="polite">
+            <p class="form-hint">Run Analyze voice or Extract patterns to see a readable summary here.</p>
+          </div>
         </div>
       </div>
 
-      <details class="panel-guidance-details voice-lab-markov-details">
-        <summary>Resource lineage (Markov) — optional</summary>
-        <div class="panel-guidance-details__body">
-          <p class="section-subtitle">
-            Tracks resources created from starters or other resources, the voice used on each hop,
-            and which voice the chain matches most (this browser only).
-          </p>
-          <div class="voice-lab-actions voice-lab-markov-actions">
-            <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
-            <button type="button" id="voice-lab-markov-debug" class="btn btn-secondary btn-sm">Debug insights</button>
-            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-primary btn-sm">Extrapolate lineage</button>
-            <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
-            <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
+      <section class="voice-lab-lineage" aria-labelledby="voice-lab-lineage-heading">
+        <div class="voice-lab-lineage__header">
+          <div>
+            <h3 id="voice-lab-lineage-heading" class="admin-billing-section-title">Creation lineage</h3>
+            <p class="section-subtitle">
+              Which voice profiles your recent Generate / Improve hops matched in this browser — useful for spotting drift.
+            </p>
           </div>
-          <div id="voice-lab-markov-summary" class="markov-summary-host" aria-live="polite">
-            <p class="markov-empty-hint">Create or generate a resource from a starter / parent to collect lineage.</p>
-          </div>
-          <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Click “Debug insights” for voice-share breakdown across creation hops.</pre>
+          <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
         </div>
-      </details>
+        <div id="voice-lab-markov-summary" class="markov-summary-host" aria-live="polite">
+          <p class="markov-empty-hint">Create or generate a resource from a starter to start tracking lineage.</p>
+        </div>
+        <details class="panel-guidance-details voice-lab-markov-details">
+          <summary>Advanced lineage tools</summary>
+          <div class="panel-guidance-details__body">
+            <div class="voice-lab-actions voice-lab-markov-actions">
+              <button type="button" id="voice-lab-markov-debug" class="btn btn-secondary btn-sm">Debug insights</button>
+              <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-secondary btn-sm">Suggest next hops</button>
+              <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
+              <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
+            </div>
+            <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Open for debug text or AI suggestions. Day-to-day use is the summary above.</pre>
+          </div>
+        </details>
+      </section>
     </section>
     </AccountWorkspacePanelBand>
   </div>

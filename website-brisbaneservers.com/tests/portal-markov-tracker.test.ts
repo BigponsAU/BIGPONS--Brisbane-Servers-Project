@@ -5,6 +5,7 @@ import {
   getPortalMarkovAnalysisReport,
   getPortalMarkovSummary,
   ingestResourcesIntoMarkov,
+  renderPortalMarkovSummaryHtml,
   resetPortalMarkovTracker,
   trackResourceCreation,
 } from '../src/scripts/portal-markov-tracker';
@@ -72,10 +73,10 @@ describe('portal-markov-tracker (resource lineage)', () => {
 
     const summary = getPortalMarkovSummary();
     expect(summary).toContain('Lineage hops: 3');
-    expect(summary).toContain('brisbane');
+    expect(summary).toContain('Brisbane');
     expect(summary).toContain('alt-voice');
-    expect(summary).toContain('starter-a');
-    expect(summary).toContain('draft-b');
+    expect(summary).toContain('Starter A');
+    expect(summary).toContain('Draft B');
 
     const report = getPortalMarkovAnalysisReport();
     expect(report.summary.lineageHops).toBe(3);
@@ -105,8 +106,8 @@ describe('portal-markov-tracker (resource lineage)', () => {
     ]);
 
     const debug = debugFromPortalMarkov();
-    expect(debug).toContain('parent-1');
-    expect(debug).toContain('child-1');
+    expect(debug).toContain('Parent');
+    expect(debug).toContain('Child');
     expect(debug).toContain('90%');
   });
 
@@ -120,8 +121,21 @@ describe('portal-markov-tracker (resource lineage)', () => {
     });
     const prompt = buildMarkovExtrapolationPrompt();
     expect(prompt).toContain('resource lineage');
-    expect(prompt).toContain('brisbane');
+    expect(prompt).toContain('Brisbane');
     expect(prompt).toContain('Voice share');
+  });
+
+  it('maps undefined voice keys to Unspecified voice in HTML', () => {
+    trackResourceCreation({
+      fromResourceId: 'x',
+      toResourceId: 'y',
+      sourceKind: 'generate',
+      voiceProfileId: 'undefined',
+      voiceScore: 0.5,
+    });
+    const html = renderPortalMarkovSummaryHtml();
+    expect(html).toContain('Unspecified voice');
+    expect(html).not.toContain('>undefined<');
   });
 
   it('renders HTML summary with share bars', async () => {
