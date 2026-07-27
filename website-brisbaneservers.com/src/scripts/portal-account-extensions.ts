@@ -9,7 +9,7 @@ import {
   type AdminMailboxKey,
 } from '../lib/site-mailboxes';
 import { getPortalAccountContext } from './account-workspace-runtime';
-import { runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
+import { escapeHtml, runWorkspaceGuardedAction, setElementBusy, workspaceErrorMessage } from './account-workspace-utils';
 
 import { loadModerationQueue } from './account-admin-moderation';
 import { bindOverviewBilling, loadOverviewAiBilling } from './account-billing';
@@ -27,14 +27,6 @@ export interface PortalAccountContext {
 }
 
 export { loadModerationQueue };
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 function hasSession(ctx: PortalAccountContext): boolean {
   return ctx.hasWorkspaceSession?.() ?? Boolean(ctx.getAuthToken());
@@ -172,8 +164,10 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
               }
               if (redeemStatus) redeemStatus.textContent = data.message || 'Redeemed.';
               await loadClientWorkspaceData(ctx);
-            } catch {
-              if (redeemStatus) redeemStatus.textContent = 'Network error while redeeming.';
+            } catch (error) {
+              if (redeemStatus) {
+                redeemStatus.textContent = workspaceErrorMessage(error, 'Network error while redeeming.');
+              }
               btn.disabled = false;
             }
           });
@@ -211,8 +205,7 @@ export async function loadClientWorkspaceData(ctx: PortalAccountContext): Promis
     console.warn('[Portal] Client workspace data failed:', error);
     if (balanceEl) balanceEl.textContent = '—';
     if (listEl) {
-      listEl.innerHTML =
-        '<li class="empty-state">Could not load contributions. Confirm the hosted API is reachable.</li>';
+      listEl.innerHTML = `<li class="empty-state">${escapeHtml(workspaceErrorMessage(error, 'Could not load contributions. Confirm the hosted API is reachable.'))}</li>`;
     }
   }
 }
@@ -248,7 +241,7 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
     const res = await workspaceFetch(`${ctx.apiBaseUrl}/auth/passkey/credentials`);
     const data = await res.json();
     if (!res.ok || !data.success) {
-      container.innerHTML = '<p class="status-message">Unable to load passkey.</p>';
+      container.innerHTML = `<p class="status-message">${escapeHtml(data.error || 'Unable to load passkey.')}</p>`;
       return;
     }
     const creds = Array.isArray(data.credentials) ? data.credentials : [];
@@ -310,8 +303,8 @@ export async function loadPasskeyCredentials(ctx: PortalAccountContext): Promise
         }
       });
     });
-  } catch {
-    container.innerHTML = '<p class="status-message">Could not load passkey.</p>';
+  } catch (error) {
+    container.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load passkey.'))}</p>`;
   }
 }
 
@@ -406,8 +399,8 @@ export async function loadSiteReviewSections(ctx: PortalAccountContext): Promise
         <a class="btn btn-secondary btn-sm" href="${escapeHtml(section.href)}" target="_blank" rel="noopener noreferrer">Review on site</a>
       </article>
     `).join('');
-  } catch {
-    container.innerHTML = '<p class="status-message">Could not load site review sections.</p>';
+  } catch (error) {
+    container.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load site review sections.'))}</p>`;
   }
 }
 
@@ -464,8 +457,8 @@ export async function loadHostingStatus(ctx: PortalAccountContext): Promise<void
         ? 'Required production variables appear configured on the API host.'
         : `Missing required: ${(data.missingRequired ?? []).join(', ')}`;
     }
-  } catch {
-    container.innerHTML = '<p class="status-message">Could not load hosting status.</p>';
+  } catch (error) {
+    container.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load hosting status.'))}</p>`;
   }
 }
 

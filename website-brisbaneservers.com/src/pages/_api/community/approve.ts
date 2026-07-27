@@ -5,6 +5,7 @@ import {
   saveResources,
 } from '../../../lib/resources-api';
 import {
+  getContribution,
   updateContributionStatus
 } from '../../../lib/contributions';
 import { awardTokensOnAccept } from '../../../lib/contribution-tokens';
@@ -54,6 +55,37 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    const existing = await getContribution(contributionId);
+    if (!existing) {
+      return new Response(
+        JSON.stringify({
+          error: 'Contribution not found',
+          code: 'NOT_FOUND',
+          success: false
+        }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const resources = await loadResources();
+    const resourceIdx = resources.findIndex((r) => r.id === existing.resourceId);
+    if (resourceIdx === -1) {
+      return new Response(
+        JSON.stringify({
+          error: 'Contribution resource is missing; cannot approve without a publishable resource',
+          code: 'RESOURCE_MISSING',
+          success: false,
+        }),
+        {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const updated = await updateContributionStatus(
       contributionId,
       'accepted',
@@ -75,21 +107,17 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const resources = await loadResources();
-    const resourceIdx = resources.findIndex((r) => r.id === updated.resourceId);
-    if (resourceIdx !== -1) {
-      const res = resources[resourceIdx];
-      const before = { ...res };
-      resources[resourceIdx] = {
-        ...res,
-        status: 'published',
-        visibility: 'public',
-        wasEverPublished: true,
-        binnedAt: undefined,
-      };
-      await saveResources(resources);
-      schedulePublicSurfaceUpdate(before, resources[resourceIdx], `community-approve-${updated.resourceId}`);
-    }
+    const res = resources[resourceIdx];
+    const before = { ...res };
+    resources[resourceIdx] = {
+      ...res,
+      status: 'published',
+      visibility: 'public',
+      wasEverPublished: true,
+      binnedAt: undefined,
+    };
+    await saveResources(resources);
+    schedulePublicSurfaceUpdate(before, resources[resourceIdx], `community-approve-${updated.resourceId}`);
 
     const award = await awardTokensOnAccept(updated, {
       tokenDelta: typeof tokenDelta === 'number' ? tokenDelta : undefined,

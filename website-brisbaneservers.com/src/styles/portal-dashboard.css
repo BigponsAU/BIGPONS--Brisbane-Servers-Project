@@ -1268,6 +1268,11 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   background: rgba(var(--portal-primary-rgb, 10, 116, 218), 0.08);
 }
 
+.workspace-mode-switcher[hidden],
+.header-workspace-mode-switcher[hidden] {
+  display: none !important;
+}
+
 .workspace-mode-btn {
   border: 1px solid transparent;
   background: transparent;
@@ -3439,11 +3444,162 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   margin-top: var(--space-md);
 }
 
-.account-workspace-shell .voice-lab-grid--primary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.account-workspace-shell .markov-summary-host {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  background: color-mix(in srgb, var(--portal-accent, #f97316) 4%, var(--surface, #fff));
+}
+
+.account-workspace-shell .markov-dashboard {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+}
+
+.account-workspace-shell .markov-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .markov-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-light, var(--border));
+  border-radius: var(--border-radius);
+  background: var(--surface, #fff);
+}
+
+.account-workspace-shell .markov-stat--wide {
+  grid-column: span 1;
+}
+
+.account-workspace-shell .markov-stat__label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .markov-stat__value {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .markov-stat__value--sm {
+  font-size: var(--text-base);
+  word-break: break-word;
+}
+
+.account-workspace-shell .markov-stat__meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted, #64748b);
+}
+
+.account-workspace-shell .markov-stat__meter {
+  display: block;
+  height: 0.3rem;
+  margin-top: 0.2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--portal-accent, #f97316) 16%, var(--surface));
+  overflow: hidden;
+}
+
+.account-workspace-shell .markov-stat__meter::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--markov-meter, 0%);
+  background: var(--portal-accent, #f97316);
+  border-radius: inherit;
+}
+
+.account-workspace-shell .markov-panel__title {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .markov-share-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: var(--space-sm);
+}
+
+.account-workspace-shell .markov-share-row__label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .markov-share-row__meta {
+  color: var(--text-muted, #64748b);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.account-workspace-shell .markov-share-row__track {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-subtle, #f1f5f9);
+  overflow: hidden;
+}
+
+.account-workspace-shell .markov-share-row__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--portal-accent, #f97316) 75%, #ea580c),
+    var(--portal-accent, #f97316)
+  );
+}
+
+.account-workspace-shell .markov-transition-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.account-workspace-shell .markov-transition-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--border-radius);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-light, var(--border));
+}
+
+.account-workspace-shell .markov-transition-list__edge {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-workspace-shell .markov-transition-list__count {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .markov-empty-hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted, #64748b);
 }
 
 @media (max-width: 48rem) {

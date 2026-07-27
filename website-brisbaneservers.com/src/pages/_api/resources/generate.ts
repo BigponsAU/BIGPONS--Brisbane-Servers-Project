@@ -168,6 +168,7 @@ export const POST: APIRoute = async ({ request }) => {
       existingResource.metadata = mergeInferenceMetadata(existingResource.metadata, {
         wordCount: extrapolatedContent.split(/\s+/).length,
         voiceScore: voiceValidation.score || 0,
+        topicFidelity: generated.topicFidelity,
         voiceProfileId: resolved.voiceProfileId,
         voiceProfileResolution: resolved.resolution,
         inferenceMode: generated.inferenceMode,
@@ -211,6 +212,7 @@ export const POST: APIRoute = async ({ request }) => {
             issues: voiceValidation.issues || [],
             strengths: voiceValidation.strengths || []
           },
+          topicFidelity: generated.topicFidelity,
           success: true,
           updated: true,
           message: 'Resource updated (duplicate prevented)'
@@ -238,6 +240,7 @@ export const POST: APIRoute = async ({ request }) => {
       metadata: mergeInferenceMetadata(undefined, {
         wordCount: extrapolatedContent.split(/\s+/).length,
         voiceScore: voiceValidation.score || 0,
+        topicFidelity: generated.topicFidelity,
         voiceProfileId: resolved.voiceProfileId,
         voiceProfileResolution: resolved.resolution,
         inferenceMode: generated.inferenceMode,
@@ -283,6 +286,7 @@ export const POST: APIRoute = async ({ request }) => {
           issues: voiceValidation.issues || [],
           strengths: voiceValidation.strengths || []
         },
+        topicFidelity: generated.topicFidelity,
         success: true
       }),
       {

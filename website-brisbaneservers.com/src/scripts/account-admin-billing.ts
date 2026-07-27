@@ -6,6 +6,7 @@ import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
+import { escapeHtml, workspaceErrorMessage } from './account-workspace-utils';
 
 type BillingAccountRow = {
   userId: string;
@@ -36,14 +37,6 @@ type UsageUserRow = {
 let accountsCache: BillingAccountRow[] = [];
 let usageCache: UsageUserRow[] = [];
 let panelBound = false;
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 function formatDate(iso: string): string {
   try {
@@ -206,7 +199,7 @@ async function submitBillingGrant(ctx: PortalAccountContext, event: Event): Prom
     await loadAdminBillingPanel(ctx);
   } catch (error) {
     trackPortalError('grantAiUsageUnits', error);
-    if (statusEl) statusEl.textContent = 'Network error.';
+    if (statusEl) statusEl.textContent = workspaceErrorMessage(error, 'Network error.');
   }
 }
 
@@ -257,10 +250,15 @@ export async function loadAdminBillingPanel(ctx?: PortalAccountContext): Promise
     renderSummary(usageData.totals);
     renderSubscribersTable(searchQuery);
     renderUsageTable(searchQuery);
-  } catch {
-    if (summaryEl) summaryEl.textContent = 'Could not reach the API.';
-    if (subscribersBody) subscribersBody.innerHTML = '<tr><td colspan="5">Network error.</td></tr>';
-    if (usageBody) usageBody.innerHTML = '<tr><td colspan="6">Network error.</td></tr>';
+  } catch (error) {
+    const detail = workspaceErrorMessage(error, 'Could not reach the API.');
+    if (summaryEl) summaryEl.textContent = detail;
+    if (subscribersBody) {
+      subscribersBody.innerHTML = `<tr><td colspan="5">${escapeHtml(detail)}</td></tr>`;
+    }
+    if (usageBody) {
+      usageBody.innerHTML = `<tr><td colspan="6">${escapeHtml(detail)}</td></tr>`;
+    }
   }
 }
 

@@ -95,7 +95,7 @@ export function registerPanelLoaderStubs(
     w[name] = stub;
   }
 
-  const resourceFns = [
+    const resourceFns = [
     'loadResources',
     'selectResource',
     'viewResource',

@@ -44,11 +44,13 @@ import { accountWorkspace } from '../../data/account-workspace';
           <div class="voice-lab-actions voice-lab-markov-actions">
             <button type="button" id="voice-lab-markov-refresh" class="btn btn-secondary btn-sm">Refresh</button>
             <button type="button" id="voice-lab-markov-debug" class="btn btn-secondary btn-sm">Debug insights</button>
-            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-secondary btn-sm">Extrapolate lineage</button>
+            <button type="button" id="voice-lab-markov-extrapolate" class="btn btn-primary btn-sm">Extrapolate lineage</button>
             <button type="button" id="voice-lab-markov-export" class="btn btn-secondary btn-sm">Export JSON</button>
             <button type="button" id="voice-lab-markov-reset" class="btn btn-secondary btn-sm">Reset</button>
           </div>
-          <pre id="voice-lab-markov-summary" class="voice-lab-output-pre" aria-live="polite">Create or generate a resource from a starter / parent to collect lineage.</pre>
+          <div id="voice-lab-markov-summary" class="markov-summary-host" aria-live="polite">
+            <p class="markov-empty-hint">Create or generate a resource from a starter / parent to collect lineage.</p>
+          </div>
           <pre id="voice-lab-markov-debug" class="voice-lab-output-pre voice-lab-markov-debug" aria-live="polite">Click “Debug insights” for voice-share breakdown across creation hops.</pre>
         </div>
       </details>

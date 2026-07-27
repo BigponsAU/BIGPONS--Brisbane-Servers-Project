@@ -19,6 +19,50 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 | 2026-07-27 | Creator + Admin API smoke (admin session) | — | — | Verified live 200s: resources, starter-blocks, profiles, analytics, voice-map, voice/analyze, library-growth, contributions, users, auth-audit, usage, token-redemptions, billing accounts/status, search-corpus | **OK** (14/14) |
 | 2026-07-27 | Profiles + ranking | Design System card confused library; ranking rewarded any numbers / cipher jargon | Synthetic `id=default` Design System card in GET /profiles; ToneAnalyzer `hasSpecificValues = numbers.length > 0`; Extrapolator injected random commonValues | Remove Design System from portal list; consulting fallback instead of design JSON; ranking penalizes jargon and ignores golden-ratio / arbitrary digit correlation | **Retested OK**: profiles=2 (Brisbane default + healthcare base); Design System gone; GOOD 0.231 > JUNK 0.000 |
 | 2026-07-27 | All industries ranking + Improve purpose | Need assurance beyond healthcare | Contaminated PS/construction drafts from prior bad Improves | Ranking attested on 7 industries; restored purposeful PS/construction drafts; corpus scan 0/49 contaminated; sanitizer strips design junk on Improve fallback | **OK**: ranking 7/7; corpus clean; drafts restored |
+| 2026-07-27 | Purpose-health standard → whole dashboard | Same class as Improve: 200 OK + score while product outcome wrong | Generate / growth / community-upload / rewrite / singleton save-score / orphan approve / false-success toasts / unwired bulk actions | Port fidelity guards; preserve contributor text; rewrite fail-closed; resolve-profile scoring; approve requires resource; purpose-aware toasts; wire Improve drafts + Export; Ops/Profiles/Growth copy honesty | **Code complete** — commit + live retest next |
+
+---
+
+## Purpose-health standard (workflow exemplar)
+
+Treat every control like Improve: **find purpose failure → document here → fix → push → live retest**.
+
+A feature is **ill** when it returns success (HTTP 200, toast, voice score) but fails its **product purpose** (wrong content, wrong profile, false publish, misleading score).
+
+| Pass | Meaning |
+|------|---------|
+| **Wired** | Button calls the right API |
+| **Healthy** | Outcome matches the label/purpose for every industry/topic |
+
+### Voice write paths (must stay healthy)
+
+| Path | Healthy when |
+|------|----------------|
+| Improve / process / upload ingest | Resolved profile + topic fidelity + jargon reject; keep original on fail |
+| Generate / library growth | Same fidelity stack; no design Extrapolator for consulting |
+| Community upload | Contributor text preserved; no Extrapolator rewrite; auto-publish only if fidelity+voice strong |
+| Document rewrite | Structure + fidelity guards; keep original on drift |
+| Save / starter score | Score with resolved profile, not framework singleton |
+| Moderation approve | Publish + award only when resource exists |
+
+### Purpose-health backlog
+
+| Pri | Panel / action | Status |
+|-----|----------------|--------|
+| P0 | Generate + Library growth fidelity | **Fixed** — live retest pending |
+| P0 | Community upload preserve user text | **Fixed** — live retest pending |
+| P1 | Document OCR rewrite fail-closed | **Fixed** — live retest pending |
+| P1 | PUT save + starter resolved-profile score | **Fixed** |
+| P1 | Moderation approve requires resource | **Fixed** |
+| P1 | Improve / rewrite / generate toasts when kept original | **Fixed** |
+| P1 | Bulk Improve no-op tally + wire Improve drafts / Export | **Fixed** |
+| P1 | Analytics Apply suggestion silent success/fail | **Fixed** |
+| P1 | Growth save/arm/pause HTTP `res.ok` gates | **Fixed** |
+| P1 | Profile archive/unarchive `data.success` | **Fixed** |
+| P2 | Voice lab extrapolate fidelity label + sanitize | **Fixed** |
+| P2 | BIGPONS / “Bundled default” copy → site voice | **Fixed** |
+| P2 | Ops “runbooks” byline → provider notes | **Fixed** |
+| P2 | Case-study approve ≠ live flagship page copy | **Fixed** |
 
 ---
 
@@ -75,6 +119,9 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | **Growth semantic dedup** | `library-growth/dedup.ts` — vector similarity before materialize |
 | **Voice map semantic route** | `GET /api/voice-map/semantic` + query UI in Voice map panel |
 | **Improve topic fidelity** | Resolved-profile Extrapolator/VoiceMatcher; jargon/topic guard; keep original on fail |
+| **Generate / growth topic fidelity** | Same purpose-health stack as Improve (`isGenerateFaithful`; skip design Extrapolator) |
+| **Community upload fidelity** | Contributor text preserved; auto-publish only with fidelity + voice |
+| **Document rewrite fail-closed** | Structure + topic fidelity; keep original on drift |
 
 ---
 

@@ -220,6 +220,7 @@ export const POST: APIRoute = async ({ request }) => {
       strengths: string[];
     } = { score: 0, isValid: false, issues: [], strengths: [] };
     let inferencePayload: { mode: string; modelId: string | null } | undefined;
+    let topicFidelity: number | undefined;
 
     if (autoProcess) {
       const { Extrapolator, VoiceMatcher } = await import('@voice-framework');
@@ -246,6 +247,7 @@ export const POST: APIRoute = async ({ request }) => {
           mode: rewritten.inferenceMode,
           modelId: rewritten.modelId,
         };
+        topicFidelity = rewritten.topicFidelity;
       } else {
         const enhanced = await enhanceIngestedContent({
           content,
@@ -271,6 +273,7 @@ export const POST: APIRoute = async ({ request }) => {
           mode: enhanced.inferenceMode,
           modelId: enhanced.modelId ?? null,
         };
+        topicFidelity = enhanced.topicFidelity;
       }
     }
 
@@ -360,6 +363,7 @@ export const POST: APIRoute = async ({ request }) => {
           },
           voiceValidation,
           inference: inferencePayload,
+          topicFidelity,
           extraction: {
             method: extracted.method,
             charCount: extracted.charCount,
@@ -442,6 +446,7 @@ export const POST: APIRoute = async ({ request }) => {
           },
           voiceValidation,
           inference: inferencePayload,
+          topicFidelity,
           extraction: {
             method: extracted.method,
             charCount: extracted.charCount,

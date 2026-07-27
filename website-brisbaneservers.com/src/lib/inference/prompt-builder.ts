@@ -28,17 +28,27 @@ export function buildInferenceUserPrompt(params: {
   topic: string;
   title: string;
   userBrief?: string;
+  /** When false (default), ban design-system jargon unrelated to the industry topic. */
+  allowDesignSystemJargon?: boolean;
 }): string {
   const parts = [
     `Title: ${params.title}`,
     `Industry: ${params.industry}`,
     `Topic: ${params.topic}`,
+    `Stay on the ${params.industry} / ${params.topic} subject. Do not invent an unrelated technical domain.`,
     params.userBrief ? `User guidance: ${params.userBrief}` : '',
+  ];
+  if (!params.allowDesignSystemJargon) {
+    parts.push(
+      'Do NOT introduce design-system / meta jargon unrelated to this industry and topic (e.g. cipher, Fourier transform, wave function, golden ratio, phi, 1.618, 61.8, "mathematical precision", vectorized, permutation).'
+    );
+  }
+  parts.push(
     '',
     params.seedText,
     '',
-    'Write a complete resource article (800–1500 words) suitable for the Brisbane Servers resource library.',
-  ];
+    'Write a complete resource article (800–1500 words) suitable for the Brisbane Servers resource library.'
+  );
   return parts.filter(Boolean).join('\n');
 }
 
@@ -92,14 +102,17 @@ export function buildDocumentRewriteSystemPrompt(profile: VoiceProfile): string 
 export function buildDocumentRewriteUserPrompt(params: {
   originalContent: string;
   title?: string;
+  allowDesignSystemJargon?: boolean;
 }): string {
-  return [
+  const parts = [
     params.title ? `Document title: ${params.title}` : '',
     'Rewrite the document below in the target voice. Preserve structure exactly; change wording only.',
-    '',
-    '---',
-    params.originalContent,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  ];
+  if (!params.allowDesignSystemJargon) {
+    parts.push(
+      'Do NOT introduce design-system / meta jargon (cipher, Fourier, wave function, golden ratio, phi, 1.618, 61.8, "mathematical precision", vectorized, permutation).'
+    );
+  }
+  parts.push('', '---', params.originalContent);
+  return parts.filter(Boolean).join('\n');
 }

@@ -10,6 +10,7 @@ import {
 } from '../lib/client-api';
 import { hasWorkspaceAccess } from '../lib/workspace-access';
 import { closeMobileNav } from './nav-mobile';
+import { workspaceErrorMessage } from './account-workspace-utils';
 import {
   type AccountWorkspaceBootConfig,
   initPortalRuntime,
@@ -567,7 +568,7 @@ function bindAuthForms(): void {
         const timedOut = error instanceof DOMException && error.name === 'AbortError';
         errorDiv.textContent = timedOut
           ? 'Sign-in timed out while the API was waking up. Wait a few seconds, then try again or use Continue with Google.'
-          : 'Connection error. Please try again.';
+          : workspaceErrorMessage(error, 'Connection error. Please try again.');
         errorDiv.classList.add('show');
       }
     } finally {
@@ -651,7 +652,7 @@ function bindAuthForms(): void {
         const timedOut = error instanceof DOMException && error.name === 'AbortError';
         errorDiv.textContent = timedOut
           ? 'Sign-up timed out. The API may be waking up — wait a moment and try again.'
-          : 'Connection error. Please try again.';
+          : workspaceErrorMessage(error, 'Connection error. Please try again.');
         errorDiv.classList.add('show');
       }
     } finally {
@@ -689,9 +690,10 @@ function bindAuthForms(): void {
         showAuthBanner(data.error || 'Could not send verification email.', 'error');
         setMessage('resend-verification-error', data.error || 'Could not send verification email.', true);
       }
-    } catch {
-      showAuthBanner('Connection error. Could not send verification email.', 'error');
-      setMessage('resend-verification-error', 'Connection error. Please try again.', true);
+    } catch (error) {
+      const detail = workspaceErrorMessage(error, 'Connection error. Please try again.');
+      showAuthBanner(`Could not send verification email: ${detail}`, 'error');
+      setMessage('resend-verification-error', detail, true);
     }
   });
 
@@ -714,8 +716,8 @@ function bindAuthForms(): void {
         maybeAppendPreviewLink(data.message || 'If the account exists, a reset link has been sent.', data.previewUrl),
         !response.ok,
       );
-    } catch {
-      setMessage('forgot-password-error', 'Connection error. Please try again.', true);
+    } catch (error) {
+      setMessage('forgot-password-error', workspaceErrorMessage(error, 'Connection error. Please try again.'), true);
     }
   });
 
@@ -745,8 +747,8 @@ function bindAuthForms(): void {
         (document.getElementById('reset-password-form') as HTMLElement | null)?.style.setProperty('display', 'none');
       }
       setMessage('reset-password-error', data.message || data.error || 'Password reset failed.', !response.ok);
-    } catch {
-      setMessage('reset-password-error', 'Connection error. Please try again.', true);
+    } catch (error) {
+      setMessage('reset-password-error', workspaceErrorMessage(error, 'Connection error. Please try again.'), true);
     }
   });
 

@@ -23,6 +23,7 @@ import { getGrowthMaterializeBlockReason } from './dedup';
 import type { GrowthProposal } from './types';
 import { generateResourceBody } from '~/lib/inference/resource-generate';
 import { mergeInferenceMetadata } from '~/lib/inference/inference-metadata';
+import { containsDesignSystemJargon } from '~/lib/inference/topic-fidelity';
 import {
   LIBRARY_GROWTH_SYSTEM_USER_ID,
 } from './auto-materialize';
@@ -93,6 +94,7 @@ export async function materializeGrowthProposal(
 
   const body = generated.content;
   const voiceScore = generated.voiceScore;
+  const topicFidelity = generated.topicFidelity;
 
   const description = generateResourceCatalogDescription({
     voiceProfile: resolved.profile,
@@ -109,7 +111,11 @@ export async function materializeGrowthProposal(
   const reviewOnly = growthConfig.reviewOnlyPublish !== false;
   const publishThreshold =
     growthConfig.autoPublishMinScore ?? pipeline.autoPublishThreshold;
-  const shouldPublish = !reviewOnly && voiceScore >= publishThreshold;
+  const shouldPublish =
+    !reviewOnly &&
+    voiceScore >= publishThreshold &&
+    topicFidelity >= 0.28 &&
+    !containsDesignSystemJargon(body);
 
   let resource: Resource;
 
@@ -124,6 +130,7 @@ export async function materializeGrowthProposal(
     existing.metadata = mergeInferenceMetadata(existing.metadata, {
       wordCount: body.split(/\s+/).length,
       voiceScore,
+      topicFidelity,
       voiceProfileId: resolved.voiceProfileId,
       voiceProfileResolution: resolved.resolution,
       inferenceMode: generated.inferenceMode,
@@ -146,6 +153,7 @@ export async function materializeGrowthProposal(
       metadata: mergeInferenceMetadata(undefined, {
         wordCount: body.split(/\s+/).length,
         voiceScore,
+        topicFidelity,
         voiceProfileId: resolved.voiceProfileId,
         voiceProfileResolution: resolved.resolution,
         inferenceMode: generated.inferenceMode,

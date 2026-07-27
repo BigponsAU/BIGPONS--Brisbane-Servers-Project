@@ -21,6 +21,7 @@ export interface Contribution {
   };
   analysis?: {
     voiceScore?: number;
+    topicFidelity?: number;
     notes?: string;
   };
   tokensAwarded?: number;
@@ -55,6 +56,11 @@ export async function createContribution(
 export async function getUserContributions(userId: string): Promise<Contribution[]> {
   const contributions = await loadContributions();
   return contributions.filter((c) => c.userId === userId);
+}
+
+export async function getContribution(id: string): Promise<Contribution | null> {
+  const contributions = await loadContributions();
+  return contributions.find((c) => c.id === id) ?? null;
 }
 
 export async function updateContributionStatus(

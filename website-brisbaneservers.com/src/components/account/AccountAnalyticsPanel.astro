@@ -37,12 +37,21 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
               </details>
 
               <div id="analytics-content" class="analytics-content" aria-live="polite">
-                <p id="analytics-load-status" class="form-hint">Loading corpus analytics…</p>
+                <p id="analytics-load-status" class="analytics-status form-hint">Loading corpus analytics…</p>
 
                 <div class="analytics-kpi-grid" id="analytics-kpi-grid" hidden>
-                  <div class="analytics-kpi">
+                  <div class="analytics-kpi analytics-kpi--coverage">
                     <span class="analytics-kpi__label">Coverage</span>
                     <span class="analytics-kpi__value" id="analytics-kpi-coverage">—</span>
+                    <span
+                      id="analytics-kpi-coverage-meter"
+                      class="analytics-kpi__meter"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
+                      aria-label="Topic coverage percent"
+                    ></span>
                     <span class="analytics-kpi__meta" id="analytics-kpi-coverage-meta"></span>
                   </div>
                   <div class="analytics-kpi">
@@ -115,14 +124,14 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
                   </div>
                 </div>
 
-                <div id="analytics-suggestions-section" class="analytics-section analytics-suggestions-section" data-min-role="admin" hidden>
+                <div id="analytics-suggestions-section" class="analytics-section analytics-suggestions-section" data-min-role="admin" data-visibility="content" hidden>
                   <h3 class="workspace-section-title">Pipeline config &amp; suggestions</h3>
                   <p class="section-subtitle">Data-driven suggestions to tune auto-approval and quality. Apply changes below to update the pipeline.</p>
                   <div id="analytics-config-display" class="analytics-config-display"></div>
                   <div id="analytics-suggestions-list" class="analytics-suggestions-list"></div>
                 </div>
 
-                <div id="analytics-index-section" class="analytics-section" data-min-role="admin" hidden>
+                <div id="analytics-index-section" class="analytics-section" data-min-role="admin" data-visibility="content" hidden>
                   <h3 class="workspace-section-title">Semantic index health</h3>
                   <p class="section-subtitle">How much of the published corpus is searchable via embeddings.</p>
                   <div id="analytics-index-body" class="analytics-index-body"></div>

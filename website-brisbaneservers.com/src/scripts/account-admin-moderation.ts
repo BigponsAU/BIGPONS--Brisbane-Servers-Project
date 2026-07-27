@@ -2,7 +2,7 @@
  * Admin moderation panel — pending community uploads queue + inline preview.
  */
 import { workspaceFetch } from '../lib/client-api';
-import { escapeHtml, runWorkspaceGuardedAction, setElementBusy } from './account-workspace-utils';
+import { escapeHtml, runWorkspaceGuardedAction, setElementBusy, workspaceErrorMessage } from './account-workspace-utils';
 import { getPortalAccountContext, showAuthBanner } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
@@ -184,7 +184,7 @@ async function moderateContribution(
       tokensClawedBack?: number;
     };
 
-    if (!res.ok || data.success === false) {
+    if (!res.ok || !data.success) {
       const message = data.error || `Could not ${action} contribution (${res.status}).`;
       showAuthBanner(message, 'error');
       await loadModerationQueue(ctx);
@@ -281,8 +281,8 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
 
     const first = container.querySelector('.moderation-queue-item') as HTMLButtonElement | null;
     first?.click();
-  } catch {
-    container.innerHTML = '<p class="status-message">Could not load moderation queue.</p>';
+  } catch (error) {
+    container.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load moderation queue.'))}</p>`;
     setQueueSummary(0);
   }
 }

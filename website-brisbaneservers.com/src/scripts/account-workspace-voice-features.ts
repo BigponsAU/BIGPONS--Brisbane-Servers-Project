@@ -54,6 +54,18 @@ const INDUSTRY_COLORS: Record<string, string> = {
   general: 'rgba(148, 163, 184, 0.85)',
 };
 
+const INDUSTRY_LABELS: Record<string, string> = {
+  healthcare: 'Healthcare',
+  hospitality: 'Hospitality',
+  retail: 'Retail',
+  'professional-services': 'Professional services',
+  manufacturing: 'Manufacturing',
+  finance: 'Finance',
+  construction: 'Construction',
+  general: 'General',
+  platform: 'Platform',
+};
+
 const LAYER_HINTS: Record<string, string> = {
   'corpus-resources':
     'Published guides clustered by industry around the Brisbane voice hub. Click a dot to inspect.',
@@ -64,18 +76,52 @@ const LAYER_HINTS: Record<string, string> = {
 };
 
 function getApiBase(): string {
+  const accountCtx = (
+    window as unknown as { __portalAccountCtx?: { apiBaseUrl?: string } }
+  ).__portalAccountCtx;
+  const fromCtx = (accountCtx?.apiBaseUrl ?? '').replace(/\/+$/, '');
+  if (fromCtx) return fromCtx;
+
   const bridge = (window as unknown as { __portalBridge?: { apiBaseUrl?: string } }).__portalBridge;
-  return (bridge?.apiBaseUrl ?? '').replace(/\/+$/, '');
+  const fromBridge = (bridge?.apiBaseUrl ?? '').replace(/\/+$/, '');
+  if (fromBridge) return fromBridge;
+
+  const root = document.getElementById('admin-portal');
+  const fromDataset = (root?.dataset?.publicApiBaseUrl ?? '').replace(/\/+$/, '');
+  return fromDataset || '/api';
 }
 
 async function workspaceJsonFetch(path: string, init?: RequestInit): Promise<Response> {
-  return workspaceFetch(`${getApiBase()}${path}`, {
+  const base = getApiBase();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return workspaceFetch(`${base}${normalizedPath}`, {
     ...init,
     headers: {
       Accept: 'application/json',
       ...(init?.headers as Record<string, string> | undefined),
     },
   });
+}
+
+async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error(
+      res.ok
+        ? 'Server returned a non-JSON response'
+        : `Request failed (${res.status}) with a non-JSON response`
+    );
+  }
+}
+
+function industryLabel(key: string, coverage?: IndustryCoverageItem[]): string {
+  const fromCoverage = coverage?.find((c) => c.id === key || c.name === key);
+  if (fromCoverage) return fromCoverage.name;
+  const normalized = key.toLowerCase().replace(/\s+/g, '-');
+  return INDUSTRY_LABELS[normalized] || INDUSTRY_LABELS[key] || key.replace(/-/g, ' ');
 }
 
 function nodeColor(node: MapNode): string {
@@ -144,18 +190,65 @@ function projectToSvg(
   return positions;
 }
 
-function renderLegend(industryKeys: string[]): void {
+function renderLegend(industryKeys: string[], coverage?: IndustryCoverageItem[]): void {
   const legend = document.getElementById('voice-map-legend');
   if (!legend) return;
-  const items = ['profile:Brisbane voice', ...industryKeys.map((i) => `${i}:${i}`)];
+
+  const keys = industryKeys
+    .map((k) => String(k || '').trim())
+    .filter(Boolean)
+    .filter((k, i, arr) => arr.indexOf(k) === i);
+
+  const items: Array<{ key: string; label: string }> = [
+    { key: 'profile', label: 'Brisbane voice' },
+    ...keys.map((key) => ({
+      key: key.toLowerCase().replace(/\s+/g, '-'),
+      label: industryLabel(key, coverage),
+    })),
+  ];
+
   legend.innerHTML = items
     .slice(0, 12)
     .map((item) => {
-      const [key, label] = item.split(':');
-      const color = INDUSTRY_COLORS[key] ?? INDUSTRY_COLORS.general;
-      return `<span class="voice-map-legend-item"><span class="voice-map-legend-swatch" style="background:${color}"></span>${escapeHtml(label || key)}</span>`;
+      const color = INDUSTRY_COLORS[item.key] ?? INDUSTRY_COLORS.general;
+      return `<span class="voice-map-legend-item"><span class="voice-map-legend-swatch" style="background:${color}" aria-hidden="true"></span>${escapeHtml(item.label)}</span>`;
     })
     .join('');
+}
+
+function clearVoiceMapChrome(): void {
+  const legend = document.getElementById('voice-map-legend');
+  if (legend) legend.innerHTML = '';
+  renderCoverageGaps([]);
+  renderSelectionDetail(null);
+}
+
+function renderVoiceMapError(svg: SVGSVGElement, message: string): void {
+  clearVoiceMapChrome();
+  const width = 800;
+  const height = 480;
+  applyVoiceMapViewMode();
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.innerHTML = '';
+
+  const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  title.setAttribute('x', String(width / 2));
+  title.setAttribute('y', String(height / 2 - 12));
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('class', 'voice-map-placeholder voice-map-placeholder--error');
+  title.textContent = 'Could not load the map';
+  svg.appendChild(title);
+
+  const detail = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  detail.setAttribute('x', String(width / 2));
+  detail.setAttribute('y', String(height / 2 + 16));
+  detail.setAttribute('text-anchor', 'middle');
+  detail.setAttribute('class', 'voice-map-placeholder-detail');
+  detail.textContent = message.slice(0, 120);
+  svg.appendChild(detail);
+
+  const metaEl = document.getElementById('voice-map-meta');
+  if (metaEl) metaEl.textContent = message;
 }
 
 function updateLayerHint(view: string): void {
@@ -354,13 +447,22 @@ function renderVoiceMapSvg(
   if (nodes.length === 0) {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', String(width / 2));
-    text.setAttribute('y', String(height / 2));
+    text.setAttribute('y', String(height / 2 - 10));
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('class', 'voice-map-placeholder');
-    text.textContent = 'Nothing to map yet — publish guides, or ask an admin to Rebuild map.';
+    text.textContent = 'Nothing to map yet';
     svg.appendChild(text);
+
+    const hint = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    hint.setAttribute('x', String(width / 2));
+    hint.setAttribute('y', String(height / 2 + 18));
+    hint.setAttribute('text-anchor', 'middle');
+    hint.setAttribute('class', 'voice-map-placeholder-detail');
+    hint.textContent = 'Publish guides, or ask an admin to Rebuild map.';
+    svg.appendChild(hint);
+
     const metaEl = document.getElementById('voice-map-meta');
-    if (metaEl) metaEl.textContent = meta;
+    if (metaEl) metaEl.textContent = meta || 'Empty corpus — publish a guide to seed the map.';
     renderSelectionDetail(null);
     return;
   }
@@ -490,48 +592,63 @@ export async function loadVoiceMap(): Promise<void> {
       ? (document.getElementById('voice-map-semantic-query') as HTMLInputElement | null)?.value
       : undefined;
   const path = mapApiPath(view, semanticQuery);
+  const metaEl = document.getElementById('voice-map-meta');
+  if (metaEl) metaEl.textContent = 'Loading map…';
 
   try {
     const res = await workspaceJsonFetch(path);
-    const data = await res.json();
+    const data = await readJsonSafe(res);
     if (!res.ok || !data.success) {
-      renderVoiceMapSvg(svg, [], [], data.error || 'Could not load the map.');
+      const errMsg =
+        typeof data.error === 'string' && data.error
+          ? data.error
+          : `Could not load the map (${res.status || 'error'}).`;
+      renderVoiceMapError(svg, errMsg);
       return;
     }
-    const nodes: MapNode[] = (data.nodes ?? []).map(
-      (n: {
-        id: string;
-        label?: string;
-        principle?: string;
-        x: number;
-        y: number;
-        kind?: string;
-        industry?: string;
-        resourceId?: string;
-        profileId?: string;
-      }) => ({
-        id: n.id,
-        label: n.label ?? n.principle,
-        x: n.x,
-        y: n.y,
-        kind: n.kind,
-        industry: n.industry,
-        resourceId: n.resourceId,
-        profileId: n.profileId,
-      })
-    );
-    const edges: MapEdge[] = (data.edges ?? []).map(
-      (e: { sourceId: string; targetId: string; strength?: number; kind?: string }) => ({
-        sourceId: e.sourceId,
-        targetId: e.targetId,
-        strength: e.strength,
-        kind: e.kind,
-      })
-    );
+    const rawNodes = (Array.isArray(data.nodes) ? data.nodes : []) as Array<{
+      id: string;
+      label?: string;
+      principle?: string;
+      x: number;
+      y: number;
+      kind?: string;
+      industry?: string;
+      resourceId?: string;
+      profileId?: string;
+    }>;
+    const nodes: MapNode[] = rawNodes.map((n) => ({
+      id: n.id,
+      label: n.label ?? n.principle,
+      x: n.x,
+      y: n.y,
+      kind: n.kind,
+      industry: n.industry,
+      resourceId: n.resourceId,
+      profileId: n.profileId,
+    }));
+    const rawEdges = (Array.isArray(data.edges) ? data.edges : []) as Array<{
+      sourceId: string;
+      targetId: string;
+      strength?: number;
+      kind?: string;
+    }>;
+    const edges: MapEdge[] = rawEdges.map((e) => ({
+      sourceId: e.sourceId,
+      targetId: e.targetId,
+      strength: e.strength,
+      kind: e.kind,
+    }));
     const routeIds = Array.isArray(data.routeNodeIds) ? (data.routeNodeIds as string[]) : [];
     const routeNodeIds = routeIds.length > 0 ? new Set(routeIds) : undefined;
-    const stats = data.stats;
-    const brisbane = data.brisbaneProfile?.name ?? 'Brisbane';
+    const stats = (data.stats ?? {}) as {
+      industries?: string[];
+      industryCoverage?: IndustryCoverageItem[];
+      indexedResources?: number;
+      chunksInIndex?: number;
+    };
+    const brisbaneProfile = data.brisbaneProfile as { name?: string } | null | undefined;
+    const brisbane = brisbaneProfile?.name ?? 'Brisbane';
     const viewLabel =
       view === 'semantic'
         ? 'Related path'
@@ -546,7 +663,7 @@ export async function loadVoiceMap(): Promise<void> {
       routeIds.length > 0 ? `Path: ${routeIds.length} steps` : '',
       stats?.indexedResources != null ? `${stats.indexedResources} guides indexed` : '',
       stats?.chunksInIndex != null ? `${stats.chunksInIndex} passages` : '',
-      data.brisbaneProfile ? `Centre: ${brisbane} voice` : '',
+      brisbaneProfile ? `Centre: ${brisbane} voice` : '',
     ].filter(Boolean);
 
     if (Array.isArray(stats?.industryCoverage)) {
@@ -558,10 +675,21 @@ export async function loadVoiceMap(): Promise<void> {
       renderCoverageGaps(voiceMapCoverage);
     }
 
-    if (stats?.industries) renderLegend(stats.industries as string[]);
-    else if (view === 'semantic' || view === 'corpus-chunks') {
+    const coverage = voiceMapCoverage.length ? voiceMapCoverage : undefined;
+    if (Array.isArray(stats?.industries) && stats.industries.length) {
+      renderLegend(stats.industries as string[], coverage);
+    } else if (coverage?.length) {
+      renderLegend(
+        coverage.map((c) => c.id),
+        coverage
+      );
+                    } else if (view === 'semantic' || view === 'corpus-chunks') {
       const industryKeys = [...new Set(nodes.map((n) => n.industry).filter(Boolean))] as string[];
-      if (industryKeys.length) renderLegend(industryKeys);
+      if (industryKeys.length) renderLegend(industryKeys, coverage);
+      else {
+        const legend = document.getElementById('voice-map-legend');
+        if (legend) legend.innerHTML = '';
+      }
     } else if (view === 'principles') {
       const legend = document.getElementById('voice-map-legend');
       if (legend) legend.innerHTML = '';
@@ -571,7 +699,6 @@ export async function loadVoiceMap(): Promise<void> {
     if (voiceMap3dMode) {
       applyVoiceMapViewMode();
       await renderVoiceMap3d(nodes, edges);
-      const metaEl = document.getElementById('voice-map-meta');
       if (metaEl) {
         metaEl.textContent = `${voiceMapCache.meta} · Drag to orbit · Click to inspect · Double-click to open`;
       }
@@ -583,8 +710,10 @@ export async function loadVoiceMap(): Promise<void> {
       destroyVoiceMapWebGl();
       renderVoiceMapSvg(svg, nodes, edges, voiceMapCache.meta, routeNodeIds);
     }
-  } catch {
-    renderVoiceMapSvg(svg, [], [], 'Network error loading the map.');
+  } catch (err) {
+    trackPortalError('loadVoiceMap', err);
+    const detail = err instanceof Error ? err.message : 'Network error loading the map.';
+    renderVoiceMapError(svg, detail);
   }
 }
 
@@ -598,17 +727,21 @@ async function bootstrapVoiceCorpus(): Promise<void> {
   if (meta) meta.textContent = 'Rebuilding map from published guides and Brisbane voice…';
   try {
     const res = await workspaceJsonFetch('/admin/bootstrap-voice-corpus', { method: 'POST' });
-    const data = await res.json();
+    const data = await readJsonSafe(res);
     if (!res.ok || !data.success) {
-      if (meta) meta.textContent = data.error || 'Rebuild failed.';
+      if (meta) {
+        meta.textContent =
+          (typeof data.error === 'string' && data.error) || `Rebuild failed (${res.status || 'error'}).`;
+      }
       return;
     }
     if (meta) {
-      meta.textContent = data.message || 'Map rebuilt.';
+      meta.textContent = (typeof data.message === 'string' && data.message) || 'Map rebuilt.';
     }
     await loadVoiceMap();
-  } catch {
-    if (meta) meta.textContent = 'Network error while rebuilding the map.';
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : 'Unknown error';
+    if (meta) meta.textContent = `Could not rebuild map: ${detail}`;
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -635,14 +768,33 @@ async function runVoiceLab(mode: 'tone' | 'patterns'): Promise<void> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, mode: mode === 'patterns' ? 'patterns' : 'tone' }),
     });
-    const data = await res.json();
+    const data = await readJsonSafe(res);
     if (!res.ok || !data.success) {
-      output.textContent = data.error || 'Analysis failed.';
+      output.textContent =
+        (typeof data.error === 'string' && data.error) || `Analysis failed (${res.status || 'error'}).`;
       return;
     }
-    output.textContent = JSON.stringify(data, null, 2);
-  } catch {
-    output.textContent = 'Network error during analysis.';
+    const score =
+      typeof data.score === 'number'
+        ? data.score
+        : typeof data.tone?.overallScore === 'number'
+          ? data.tone.overallScore
+          : typeof data.validation?.score === 'number'
+            ? data.validation.score
+            : null;
+    const profileHint = data.voiceProfile?.profileId || data.profileId || 'resolved profile';
+    const lines = [
+      `Voice lab analysis (${mode})`,
+      `Profile: ${profileHint}`,
+      score != null ? `Score: ${Math.round(Number(score) * 100)}%` : null,
+      '',
+      'Detail (JSON):',
+      JSON.stringify(data, null, 2),
+    ].filter((line) => line !== null);
+    output.textContent = lines.join('\n');
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : 'Unknown error';
+    output.textContent = `Could not analyze voice: ${detail}`;
   }
 }
 
@@ -738,18 +890,29 @@ export function bindVoiceFeaturePanels(): void {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
-          const data = await res.json();
+          const data = await readJsonSafe(res);
           if (!res.ok || !data.success) {
-            return { ok: false, error: data.error || 'Extrapolation failed' };
+            return {
+              ok: false,
+              error:
+                (typeof data.error === 'string' && data.error) ||
+                `Extrapolation failed (${res.status || 'error'})`,
+            };
           }
-          return { ok: true, text: data.text as string };
+          return { ok: true, text: String(data.text ?? ''), warnings: data.warnings as string[] | undefined };
         })
-        .then((text) => {
-          if (debugEl) debugEl.textContent = text;
+        .then((result) => {
+          if (!debugEl) return;
+          const warn =
+            Array.isArray(result.warnings) && result.warnings.length
+              ? `${result.warnings.map((w) => `⚠ ${w}`).join('\n')}\n\n`
+              : '⚠ Voice Lab debug only — not production copy.\n\n';
+          debugEl.textContent = `${warn}${result.text}`;
         })
         .catch((err) => {
           trackPortalError('extrapolateMarkovIssues', err);
-          if (debugEl) debugEl.textContent = 'Network error during extrapolation.';
+          const detail = err instanceof Error ? err.message : 'Unknown error';
+          if (debugEl) debugEl.textContent = `Could not extrapolate lineage: ${detail}`;
         })
     );
   });

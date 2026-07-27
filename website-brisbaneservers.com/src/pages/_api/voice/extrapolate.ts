@@ -4,9 +4,15 @@ import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import { resolveResourceVoiceProfile } from '../../../lib/resource-voice-profile';
 import { loadResources } from '../../../lib/resources-api';
+import {
+  containsDesignSystemJargon,
+  isDesignSystemVoiceProfile,
+  sanitizeDesignSystemContamination,
+} from '../../../lib/inference/topic-fidelity';
 
 /**
  * Voice extrapolation — Markov debug chain analysis and general text expansion.
+ * Debug / Voice Lab only — not a production publish path.
  * POST /api/voice/extrapolate
  */
 export const POST: APIRoute = async ({ request }) => {
@@ -43,21 +49,42 @@ export const POST: APIRoute = async ({ request }) => {
       resources,
     });
 
+    const allowDesign = isDesignSystemVoiceProfile(resolved.profile);
     const extrapolator = new Extrapolator(resolved.profile);
     const options =
       body?.options && typeof body.options === 'object'
         ? (body.options as { expansionLevel?: string; addExamples?: boolean; addDetails?: boolean })
         : {};
-    const extrapolated = extrapolator.extrapolate(text, {
+    let extrapolated = extrapolator.extrapolate(text, {
       expansionLevel: options.expansionLevel === 'minimal' ? 'minimal' : 'moderate',
       addExamples: options.addExamples !== false,
       addDetails: options.addDetails !== false,
     });
 
+    const warnings: string[] = [
+      'Voice Lab debug only — do not publish this expansion without human review.',
+    ];
+    let sanitized = false;
+    if (!allowDesign && containsDesignSystemJargon(extrapolated)) {
+      const cleaned = sanitizeDesignSystemContamination(extrapolated);
+      if (cleaned.trim()) {
+        extrapolated = cleaned;
+        sanitized = true;
+        warnings.push('Design-system jargon was stripped from the expansion.');
+      } else {
+        warnings.push(
+          'Expansion contained design-system jargon; review carefully before using any of this text.'
+        );
+      }
+    }
+
     return new Response(
       JSON.stringify({
         text: extrapolated,
         profileId: resolved.voiceProfileId,
+        purpose: 'voice-lab-debug',
+        sanitized,
+        warnings,
         success: true,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

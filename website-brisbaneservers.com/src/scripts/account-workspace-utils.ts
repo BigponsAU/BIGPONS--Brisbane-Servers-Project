@@ -71,6 +71,54 @@ export function formatInferenceBadge(metadata: Record<string, unknown> | undefin
   return `<span class="badge badge-draft inference-badge" title="Last inference: ${escapeHtml(label)}">${escapeHtml(label)}</span>`;
 }
 
+/**
+ * Purpose-health toast copy for Generate / Upload / Process / Improve.
+ * Avoids green "success" when the API kept original or returned a minimal seed fallback.
+ */
+export function describeInferenceOutcome(params: {
+  verbPast: string;
+  updated?: boolean;
+  inferenceMode?: string | null;
+  modelId?: string | null;
+  voiceScore?: number | null;
+  topicFidelity?: number | null;
+  keptOriginal?: boolean;
+}): { message: string; type: WorkspaceNotificationType } {
+  const mode = params.inferenceMode || undefined;
+  const modelId = params.modelId || undefined;
+  const isGuardNoOp =
+    params.keptOriginal === true ||
+    mode === 'original' ||
+    modelId === 'topic-fidelity-guard' ||
+    modelId === 'structure-fidelity-guard' ||
+    modelId === 'design-jargon-sanitize' ||
+    modelId === 'topic-seed-fallback';
+
+  const scoreText =
+    typeof params.voiceScore === 'number' && params.voiceScore > 0
+      ? ` Voice score: ${Math.round(params.voiceScore * 100)}%`
+      : '';
+  const fidelityText =
+    typeof params.topicFidelity === 'number'
+      ? ` Topic fidelity: ${Math.round(params.topicFidelity * 100)}%`
+      : '';
+  const updateText = params.updated ? ' (updated existing)' : '';
+  const modeText = mode ? ` via ${mode}` : '';
+  const modelHint = modelId ? ` (${modelId})` : '';
+
+  if (isGuardNoOp) {
+    return {
+      message: `${params.verbPast}${updateText} with topic-fidelity safeguards — content kept or minimal on-topic draft.${scoreText}${fidelityText}`,
+      type: 'info',
+    };
+  }
+
+  return {
+    message: `Resource ${params.verbPast}${modeText}${modelHint}.${updateText}${scoreText}${fidelityText}`,
+    type: 'success',
+  };
+}
+
 export function resourceExcerpt(
   resource: { description?: unknown; content?: unknown },
   maxLen = 150,

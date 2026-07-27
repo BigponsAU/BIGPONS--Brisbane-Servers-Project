@@ -90,6 +90,7 @@ export const POST: APIRoute = async ({ request }) => {
     let modelId: string | null = null;
     let voiceScore = 0;
     let voiceValid = false;
+    let topicFidelity: number | undefined;
 
     if (skipEnhance !== true) {
       const enhanced = await enhanceIngestedContent({
@@ -108,10 +109,12 @@ export const POST: APIRoute = async ({ request }) => {
       modelId = enhanced.modelId ?? null;
       voiceScore = enhanced.voiceScore;
       voiceValid = enhanced.voiceValid;
+      topicFidelity = enhanced.topicFidelity;
     } else {
       const validation = voiceMatcher.validateVoice(bodyText);
       voiceScore = validation.score ?? 0;
       voiceValid = validation.isValid ?? false;
+      topicFidelity = 1;
     }
 
     const voiceValidation = voiceMatcher.validateVoice(finalContent);
@@ -179,6 +182,7 @@ export const POST: APIRoute = async ({ request }) => {
           issues: voiceValidation.issues || [],
           strengths: voiceValidation.strengths || [],
         },
+        topicFidelity,
         success: true,
       }),
       {

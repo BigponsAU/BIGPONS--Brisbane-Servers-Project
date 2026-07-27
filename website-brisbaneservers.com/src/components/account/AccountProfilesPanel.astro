@@ -41,20 +41,20 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       </details>
 
       <details class="panel-guidance-details panel-guidance-details--accent" open>
-        <summary>BIGPONS — site voice profile</summary>
+        <summary>Site voice (BIGPONS) — build from library</summary>
         <div class="panel-guidance-details__body profile-create-base-card">
-          <p>Synthesises voice from the <strong>public website resource library</strong>. Narrow by industry for one vertical; leave &quot;All&quot; for the full corpus. Sets the storage default when the build succeeds.</p>
+          <p>Builds the <strong>site corpus voice</strong> from the public website resource library. Narrow by industry for one vertical; leave &quot;All&quot; for the full corpus. Sets the storage default when the build succeeds.</p>
           <div class="form-group bigpons-industry-field">
             <label for="bigpons-industry-filter">Industry slice (optional)</label>
-            <select id="bigpons-industry-filter" aria-label="Limit BIGPONS corpus to one industry">
+            <select id="bigpons-industry-filter" aria-label="Limit site voice corpus to one industry">
               <option value="">All industries (public website library)</option>
               {industries.map((industry) => (
                 <option value={industry.slug}>{industry.name}</option>
               ))}
             </select>
           </div>
-          <button id="create-base-profile-btn" class="btn btn-primary btn-sm" type="button" onclick="createBaseProfile()" aria-label="Build or refresh BIGPONS profile from resources">
-            Build / refresh BIGPONS from resources
+          <button id="create-base-profile-btn" class="btn btn-primary btn-sm" type="button" onclick="createBaseProfile()" aria-label="Build or refresh site voice profile from resources">
+            Build / refresh site voice from resources
           </button>
         </div>
       </details>

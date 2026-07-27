@@ -344,7 +344,7 @@ async function actOnProposal(
     setGrowthStatus(
       action === 'approve'
         ? isCaseStudy
-          ? `Case study draft created${data.published ? ' (published)' : ''}. Review in Resources before going live.`
+          ? `Case study draft queued for review${data.published ? ' (resource marked published — still review curated case-studies.ts before flagship live page)' : ''}. Open in Resources.`
           : `Draft created${data.published ? ' (published)' : ''}: ${data.resource?.title ?? 'resource'} — publish from Resources when ready.`
         : 'Proposal rejected.'
     );
@@ -388,9 +388,10 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
-        setGrowthStatus(data.success ? 'Growth settings saved.' : data.error || 'Save failed.', !data.success);
-        if (data.success) await loadLibraryGrowthPanel(ctx);
+        const data = await res.json().catch(() => ({}));
+        const ok = res.ok && !!data.success;
+        setGrowthStatus(ok ? 'Growth settings saved.' : data.error || `Save failed (${res.status}).`, !ok);
+        if (ok) await loadLibraryGrowthPanel(ctx);
       },
     });
   });
@@ -419,14 +420,15 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'arm' }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        const ok = res.ok && !!data.success;
         setGrowthStatus(
-          data.success
+          ok
             ? 'Schedule activated. Edge cron checks every 6 hours when a cycle is due.'
-            : data.error || 'Could not activate schedule.',
-          !data.success
+            : data.error || `Could not activate schedule (${res.status}).`,
+          !ok
         );
-        if (data.success) await loadLibraryGrowthPanel(ctx);
+        if (ok) await loadLibraryGrowthPanel(ctx);
       },
     });
   });
@@ -447,9 +449,13 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'pause' }),
         });
-        const data = await res.json();
-        setGrowthStatus(data.success ? 'Schedule paused. Use Run cycle now for manual planning.' : data.error || 'Pause failed.', !data.success);
-        if (data.success) await loadLibraryGrowthPanel(ctx);
+        const data = await res.json().catch(() => ({}));
+        const ok = res.ok && !!data.success;
+        setGrowthStatus(
+          ok ? 'Schedule paused. Use Run cycle now for manual planning.' : data.error || `Pause failed (${res.status}).`,
+          !ok
+        );
+        if (ok) await loadLibraryGrowthPanel(ctx);
       },
     });
   });

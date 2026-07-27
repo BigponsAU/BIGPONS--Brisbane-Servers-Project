@@ -1,5 +1,7 @@
 /**
- * Resource body generation: Workers AI (free tier) with template fallback.
+ * Resource body generation: Workers AI / NVIDIA with safe template fallback.
+ * Same purpose-health standard as Improve: reject design jargon / off-topic output;
+ * never force design Extrapolator expansions into consulting content.
  */
 
 import type { TextGenerator } from '@voice-framework/generators/text-generator';
@@ -15,6 +17,11 @@ import {
   type UsageReason,
 } from './usage-ledger';
 import { completeInference, getInferenceProvider } from './inference-provider';
+import {
+  isDesignSystemVoiceProfile,
+  isGenerateFaithful,
+  scoreTopicFidelity,
+} from './topic-fidelity';
 
 export type InferenceMode = 'nvidia' | 'workers-ai' | 'template' | 'original';
 
@@ -43,6 +50,43 @@ export interface GenerateBodyResult {
   modelId?: string;
   voiceScore: number;
   voiceValid: boolean;
+  topicFidelity: number;
+}
+
+function topicAnchor(params: GenerateBodyParams): string {
+  return [params.title, params.industry, params.topic, params.userBrief ?? '', params.seedText]
+    .join(' ')
+    .trim();
+}
+
+function acceptCandidate(
+  params: GenerateBodyParams,
+  content: string,
+  inferenceMode: GenerateBodyResult['inferenceMode'],
+  modelId: string | undefined
+): GenerateBodyResult | null {
+  const allowDesign = isDesignSystemVoiceProfile(params.resolved.profile);
+  if (
+    !isGenerateFaithful({
+      industry: params.industry,
+      topic: params.topic,
+      title: params.title,
+      seedText: params.seedText,
+      candidate: content,
+      allowDesignSystemJargon: allowDesign,
+    })
+  ) {
+    return null;
+  }
+  const validation = params.voiceMatcher.validateVoice(content);
+  return {
+    content,
+    inferenceMode,
+    modelId,
+    voiceScore: validation.score ?? 0,
+    voiceValid: validation.isValid ?? false,
+    topicFidelity: scoreTopicFidelity(topicAnchor(params), content),
+  };
 }
 
 async function generateTemplateBody(params: GenerateBodyParams): Promise<string> {
@@ -53,16 +97,41 @@ async function generateTemplateBody(params: GenerateBodyParams): Promise<string>
     includeStructure: true,
     style: 'descriptive',
   });
-  return extrapolator.extrapolate(generated, {
-    expansionLevel: 'moderate',
-    addExamples: true,
-    addDetails: true,
-  });
+  // Design Extrapolator invents golden-ratio / cipher expansions — skip for consulting.
+  if (isDesignSystemVoiceProfile(params.resolved.profile)) {
+    return extrapolator.extrapolate(generated, {
+      expansionLevel: 'moderate',
+      addExamples: true,
+      addDetails: true,
+    });
+  }
+  return generated;
+}
+
+function minimalSeedFallback(params: GenerateBodyParams): GenerateBodyResult {
+  const content = [
+    `# ${params.title}`,
+    '',
+    `${params.topic} guidance for ${params.industry} organisations.`,
+    '',
+    params.userBrief?.trim() || params.seedText.trim() ||
+      `Practical notes on ${params.topic} for ${params.industry} teams in Australia.`,
+  ].join('\n');
+  const validation = params.voiceMatcher.validateVoice(content);
+  return {
+    content,
+    inferenceMode: 'template',
+    modelId: 'topic-seed-fallback',
+    voiceScore: validation.score ?? 0,
+    voiceValid: validation.isValid ?? false,
+    topicFidelity: scoreTopicFidelity(topicAnchor(params), content),
+  };
 }
 
 export async function generateResourceBody(params: GenerateBodyParams): Promise<GenerateBodyResult> {
   const provider = getInferenceProvider();
   const reason = params.reason ?? 'inference_generate';
+  const allowDesignJargon = isDesignSystemVoiceProfile(params.resolved.profile);
 
   if (provider === 'nvidia' || provider === 'workers-ai') {
     const estimatedUnits = unitsForGenerate(params.seedText.length + 2000);
@@ -80,40 +149,46 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
           topic: params.topic,
           title: params.title,
           userBrief: params.userBrief,
+          allowDesignSystemJargon: allowDesignJargon,
         });
         const ai = await completeInference({ system, user, maxTokens: 1800 });
         const validation = params.voiceMatcher.validateVoice(ai.text);
         const score = validation.score ?? 0;
 
         if (score >= 0.45) {
-          await recordUsage({
-            userId: params.userId,
-            units: estimatedUnits,
-            reason,
-            modelId: ai.modelId,
-          });
-          return {
-            content: ai.text,
-            inferenceMode: ai.provider,
-            modelId: ai.modelId,
-            voiceScore: score,
-            voiceValid: validation.isValid ?? score >= 0.6,
-          };
+          const accepted = acceptCandidate(params, ai.text, ai.provider, ai.modelId);
+          if (accepted) {
+            await recordUsage({
+              userId: params.userId,
+              units: estimatedUnits,
+              reason,
+              modelId: ai.modelId,
+            });
+            return accepted;
+          }
+          console.warn(`[inference] generate AI rejected for topic fidelity; template fallback`);
+        } else {
+          console.warn(`[inference] voice score ${score} below threshold; template fallback`);
         }
-        console.warn(`[inference] voice score ${score} below threshold; template fallback`);
       } catch (err) {
         console.warn(`[inference] ${provider} failed; template fallback`, err);
       }
     }
   }
 
-  const content = await generateTemplateBody(params);
-  const validation = params.voiceMatcher.validateVoice(content);
-  return {
-    content,
-    inferenceMode: 'template',
-    modelId: 'voice-framework-template',
-    voiceScore: validation.score ?? 0,
-    voiceValid: validation.isValid ?? false,
-  };
+  const templateContent = await generateTemplateBody(params);
+  const templateAccepted = acceptCandidate(
+    params,
+    templateContent,
+    'template',
+    'voice-framework-template'
+  );
+  if (templateAccepted) {
+    return templateAccepted;
+  }
+
+  console.warn(
+    `[inference] generate falling back to minimal on-topic seed for ${params.industry}/${params.topic}`
+  );
+  return minimalSeedFallback(params);
 }

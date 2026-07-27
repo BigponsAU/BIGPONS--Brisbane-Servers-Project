@@ -99,6 +99,37 @@ describe('improve API scopes voice tools to resolved profile', () => {
     expect(src).toContain('keepOriginal');
   });
 
+  it('generate applies the same purpose-health fidelity guards', () => {
+    const src = readFileSync(
+      resolve(__dirname, '../src/lib/inference/resource-generate.ts'),
+      'utf8'
+    );
+    expect(src).toContain('isGenerateFaithful');
+    expect(src).toContain('minimalSeedFallback');
+    expect(src).toContain('isDesignSystemVoiceProfile');
+  });
+
+  it('community-upload preserves contributor text and resolves profile', () => {
+    const src = readFileSync(
+      resolve(__dirname, '../src/pages/_api/resources/community-upload.ts'),
+      'utf8'
+    );
+    expect(src).toContain('resolveResourceVoiceProfile');
+    expect(src).toContain('improveResourceBody');
+    expect(src).not.toContain('textGenerator.generateText');
+    expect(src).toContain('autoPublishEligible');
+  });
+
+  it('document rewrite fails closed on structure/fidelity drift', () => {
+    const src = readFileSync(
+      resolve(__dirname, '../src/lib/documents/voice-document-rewrite.ts'),
+      'utf8'
+    );
+    expect(src).toContain('isStructurePreserved');
+    expect(src).toContain('isTopicFaithful');
+    expect(src).toContain('keptOriginal');
+  });
+
   it('improve prompt bans design-system jargon', () => {
     const src = readFileSync(
       resolve(__dirname, '../src/lib/inference/prompt-builder.ts'),
@@ -106,5 +137,42 @@ describe('improve API scopes voice tools to resolved profile', () => {
     );
     expect(src).toContain('Do NOT introduce design-system');
     expect(src).toContain('allowDesignSystemJargon');
+  });
+});
+
+describe('generate fidelity helpers', () => {
+  it('rejects jargon and accepts on-topic healthcare generate candidates', async () => {
+    const { isGenerateFaithful, isStructurePreserved } = await import(
+      '../src/lib/inference/topic-fidelity'
+    );
+    expect(
+      isGenerateFaithful({
+        industry: 'healthcare',
+        topic: 'appointment-management',
+        title: 'Appointment Management',
+        seedText: 'Reduce no-shows for medical practices',
+        candidate:
+          'The cipher system provides vectorized with 1.618 for mathematical precision.',
+      })
+    ).toBe(false);
+    expect(
+      isGenerateFaithful({
+        industry: 'healthcare',
+        topic: 'appointment-management',
+        title: 'Appointment Management for Healthcare',
+        seedText: 'Reduce no-shows for medical practices across Australia.',
+        candidate:
+          'Appointment management helps healthcare practices reduce no-shows and improve chair time.',
+      })
+    ).toBe(true);
+    expect(
+      isStructurePreserved(
+        '# Intro\n\nHello\n\n## Details\n\nMore',
+        '# Intro\n\nRewritten\n\n## Details\n\nAlso rewritten'
+      )
+    ).toBe(true);
+    expect(
+      isStructurePreserved('# Intro\n\nHello\n\n## Details\n\nMore', 'No headings here at all')
+    ).toBe(false);
   });
 });

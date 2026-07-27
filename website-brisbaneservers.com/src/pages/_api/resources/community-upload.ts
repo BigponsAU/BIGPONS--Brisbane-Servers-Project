@@ -1,4 +1,6 @@
 import type { APIRoute } from 'astro';
+import { Extrapolator } from '@voice-framework/generators/extrapolator';
+import { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
 import { requireAuth } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import {
@@ -16,9 +18,17 @@ import { awardTokensOnAccept, computeContributionTokenAward } from '../../../lib
 import { loadPipelineConfig } from '../../../lib/pipeline-config';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { isDevelopmentMode } from '../../../utils/runtime-env';
+import { resolveResourceVoiceProfile } from '../../../lib/resource-voice-profile';
+import {
+  containsDesignSystemJargon,
+  sanitizeDesignSystemContamination,
+  scoreTopicFidelity,
+} from '../../../lib/inference/topic-fidelity';
+import { improveResourceBody } from '../../../lib/inference/resource-improve';
 
 /**
- * Community upload endpoint for client/admin/editor users.
+ * Community upload — preserve the contributor's text as the product purpose.
+ * Never replace their perspective with Extrapolator / design-system expansions.
  * POST /api/resources/community-upload
  */
 export const POST: APIRoute = async ({ request }) => {
@@ -65,30 +75,73 @@ export const POST: APIRoute = async ({ request }) => {
 
     const topicSlug = normalizeTopicSlug(topic);
     const resourceTitle = title || `${topic} for ${industry}`;
+    const userContent = String(content).trim();
 
-    const { textGenerator, extrapolator, voiceMatcher } = await getVoiceFramework();
-
-    const seedText = `${resourceTitle}. ${topic} insights for ${industry} businesses.`;
-    const generatedContent = textGenerator.generateText(seedText, {
-      length: 'long',
-      includeExamples: true,
-      includeStructure: true,
-      style: 'descriptive'
+    const resources = await loadResources();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
+    const resolved = await resolveResourceVoiceProfile({
+      profileManager,
+      profileBuilder,
+      resources,
     });
+    const extrapolator = new Extrapolator(resolved.profile);
+    const voiceMatcher = new VoiceMatcher(resolved.profile);
 
-    const combined = `${content}\n\n${generatedContent}`;
-    const communityContent = extrapolator.extrapolate(combined, {
-      expansionLevel: 'moderate',
-      addExamples: true,
-      addDetails: true
-    });
+    // Start from the contributor's words; strip any accidental design-system contamination.
+    let communityContent = containsDesignSystemJargon(userContent)
+      ? sanitizeDesignSystemContamination(userContent) || userContent
+      : userContent;
+
+    // Optional light polish via Improve path (fidelity-gated; may keep original).
+    try {
+      const draftResource: Resource = {
+        id: `community-draft-${Date.now()}`,
+        industry,
+        topic: topicSlug,
+        title: resourceTitle,
+        description: communityContent.slice(0, 200),
+        content: communityContent,
+        generatedAt: new Date().toISOString(),
+        generatedBy: user.email,
+        ownerId: user.id,
+        version: 1,
+        status: 'draft',
+        isStarterBlock: false,
+        visibility: 'private',
+      };
+      const improved = await improveResourceBody({
+        resource: draftResource,
+        ragContextText: '',
+        userId: user.id,
+        userRole: user.role,
+        resolved,
+        extrapolator,
+        voiceMatcher,
+        reason: 'inference_community_upload',
+      });
+      // Only accept polish when it stays faithful to the contributor paste.
+      if (
+        scoreTopicFidelity(userContent, improved.content) >= 0.55 &&
+        !containsDesignSystemJargon(improved.content)
+      ) {
+        communityContent = improved.content;
+      }
+    } catch (err) {
+      console.warn('[API] community-upload polish skipped; keeping user content', err);
+    }
 
     const voiceValidation = voiceMatcher.validateVoice(communityContent);
     const voiceScore = voiceValidation.score ?? 0;
+    const topicFidelity = scoreTopicFidelity(userContent, communityContent);
 
     const config = await loadPipelineConfig();
 
-    const resources = await loadResources();
+    // Auto-publish only when voice is strong AND we did not replace the user's contribution
+    // with framework gibberish (high fidelity to their paste) AND no design jargon.
+    const autoPublishEligible =
+      voiceScore >= config.autoPublishThreshold &&
+      topicFidelity >= 0.85 &&
+      !containsDesignSystemJargon(communityContent);
 
     const resource: Resource = {
       id: `${industry}-${topicSlug}-community-${Date.now()}`,
@@ -101,13 +154,17 @@ export const POST: APIRoute = async ({ request }) => {
       generatedBy: user.email,
       ownerId: user.id,
       version: 1,
-      status: voiceScore >= config.autoPublishThreshold ? 'published' : 'draft',
+      status: autoPublishEligible ? 'published' : 'draft',
       isStarterBlock: false,
-      visibility: voiceScore >= config.autoPublishThreshold ? 'public' : 'private',
+      visibility: autoPublishEligible ? 'public' : 'private',
       metadata: {
         wordCount: communityContent.split(/\s+/).length,
         semanticLevel: 'high',
-        voiceScore
+        voiceScore,
+        topicFidelity,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution,
+        contributionSource: 'community-upload',
       }
     };
 
@@ -121,7 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
       await saveResources(resources);
     }
 
-    const autoAccepted = voiceScore >= config.autoPublishThreshold;
+    const autoAccepted = autoPublishEligible;
     const contributionType: ContributionType = 'new_upload';
     let contribution = await createContribution({
       userId: user.id,
@@ -132,18 +189,18 @@ export const POST: APIRoute = async ({ request }) => {
         industry,
         topic: topicSlug,
         title: resourceTitle,
-        contentSnippet: content.substring(0, 200)
+        contentSnippet: userContent.substring(0, 200)
       },
       analysis: {
         voiceScore,
+        topicFidelity,
         notes: autoAccepted
-          ? 'Auto-approved based on strong voice match'
-          : 'Queued for review — tokens awarded when accepted'
+          ? 'Auto-approved: strong voice match and contributor text preserved'
+          : 'Queued for review — contributor text preserved; tokens awarded when accepted'
       },
       tokensAwarded: undefined
     });
 
-    // Tokens only on acceptance (auto-publish or later admin approve) — never while pending.
     let tokensAwarded = 0;
     if (autoAccepted) {
       const award = await awardTokensOnAccept(contribution, {
@@ -164,7 +221,7 @@ export const POST: APIRoute = async ({ request }) => {
       console.log(
         `[API] POST /api/resources/community-upload - Success (${duration}ms, voiceScore=${voiceScore.toFixed(
           2
-        )}, tokens=${tokensAwarded}, pendingPreview=${pendingPreview})`
+        )}, fidelity=${topicFidelity.toFixed(2)}, tokens=${tokensAwarded}, pendingPreview=${pendingPreview})`
       );
     }
 
@@ -178,6 +235,7 @@ export const POST: APIRoute = async ({ request }) => {
           issues: voiceValidation.issues ?? [],
           strengths: voiceValidation.strengths ?? []
         },
+        topicFidelity,
         tokensAwarded,
         tokensPendingApproval: autoAccepted ? 0 : pendingPreview,
         success: true
@@ -208,4 +266,3 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 };
-

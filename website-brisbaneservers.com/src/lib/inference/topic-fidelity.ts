@@ -93,3 +93,68 @@ export function isTopicFaithful(
   }
   return scoreTopicFidelity(original, candidate) >= min;
 }
+
+/** Soft floor for greenfield Generate (seed is short vs full article). */
+export const GENERATE_FIDELITY_MIN = 0.28;
+
+/**
+ * Generate / materialize fidelity: stay on industry+topic, reject design gibberish.
+ * Does not require high lexical overlap with a short seed the way Improve does with a full article.
+ */
+export function isGenerateFaithful(params: {
+  industry: string;
+  topic: string;
+  title: string;
+  seedText?: string;
+  candidate: string;
+  allowDesignSystemJargon?: boolean;
+}): boolean {
+  const candidate = params.candidate?.trim() ?? '';
+  if (!candidate) return false;
+  if (!params.allowDesignSystemJargon && containsDesignSystemJargon(candidate)) {
+    return false;
+  }
+  if (/\[[^\]]+\s+#\d+\]/.test(candidate)) return false;
+
+  const hay = candidate.toLowerCase();
+  const tokens = [params.industry, params.topic, params.title]
+    .flatMap((t) =>
+      String(t || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9&/\s-]+/g, ' ')
+        .split(/[\s/_-]+/)
+        .filter((w) => w.length >= 4)
+    )
+    .filter((w, i, arr) => arr.indexOf(w) === i);
+  const hit = tokens.some((w) => hay.includes(w));
+  if (!hit) return false;
+
+  const anchor = [params.title, params.industry, params.topic, params.seedText ?? '']
+    .join(' ')
+    .trim();
+  if (anchor.length < 40) return true;
+  return scoreTopicFidelity(anchor, candidate) >= GENERATE_FIDELITY_MIN;
+}
+
+/** Heading labels from markdown — used to verify document rewrite kept structure. */
+export function extractMarkdownHeadings(md: string): string[] {
+  return [...(md.matchAll(/^#{1,6}\s+(.+)$/gm) ?? [])].map((m) =>
+    m[1].trim().toLowerCase()
+  );
+}
+
+/**
+ * Structure preservation for OCR/document rewrite: retain most original headings.
+ */
+export function isStructurePreserved(
+  original: string,
+  candidate: string,
+  minRetain = 0.6
+): boolean {
+  const a = extractMarkdownHeadings(original);
+  if (a.length === 0) return true;
+  const b = extractMarkdownHeadings(candidate);
+  if (b.length < Math.ceil(a.length * 0.7)) return false;
+  const retained = a.filter((h) => b.some((x) => x.includes(h) || h.includes(x))).length;
+  return retained / a.length >= minRetain;
+}

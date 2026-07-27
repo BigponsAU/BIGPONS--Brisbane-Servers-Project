@@ -1,12 +1,13 @@
 // @ts-nocheck — profiles panel (extracted from account-workspace-app)
 import { workspaceFetch } from '../lib/client-api';
-import { escapeHtml, showWorkspaceNotification, runWorkspaceGuardedAction, withWorkspaceActionGuard } from './account-workspace-utils';
+import { escapeHtml, showWorkspaceNotification, runWorkspaceGuardedAction, withWorkspaceActionGuard, workspaceErrorMessage } from './account-workspace-utils';
 import { showConfirmDialog } from './portal-confirm-dialog';
 
 export type ProfilesWorkspaceDeps = {
   getVoiceApiUrl: () => string;
   navigateToPanel: (panel: string) => void;
   ensureWorkspaceVoiceProfiles: () => Promise<void>;
+  populateWorkspaceVoiceProfileSelect: (profiles: unknown[]) => void;
   isDev: boolean;
 };
 
@@ -14,7 +15,13 @@ export function registerProfilesWorkspace(deps: ProfilesWorkspaceDeps): {
   loadProfiles: () => Promise<void>;
   createBaseProfile: () => Promise<void>;
 } {
-  const { getVoiceApiUrl, navigateToPanel, ensureWorkspaceVoiceProfiles, isDev } = deps;
+  const {
+    getVoiceApiUrl,
+    navigateToPanel,
+    ensureWorkspaceVoiceProfiles,
+    populateWorkspaceVoiceProfileSelect,
+    isDev,
+  } = deps;
   const showNotification = showWorkspaceNotification;
 
 async function createBaseProfile(): Promise<void> {
@@ -25,7 +32,7 @@ async function createBaseProfile(): Promise<void> {
     const originalText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML =
-      '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building BIGPONS from resources...';
+      '<div class="loading-spinner" style="width: 16px; height: 16px; margin-right: 8px;"></div> Building site voice from resources...';
 
     try {
     const industryEl = document.getElementById('bigpons-industry-filter') as HTMLSelectElement | null;
@@ -45,7 +52,7 @@ async function createBaseProfile(): Promise<void> {
     if (response.ok && data.success) {
       const n = data.combinedSourcesCount ?? 0;
       showNotification(
-        `${data.message || 'BIGPONS updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
+        `${data.message || 'Site voice (BIGPONS) updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
         'success'
       );
       setTimeout(() => {
@@ -53,12 +60,12 @@ async function createBaseProfile(): Promise<void> {
         void ensureWorkspaceVoiceProfiles();
       }, 500);
     } else {
-      showNotification(`BIGPONS build failed: ${data.error || 'Unknown error'}`, 'error');
+      showNotification(`Site voice build failed: ${data.error || 'Unknown error'}`, 'error');
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Connection error';
-    showNotification(`BIGPONS build failed: ${errorMsg}`, 'error');
-    console.error('[Portal] BIGPONS profile build error:', error);
+    const errorMsg = workspaceErrorMessage(error, 'Connection error');
+    showNotification(`Site voice build failed: ${errorMsg}`, 'error');
+    console.error('[Portal] Site voice profile build error:', error);
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -68,7 +75,10 @@ async function createBaseProfile(): Promise<void> {
 
 (window as any).useProfileForGenerate = function(profileId: string): void {
   if (profileId === 'default') {
-    showNotification('Bundled default is used via Auto. Build BIGPONS or pick a saved profile.', 'info');
+    showNotification(
+      'Use Auto in Generate for the consulting site voice, or build site voice / pick a saved profile.',
+      'info'
+    );
     return;
   }
   const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
@@ -249,7 +259,7 @@ async function loadProfiles(): Promise<void> {
               <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-md); max-width: 32rem;">
                 The server still resolves voice automatically (bundled default or library-derived) for resource pipelines. Create a <strong>base profile</strong> from starter resources to persist a voice you can pick in Resources, or continue with Auto in the voice profile dropdown there.
               </p>
-              <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build BIGPONS from resources</button>
+              <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build site voice from resources</button>
             </div>
           </div>
         </div>
@@ -283,9 +293,10 @@ async function loadProfiles(): Promise<void> {
   } catch (error) {
     console.error('[Portal] Error loading profiles:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const isReference = error instanceof ReferenceError;
     listDiv.innerHTML = `
       <div class="loading-message" style="color: var(--error-color, #dc3545);">
-        <p><strong>Connection error:</strong> ${escapeHtml(errorMessage)}</p>
+        <p><strong>${isReference ? 'Workspace error:' : 'Connection error:'}</strong> ${escapeHtml(errorMessage)}</p>
         <button class="btn btn-secondary" onclick="loadProfiles()" style="margin-top: var(--space-md);">Retry</button>
       </div>
     `;
@@ -315,7 +326,7 @@ document.getElementById('view-default-profile')?.addEventListener('click', async
       showNotification('Failed to load default profile: ' + (errorData.error || 'Unknown error'), 'error');
     }
   } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
+    showNotification(workspaceErrorMessage(error), 'error');
     console.error('[Portal] Error loading default profile:', error);
   }
 });
@@ -900,7 +911,7 @@ function buildProfileCorpusInlineHtml(profile: Record<string, unknown>, corpusId
 function buildProfileActionsHtml(profile: Record<string, unknown>): string {
   const pid = escapeHtml(String(profile.id));
   if (profile.id === 'default') {
-    return '<span class="profiles-detail-hint">Bundled default is read-only. Use <strong>Build / refresh BIGPONS</strong> above to save a site corpus voice in storage.</span>';
+    return '<span class="profiles-detail-hint">Consulting site voice is used via <strong>Auto</strong> in Generate. Use <strong>Build / refresh site voice</strong> above to save a BIGPONS corpus profile in storage.</span>';
   }
   const parts: string[] = [];
   if (!profile.isDefault) {
@@ -1040,7 +1051,8 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       body: JSON.stringify({ archived: true })
     });
 
-    if (response.ok) {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data.success !== false) {
       showNotification('Profile archived successfully.', 'success');
       document.querySelector('.modal')?.remove();
       document.body.style.overflow = '';
@@ -1052,8 +1064,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
         loadProfiles();
       }, 500);
     } else {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMsg = errorData.error || 'Unknown error';
+      const errorMsg = data.error || 'Unknown error';
       showNotification(`Failed to archive profile: ${errorMsg}`, 'error');
       if (trigger) {
         trigger.disabled = false;
@@ -1061,7 +1072,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       }
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Network error';
+    const errorMsg = workspaceErrorMessage(error, 'Network error');
     showNotification(`Error archiving profile: ${errorMsg}`, 'error');
     console.error('[Portal] Error archiving profile:', error);
     if (trigger) {
@@ -1093,7 +1104,8 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       body: JSON.stringify({ archived: false })
     });
 
-    if (response.ok) {
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data.success !== false) {
       showNotification('Profile unarchived successfully.', 'success');
       document.querySelector('.modal')?.remove();
       document.body.style.overflow = '';
@@ -1105,8 +1117,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
         loadProfiles();
       }, 500);
     } else {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMsg = errorData.error || 'Unknown error';
+      const errorMsg = data.error || 'Unknown error';
       showNotification(`Failed to unarchive profile: ${errorMsg}`, 'error');
       if (trigger) {
         trigger.disabled = false;
@@ -1114,7 +1125,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       }
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Network error';
+    const errorMsg = workspaceErrorMessage(error, 'Network error');
     showNotification(`Error unarchiving profile: ${errorMsg}`, 'error');
     console.error('[Portal] Error unarchiving profile:', error);
     if (trigger) {
@@ -1182,7 +1193,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
 (window as any).setDefaultProfile = async (id: string, skipConfirm?: boolean) => {
   if (id === 'default') {
     showNotification(
-      'The bundled default cannot be stored as the workspace default. Create a base profile from starters, then set that as default.',
+      'There is no synthetic Design System default to store. Build the site voice from resources, then set that profile as default.',
       'info'
     );
     return;
@@ -1216,7 +1227,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       showNotification(typeof data.error === 'string' ? data.error : 'Failed to set default profile', 'error');
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Network error';
+    const errorMsg = workspaceErrorMessage(error, 'Network error');
     showNotification(`Error setting default profile: ${errorMsg}`, 'error');
     console.error('[Portal] setDefaultProfile:', error);
   }
@@ -1534,7 +1545,7 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
       console.error('[Portal] Deduplication failed:', data);
     }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Network error';
+      const errorMsg = workspaceErrorMessage(error, 'Network error');
       showNotification('Error sculpting library: ' + errorMsg, 'error');
       console.error('[Portal] Error deduplicating profiles:', error);
     }

@@ -16,7 +16,8 @@ export type UsageReason =
   | 'inference_generate'
   | 'inference_improve'
   | 'inference_process'
-  | 'inference_document_rewrite';
+  | 'inference_document_rewrite'
+  | 'inference_community_upload';
 
 export interface UsageLedgerEntry {
   id: string;

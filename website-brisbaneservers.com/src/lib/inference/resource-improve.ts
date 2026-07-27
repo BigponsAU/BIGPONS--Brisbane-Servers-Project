@@ -96,7 +96,7 @@ function keepOriginal(params: ImproveBodyParams): ImproveBodyResult {
   const validation = params.voiceMatcher.validateVoice(content);
   return {
     content,
-    inferenceMode: content === raw ? 'original' : 'original',
+    inferenceMode: 'original',
     modelId: content === raw ? 'topic-fidelity-guard' : 'design-jargon-sanitize',
     voiceScore: validation.score ?? 0,
     voiceValid: validation.isValid ?? false,

@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro';
 export function getStaticPaths() {
   return [];
 }
+import { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
 import { requireAuth, requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import {
@@ -17,6 +18,7 @@ import {
   schedulePublicSurfaceUpdate,
   shouldRebuildForResourceChange,
 } from '../../../lib/deploy-rebuild';
+import { resolveResourceVoiceProfile } from '../../../lib/resource-voice-profile';
 
 /**
  * Get a specific resource
@@ -255,12 +257,23 @@ export const PUT: APIRoute = async ({ params, request }) => {
     };
 
     if (contentUpdates.content) {
-      const { voiceMatcher } = await getVoiceFramework();
+      const { profileManager, profileBuilder } = await getVoiceFramework();
+      const resolved = await resolveResourceVoiceProfile({
+        requestedProfileId:
+          (resources[idx].metadata?.voiceProfileId as string | undefined) ??
+          (existing.metadata?.voiceProfileId as string | undefined),
+        profileManager,
+        profileBuilder,
+        resources,
+      });
+      const voiceMatcher = new VoiceMatcher(resolved.profile);
       const voiceValidation = voiceMatcher.validateVoice(contentUpdates.content as string);
       resources[idx].metadata = {
         ...resources[idx].metadata,
         voiceScore: voiceValidation.score ?? 0,
-        wordCount: String(contentUpdates.content).split(/\s+/).length
+        wordCount: String(contentUpdates.content).split(/\s+/).length,
+        voiceProfileId: resolved.voiceProfileId ?? resources[idx].metadata?.voiceProfileId,
+        voiceProfileResolution: resolved.resolution,
       };
     }
 

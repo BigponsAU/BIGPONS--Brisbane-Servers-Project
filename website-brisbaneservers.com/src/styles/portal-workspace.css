@@ -3994,6 +3994,47 @@
     gap: var(--space-xs);
   }
 
+  .voice-map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    margin: 0 0 var(--space-md);
+  }
+
+  .voice-map-legend:empty {
+    display: none;
+  }
+
+  .voice-map-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius, 6px);
+    background: var(--surface-elevated, #fff);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .voice-map-legend-swatch {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .voice-map-placeholder-detail {
+    fill: var(--text-muted, #64748b);
+    font-size: 13px;
+  }
+
+  .voice-map-placeholder--error {
+    fill: var(--error-color, #dc2626);
+  }
+
   .voice-map-gap-chip {
     display: inline-flex;
     align-items: baseline;
@@ -4422,6 +4463,10 @@
       4px 100%,
       0% calc(100% - 4px)
     );
+  }
+
+  .btn[hidden] {
+    display: none !important;
   }
 
   /* Sierpinski Triangle Accent on Buttons */
@@ -5542,6 +5587,28 @@
     margin-bottom: var(--space-xl);
   }
 
+  .analytics-kpi-grid[hidden],
+  .analytics-section[hidden],
+  .analytics-status[hidden] {
+    display: none !important;
+  }
+
+  .analytics-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-md);
+  }
+
+  .analytics-status--error {
+    color: var(--error-color, #dc2626);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid color-mix(in srgb, #dc2626 30%, var(--border));
+    border-radius: var(--border-radius);
+    background: color-mix(in srgb, #dc2626 6%, transparent);
+  }
+
   .analytics-kpi {
     display: flex;
     flex-direction: column;
@@ -5550,6 +5617,11 @@
     background: var(--surface-subtle);
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius);
+    border-top: 3px solid color-mix(in srgb, var(--portal-accent, #f97316) 55%, transparent);
+  }
+
+  .analytics-kpi--coverage {
+    grid-column: span 1;
   }
 
   .analytics-kpi__label {
@@ -5564,6 +5636,25 @@
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.1;
+  }
+
+  .analytics-kpi__meter {
+    display: block;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--portal-accent, #f97316) 18%, var(--surface));
+    overflow: hidden;
+    margin-top: 0.15rem;
+  }
+
+  .analytics-kpi__meter::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: var(--analytics-meter, 0%);
+    border-radius: inherit;
+    background: var(--portal-accent, #f97316);
+    transition: width 0.35s ease;
   }
 
   .analytics-kpi__meta {

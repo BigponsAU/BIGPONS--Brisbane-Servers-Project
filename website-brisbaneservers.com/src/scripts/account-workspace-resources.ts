@@ -10,6 +10,7 @@ import {
   treeSlug,
   resourceExcerpt,
   formatInferenceBadge,
+  describeInferenceOutcome,
   showWorkspaceNotification,
   runWorkspaceGuardedAction,
   setResourceActionButtonsBusy,
@@ -237,22 +238,24 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
     const data = await response.json();
 
     if (response.ok && data.success) {
-        const voiceScore = data.voiceValidation?.score || 0;
-        const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
-      const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
-      const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-      const updateText = data.updated ? ' (updated existing resource)' : '';
-      const message = `Resource ${data.updated ? 'updated' : 'generated'}${inferenceMode}${modelHint}.${updateText}${scoreText}`;
+      const outcome = describeInferenceOutcome({
+        verbPast: data.updated ? 'updated' : 'generated',
+        updated: !!data.updated,
+        inferenceMode: data.inference?.mode,
+        modelId: data.inference?.modelId,
+        voiceScore: data.voiceValidation?.score,
+        topicFidelity: data.topicFidelity,
+      });
       const createdId = data.resource?.id as string | undefined;
       if (data.resource) {
         upsertWorkspaceResource(data.resource);
       }
       
       if (statusDiv) {
-        statusDiv.textContent = message;
-        statusDiv.className = 'status-message success';
+        statusDiv.textContent = outcome.message;
+        statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : outcome.type === 'error' ? 'error' : 'info'}`;
       }
-      showNotification(message, 'success');
+      showNotification(outcome.message, outcome.type);
       form.reset();
       setTimeout(() => {
         console.log('[Portal] Refreshing resources after generation');
@@ -271,10 +274,12 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
     }
     } catch (error) {
       portalActionFailure('generateResource', error);
+      const errorMsg = workspaceErrorMessage(error);
       if (statusDiv) {
-        statusDiv.textContent = workspaceErrorMessage(error);
+        statusDiv.textContent = errorMsg;
         statusDiv.className = 'status-message error';
       }
+      showNotification('Generation failed: ' + errorMsg, 'error');
     } finally {
     // Re-enable submit button
     if (submitBtn) {
@@ -2098,9 +2103,17 @@ document.addEventListener('keydown', (e) => {
             typeof data.topicFidelity === 'number'
               ? ` Topic fidelity: ${Math.round(data.topicFidelity * 100)}%`
               : '';
-          const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
+          const mode = data.inference?.mode as string | undefined;
+          const inferenceMode = mode ? ` via ${mode}` : '';
           const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-          showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}${fidelity}`, 'success');
+          if (mode === 'original') {
+            showNotification(
+              `Kept original content (topic fidelity guard).${scoreText}${fidelity}`,
+              'info'
+            );
+          } else {
+            showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}${fidelity}`, 'success');
+          }
           console.log('[Portal] Resource improved successfully');
           setTimeout(() => {
             loadResources();
@@ -2349,10 +2362,27 @@ function initDocumentWorkspace(): void {
       }
       if (extractedEl) setMarkdownFieldValue('document-extracted-text', data.rewritten?.content || content);
       const score = data.rewritten?.voiceScore ? Math.round(data.rewritten.voiceScore * 100) : null;
+      const fidelity =
+        typeof data.rewritten?.topicFidelity === 'number'
+          ? Math.round(data.rewritten.topicFidelity * 100)
+          : null;
       const mode = data.rewritten?.inference?.mode || '';
       const spent = data.tokens?.spent ? ` · ${data.tokens.spent} token(s) spent` : '';
-      setStatus(`Rewrite complete${mode ? ` via ${mode}` : ''}${score != null ? ` · voice ${score}%` : ''}${spent}.`, 'success');
-      showNotification('Document rewritten in voice profile.', 'success');
+      if (data.rewritten?.keptOriginal) {
+        setStatus(
+          `Kept original document (structure/fidelity guard)${score != null ? ` · voice ${score}%` : ''}.`,
+          'info'
+        );
+        showNotification('Kept original — rewrite failed structure or topic fidelity checks.', 'info');
+      } else {
+        setStatus(
+          `Rewrite complete${mode ? ` via ${mode}` : ''}${score != null ? ` · voice ${score}%` : ''}${
+            fidelity != null ? ` · fidelity ${fidelity}%` : ''
+          }${spent}.`,
+          'success'
+        );
+        showNotification('Document rewritten in voice profile.', 'success');
+      }
       if (typeof data.tokens?.balance === 'number') await refreshDocumentTokenHint(data.tokens.balance);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Rewrite failed';
@@ -2505,18 +2535,21 @@ document.getElementById('upload-resource-form')?.addEventListener('submit', asyn
     }
 
     if (response.ok && data.success) {
-        const voiceScore = data.voiceValidation?.score || 0;
-        const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
-      const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
-      const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-      const updateText = data.updated ? ' (updated existing resource, duplicate prevented)' : '';
-      const message = `Resource ${data.updated ? 'updated' : 'uploaded'}${inferenceMode}${modelHint}.${updateText}${scoreText}`;
+      const outcome = describeInferenceOutcome({
+        verbPast: data.updated ? 'updated' : 'uploaded',
+        updated: !!data.updated,
+        inferenceMode: data.inference?.mode,
+        modelId: data.inference?.modelId,
+        voiceScore: data.voiceValidation?.score,
+        topicFidelity: data.topicFidelity,
+        keptOriginal: data.inference?.mode === 'original',
+      });
       
       if (statusDiv) {
-        statusDiv.textContent = message;
-        statusDiv.className = 'status-message success';
+        statusDiv.textContent = outcome.message;
+        statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : 'info'}`;
       }
-      showNotification(message, 'success');
+      showNotification(outcome.message, outcome.type);
       form.reset();
       // Refresh resources list and dashboard after a short delay to ensure server has saved
       setTimeout(() => {
@@ -2611,13 +2644,19 @@ document.getElementById('create-from-content-form')?.addEventListener('submit', 
     });
     const data = await response.json();
     if (response.ok && data.success) {
-      const voiceScore = data.voiceValidation?.score ?? 0;
-      const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
-      const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
-      const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-      const message = `Resource created from content${inferenceMode}${modelHint}.${scoreText}`;
-      if (statusDiv) { statusDiv.textContent = message; statusDiv.className = 'status-message success'; }
-      showNotification(message, 'success');
+      const outcome = describeInferenceOutcome({
+        verbPast: 'created from content',
+        inferenceMode: data.inference?.mode,
+        modelId: data.inference?.modelId,
+        voiceScore: data.voiceValidation?.score,
+        topicFidelity: data.topicFidelity,
+        keptOriginal: data.inference?.mode === 'original',
+      });
+      if (statusDiv) {
+        statusDiv.textContent = outcome.message;
+        statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : 'info'}`;
+      }
+      showNotification(outcome.message, outcome.type);
       form.reset();
       setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
     } else {

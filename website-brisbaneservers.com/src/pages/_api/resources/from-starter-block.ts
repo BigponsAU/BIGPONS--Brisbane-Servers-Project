@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
 import {
@@ -7,6 +8,7 @@ import {
   normalizeTopicSlug,
   type Resource
 } from '../../../lib/resources-api';
+import { resolveResourceVoiceProfile } from '../../../lib/resource-voice-profile';
 
 /**
  * Create resource from starter block
@@ -126,13 +128,23 @@ export const POST: APIRoute = async ({ request }) => {
       console.warn('[API] Failed to create profile from starter block:', profileError);
     }
 
-    // If customizations include content, process through voice framework
+    // Score customized content against the resolved consulting/default profile — not the singleton.
     if (customizations?.content) {
-      const { voiceMatcher } = await getVoiceFramework();
+      const { profileManager, profileBuilder } = await getVoiceFramework();
+      const allResources = await loadResources();
+      const resolved = await resolveResourceVoiceProfile({
+        requestedProfileId: starterBlock.metadata?.voiceProfileId as string | undefined,
+        profileManager,
+        profileBuilder,
+        resources: allResources,
+      });
+      const voiceMatcher = new VoiceMatcher(resolved.profile);
       const voiceValidation = voiceMatcher.validateVoice(customizations.content);
       newResource.metadata = {
         ...newResource.metadata,
-        voiceScore: voiceValidation.score || 0
+        voiceScore: voiceValidation.score || 0,
+        voiceProfileId: resolved.voiceProfileId,
+        voiceProfileResolution: resolved.resolution,
       };
     } else if (typeof starterBlock.metadata?.voiceScore === 'number') {
       newResource.metadata = {

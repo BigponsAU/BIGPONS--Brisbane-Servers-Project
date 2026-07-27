@@ -31,7 +31,7 @@ import { ensureProfilesPanel, ensureResourcesPanel, registerPanelLoaderStubs } f
 import { createVoiceContext } from './account-workspace-voice-context';
 import { fetchAuthenticatedResources, fetchStarterBlocks } from './account-workspace-resource-api';
 import { getWorkspaceResources, setWorkspaceResources, upsertWorkspaceResource } from './account-workspace-resource-store';
-import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy } from './account-workspace-utils';
+import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy, workspaceErrorMessage } from './account-workspace-utils';
 import { hasWorkspaceCapability, type WorkspaceMinRole } from '../lib/workspace-roles';
 import { workspaceNavItems } from '../data/account-workspace';
 import { showConfirmDialog } from './portal-confirm-dialog';
@@ -232,6 +232,10 @@ export function bootAccountWorkspaceDashboard(): void {
     }
     const authBoot = document.getElementById('account-auth-boot');
     if (authBoot) authBoot.hidden = true;
+
+    syncPortalAccountContext();
+    applyRoleAccess(user);
+
     const dashboardEl = document.getElementById('admin-dashboard');
     if (dashboardEl) {
       dashboardEl.style.display = 'block';
@@ -253,9 +257,6 @@ export function bootAccountWorkspaceDashboard(): void {
       sidebarUserInfo.textContent = user.email;
     }
 
-    syncPortalAccountContext();
-
-    applyRoleAccess(user);
     registerPortalWorkspaceFunctions();
     bootWorkspaceGlobalSearch({
       navigateToPanel,
@@ -300,8 +301,12 @@ export function bootAccountWorkspaceDashboard(): void {
       const allowed = hasWorkspaceCapability(user, minRole);
       if (allowed) {
         el.style.removeProperty('display');
-        el.removeAttribute('hidden');
-        el.setAttribute('aria-hidden', 'false');
+        // Content-managed sections keep [hidden] until their loader reveals them
+        // (e.g. analytics suggestions/index). Role chrome clears hidden immediately.
+        if (el.dataset.visibility !== 'content') {
+          el.removeAttribute('hidden');
+        }
+        el.setAttribute('aria-hidden', el.hasAttribute('hidden') ? 'true' : 'false');
       } else {
         el.style.display = 'none';
         el.setAttribute('aria-hidden', 'true');
@@ -312,8 +317,10 @@ export function bootAccountWorkspaceDashboard(): void {
       const allowed = requiredRole ? user?.role === requiredRole : true;
       if (allowed) {
         el.style.removeProperty('display');
-        el.removeAttribute('hidden');
-        el.setAttribute('aria-hidden', 'false');
+        if (el.dataset.visibility !== 'content') {
+          el.removeAttribute('hidden');
+        }
+        el.setAttribute('aria-hidden', el.hasAttribute('hidden') ? 'true' : 'false');
       } else {
         el.style.display = 'none';
         el.setAttribute('aria-hidden', 'true');
@@ -353,6 +360,8 @@ export function bootAccountWorkspaceDashboard(): void {
       getVoiceApiUrl,
       navigateToPanel: (panelName: string) => (window as any).navigateToPanel(panelName),
       ensureWorkspaceVoiceProfiles: () => voiceContext.ensureWorkspaceVoiceProfiles(),
+      populateWorkspaceVoiceProfileSelect: (profiles: unknown[]) =>
+        voiceContext.populateWorkspaceVoiceProfileSelect(profiles),
       isDev,
     },
     resources: {
@@ -1195,6 +1204,25 @@ export function bootAccountWorkspaceDashboard(): void {
     if (!el) return;
     el.hidden = !show;
     if (show) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  }
+
+  function resetAnalyticsFailureState(message: string): void {
+    const statusEl = document.getElementById('analytics-load-status');
+    if (statusEl) {
+      statusEl.hidden = false;
+      statusEl.className = 'analytics-status analytics-status--error';
+      statusEl.innerHTML = `<span>${escapeHtml(message)}</span>
+        <button type="button" class="btn btn-secondary btn-sm" id="analytics-retry-btn">Retry</button>`;
+      statusEl.querySelector('#analytics-retry-btn')?.addEventListener('click', () => {
+        void loadAnalytics();
+      });
+    }
+    revealAnalyticsSection('analytics-kpi-grid', false);
+    revealAnalyticsSection('analytics-gaps-section', false);
+    revealAnalyticsSection('analytics-topics-section', false);
+    revealAnalyticsSection('analytics-suggestions-section', false);
+    revealAnalyticsSection('analytics-index-section', false);
   }
 
   function renderAnalyticsGaps(gaps: any[]): void {
@@ -1266,7 +1294,11 @@ export function bootAccountWorkspaceDashboard(): void {
 
   function renderCorpusAnalytics(data: any): void {
     const statusEl = document.getElementById('analytics-load-status');
-    if (statusEl) statusEl.hidden = true;
+    if (statusEl) {
+      statusEl.hidden = true;
+      statusEl.className = 'analytics-status';
+      statusEl.textContent = '';
+    }
 
     const coverage = data.coverage || {};
     const corpus = data.corpus || {};
@@ -1296,6 +1328,14 @@ export function bootAccountWorkspaceDashboard(): void {
     );
     setAnalyticsText('analytics-kpi-voice', formatVoiceScore(corpus.avgVoiceScore));
     setAnalyticsText('analytics-kpi-voice-meta', 'Published + draft resource average');
+
+    // Coverage meter for visual weight on the primary KPI
+    const coverageMeter = document.getElementById('analytics-kpi-coverage-meter');
+    if (coverageMeter) {
+      const pct = Math.max(0, Math.min(100, Number(coverage.coveragePercent) || 0));
+      coverageMeter.style.setProperty('--analytics-meter', `${pct}%`);
+      coverageMeter.setAttribute('aria-valuenow', String(pct));
+    }
 
     revealAnalyticsSection('analytics-kpi-grid', true);
     revealAnalyticsSection('analytics-gaps-section', true);
@@ -1336,40 +1376,38 @@ export function bootAccountWorkspaceDashboard(): void {
     const statusEl = document.getElementById('analytics-load-status');
     if (statusEl) {
       statusEl.hidden = false;
+      statusEl.className = 'analytics-status';
       statusEl.textContent = 'Loading corpus analytics…';
     }
+    revealAnalyticsSection('analytics-kpi-grid', false);
+    revealAnalyticsSection('analytics-gaps-section', false);
+    revealAnalyticsSection('analytics-topics-section', false);
     try {
       console.log('[Portal] Loading corpus analytics...');
       const res = await workspaceFetch(`${getVoiceApiUrl()}/analytics/corpus`);
       if (!res.ok) {
-        if (statusEl) {
-          statusEl.hidden = false;
-          statusEl.textContent =
-            res.status === 401 || res.status === 403
+        const errBody = await res.json().catch(() => ({}));
+        const detail =
+          typeof errBody?.error === 'string' && errBody.error
+            ? errBody.error
+            : res.status === 401 || res.status === 403
               ? 'Corpus analytics requires an editor or admin session.'
-              : 'Unable to load corpus analytics.';
-        }
-        revealAnalyticsSection('analytics-kpi-grid', false);
-        revealAnalyticsSection('analytics-gaps-section', false);
-        revealAnalyticsSection('analytics-topics-section', false);
+              : `Unable to load corpus analytics (${res.status}).`;
+        resetAnalyticsFailureState(detail);
         return;
       }
       const data = await res.json();
       if (!data.success) {
-        if (statusEl) {
-          statusEl.hidden = false;
-          statusEl.textContent = data.error || 'Unable to load corpus analytics.';
-        }
+        resetAnalyticsFailureState(data.error || 'Unable to load corpus analytics.');
         return;
       }
       renderCorpusAnalytics(data);
       loadAnalyticsSuggestions();
     } catch (error) {
       console.error('[Portal] Error loading analytics:', error);
-      if (statusEl) {
-        statusEl.hidden = false;
-        statusEl.textContent = 'Could not load corpus analytics.';
-      }
+      resetAnalyticsFailureState(
+        `Could not load corpus analytics: ${workspaceErrorMessage(error, 'Unknown error')}`,
+      );
     }
   }
 
@@ -1426,16 +1464,27 @@ export function bootAccountWorkspaceDashboard(): void {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ [key]: value }),
                 });
-                if (patchRes.ok) loadAnalyticsSuggestions();
+                const data = await patchRes.json().catch(() => ({}));
+                if (!patchRes.ok || data.success === false) {
+                  showNotification(
+                    data.error || `Could not apply suggestion (${patchRes.status}).`,
+                    'error',
+                  );
+                  return;
+                }
+                showNotification(`Applied pipeline setting: ${key}.`, 'success');
+                loadAnalyticsSuggestions();
               } catch (e) {
                 console.error(e);
+                showNotification(workspaceErrorMessage(e, 'Could not apply suggestion.'), 'error');
               }
             },
           });
         });
       });
     } catch (e) {
-      configEl.innerHTML = '<p class="form-hint">Could not load suggestions.</p>';
+      const detail = workspaceErrorMessage(e, 'Could not load suggestions.');
+      configEl.innerHTML = `<p class="form-hint">${escapeHtml(detail)}</p>`;
       listEl.innerHTML = '';
     }
   }
@@ -1551,6 +1600,7 @@ export function bootAccountWorkspaceDashboard(): void {
         showNotification(`Improving ${drafts.length} resources...`, 'info', 0);
 
         let successCount = 0;
+        let keptOriginalCount = 0;
         let failCount = 0;
         const errors: string[] = [];
 
@@ -1559,26 +1609,35 @@ export function bootAccountWorkspaceDashboard(): void {
           for (let i = 0; i < drafts.length; i += batchSize) {
             const batch = drafts.slice(i, i + batchSize);
             const results = await Promise.allSettled(
-              batch.map((resource) =>
-                workspaceFetch(`${getVoiceApiUrl()}/resources/${resource.id}/improve`, {
+              batch.map(async (resource) => {
+                const r = await workspaceFetch(`${getVoiceApiUrl()}/resources/${resource.id}/improve`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({}),
-                }).then((r) => r.json()),
-              ),
+                });
+                const data = await r.json().catch(() => ({}));
+                return { ok: r.ok, data };
+              }),
             );
 
             results.forEach((result, idx) => {
-              if (result.status === 'fulfilled' && result.value.success) {
-                successCount++;
+              if (result.status === 'fulfilled' && result.value.ok && result.value.data?.success) {
+                const mode = result.value.data?.inference?.mode;
+                if (mode === 'original') {
+                  keptOriginalCount++;
+                } else {
+                  successCount++;
+                }
               } else {
                 failCount++;
                 const resource = batch[idx];
-                errors.push(
-                  `${resource.title || resource.id}: ${result.status === 'rejected' ? result.reason : result.value.error || 'Unknown error'}`,
-                );
+                const err =
+                  result.status === 'rejected'
+                    ? result.reason
+                    : result.value.data?.error || `HTTP ${result.value.ok ? 'ok' : 'error'}`;
+                errors.push(`${resource.title || resource.id}: ${err}`);
               }
             });
 
@@ -1587,13 +1646,19 @@ export function bootAccountWorkspaceDashboard(): void {
             }
           }
 
-          let message = `Improved ${successCount} resource(s) successfully.`;
-          if (failCount > 0) {
-            message += ` ${failCount} failed.`;
-            console.error('[Portal] Bulk improve errors:', errors);
-          }
+          const parts: string[] = [];
+          if (successCount > 0) parts.push(`rewrote ${successCount}`);
+          if (keptOriginalCount > 0) parts.push(`kept ${keptOriginalCount} original (fidelity guard)`);
+          if (failCount > 0) parts.push(`${failCount} failed`);
+          const message =
+            parts.length > 0
+              ? `Bulk improve: ${parts.join('; ')}.`
+              : 'Bulk improve finished with no changes.';
 
-          showNotification(message, failCount > 0 ? 'warning' : 'success');
+          const toastType =
+            failCount > 0 ? 'warning' : keptOriginalCount > 0 && successCount === 0 ? 'info' : 'success';
+          showNotification(message, toastType);
+          if (failCount > 0) console.error('[Portal] Bulk improve errors:', errors);
           setTimeout(() => loadResources(), 1000);
         } catch (error) {
           showNotification('Error during bulk improve operation.', 'error');

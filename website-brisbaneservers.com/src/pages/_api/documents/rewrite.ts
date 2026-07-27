@@ -102,6 +102,8 @@ export const POST: APIRoute = async ({ request }) => {
           inference: { mode: rewritten.inferenceMode, modelId: rewritten.modelId },
           voiceScore: rewritten.voiceScore,
           voiceValid: rewritten.voiceValid,
+          topicFidelity: rewritten.topicFidelity,
+          keptOriginal: rewritten.keptOriginal,
         },
         voiceProfile: {
           resolution: resolved.resolution,

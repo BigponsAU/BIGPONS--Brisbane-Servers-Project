@@ -124,6 +124,21 @@ describe('portal-markov-tracker (resource lineage)', () => {
     expect(prompt).toContain('Voice share');
   });
 
+  it('renders HTML summary with share bars', async () => {
+    trackResourceCreation({
+      fromResourceId: 'a',
+      toResourceId: 'b',
+      sourceKind: 'rag',
+      voiceProfileId: 'brisbane',
+      voiceScore: 0.8,
+    });
+    const { renderPortalMarkovSummaryHtml } = await import('../src/scripts/portal-markov-tracker');
+    const html = renderPortalMarkovSummaryHtml();
+    expect(html).toContain('markov-dashboard');
+    expect(html).toContain('brisbane');
+    expect(html).toContain('markov-share-row__fill');
+  });
+
   it('reset clears stored state', () => {
     trackResourceCreation({
       fromResourceId: 'a',

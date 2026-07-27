@@ -6,6 +6,7 @@ import { getPortalAccountContext } from './account-workspace-runtime';
 import type { PortalAccountContext } from './portal-account-extensions';
 import { showConfirmDialog } from './portal-confirm-dialog';
 import { trackPortalAction } from './portal-markov-tracker';
+import { escapeHtml, workspaceErrorMessage } from './account-workspace-utils';
 
 interface UsageSummaryResponse {
   success: boolean;
@@ -36,14 +37,6 @@ function setUsageBarLevel(barWrap: HTMLElement, ratio: number): void {
   } else {
     barWrap.removeAttribute('data-level');
   }
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 export async function loadTokenRedemptionQueue(ctx?: PortalAccountContext): Promise<void> {
@@ -116,14 +109,14 @@ export async function loadTokenRedemptionQueue(ctx?: PortalAccountContext): Prom
           }
           if (statusEl) statusEl.textContent = 'Marked fulfilled.';
           await loadTokenRedemptionQueue(accountCtx);
-        } catch {
-          if (statusEl) statusEl.textContent = 'Network error.';
+        } catch (error) {
+          if (statusEl) statusEl.textContent = workspaceErrorMessage(error, 'Network error.');
           btn.disabled = false;
         }
       });
     });
-  } catch {
-    listEl.innerHTML = '<p class="form-hint">Could not reach the API.</p>';
+  } catch (error) {
+    listEl.innerHTML = `<p class="form-hint">${escapeHtml(workspaceErrorMessage(error, 'Could not reach the API.'))}</p>`;
   }
 }
 

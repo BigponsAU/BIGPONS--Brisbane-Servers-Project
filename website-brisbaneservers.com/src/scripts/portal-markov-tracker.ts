@@ -342,6 +342,82 @@ export function getPortalMarkovSummary(): string {
   return lines.join('\n');
 }
 
+function escapeMarkovHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Rich HTML summary for Voice lab — bars + stats instead of plain pre text. */
+export function renderPortalMarkovSummaryHtml(): string {
+  const report = getPortalMarkovAnalysisReport();
+  const hops = Number(report.summary.lineageHops) || 0;
+  const avg = Number(report.summary.avgVoiceMatchPercent) || 0;
+  const dominant = String(report.summary.dominantVoice || '—');
+  const dominantShare = Number(report.summary.dominantVoiceSharePercent) || 0;
+
+  const shareRows = report.voiceShares.length
+    ? report.voiceShares
+        .slice(0, 6)
+        .map((row) => {
+          const width = Math.max(4, Math.min(100, row.sharePercent));
+          return `<div class="markov-share-row">
+            <div class="markov-share-row__label">
+              <span>${escapeMarkovHtml(row.voiceProfileId)}</span>
+              <span class="markov-share-row__meta">${row.sharePercent}% · avg ${row.avgMatchPercent}%</span>
+            </div>
+            <div class="markov-share-row__track" aria-hidden="true">
+              <span class="markov-share-row__fill" style="width:${width}%"></span>
+            </div>
+          </div>`;
+        })
+        .join('')
+    : `<p class="markov-empty-hint">No creation hops yet — generate or improve a resource from a starter to start the chain.</p>`;
+
+  const transitionRows = report.topTransitions.length
+    ? `<ul class="markov-transition-list">${report.topTransitions
+        .slice(0, 5)
+        .map(
+          (t) =>
+            `<li><span class="markov-transition-list__edge">${escapeMarkovHtml(t.from)} → ${escapeMarkovHtml(t.to)}</span><span class="markov-transition-list__count">${t.count}</span></li>`
+        )
+        .join('')}</ul>`
+    : '';
+
+  return `<div class="markov-dashboard">
+    <div class="markov-stat-grid">
+      <div class="markov-stat">
+        <span class="markov-stat__label">Lineage hops</span>
+        <span class="markov-stat__value">${hops}</span>
+      </div>
+      <div class="markov-stat">
+        <span class="markov-stat__label">Avg voice match</span>
+        <span class="markov-stat__value">${avg}%</span>
+        <span class="markov-stat__meter" style="--markov-meter:${Math.max(0, Math.min(100, avg))}%" aria-hidden="true"></span>
+      </div>
+      <div class="markov-stat markov-stat--wide">
+        <span class="markov-stat__label">Dominant voice</span>
+        <span class="markov-stat__value markov-stat__value--sm">${escapeMarkovHtml(dominant)}</span>
+        <span class="markov-stat__meta">${dominantShare}% of hops</span>
+      </div>
+    </div>
+    <div class="markov-panel">
+      <h4 class="markov-panel__title">Voice match share</h4>
+      ${shareRows}
+    </div>
+    ${
+      transitionRows
+        ? `<div class="markov-panel">
+      <h4 class="markov-panel__title">Top resource → resource transitions</h4>
+      ${transitionRows}
+    </div>`
+        : ''
+    }
+  </div>`;
+}
+
 export function debugFromPortalMarkov(): string {
   const report = getPortalMarkovAnalysisReport();
   const lines: string[] = [
@@ -415,23 +491,29 @@ export function buildMarkovExtrapolationPrompt(): string {
 }
 
 export async function extrapolatePortalMarkovIssues(
-  apiPost: (path: string, body: unknown) => Promise<{ ok: boolean; text?: string; error?: string }>
-): Promise<string> {
+  apiPost: (
+    path: string,
+    body: unknown
+  ) => Promise<{ ok: boolean; text?: string; error?: string; warnings?: string[] }>
+): Promise<{ text: string; warnings?: string[] }> {
   const prompt = buildMarkovExtrapolationPrompt();
   const result = await apiPost('/voice/extrapolate', {
     text: prompt,
     options: { expansionLevel: 'moderate', addExamples: true, addDetails: true },
   });
   if (!result.ok || !result.text) {
-    return result.error || 'Extrapolation failed.';
+    throw new Error(result.error || 'Extrapolation failed.');
   }
-  return result.text;
+  return { text: result.text, warnings: result.warnings };
 }
 
 export function renderPortalMarkovIntoVoiceLab(): void {
   if (typeof document === 'undefined') return;
   const summaryEl = document.getElementById('voice-lab-markov-summary');
-  if (summaryEl) summaryEl.textContent = getPortalMarkovSummary();
+  if (summaryEl) {
+    summaryEl.classList.add('markov-summary-host');
+    summaryEl.innerHTML = renderPortalMarkovSummaryHtml();
+  }
   const debugEl = document.getElementById('voice-lab-markov-debug');
   if (debugEl && !debugEl.dataset.userTriggered) {
     debugEl.textContent =
