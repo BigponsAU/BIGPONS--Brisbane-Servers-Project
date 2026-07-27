@@ -94,10 +94,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const { resource, voiceScore, published } = await materializeGrowthProposal(
-      proposal,
-      authResult.user.email
-    );
+    const { resource, voiceScore, topicFidelity, inferenceMode, modelId, published } =
+      await materializeGrowthProposal(proposal, authResult.user.email);
     await recordGrowthUsage(unitEach, 'materialize', proposalId);
     const updated = await updateGrowthProposalStatus(proposalId, 'materialized', {
       reviewedBy: authResult.user.email,
@@ -117,6 +115,8 @@ export const POST: APIRoute = async ({ request }) => {
         resource,
         published,
         voiceScore,
+        topicFidelity,
+        inference: { mode: inferenceMode, modelId: modelId ?? null },
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

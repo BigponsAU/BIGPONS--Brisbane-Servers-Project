@@ -20,6 +20,7 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 | 2026-07-27 | Profiles + ranking | Design System card confused library; ranking rewarded any numbers / cipher jargon | Synthetic `id=default` Design System card in GET /profiles; ToneAnalyzer `hasSpecificValues = numbers.length > 0`; Extrapolator injected random commonValues | Remove Design System from portal list; consulting fallback instead of design JSON; ranking penalizes jargon and ignores golden-ratio / arbitrary digit correlation | **Retested OK**: profiles=2 (Brisbane default + healthcare base); Design System gone; GOOD 0.231 > JUNK 0.000 |
 | 2026-07-27 | All industries ranking + Improve purpose | Need assurance beyond healthcare | Contaminated PS/construction drafts from prior bad Improves | Ranking attested on 7 industries; restored purposeful PS/construction drafts; corpus scan 0/49 contaminated; sanitizer strips design junk on Improve fallback | **OK**: ranking 7/7; corpus clean; drafts restored |
 | 2026-07-27 | Purpose-health standard → whole dashboard | Same class as Improve: 200 OK + score while product outcome wrong | Generate / growth / community-upload / rewrite / singleton save-score / orphan approve / false-success toasts / unwired bulk actions | Port fidelity guards; preserve contributor text; rewrite fail-closed; resolve-profile scoring; approve requires resource; purpose-aware toasts; wire Improve drafts + Export; Ops/Profiles/Growth copy honesty | **Code complete** — commit + live retest next |
+| 2026-07-28 | Remaining polish → complete health | Growth celebrate without fidelity; leftover BIGPONS/runbooks copy; billing Loading stuck; weak archive gate | Same class (false success / misleading copy) | Growth returns inference+fidelity; auto-publish floor 0.55; copy + billing + archive gates | **Code complete** — push + live retest |
 
 ---
 
@@ -49,20 +50,12 @@ A feature is **ill** when it returns success (HTTP 200, toast, voice score) but 
 
 | Pri | Panel / action | Status |
 |-----|----------------|--------|
-| P0 | Generate + Library growth fidelity | **Fixed** — live retest pending |
-| P0 | Community upload preserve user text | **Fixed** — live retest pending |
-| P1 | Document OCR rewrite fail-closed | **Fixed** — live retest pending |
-| P1 | PUT save + starter resolved-profile score | **Fixed** |
-| P1 | Moderation approve requires resource | **Fixed** |
-| P1 | Improve / rewrite / generate toasts when kept original | **Fixed** |
-| P1 | Bulk Improve no-op tally + wire Improve drafts / Export | **Fixed** |
-| P1 | Analytics Apply suggestion silent success/fail | **Fixed** |
-| P1 | Growth save/arm/pause HTTP `res.ok` gates | **Fixed** |
-| P1 | Profile archive/unarchive `data.success` | **Fixed** |
-| P2 | Voice lab extrapolate fidelity label + sanitize | **Fixed** |
-| P2 | BIGPONS / “Bundled default” copy → site voice | **Fixed** |
-| P2 | Ops “runbooks” byline → provider notes | **Fixed** |
-| P2 | Case-study approve ≠ live flagship page copy | **Fixed** |
+| P0–P2 | Prior purpose-health pass (Generate/growth/community/rewrite/toasts/wiring) | **Fixed** in `91e231b` |
+| P1 | Growth approve/cycle fidelity honesty + auto-publish floor ≥0.55 | **Fixed** |
+| P2 | Remaining BIGPONS/bundled/runbooks copy + archive `data.success` | **Fixed** |
+| P2 | Admin Billing Loading… stuck on accounts failure | **Fixed** |
+| P3 | Starter-create toast tone + voice score | **Fixed** |
+| Ops | Live retest on production after push | Pending |
 
 ---
 

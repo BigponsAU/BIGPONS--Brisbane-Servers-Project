@@ -52,7 +52,7 @@ async function createBaseProfile(): Promise<void> {
     if (response.ok && data.success) {
       const n = data.combinedSourcesCount ?? 0;
       showNotification(
-        `${data.message || 'Site voice (BIGPONS) updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
+        `${data.message || 'Site voice updated.'} (${n} resources: ${data.starterBlocksCount ?? 0} starters, ${data.publishedResourcesCount ?? 0} published).`,
         'success'
       );
       setTimeout(() => {
@@ -257,7 +257,7 @@ async function loadProfiles(): Promise<void> {
             <div style="text-align: center;">
               <p style="font-size: var(--text-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-sm);">No saved profiles yet</p>
               <p style="color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-md); max-width: 32rem;">
-                The server still resolves voice automatically (bundled default or library-derived) for resource pipelines. Create a <strong>base profile</strong> from starter resources to persist a voice you can pick in Resources, or continue with Auto in the voice profile dropdown there.
+                Generate still resolves voice automatically via <strong>Auto</strong> (workspace default or consulting site voice). Build a <strong>site voice</strong> from the public library to persist a profile you can pick in Resources.
               </p>
               <button type="button" class="btn btn-primary" onclick="createBaseProfile()">Build site voice from resources</button>
             </div>
@@ -911,7 +911,7 @@ function buildProfileCorpusInlineHtml(profile: Record<string, unknown>, corpusId
 function buildProfileActionsHtml(profile: Record<string, unknown>): string {
   const pid = escapeHtml(String(profile.id));
   if (profile.id === 'default') {
-    return '<span class="profiles-detail-hint">Consulting site voice is used via <strong>Auto</strong> in Generate. Use <strong>Build / refresh site voice</strong> above to save a BIGPONS corpus profile in storage.</span>';
+    return '<span class="profiles-detail-hint">Consulting site voice is used via <strong>Auto</strong> in Generate. Use <strong>Build / refresh site voice</strong> above to save a corpus profile in storage.</span>';
   }
   const parts: string[] = [];
   if (!profile.isDefault) {
@@ -1052,7 +1052,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
     });
 
     const data = await response.json().catch(() => ({}));
-    if (response.ok && data.success !== false) {
+    if (response.ok && data.success) {
       showNotification('Profile archived successfully.', 'success');
       document.querySelector('.modal')?.remove();
       document.body.style.overflow = '';
@@ -1105,7 +1105,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
     });
 
     const data = await response.json().catch(() => ({}));
-    if (response.ok && data.success !== false) {
+    if (response.ok && data.success) {
       showNotification('Profile unarchived successfully.', 'success');
       document.querySelector('.modal')?.remove();
       document.body.style.overflow = '';

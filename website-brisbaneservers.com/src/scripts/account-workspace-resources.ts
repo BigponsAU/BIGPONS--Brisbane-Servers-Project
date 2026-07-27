@@ -2988,7 +2988,7 @@ document.getElementById('deduplicate-resources-btn')?.addEventListener('click', 
 
         if (response.ok && data.success) {
           const message = data.resourcesRemoved > 0
-            ? `Removed ${data.resourcesRemoved} duplicate resource(s)! Kept: ${data.totalResources} unique resources.`
+            ? `Removed ${data.resourcesRemoved} duplicate resource(s). Kept: ${data.totalResources} unique resources.`
             : 'No duplicates found. All resources are unique.';
           showNotification(message, data.resourcesRemoved > 0 ? 'success' : 'info');
           console.log('[Portal] Deduplication result:', data);
@@ -3036,7 +3036,7 @@ document.getElementById('seed-resources-btn')?.addEventListener('click', async (
         const data = await response.json();
 
         if (response.ok && data.success) {
-          const message = `Successfully seeded ${data.created} resource(s)! Skipped: ${data.skipped}. Total: ${data.total}. These resources are in "draft" status.`;
+          const message = `Seeded ${data.created} resource(s). Skipped: ${data.skipped}. Total: ${data.total}. New resources are drafts.`;
           showNotification(message, 'success');
           console.log('[Portal] Seeded resources:', data);
           setTimeout(() => {

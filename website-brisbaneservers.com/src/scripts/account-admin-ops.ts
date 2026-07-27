@@ -1,5 +1,5 @@
 /**
- * Admin Ops panel: site usage snapshot, search corpus, token queue, inference runbooks.
+ * Admin Ops panel: site usage snapshot, search corpus, token queue, inference provider notes.
  */
 import { workspaceFetch } from '../lib/client-api';
 import { getPortalAccountContext } from './account-workspace-runtime';

@@ -341,13 +341,36 @@ async function actOnProposal(
       return;
     }
     const isCaseStudy = data.proposal?.kind === 'case_study';
-    setGrowthStatus(
-      action === 'approve'
-        ? isCaseStudy
-          ? `Case study draft queued for review${data.published ? ' (resource marked published — still review curated case-studies.ts before flagship live page)' : ''}. Open in Resources.`
-          : `Draft created${data.published ? ' (published)' : ''}: ${data.resource?.title ?? 'resource'} — publish from Resources when ready.`
-        : 'Proposal rejected.'
-    );
+    const inferenceMode = data.inference?.mode as string | undefined;
+    const modelId = data.inference?.modelId as string | undefined;
+    const isSafeguard =
+      inferenceMode === 'original' ||
+      modelId === 'topic-seed-fallback' ||
+      modelId === 'topic-fidelity-guard';
+    const fidelity =
+      typeof data.topicFidelity === 'number'
+        ? ` · fidelity ${Math.round(data.topicFidelity * 100)}%`
+        : '';
+    const voice =
+      typeof data.voiceScore === 'number' ? ` · voice ${Math.round(data.voiceScore * 100)}%` : '';
+
+    if (action === 'approve') {
+      if (isCaseStudy) {
+        setGrowthStatus(
+          `Case study draft queued for review${data.published ? ' (resource may be marked published — still review curated case-studies.ts before flagship live page)' : ''}${voice}${fidelity}. Open in Resources.`
+        );
+      } else if (isSafeguard) {
+        setGrowthStatus(
+          `Draft created with topic-fidelity safeguards (minimal/on-topic seed)${voice}${fidelity}. Review in Resources before publish.`
+        );
+      } else {
+        setGrowthStatus(
+          `Draft created${data.published ? ' (published)' : ''}: ${data.resource?.title ?? 'resource'}${voice}${fidelity} — publish from Resources when ready.`
+        );
+      }
+    } else {
+      setGrowthStatus('Proposal rejected.');
+    }
     await loadLibraryGrowthPanel(ctx);
     if (action === 'approve' && data.resource?.id) {
       ctx.navigateToPanel('resources');
@@ -492,6 +515,7 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
         const mat = data.autoMaterialize as {
           materialized?: number;
           published?: number;
+          safeguardCount?: number;
           budgetBlocked?: boolean;
           budgetReason?: string;
           skippedBudget?: number;
@@ -503,8 +527,12 @@ export function bindLibraryGrowthPanel(resolveCtx: () => PortalAccountContext): 
         if (mat?.budgetBlocked) {
           parts.push(`Auto-generate skipped: ${mat.budgetReason ?? 'growth budget exceeded'}.`);
         } else if (mat && (mat.materialized ?? 0) > 0) {
+          const safeguardNote =
+            (mat.safeguardCount ?? 0) > 0
+              ? ` (${mat.safeguardCount} used fidelity safeguards / minimal seed)`
+              : '';
           parts.push(
-            `Auto-generated ${mat.materialized} draft(s) in Resources${mat.published ? ` (${mat.published} auto-published)` : ''}.`
+            `Auto-generated ${mat.materialized} draft(s) in Resources${mat.published ? ` (${mat.published} auto-published)` : ''}${safeguardNote}.`
           );
         }
         if (queue) {

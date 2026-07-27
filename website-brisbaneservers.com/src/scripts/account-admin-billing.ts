@@ -234,6 +234,12 @@ export async function loadAdminBillingPanel(ctx?: PortalAccountContext): Promise
 
     if (!accountsRes.ok || !accountsData.success) {
       if (summaryEl) summaryEl.textContent = accountsData.error || 'Could not load billing accounts.';
+      if (subscribersBody) {
+        subscribersBody.innerHTML = `<tr><td colspan="5">${escapeHtml(accountsData.error || 'Could not load billing accounts.')}</td></tr>`;
+      }
+      if (usageBody) {
+        usageBody.innerHTML = `<tr><td colspan="6">${escapeHtml(accountsData.error || 'Could not load billing accounts.')}</td></tr>`;
+      }
       return;
     }
 
@@ -243,6 +249,9 @@ export async function loadAdminBillingPanel(ctx?: PortalAccountContext): Promise
     if (!usageRes.ok || !usageData.success) {
       if (summaryEl) summaryEl.textContent = usageData.error || 'Could not load usage summary.';
       renderSubscribersTable(searchQuery);
+      if (usageBody) {
+        usageBody.innerHTML = `<tr><td colspan="6">${escapeHtml(usageData.error || 'Could not load usage summary.')}</td></tr>`;
+      }
       return;
     }
 

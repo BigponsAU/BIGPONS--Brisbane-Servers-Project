@@ -21,8 +21,8 @@ Use this file to track **dashboard completion** across chat sessions. Items mark
 | Voice-aligned generation | **Done** | Growth uses **default** or bundled profile only |
 | User approval before publish | **Done** | Moderation + growth proposal queue |
 | Scheduled / cycle growth | **Done (v1)** | Save settings → **Activate schedule** (physical) → cron/scheduler; **Run cycle now** always manual |
-| Case studies auto-created | **Partial** | `case_study` proposals + draft JSON + build merge; promote curated entries manually |
-| Pre-materialize dedup | **Partial (v1)** | Topic/title/published guards; semantic vector dedup = Phase 2 |
+| Case studies auto-created | **Partial** | `case_study` proposals + draft JSON + build merge; promote curated entries manually — Approve ≠ live flagship page |
+| Pre-materialize dedup | **Live** | Topic/title/published guards + semantic vector dedup (`library-growth/dedup.ts`) |
 | Fully autonomous “writes itself” | **Phase 2+** | Not targeted for domain launch |
 
 ---

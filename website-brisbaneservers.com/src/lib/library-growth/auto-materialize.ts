@@ -17,6 +17,8 @@ export interface AutoMaterializeResult {
   published: number;
   failed: number;
   skippedBudget: number;
+  /** Drafts created via topic-seed / original-style guard paths (purpose-health honesty). */
+  safeguardCount: number;
   budgetBlocked: boolean;
   budgetReason?: string;
   errors: string[];
@@ -31,6 +33,7 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
     published: 0,
     failed: 0,
     skippedBudget: 0,
+    safeguardCount: 0,
     budgetBlocked: false,
     errors: [],
   };
@@ -49,6 +52,7 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
     published: 0,
     failed: 0,
     skippedBudget: 0,
+    safeguardCount: 0,
     budgetBlocked: false,
     errors: [],
   };
@@ -77,10 +81,8 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
     }
 
     try {
-      const { resource, voiceScore, published } = await materializeGrowthProposal(
-        proposal,
-        LIBRARY_GROWTH_SYSTEM_ACTOR
-      );
+      const { resource, voiceScore, published, inferenceMode, modelId } =
+        await materializeGrowthProposal(proposal, LIBRARY_GROWTH_SYSTEM_ACTOR);
       await recordGrowthUsage(unitEach, 'materialize', proposal.id);
       await updateGrowthProposalStatus(proposal.id, 'materialized', {
         reviewedBy: LIBRARY_GROWTH_SYSTEM_ACTOR,
@@ -88,6 +90,13 @@ export async function autoMaterializePendingProposals(limit?: number): Promise<A
         estimatedVoiceScore: voiceScore,
       });
       result.materialized += 1;
+      if (
+        inferenceMode === 'original' ||
+        modelId === 'topic-seed-fallback' ||
+        modelId === 'topic-fidelity-guard'
+      ) {
+        result.safeguardCount += 1;
+      }
       if (published) {
         result.published += 1;
         const before = { ...resource, status: 'draft' as const };

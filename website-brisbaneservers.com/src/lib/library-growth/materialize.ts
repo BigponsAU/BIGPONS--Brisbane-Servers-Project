@@ -31,12 +31,15 @@ import {
 export interface MaterializeResult {
   resource: Resource;
   voiceScore: number;
+  topicFidelity: number;
+  inferenceMode: string;
+  modelId?: string;
   published: boolean;
 }
 
 /**
  * Turn an approved growth proposal into draft/published **content** (resource, guide body, case study narrative).
- * Uses the workspace default voice profile (or bundled BIGPONS) only — never auto-creates per-area voice profiles.
+ * Uses the workspace default voice profile (or consulting site-voice fallback) only — never auto-creates per-area voice profiles.
  */
 export async function materializeGrowthProposal(
   proposal: GrowthProposal,
@@ -114,7 +117,7 @@ export async function materializeGrowthProposal(
   const shouldPublish =
     !reviewOnly &&
     voiceScore >= publishThreshold &&
-    topicFidelity >= 0.28 &&
+    topicFidelity >= 0.55 &&
     !containsDesignSystemJargon(body);
 
   let resource: Resource;
@@ -184,6 +187,9 @@ export async function materializeGrowthProposal(
   return {
     resource: indexed,
     voiceScore,
+    topicFidelity,
+    inferenceMode: generated.inferenceMode,
+    modelId: generated.modelId,
     published: indexed.status === 'published',
   };
 }

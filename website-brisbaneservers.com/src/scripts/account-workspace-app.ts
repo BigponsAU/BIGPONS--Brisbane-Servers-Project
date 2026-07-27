@@ -1027,9 +1027,16 @@ export function bootAccountWorkspaceDashboard(): void {
           const data = await response.json();
 
           if (response.ok && data.success) {
-            let message = 'Resource created from starter block!';
+            const score =
+              typeof data.resource?.metadata?.voiceScore === 'number'
+                ? Math.round(data.resource.metadata.voiceScore * 100)
+                : null;
+            let message = 'Resource created from starter block.';
             if (data.profileCreated) {
               message += ' Base voice profile created automatically.';
+            }
+            if (score != null) {
+              message += ` Voice score: ${score}%.`;
             }
             showNotification(message, 'success');
             if (data.resource) {

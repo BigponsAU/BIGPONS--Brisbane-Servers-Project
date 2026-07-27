@@ -41,7 +41,7 @@ Single reference for every dashboard surface: what ships today, what is partial,
 | **Moderation** | Live | `/api/community/contributions` | Approve awards tokens; reject archives draft + clawback; error banners |
 | **Site review** | Live | `/api/admin/site-sections`, hosting | Band shell |
 | **Users** | Live | `/api/admin/users`, auth audit | Workspace toggle (role-locked for editors+), soft-remove + restore with backup, paged auth audit |
-| **Ops** | Live | `/api/admin/usage/summary`, corpus, token queue | Site usage snapshot + inference runbooks |
+| **Ops** | Live | `/api/admin/usage/summary`, corpus, token queue | Site usage snapshot + inference provider notes |
 | **Billing** | Live | `/api/admin/billing/accounts`, usage summary, PayID grant | Subscriber roster + usage-by-user + Stripe Customer Portal on Overview |
 
 ---
