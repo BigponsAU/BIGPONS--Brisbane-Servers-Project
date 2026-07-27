@@ -31,6 +31,7 @@ export function setWorkspaceMode(mode: WorkspaceMode, navigate = true): void {
   const root = document.querySelector('.account-workspace-root');
   const tracks = document.getElementById('sidebar-nav-tracks');
   const subtitle = document.getElementById('sidebar-mode-subtitle');
+  const adminCue = document.getElementById('sidebar-admin-cue');
 
   root?.classList.toggle('account-workspace-root--admin-console', mode === 'admin');
   if (tracks) tracks.dataset.workspaceMode = mode;
@@ -46,6 +47,17 @@ export function setWorkspaceMode(mode: WorkspaceMode, navigate = true): void {
       mode === 'admin'
         ? accountWorkspace.adminModeDescription
         : accountWorkspace.creatorModeDescription;
+  }
+
+  // Ops shortcut only needed while in Workspace mode (Admin already lists Ops).
+  if (adminCue && hasAdminConsoleAccess(sessionUser ?? {})) {
+    if (mode === 'creator') {
+      adminCue.removeAttribute('hidden');
+      adminCue.setAttribute('aria-hidden', 'false');
+    } else {
+      adminCue.setAttribute('hidden', '');
+      adminCue.setAttribute('aria-hidden', 'true');
+    }
   }
 
   persistMode(mode);
@@ -83,4 +95,9 @@ export function initWorkspaceModeSwitcher(user: { role?: string }): void {
   bind('workspace-mode-admin', 'admin');
   bind('header-workspace-mode-creator', 'creator');
   bind('header-workspace-mode-admin', 'admin');
+
+  document.getElementById('sidebar-open-ops-btn')?.addEventListener('click', () => {
+    const nav = (window as Window & { navigateToPanel?: (p: string) => void }).navigateToPanel;
+    nav?.('admin-ops');
+  });
 }

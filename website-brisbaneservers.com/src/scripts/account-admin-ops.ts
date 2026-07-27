@@ -234,45 +234,47 @@ export async function loadSearchCorpusPanel(ctx?: PortalAccountContext): Promise
     const resources = data.semanticIndex?.resourceIds ?? 0;
     const model = data.embedding?.modelId ?? '—';
     const provider = data.embedding?.provider ?? '—';
-    const dim = data.embedding?.dimensions ?? '—';
     const strength = data.proposition.identityStrength;
     const label = data.proposition.identityLabel;
 
     const pillars = data.proposition.pillars
-      .map(
-        (p) => `
+      .map((p) => {
+        const preview = p.keywords.slice(0, 8);
+        const remaining = Math.max(0, p.keywords.length - preview.length);
+        return `
       <div class="search-corpus-pillar">
-        <h4>${escapeHtml(p.label)} <span class="form-hint">(${p.keywordCount} keywords)</span></h4>
-        <div class="search-corpus-keywords">
-          ${p.keywords
-            .slice(0, 14)
-            .map((kw) => `<span class="search-corpus-keyword">${escapeHtml(kw)}</span>`)
-            .join('')}
-          ${p.keywords.length > 14 ? `<span class="form-hint">+${p.keywords.length - 14} more</span>` : ''}
+        <div class="search-corpus-pillar__head">
+          <strong>${escapeHtml(p.label)}</strong>
+          <span class="form-hint">${p.keywordCount} keywords</span>
         </div>
-      </div>`
-      )
+        <div class="search-corpus-keywords">
+          ${preview.map((kw) => `<span class="search-corpus-keyword">${escapeHtml(kw)}</span>`).join('')}
+          ${remaining ? `<span class="form-hint">+${remaining} more</span>` : ''}
+        </div>
+      </div>`;
+      })
       .join('');
 
     container.innerHTML = `
       <div class="search-corpus-stat-row">
-        <span><strong>Semantic chunks:</strong> ${chunks}</span>
-        <span><strong>Indexed resources:</strong> ${resources}</span>
-        <span><strong>Embedding:</strong> ${escapeHtml(model)} (${escapeHtml(provider)}, ${dim}d)</span>
+        <span><strong>${chunks}</strong> chunks</span>
+        <span><strong>${resources}</strong> resources</span>
+        <span>${escapeHtml(model)} · ${escapeHtml(provider)}</span>
       </div>
-      <div>
-        <p class="section-subtitle" style="margin-bottom: 0.35rem;">
-          <strong>Proposition identity strength:</strong> ${strength}% — ${escapeHtml(label)}
+      <div class="search-corpus-identity">
+        <p class="search-corpus-identity__label">
+          Proposition identity <strong>${strength}%</strong> — ${escapeHtml(label)}
         </p>
         <div class="search-corpus-identity-bar" role="meter" aria-valuenow="${strength}" aria-valuemin="0" aria-valuemax="100" aria-label="Proposition identity alignment">
           <div class="search-corpus-identity-bar__fill" style="width: ${strength}%"></div>
         </div>
-        <p class="form-hint">Cosine alignment between value-proposition embedding and corpus vector centroid.</p>
       </div>
-      <div>
-        <h4 class="card-title" style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">Identity pillars &amp; keywords</h4>
-        ${pillars}
-      </div>
+      <details class="search-corpus-pillars">
+        <summary>Identity pillars &amp; keywords</summary>
+        <div class="search-corpus-pillars__body">
+          ${pillars}
+        </div>
+      </details>
       <p class="form-hint">Storage: ${escapeHtml(data.pipeline?.storage ?? 'Neon')} · Public: <code>${escapeHtml(data.pipeline?.publicSearchPath ?? '/api/resources/search')}</code></p>
     `;
   } catch {

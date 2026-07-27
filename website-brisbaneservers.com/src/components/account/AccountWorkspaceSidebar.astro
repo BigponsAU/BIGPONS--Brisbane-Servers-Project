@@ -40,6 +40,16 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
     </div>
 
     <p id="sidebar-mode-subtitle" class="sidebar-mode-subtitle sidebar-command-band__subtitle">{accountWorkspace.creatorModeDescription}</p>
+    <div id="sidebar-admin-cue" class="sidebar-admin-cue" data-min-role="admin" data-visibility="content" hidden>
+      <button
+        type="button"
+        id="sidebar-open-ops-btn"
+        class="btn btn-secondary btn-sm sidebar-admin-cue__btn"
+        title={accountWorkspace.adminCueHint}
+      >
+        {accountWorkspace.adminCueLabel}
+      </button>
+    </div>
   </div>
 
   <div class="sidebar-nav-viewport">
@@ -124,7 +134,7 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
                 group.items.map((item) => (
                   <a
                     href={`#${item.panel}`}
-                    class="sidebar-nav-item"
+                    class={`sidebar-nav-item${item.featured ? ' sidebar-nav-item--featured' : ''}`}
                     data-panel={item.panel}
                     data-min-role={item.minRole}
                     data-nav-mode="admin"
@@ -190,8 +200,21 @@ const adminNav = groupWorkspaceNavBySection(workspaceNavItems, 'admin');
   </div>
 
   <div class="sidebar-footer">
+    <div class="sidebar-voice-profile" data-min-role="editor">
+      <label class="sidebar-voice-profile__label" for="sidebar-voice-profile-select">Create with voice profile</label>
+      <select
+        id="sidebar-voice-profile-select"
+        class="form-select sidebar-voice-profile__select"
+        aria-describedby="sidebar-voice-profile-hint"
+      >
+        <option value="">Auto (saved default)</option>
+      </select>
+      <p id="sidebar-voice-profile-hint" class="form-hint sr-only">
+        Switches the voice used when creating or generating content. The Voice map centre is always the Brisbane site voice.
+      </p>
+    </div>
     <div class="sidebar-user">
-      <span id="sidebar-user-info" class="user-info"></span>
+      <span id="sidebar-user-info" class="user-info sidebar-user-email"></span>
     </div>
     <button id="sidebar-logout-btn" class="btn btn-secondary btn-sm btn-block">Logout</button>
   </div>

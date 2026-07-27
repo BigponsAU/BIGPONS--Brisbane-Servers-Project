@@ -82,7 +82,14 @@ async function createBaseProfile(): Promise<void> {
     return;
   }
   const sel = document.getElementById('resource-voice-profile-select') as HTMLSelectElement | null;
+  const sidebarSel = document.getElementById('sidebar-voice-profile-select') as HTMLSelectElement | null;
   if (sel) sel.value = profileId;
+  if (sidebarSel) sidebarSel.value = profileId;
+  try {
+    localStorage.setItem('portalResourceVoiceProfileId', profileId);
+  } catch {
+    /* ignore */
+  }
   navigateToPanel('resources');
   setTimeout(() => {
     const genSection = document.getElementById('generate-resource-content');

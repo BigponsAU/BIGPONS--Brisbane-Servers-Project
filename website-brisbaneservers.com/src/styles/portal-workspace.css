@@ -3997,13 +3997,21 @@
   .voice-map-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-xs);
+    gap: 0.35rem 0.15rem;
     align-items: center;
     margin: 0 0 var(--space-md);
+    font-size: var(--text-sm);
+    line-height: 1.35;
+    color: var(--portal-text-secondary, var(--text-secondary));
   }
 
   .voice-map-legend:empty {
     display: none;
+  }
+
+  .voice-map-legend-sep {
+    color: var(--portal-text-tertiary, #64748b);
+    user-select: none;
   }
 
   .voice-map-legend-item {
@@ -4011,19 +4019,25 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.3rem 0.65rem;
-    border: 1px solid var(--border);
+    border: 1px solid var(--portal-border, var(--border, #e5e7eb));
     border-radius: var(--border-radius, 6px);
-    background: var(--surface-elevated, #fff);
+    background: var(--portal-surface-elevated, var(--surface-elevated, #fff));
     font-size: var(--text-sm);
-    color: var(--text-primary);
+    color: var(--portal-text-primary, var(--text-primary));
     line-height: 1.2;
+    white-space: nowrap;
   }
 
   .voice-map-legend-swatch {
+    display: inline-block;
     width: 0.65rem;
     height: 0.65rem;
     border-radius: 999px;
     flex-shrink: 0;
+  }
+
+  .voice-map-legend-label {
+    display: inline;
   }
 
   .voice-map-placeholder-detail {

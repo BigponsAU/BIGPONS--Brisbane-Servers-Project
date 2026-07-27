@@ -31,6 +31,8 @@ export interface Resource {
     wordCount?: number;
     semanticLevel?: 'high' | 'medium' | 'normal';
     voiceScore?: number;
+    /** 0–1 topic fidelity vs source/topic when scored at write time. */
+    topicFidelity?: number;
     /** Stored profile id when creation used a saved default or explicit selection. */
     voiceProfileId?: string;
     voiceProfileResolution?: VoiceProfileResolutionKind;
@@ -55,6 +57,8 @@ export interface Resource {
     /** Last successful inference path for this resource body. */
     inferenceMode?: 'nvidia' | 'workers-ai' | 'template';
     inferenceModelId?: string | null;
+    /** Community upload provenance marker. */
+    contributionSource?: 'community-upload';
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;

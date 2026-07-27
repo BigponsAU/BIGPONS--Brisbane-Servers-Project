@@ -14,6 +14,8 @@ export interface InferenceMetadataInput {
   inferenceMode?: InferenceMode;
   modelId?: string;
   voiceScore: number;
+  /** 0–1 topic fidelity vs source/topic anchor when scored. */
+  topicFidelity?: number;
   voiceProfileId?: string;
   voiceProfileResolution?: VoiceProfileResolutionKind;
   wordCount?: number;
@@ -33,6 +35,7 @@ export function mergeInferenceMetadata(
     wordCount: input.wordCount ?? base?.wordCount,
     semanticLevel: input.semanticLevel ?? base?.semanticLevel ?? 'high',
     voiceScore: input.voiceScore,
+    ...(typeof input.topicFidelity === 'number' ? { topicFidelity: input.topicFidelity } : {}),
     voiceProfileId: input.voiceProfileId ?? base?.voiceProfileId,
     voiceProfileResolution: input.voiceProfileResolution ?? base?.voiceProfileResolution,
     inferenceMode: input.inferenceMode,

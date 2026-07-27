@@ -4,7 +4,7 @@
  *
  * Two interchangeable sidebar modes (admin+ can toggle):
  * - creator: resources, profiles, voice lab, voice map
- * - admin: library growth, moderation, site review, ops
+ * - admin: library growth, moderation, site review, ops (default landing: Ops)
  */
 export type WorkspaceNavMode = 'creator' | 'admin';
 
@@ -85,7 +85,9 @@ export const accountWorkspace = {
   creatorModeLabel: 'Workspace',
   creatorModeDescription: 'Create content, voice tools, and insights',
   adminModeLabel: 'Admin console',
-  adminModeDescription: 'Growth, moderation, hosting, and ops',
+  adminModeDescription: 'Growth, moderation, Ops, billing, and users',
+  adminCueLabel: 'Open Ops',
+  adminCueHint: 'Ops lives in Admin console',
   voiceLabLabel: 'Voice lab',
   voiceLabDescription: 'Tone, patterns, and voice match',
   voiceMapLabel: 'Voice map',
@@ -93,7 +95,7 @@ export const accountWorkspace = {
   adminUsersLabel: 'Users',
   adminUsersDescription: 'Accounts and auth audit',
   adminOpsLabel: 'Ops',
-  adminOpsDescription: 'Platform health and inference',
+  adminOpsDescription: 'Usage, search corpus, perk queue',
   adminBillingLabel: 'Billing',
   adminBillingDescription: 'Subscriptions, usage caps, PayID',
 } as const;
@@ -104,7 +106,7 @@ export const BRISBANE_PROFILE_NAME = 'Brisbane';
 /** Default panel when switching modes */
 export const workspaceModeDefaultPanel: Record<WorkspaceNavMode, WorkspacePanelId> = {
   creator: 'dashboard',
-  admin: 'library-growth',
+  admin: 'admin-ops',
 };
 
 export const workspaceNavItems: WorkspaceNavItem[] = [
@@ -207,6 +209,7 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
     mode: 'admin',
     section: 'platform',
     title: 'Ops — usage, search corpus, perk redemption queue',
+    featured: true,
   },
   {
     panel: 'admin-billing',

@@ -15,9 +15,9 @@ const projectRoot = path.resolve(scriptDir, '..');
 
 function shouldExportCorpus(): boolean {
   if (process.env.PAGES_BUILD_EXPORT_ON_BUILD !== '1') return false;
-  if (process.env.SKIP_HOSTED_API_CHECK === 'true' && process.env.PAGES_BUILD_USE_GIT_CORPUS === '1') {
-    return false;
-  }
+  // Prefer committed corpus on Pages when configured — avoids flaky API export blocking deploys.
+  if (process.env.PAGES_BUILD_USE_GIT_CORPUS === '1') return false;
+  if (process.env.SKIP_HOSTED_API_CHECK === 'true') return false;
   return true;
 }
 

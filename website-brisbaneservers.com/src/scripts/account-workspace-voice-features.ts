@@ -117,11 +117,31 @@ async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
   }
 }
 
-function industryLabel(key: string, coverage?: IndustryCoverageItem[]): string {
-  const fromCoverage = coverage?.find((c) => c.id === key || c.name === key);
-  if (fromCoverage) return fromCoverage.name;
+/** Prefer human labels; never trust coverage.name when it is just the slug. */
+export function industryLabel(key: string, coverage?: IndustryCoverageItem[]): string {
   const normalized = key.toLowerCase().replace(/\s+/g, '-');
-  return INDUSTRY_LABELS[normalized] || INDUSTRY_LABELS[key] || key.replace(/-/g, ' ');
+  const known = INDUSTRY_LABELS[normalized] || INDUSTRY_LABELS[key];
+  if (known) return known;
+
+  const fromCoverage = coverage?.find((c) => c.id === key || c.id === normalized || c.name === key);
+  if (fromCoverage?.name) {
+    const coverageSlug = fromCoverage.name.toLowerCase().replace(/\s+/g, '-');
+    if (coverageSlug !== normalized && coverageSlug !== fromCoverage.id) {
+      return fromCoverage.name;
+    }
+    const fromId = INDUSTRY_LABELS[fromCoverage.id] || INDUSTRY_LABELS[coverageSlug];
+    if (fromId) return fromId;
+    return titleCaseSlug(fromCoverage.name);
+  }
+
+  return titleCaseSlug(key);
+}
+
+function titleCaseSlug(value: string): string {
+  return value
+    .replace(/[-_]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
 }
 
 function nodeColor(node: MapNode): string {
@@ -197,7 +217,11 @@ function renderLegend(industryKeys: string[], coverage?: IndustryCoverageItem[])
   const keys = industryKeys
     .map((k) => String(k || '').trim())
     .filter(Boolean)
-    .filter((k, i, arr) => arr.indexOf(k) === i);
+    .filter((k, i, arr) => arr.indexOf(k) === i)
+    .filter((k) => {
+      const normalized = k.toLowerCase().replace(/\s+/g, '-');
+      return normalized !== 'profile' && normalized !== 'brisbane' && normalized !== 'brisbane-voice';
+    });
 
   const items: Array<{ key: string; label: string }> = [
     { key: 'profile', label: 'Brisbane voice' },
@@ -207,11 +231,16 @@ function renderLegend(industryKeys: string[], coverage?: IndustryCoverageItem[])
     })),
   ];
 
+  // Separators keep labels readable even if chip CSS fails to load.
   legend.innerHTML = items
     .slice(0, 12)
-    .map((item) => {
+    .map((item, index) => {
       const color = INDUSTRY_COLORS[item.key] ?? INDUSTRY_COLORS.general;
-      return `<span class="voice-map-legend-item"><span class="voice-map-legend-swatch" style="background:${color}" aria-hidden="true"></span>${escapeHtml(item.label)}</span>`;
+      const sep =
+        index === 0
+          ? ''
+          : `<span class="voice-map-legend-sep" aria-hidden="true"> · </span>`;
+      return `${sep}<span class="voice-map-legend-item"><span class="voice-map-legend-swatch" style="background:${color}" aria-hidden="true"></span><span class="voice-map-legend-label">${escapeHtml(item.label)}</span></span>`;
     })
     .join('');
 }
@@ -777,12 +806,15 @@ async function runVoiceLab(mode: 'tone' | 'patterns'): Promise<void> {
     const score =
       typeof data.score === 'number'
         ? data.score
-        : typeof data.tone?.overallScore === 'number'
-          ? data.tone.overallScore
-          : typeof data.validation?.score === 'number'
-            ? data.validation.score
+        : typeof (data.tone as { overallScore?: unknown } | undefined)?.overallScore === 'number'
+          ? (data.tone as { overallScore: number }).overallScore
+          : typeof (data.validation as { score?: unknown } | undefined)?.score === 'number'
+            ? (data.validation as { score: number }).score
             : null;
-    const profileHint = data.voiceProfile?.profileId || data.profileId || 'resolved profile';
+    const profileHint =
+      (data.voiceProfile as { profileId?: string } | undefined)?.profileId ||
+      (typeof data.profileId === 'string' ? data.profileId : null) ||
+      'resolved profile';
     const lines = [
       `Voice lab analysis (${mode})`,
       `Profile: ${profileHint}`,

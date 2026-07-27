@@ -2324,6 +2324,11 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   font-size: var(--text-sm);
 }
 
+.account-workspace-shell .search-corpus-identity__label {
+  margin: 0 0 0.35rem;
+  font-size: var(--text-sm);
+}
+
 .account-workspace-shell .search-corpus-identity-bar {
   height: 8px;
   border-radius: 999px;
@@ -2338,13 +2343,40 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   transition: width 0.35s ease;
 }
 
+.account-workspace-shell .search-corpus-pillars {
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius, 6px);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface, #f8fafc);
+}
+
+.account-workspace-shell .search-corpus-pillars > summary {
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--text-primary);
+}
+
+.account-workspace-shell .search-corpus-pillars__body {
+  margin-top: var(--space-sm);
+}
+
 .account-workspace-shell .search-corpus-pillar {
   padding: var(--space-sm) 0;
   border-top: 1px solid var(--border);
 }
 
-.account-workspace-shell .search-corpus-pillar h4 {
-  margin: 0 0 var(--space-xs);
+.account-workspace-shell .search-corpus-pillar:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.account-workspace-shell .search-corpus-pillar__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: 0.35rem;
   font-size: var(--text-sm);
 }
 
@@ -2355,11 +2387,13 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 }
 
 .account-workspace-shell .search-corpus-keyword {
-  font-size: 0.7rem;
+  display: inline-flex;
   padding: 0.15rem 0.45rem;
   border-radius: 999px;
-  background: rgba(10, 116, 218, 0.1);
-  color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb, 10, 116, 218), 0.1);
+  color: var(--primary-dark, #0858a8);
+  font-size: var(--text-xs, 0.75rem);
+  line-height: 1.3;
 }
 
 .account-workspace-shell .admin-email-actions {
@@ -3709,6 +3743,88 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 .account-workspace-shell .voice-map-toolbar .form-select {
   min-height: 2rem;
   font-size: var(--text-sm);
+}
+
+/* Legend chips — also under shell so mashed slug text cannot reappear if workspace CSS lags. */
+.account-workspace-shell .voice-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.15rem;
+  align-items: center;
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+}
+
+.account-workspace-shell .voice-map-legend:empty {
+  display: none;
+}
+
+.account-workspace-shell .voice-map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--border-radius, 6px);
+  background: var(--surface-elevated, #fff);
+  white-space: nowrap;
+}
+
+.account-workspace-shell .voice-map-legend-swatch {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.account-workspace-shell .voice-map-legend-sep {
+  color: var(--text-secondary, #64748b);
+  user-select: none;
+}
+
+.account-workspace-shell .voice-map-profile-link {
+  margin: 0 0 var(--space-md);
+  max-width: 52rem;
+}
+
+.account-workspace-shell .sidebar-admin-cue {
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+}
+
+.account-workspace-shell .sidebar-admin-cue[hidden] {
+  display: none !important;
+}
+
+.account-workspace-shell .sidebar-admin-cue__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.account-workspace-shell .sidebar-voice-profile {
+  margin: 0 0 var(--space-sm);
+}
+
+.account-workspace-shell .sidebar-voice-profile__label {
+  display: block;
+  margin: 0 0 0.25rem;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .sidebar-voice-profile__select {
+  width: 100%;
+  min-height: 2rem;
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .sidebar-user-email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-workspace-shell .workspace-empty-state {
