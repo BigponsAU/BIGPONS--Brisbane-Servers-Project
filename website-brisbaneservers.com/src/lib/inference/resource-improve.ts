@@ -22,6 +22,7 @@ import {
   isDesignSystemVoiceProfile,
   isTopicFaithful,
   scoreTopicFidelity,
+  TOPIC_FIDELITY_MIN,
 } from './topic-fidelity';
 
 export interface ImproveBodyParams {
@@ -63,7 +64,11 @@ function acceptCandidate(
 ): ImproveBodyResult | null {
   const original = params.resource.content;
   const allowDesign = isDesignSystemVoiceProfile(params.resolved.profile);
-  if (!allowDesign && !isTopicFaithful(original, content)) {
+  if (!isTopicFaithful(original, content, TOPIC_FIDELITY_MIN, { allowDesignSystemJargon: allowDesign })) {
+    return null;
+  }
+  // Reject outputs that look like raw RAG dumps (chunk markers leaked into body).
+  if (/\[[^\]]+\s+#\d+\]/.test(content)) {
     return null;
   }
   const validation = params.voiceMatcher.validateVoice(content);
@@ -142,18 +147,22 @@ export async function improveResourceBody(params: ImproveBodyParams): Promise<Im
   }
 
   const templateContent = improveTemplateBody(params);
-  const templateAccepted = acceptCandidate(
-    params,
-    templateContent,
-    'template',
-    'voice-framework-template'
-  );
-  if (templateAccepted) {
-    return templateAccepted;
+  // Design Extrapolator templates invent golden-ratio / cipher expansions — only
+  // allow that path for an intentional design-system profile.
+  if (allowDesignJargon) {
+    const templateAccepted = acceptCandidate(
+      params,
+      templateContent,
+      'template',
+      'voice-framework-template'
+    );
+    if (templateAccepted) {
+      return templateAccepted;
+    }
   }
 
   console.warn(
-    `[inference] improve template failed topic fidelity; keeping original content for resource=${params.resource.id}`
+    `[inference] improve falling back to original content for resource=${params.resource.id} (template skipped or failed topic fidelity)`
   );
   return keepOriginal(params);
 }

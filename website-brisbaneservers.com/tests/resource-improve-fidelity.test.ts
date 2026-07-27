@@ -29,6 +29,14 @@ describe('topic-fidelity', () => {
     expect(isTopicFaithful(original, junk)).toBe(false);
   });
 
+  it('still rejects jargon when the original was already contaminated', () => {
+    const original =
+      'Appointment management. The cipher system provides vectorized with 1.618 for mathematical precision.';
+    const junk =
+      'The wave function system provides vectorized with 61.8 for comprehensive integration and mathematical precision.';
+    expect(isTopicFaithful(original, junk)).toBe(false);
+  });
+
   it('keeps high fidelity for near-paraphrase healthcare text', () => {
     const original =
       'Appointment management helps healthcare practices reduce no-shows and improve chair time utilisation.';

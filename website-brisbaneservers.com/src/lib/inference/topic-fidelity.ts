@@ -43,9 +43,16 @@ export function scoreTopicFidelity(original: string, candidate: string): number 
   return cosineSimilarity(a, b);
 }
 
-export function isTopicFaithful(original: string, candidate: string, min = TOPIC_FIDELITY_MIN): boolean {
+export function isTopicFaithful(
+  original: string,
+  candidate: string,
+  min = TOPIC_FIDELITY_MIN,
+  options?: { allowDesignSystemJargon?: boolean }
+): boolean {
   if (!candidate.trim()) return false;
-  if (containsDesignSystemJargon(candidate) && !containsDesignSystemJargon(original)) {
+  // Always reject design-system jargon for consulting/industry improves —
+  // even when a prior bad Improve already contaminated the original.
+  if (!options?.allowDesignSystemJargon && containsDesignSystemJargon(candidate)) {
     return false;
   }
   return scoreTopicFidelity(original, candidate) >= min;
