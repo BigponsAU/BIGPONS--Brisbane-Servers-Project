@@ -107,6 +107,8 @@ describe('improve API scopes voice tools to resolved profile', () => {
     expect(src).toContain('isGenerateFaithful');
     expect(src).toContain('minimalSeedFallback');
     expect(src).toContain('isDesignSystemVoiceProfile');
+    expect(src).not.toMatch(/params\.seedText\.trim\(\)/);
+    expect(src).toContain('Never dump RAG');
   });
 
   it('community-upload preserves contributor text and resolves profile', () => {

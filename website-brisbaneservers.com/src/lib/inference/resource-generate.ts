@@ -109,13 +109,15 @@ async function generateTemplateBody(params: GenerateBodyParams): Promise<string>
 }
 
 function minimalSeedFallback(params: GenerateBodyParams): GenerateBodyResult {
+  // Never dump RAG / seedText into the body — it can carry contaminated chunks.
+  const brief = (params.userBrief || '').trim();
   const content = [
     `# ${params.title}`,
     '',
-    `${params.topic} guidance for ${params.industry} organisations.`,
+    `${params.topic.replace(/-/g, ' ')} guidance for ${params.industry} organisations.`,
     '',
-    params.userBrief?.trim() || params.seedText.trim() ||
-      `Practical notes on ${params.topic} for ${params.industry} teams in Australia.`,
+    brief ||
+      `Practical notes on ${params.topic.replace(/-/g, ' ')} for ${params.industry} teams in Australia. Review and expand this draft with industry-specific detail before publishing.`,
   ].join('\n');
   const validation = params.voiceMatcher.validateVoice(content);
   return {
