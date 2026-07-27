@@ -268,22 +268,6 @@ export function ingestResourcesIntoMarkov(
   }
 }
 
-function topTransitions(transitions: TransitionMap, limit = 12): string[] {
-  const pairs: Array<{ from: string; to: string; count: number }> = [];
-  for (const [from, toMap] of Object.entries(transitions)) {
-    for (const [to, count] of Object.entries(toMap)) {
-      pairs.push({ from, to, count });
-    }
-  }
-  pairs.sort((a, b) => b.count - a.count);
-  if (!pairs.length) {
-    return ['  (create or generate a resource from a starter / parent to collect lineage)'];
-  }
-  return pairs
-    .slice(0, limit)
-    .map((row) => `  ${shortId(row.from)} → ${shortId(row.to)}: ${row.count}`);
-}
-
 function voiceMatchBreakdown(state: MarkovState): Array<{
   voiceProfileId: string;
   hops: number;
