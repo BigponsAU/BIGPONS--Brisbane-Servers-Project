@@ -47,9 +47,13 @@ export class VoiceMatcher {
    */
   private applyAdjustments(text: string, match: VoiceMatch): string {
     let adjusted = text;
+    const design = (this.voiceProfile.voiceName ?? '').toLowerCase().includes('design system');
+    const allowNumericInjection =
+      design && this.voiceProfile.characteristics.linguisticPatterns.numericalPrecision.specificValues;
+    const allowTermInjection = design;
 
-    // Improve technical term density
-    if (match.technicalMatch < 0.7) {
+    // Improve technical term density — only for intentional design-system profiles
+    if (allowTermInjection && match.technicalMatch < 0.7) {
       adjusted = this.addTechnicalTerms(adjusted);
     }
 
@@ -63,8 +67,8 @@ export class VoiceMatcher {
       adjusted = this.addVoiceMarkers(adjusted);
     }
 
-    // Add numerical precision
-    if (match.precisionMatch < 0.7) {
+    // Add numerical precision — never inject random golden-ratio values for consulting
+    if (allowNumericInjection && match.precisionMatch < 0.7) {
       adjusted = this.addNumericalPrecision(adjusted);
     }
 

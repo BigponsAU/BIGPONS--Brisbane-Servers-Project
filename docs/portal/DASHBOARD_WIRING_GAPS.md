@@ -17,7 +17,7 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 | 2026-07-27 | Admin → Users soft-remove / restore | Markup/API exist; client did not render Remove/Restore or populate removed table | Client lag in `account-admin-users.ts` | Wire Remove (DELETE), Restore (POST action), `includeRemoved=1`, removed table; replace `window.alert` with styled notification | **Retested OK** after Pages `e4e6a4b`: 18 Remove buttons; summary `18 active · 0 removed` |
 | 2026-07-27 | Admin → Users auth-audit pager | Prev/Next buttons unbound (single `limit=100` fetch) | Client never bound pager or used `offset` | Page size 25 + prev/next handlers calling `/admin/auth-audit?limit&offset` | **Retested OK**: shows `1–25 of 263`; Next advances |
 | 2026-07-27 | Creator + Admin API smoke (admin session) | — | — | Verified live 200s: resources, starter-blocks, profiles, analytics, voice-map, voice/analyze, library-growth, contributions, users, auth-audit, usage, token-redemptions, billing accounts/status, search-corpus | **OK** (14/14) |
-| 2026-07-27 | Browser panel nav (admin session) | — | — | All 12 panels become visible via `navigateToPanel`; Overview/Analytics refresh, Profiles filters, Voice lab analyze, Growth queue (4 pending), Moderation clear | **OK** |
+| 2026-07-27 | Profiles + ranking | Design System card confused library; ranking rewarded any numbers / cipher jargon | Synthetic `id=default` Design System card in GET /profiles; ToneAnalyzer `hasSpecificValues = numbers.length > 0`; Extrapolator injected random commonValues | Remove Design System from portal list; consulting fallback instead of design JSON; ranking penalizes jargon and ignores golden-ratio / arbitrary digit correlation | Pending deploy |
 
 ---
 

@@ -4,7 +4,7 @@
  * The saved **BIGPONS** profile uses the public site resource corpus — see `resourcesForSiteVoiceCorpus` in this file.
  */
 
-import { voiceProfileData } from '@voice-framework';
+import { CONSULTING_FALLBACK_VOICE_PROFILE } from './consulting-voice-fallback';
 import type { VoiceProfile } from '@voice-framework/models/voice-profile';
 import type { ProfileManager } from '@voice-framework/storage/profile-manager';
 import type { ProfileBuilder } from '@voice-framework/builders/profile-builder';
@@ -12,7 +12,8 @@ import { TextGenerator } from '@voice-framework/generators/text-generator';
 import type { Resource, VoiceProfileResolutionKind } from './resource-types';
 import { isPublicResource } from './resource-types';
 
-const BUNDLED_VOICE_PROFILE = voiceProfileData as unknown as VoiceProfile;
+/** @deprecated Design System JSON must not drive portal resolution — use consulting fallback. */
+export const BUNDLED_VOICE_PROFILE = CONSULTING_FALLBACK_VOICE_PROFILE;
 
 export interface ResolvedResourceVoiceProfile {
   profile: VoiceProfile;
@@ -112,11 +113,11 @@ export async function resolveResourceVoiceProfile(
     return { profile, resolution: 'library_ephemeral' };
   }
 
-  return { profile: BUNDLED_VOICE_PROFILE, resolution: 'bundled' };
+  return { profile: CONSULTING_FALLBACK_VOICE_PROFILE, resolution: 'bundled' };
 }
 
 /**
- * Library growth and other automation: use only an admin-set default profile or bundled BIGPONS.
+ * Library growth and other automation: use only an admin-set default profile or consulting fallback.
  * Does not create or persist area-specific profiles (case study / guide / industry).
  */
 export async function resolveResourceVoiceProfileForLibraryGrowth(
@@ -132,7 +133,7 @@ export async function resolveResourceVoiceProfileForLibraryGrowth(
       resolution: 'default',
     };
   }
-  return { profile: BUNDLED_VOICE_PROFILE, resolution: 'bundled' };
+  return { profile: CONSULTING_FALLBACK_VOICE_PROFILE, resolution: 'bundled' };
 }
 
 /**

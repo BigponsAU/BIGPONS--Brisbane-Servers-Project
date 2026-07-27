@@ -2,10 +2,10 @@
  * Voice profiles persistence — Postgres corpus (production) with filesystem fallback.
  */
 
-import { voiceProfileData } from '@voice-framework';
 import { CORPUS_DOC_KEYS, readCorpusJson, saveCorpusJson } from './corpus-store';
 import { asCorpusObject } from './corpus-payload-coerce';
 import { getProfilesFile } from './storage-paths';
+import { CONSULTING_FALLBACK_VOICE_PROFILE } from './consulting-voice-fallback';
 
 export interface ProfileMetadata {
   name: string;
@@ -66,7 +66,7 @@ export async function saveProfilesData(data: ProfilesData): Promise<void> {
   await saveCorpusJson(CORPUS_DOC_KEYS.PROFILES, getProfilesFile(), payload);
 }
 
-/** Bundled voice-profile.json (edge-safe; no filesystem read). */
+/** Consulting fallback profile (never Design System / golden-ratio JSON). */
 export function getBundledVoiceProfile(): Record<string, unknown> {
-  return voiceProfileData as unknown as Record<string, unknown>;
+  return CONSULTING_FALLBACK_VOICE_PROFILE as unknown as Record<string, unknown>;
 }

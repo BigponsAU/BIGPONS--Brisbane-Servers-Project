@@ -129,17 +129,20 @@ export class TextGenerator {
     }
 
     // Add technical detail
+    const design = (this.voiceProfile.voiceName ?? '').toLowerCase().includes('design system');
     const technicalTerms = this.voiceProfile.characteristics.linguisticPatterns.vocabulary.technicalTerms;
-    if (technicalTerms && technicalTerms.length > 0 && Math.random() > 0.5) {
+    if (design && technicalTerms && technicalTerms.length > 0 && Math.random() > 0.5) {
       const technicalTerm = this.randomSelect(technicalTerms);
       if (technicalTerm) {
         sentence += ` using ${technicalTerm}`;
       }
     }
 
-    // Add numerical precision occasionally
+    // Add numerical precision occasionally — design-system profiles only
     const commonValues = this.voiceProfile.characteristics.linguisticPatterns.numericalPrecision.commonValues;
-    if (commonValues && commonValues.length > 0 && Math.random() > 0.7) {
+    const allowValues =
+      design && this.voiceProfile.characteristics.linguisticPatterns.numericalPrecision.specificValues;
+    if (allowValues && commonValues && commonValues.length > 0 && Math.random() > 0.7) {
       const value = this.randomSelect(commonValues);
       if (value !== null) {
         sentence += ` (${value})`;

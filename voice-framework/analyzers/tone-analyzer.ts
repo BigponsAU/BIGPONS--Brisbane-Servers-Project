@@ -6,11 +6,21 @@
 import type { VoiceProfile, VoiceCharacteristics } from '../models/voice-profile';
 import * as voiceProfileData from '../voice-profile.json';
 
+/** Golden-ratio / design-system numbers — must not drive consulting ranking. */
+const DESIGN_RATIO_VALUES = new Set([1.618, 0.618, 0.382, 38.2, 61.8, 23.6, 76.4]);
+
+const DESIGN_JARGON_RE =
+  /\b(cipher|fourier|wave\s+function|golden\s+ratio|phi|vectorized|permutation|mathematical\s+precision)\b/i;
+
 export class ToneAnalyzer {
   private voiceProfile: VoiceProfile;
 
   constructor(profile?: VoiceProfile) {
     this.voiceProfile = profile || (voiceProfileData as VoiceProfile);
+  }
+
+  private isDesignSystemProfile(): boolean {
+    return (this.voiceProfile.voiceName ?? '').toLowerCase().includes('design system');
   }
 
   /**
@@ -28,6 +38,7 @@ export class ToneAnalyzer {
       vocabularyMatch: this.matchVocabulary(words),
       voiceMarkerPresence: this.detectVoiceMarkers(text),
       domainKnowledgePresence: this.detectDomainKnowledge(text),
+      designJargonHit: DESIGN_JARGON_RE.test(text),
       overallMatch: 0 // Will be calculated
     };
   }
@@ -37,41 +48,63 @@ export class ToneAnalyzer {
    */
   compareToProfile(analysis: ToneAnalysis): VoiceMatch {
     const characteristics = this.voiceProfile.characteristics;
+    const design = this.isDesignSystemProfile();
     
-    const technicalMatch = this.scoreMatch(
-      analysis.technicalTermDensity,
-      characteristics.tone.technicality === 'high' || characteristics.tone.technicality === 'very_high'
+    // Density vs target band (not boolean mismatch → always 0.5).
+    const targetDensity =
+      characteristics.tone.technicality === 'very_high'
+        ? 0.18
+        : characteristics.tone.technicality === 'high'
+          ? 0.12
+          : characteristics.tone.technicality === 'moderate'
+            ? 0.08
+            : 0.04;
+    const technicalMatch = Math.max(
+      0,
+      1 - Math.abs(analysis.technicalTermDensity - targetDensity) / Math.max(targetDensity, 0.08)
     );
 
-    const precisionMatch = this.scoreMatch(
-      analysis.numericalPrecision.hasSpecificValues,
-      characteristics.linguisticPatterns.numericalPrecision.specificValues
-    );
+    let precisionMatch: number;
+    if (design) {
+      precisionMatch = this.scoreMatch(
+        analysis.numericalPrecision.matchesCommonValues,
+        characteristics.linguisticPatterns.numericalPrecision.specificValues
+      );
+    } else {
+      // Consulting: do not reward arbitrary integers / golden-ratio correlation.
+      // Evidence-like numbers (%, $, years) get a light bump; otherwise neutral.
+      precisionMatch = analysis.numericalPrecision.hasSpecificValues ? 0.65 : 0.55;
+    }
 
     const structureMatch = this.scoreMatch(
-      analysis.structuralPatterns.hasHierarchy,
-      characteristics.structuralPatterns.organization.hierarchical
+      analysis.structuralPatterns.hasHierarchy || analysis.structuralPatterns.hasLists,
+      characteristics.structuralPatterns.organization.hierarchical ||
+        characteristics.structuralPatterns.organization.sections
     );
 
     const vocabularyMatch = analysis.vocabularyMatch;
     const markerMatch = analysis.voiceMarkerPresence;
 
-    const overallMatch = (
+    let overallMatch =
       technicalMatch * 0.2 +
-      precisionMatch * 0.15 +
-      structureMatch * 0.15 +
+      precisionMatch * 0.1 +
+      structureMatch * 0.2 +
       vocabularyMatch * 0.25 +
-      markerMatch * 0.25
-    );
+      markerMatch * 0.25;
+
+    // Penalize design-system jargon when scoring a consulting profile.
+    if (!design && analysis.designJargonHit) {
+      overallMatch = Math.max(0, overallMatch - 0.35);
+    }
 
     return {
-      overallMatch,
+      overallMatch: Math.max(0, Math.min(1, overallMatch)),
       technicalMatch,
       precisionMatch,
       structureMatch,
       vocabularyMatch,
       markerMatch,
-      recommendations: this.generateRecommendations(analysis, characteristics)
+      recommendations: this.generateRecommendations(analysis, characteristics, design)
     };
   }
 
@@ -101,17 +134,25 @@ export class ToneAnalyzer {
     const numberPattern = /[\d]+\.?[\d]*/g;
     const numbers = text.match(numberPattern) || [];
     const specificValues = this.voiceProfile.characteristics.linguisticPatterns.numericalPrecision.commonValues;
-    
-    const hasSpecificValues = numbers.length > 0;
-    const matchesCommonValues = numbers.some(num => 
-      specificValues.some(val => Math.abs(parseFloat(num) - val) < 0.01)
+    const design = this.isDesignSystemProfile();
+
+    // Evidence-style numbers for consulting (%, currency, years) — not "any digit".
+    const evidencePattern = /(\d+\s*%|\$\s*\d+|\b(19|20)\d{2}\b|\b\d+\s*(hours?|days?|weeks?|months?)\b)/i;
+    const hasEvidenceNumbers = evidencePattern.test(text);
+
+    const matchesCommonValues = numbers.some((num) =>
+      specificValues.some((val) => Math.abs(parseFloat(num) - val) < 0.01)
     );
+    const matchesDesignRatios = numbers.some((num) => {
+      const n = parseFloat(num);
+      return [...DESIGN_RATIO_VALUES].some((val) => Math.abs(n - val) < 0.01);
+    });
 
     return {
-      hasSpecificValues,
+      hasSpecificValues: design ? numbers.length > 0 : hasEvidenceNumbers && !matchesDesignRatios,
       count: numbers.length,
-      matchesCommonValues,
-      values: numbers.map(n => parseFloat(n))
+      matchesCommonValues: design ? matchesCommonValues : false,
+      values: numbers.map((n) => parseFloat(n)),
     };
   }
 
@@ -206,28 +247,37 @@ export class ToneAnalyzer {
 
   private generateRecommendations(
     analysis: ToneAnalysis,
-    characteristics: VoiceCharacteristics
+    characteristics: VoiceCharacteristics,
+    designSystem = false
   ): string[] {
     const recommendations: string[] = [];
 
-    if (analysis.technicalTermDensity < 0.1) {
-      recommendations.push("Increase use of technical terminology from the domain");
+    if (analysis.technicalTermDensity < 0.05) {
+      recommendations.push(
+        designSystem
+          ? 'Increase use of technical terminology from the domain'
+          : 'Use clearer domain language for the industry and topic'
+      );
     }
 
-    if (!analysis.numericalPrecision.hasSpecificValues) {
-      recommendations.push("Include specific numerical values and ratios");
+    if (designSystem && !analysis.numericalPrecision.hasSpecificValues) {
+      recommendations.push('Include specific numerical values and ratios');
     }
 
-    if (analysis.vocabularyMatch < 0.3) {
-      recommendations.push("Use more domain-specific vocabulary and descriptive terms");
+    if (!designSystem && analysis.designJargonHit) {
+      recommendations.push('Remove design-system jargon unrelated to the topic (cipher, Fourier, golden ratio, etc.)');
     }
 
-    if (analysis.voiceMarkerPresence < 0.2) {
-      recommendations.push("Incorporate more voice marker phrases (opening, connecting, emphasis)");
+    if (analysis.vocabularyMatch < 0.15) {
+      recommendations.push('Use more domain-specific vocabulary and descriptive terms');
     }
 
-    if (analysis.sentenceComplexity.complexityLevel === 'low') {
-      recommendations.push("Use more complex sentence structures with coordination");
+    if (analysis.voiceMarkerPresence < 0.1) {
+      recommendations.push('Incorporate more voice marker phrases (opening, connecting, emphasis)');
+    }
+
+    if (!analysis.structuralPatterns.hasHierarchy && !analysis.structuralPatterns.hasLists) {
+      recommendations.push('Add clear headings or lists for scannability');
     }
 
     return recommendations;
@@ -242,6 +292,8 @@ export interface ToneAnalysis {
   vocabularyMatch: number;
   voiceMarkerPresence: number;
   domainKnowledgePresence: DomainKnowledgePresence;
+  /** True when design-system jargon (cipher / Fourier / phi / …) appears in the text. */
+  designJargonHit: boolean;
   overallMatch: number;
 }
 

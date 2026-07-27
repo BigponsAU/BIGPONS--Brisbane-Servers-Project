@@ -307,6 +307,14 @@ export class Extrapolator {
     if (!values || values.length === 0) {
       return null;
     }
+
+    // Consulting / industry profiles must not inject golden-ratio or random commonValues.
+    const design = (this.voiceProfile.voiceName ?? '').toLowerCase().includes('design system');
+    const allowValues =
+      design && this.voiceProfile.characteristics.linguisticPatterns.numericalPrecision.specificValues;
+    if (!allowValues) {
+      return null;
+    }
     
     // Check if context mentions angles
     if (context.toLowerCase().includes('angle') || context.toLowerCase().includes('azimuth')) {

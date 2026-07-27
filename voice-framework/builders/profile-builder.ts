@@ -189,15 +189,17 @@ export class ProfileBuilder {
    * Extract numerical precision patterns
    */
   private extractNumericalPrecision(analyses: any[], text: string): NumericalPrecision {
+    const DESIGN_RATIOS = new Set([1.618, 0.618, 0.382, 38.2, 61.8, 23.6, 76.4]);
     const allValues: number[] = [];
     analyses.forEach(a => {
       allValues.push(...a.numericalPrecision.values);
     });
 
-    // Find common values (appearing multiple times)
+    // Find common values (appearing multiple times) — exclude design-system ratios
     const valueFreq = new Map<number, number>();
     allValues.forEach(val => {
       const rounded = Math.round(val * 100) / 100;
+      if (DESIGN_RATIOS.has(rounded)) return;
       valueFreq.set(rounded, (valueFreq.get(rounded) || 0) + 1);
     });
 
@@ -207,9 +209,10 @@ export class ProfileBuilder {
       .slice(0, 10)
       .map(([val]) => val);
 
+    // Consulting profiles: never require arbitrary number density for ranking.
     return {
-      specificValues: allValues.length > 0,
-      commonValues: commonValues.length > 0 ? commonValues : allValues.slice(0, 10),
+      specificValues: false,
+      commonValues: commonValues.length > 0 ? commonValues : [],
       formatting: this.detectNumberFormatting(text),
       units: this.extractUnits(text)
     };

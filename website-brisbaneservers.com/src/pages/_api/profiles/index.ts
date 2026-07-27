@@ -1,11 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
 import { findBrisbaneProfileMeta, ensureBrisbaneProfile } from '../../../lib/brisbane-profile';
-import {
-  getBundledVoiceProfile,
-  loadProfilesData,
-  type ProfileData,
-} from '../../../lib/profiles-api';
+import { loadProfilesData, type ProfileData } from '../../../lib/profiles-api';
 import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
 import { computeProfileCardStats } from '../../../lib/profile-stats';
 import { loadResources } from '../../../lib/resources-api';
@@ -60,12 +56,18 @@ export const GET: APIRoute = async ({ request }) => {
       }
     }
 
-    const defaultProfile = getBundledVoiceProfile();
-    
     let profiles: any[] = [];
     
     if (profilesData.profiles.length > 0) {
-      profiles = profilesData.profiles.map((p: ProfileData) => {
+      profiles = profilesData.profiles
+        // Never surface Design System / synthetic bundled cards in the portal library.
+        .filter((p: ProfileData) => {
+          const name = `${p.metadata?.name ?? ''} ${p.profile?.voiceName ?? ''}`.toLowerCase();
+          if (p.metadata?.id === 'default') return false;
+          if (name.includes('design system')) return false;
+          return true;
+        })
+        .map((p: ProfileData) => {
         const base = {
           id: p.metadata.id,
           name: p.metadata.name,
@@ -95,31 +97,6 @@ export const GET: APIRoute = async ({ request }) => {
             resources
           ),
         };
-      });
-    }
-    
-    const hasStoredDefault = Boolean(profilesData.defaultProfileId);
-    // Add bundled fallback profile when not already represented (never steal default flag from BIGPONS / storage)
-    const defaultExists = profiles.some(
-      (p) => p.id === 'default' || p.voiceName === defaultProfile.voiceName,
-    );
-    if (!defaultExists) {
-      const bundledBase = {
-        id: 'default',
-        name: (defaultProfile.voiceName as string) || 'Default Voice Profile',
-        description: 'Bundled fallback from voice-profile.json (used when no storage default matches).',
-        version: (defaultProfile.version as string) || '1.0.0',
-        tags: ['default', 'system'],
-        isDefault: !hasStoredDefault,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        sourceDocument: defaultProfile.sourceDocument,
-        voiceName: defaultProfile.voiceName,
-        characteristics: defaultProfile.characteristics,
-      };
-      profiles.unshift({
-        ...bundledBase,
-        stats: computeProfileCardStats({ id: 'default' }, resources),
       });
     }
 

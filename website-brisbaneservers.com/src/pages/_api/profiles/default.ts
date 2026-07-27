@@ -1,11 +1,16 @@
 import type { APIRoute } from 'astro';
 import { requireEditor } from '../../../utils/auth';
-import { getBundledVoiceProfile, loadProfilesData } from '../../../lib/profiles-api';
+import { ensureBrisbaneProfile, findBrisbaneProfileMeta } from '../../../lib/brisbane-profile';
+import { loadProfilesData } from '../../../lib/profiles-api';
+import { getVoiceFramework, syncVoiceProfilesToCorpus } from '../../../utils/voice-framework';
+import { loadResources } from '../../../lib/resources-api';
 
 /**
  * Get default voice profile
  * GET /api/profiles/default
  * Requires: Editor authentication (same as list profiles; portal editors use this)
+ *
+ * Never returns the Design System bundled JSON — heals Brisbane when missing.
  */
 export const GET: APIRoute = async ({ request }) => {
   const startTime = Date.now();
@@ -28,7 +33,21 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     console.log('[API] GET /api/profiles/default - Loading default profile');
 
-    const profilesData = await loadProfilesData();
+    let profilesData = await loadProfilesData();
+
+    const storedMetas = profilesData.profiles.map((p) => p.metadata);
+    if (!findBrisbaneProfileMeta(storedMetas) || !profilesData.defaultProfileId) {
+      try {
+        const resources = await loadResources();
+        const { profileManager, profileBuilder } = await getVoiceFramework();
+        await ensureBrisbaneProfile(profileManager, profileBuilder, resources);
+        await syncVoiceProfilesToCorpus();
+        profilesData = await loadProfilesData();
+      } catch (healErr) {
+        console.warn('[API] GET /api/profiles/default - Brisbane heal skipped:', healErr);
+      }
+    }
+
     let defaultProfile: Record<string, unknown> | null = null;
 
     if (profilesData.defaultProfileId) {
@@ -60,14 +79,30 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     if (!defaultProfile) {
-      const fallbackProfile = getBundledVoiceProfile();
-      defaultProfile = {
-        id: 'default',
-        name: fallbackProfile.voiceName || 'Default Voice Profile',
-        voiceName: fallbackProfile.voiceName,
-        characteristics: fallbackProfile.characteristics,
-        version: fallbackProfile.version || '1.0.0',
-      };
+      const brisbane = findBrisbaneProfileMeta(profilesData.profiles.map((p) => p.metadata));
+      const row = brisbane
+        ? profilesData.profiles.find((p) => p.metadata.id === brisbane.id)
+        : null;
+      if (row) {
+        defaultProfile = {
+          id: row.metadata.id,
+          name: row.metadata.name,
+          voiceName: row.profile?.voiceName,
+          characteristics: row.profile?.characteristics,
+          version: row.metadata.version,
+        };
+      }
+    }
+
+    if (!defaultProfile) {
+      return new Response(
+        JSON.stringify({
+          error: 'No consulting default profile is available yet. Build Brisbane from the Profiles panel.',
+          code: 'NO_DEFAULT_PROFILE',
+          success: false,
+        }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } },
+      );
     }
 
     const duration = Date.now() - startTime;

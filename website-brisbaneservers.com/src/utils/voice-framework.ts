@@ -85,12 +85,14 @@ export async function initializeVoiceFramework() {
   }
 
   try {
-    toneAnalyzer = new ToneAnalyzer();
-    patternExtractor = new PatternExtractor();
+    const { CONSULTING_FALLBACK_VOICE_PROFILE } = await import('../lib/consulting-voice-fallback');
+    const fallback = CONSULTING_FALLBACK_VOICE_PROFILE;
+    toneAnalyzer = new ToneAnalyzer(fallback);
+    patternExtractor = new PatternExtractor(fallback);
     shredder = new Shredder();
-    textGenerator = new TextGenerator();
-    extrapolator = new Extrapolator();
-    voiceMatcher = new VoiceMatcher();
+    textGenerator = new TextGenerator(fallback);
+    extrapolator = new Extrapolator(fallback);
+    voiceMatcher = new VoiceMatcher(fallback);
 
     const storageDir = voiceFrameworkStorageDir();
     const profilesPath = path.join(storageDir, 'profiles.json');
@@ -115,6 +117,16 @@ export async function initializeVoiceFramework() {
 
     await textStorage.initialize();
     await profileManager.initialize();
+
+    // Prefer stored Brisbane/default over consulting stub for framework singletons.
+    const defaultProfile = profileManager.getDefaultProfile();
+    if (defaultProfile) {
+      toneAnalyzer = new ToneAnalyzer(defaultProfile);
+      patternExtractor = new PatternExtractor(defaultProfile);
+      textGenerator = new TextGenerator(defaultProfile);
+      extrapolator = new Extrapolator(defaultProfile);
+      voiceMatcher = new VoiceMatcher(defaultProfile);
+    }
 
     profileBuilder = new ProfileBuilder();
     documentProcessor = new DocumentProcessor(textStorage);
