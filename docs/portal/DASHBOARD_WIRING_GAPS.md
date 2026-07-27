@@ -20,7 +20,8 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 | 2026-07-27 | Profiles + ranking | Design System card confused library; ranking rewarded any numbers / cipher jargon | Synthetic `id=default` Design System card in GET /profiles; ToneAnalyzer `hasSpecificValues = numbers.length > 0`; Extrapolator injected random commonValues | Remove Design System from portal list; consulting fallback instead of design JSON; ranking penalizes jargon and ignores golden-ratio / arbitrary digit correlation | **Retested OK**: profiles=2 (Brisbane default + healthcare base); Design System gone; GOOD 0.231 > JUNK 0.000 |
 | 2026-07-27 | All industries ranking + Improve purpose | Need assurance beyond healthcare | Contaminated PS/construction drafts from prior bad Improves | Ranking attested on 7 industries; restored purposeful PS/construction drafts; corpus scan 0/49 contaminated; sanitizer strips design junk on Improve fallback | **OK**: ranking 7/7; corpus clean; drafts restored |
 | 2026-07-27 | Purpose-health standard → whole dashboard | Same class as Improve: 200 OK + score while product outcome wrong | Generate / growth / community-upload / rewrite / singleton save-score / orphan approve / false-success toasts / unwired bulk actions | Port fidelity guards; preserve contributor text; rewrite fail-closed; resolve-profile scoring; approve requires resource; purpose-aware toasts; wire Improve drafts + Export; Ops/Profiles/Growth copy honesty | **Code complete** — commit + live retest next |
-| 2026-07-28 | Remaining polish → complete health | Growth celebrate without fidelity; leftover BIGPONS/runbooks copy; billing Loading stuck; weak archive gate | Same class (false success / misleading copy) | Growth returns inference+fidelity; auto-publish floor 0.55; copy + billing + archive gates | **Code complete** — push + live retest |
+| 2026-07-28 | Remaining polish → complete health | Growth celebrate without fidelity; leftover BIGPONS/runbooks copy; billing Loading stuck; weak archive gate | Same class (false success / misleading copy) | Growth returns inference+fidelity; auto-publish floor 0.55; copy + billing + archive gates | **Pushed** `a6e7a5f` |
+| 2026-07-28 | Generate `topic-seed-fallback` | Live smoke: fallback dumped RAG context into body (len ~6k) with “mathematical precision” while reporting seed-fallback | `minimalSeedFallback` used `params.seedText` (RAG) and skipped jargon gate | Seed fallback = short on-topic stub only; deleted contaminated smoke drafts | **Retested OK** after `c2ebeee` worker deploy: len 299, 0 jargon hits, corpus contaminated=0 |
 
 ---
 
@@ -55,7 +56,7 @@ A feature is **ill** when it returns success (HTTP 200, toast, voice score) but 
 | P2 | Remaining BIGPONS/bundled/runbooks copy + archive `data.success` | **Fixed** |
 | P2 | Admin Billing Loading… stuck on accounts failure | **Fixed** |
 | P3 | Starter-create toast tone + voice score | **Fixed** |
-| Ops | Live retest on production after push | Pending |
+| Ops | Live retest on production after push | **OK** — Generate seed-fallback clean; profiles no Design System; corpus contaminated=0 |
 
 ---
 
