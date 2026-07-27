@@ -15,6 +15,7 @@ import {
   setResourceActionButtonsBusy,
   setBulkActionsBusy,
   setElementBusy,
+  workspaceErrorMessage,
 } from './account-workspace-utils';
 import {
   getWorkspaceResourceById,
@@ -271,7 +272,7 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
     } catch (error) {
       portalActionFailure('generateResource', error);
       if (statusDiv) {
-        statusDiv.textContent = 'Connection error. Please try again.';
+        statusDiv.textContent = workspaceErrorMessage(error);
         statusDiv.className = 'status-message error';
       }
     } finally {
@@ -1389,7 +1390,7 @@ async function saveDetailEdit(id: string): Promise<void> {
       }
     }
   } catch (error) {
-    showNotification('Connection error. Please try again.', 'error');
+    showNotification(workspaceErrorMessage(error), 'error');
     console.error('[Portal] Detail edit error:', error);
     if (submitBtn && originalText) {
       submitBtn.disabled = false;
@@ -1766,7 +1767,7 @@ function closeEditModal(): void {
           showNotification('Failed to publish resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Publish error:', error);
       }
     },
@@ -1818,7 +1819,7 @@ function closeEditModal(): void {
           showNotification('Failed to unpublish resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Unpublish error:', error);
       }
     },
@@ -1860,7 +1861,7 @@ function closeEditModal(): void {
           showNotification('Failed to archive resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Archive error:', error);
       }
     },
@@ -1900,7 +1901,7 @@ function closeEditModal(): void {
           showNotification('Failed to unarchive resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Unarchive error:', error);
       }
     },
@@ -1974,7 +1975,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
     }
   } catch (error) {
     portalActionFailure('saveResource', error);
-    showNotification('Connection error. Please try again.', 'error');
+    showNotification(workspaceErrorMessage(error), 'error');
     console.error('[Portal] Update error:', error);
     if (submitBtn && originalText) {
       submitBtn.disabled = false;
@@ -2093,9 +2094,13 @@ document.addEventListener('keydown', (e) => {
         if (response.ok && data.success) {
           const voiceScore = data.voiceValidation?.score || 0;
           const scoreText = voiceScore ? ` Voice score: ${Math.round(voiceScore * 100)}%` : '';
+          const fidelity =
+            typeof data.topicFidelity === 'number'
+              ? ` Topic fidelity: ${Math.round(data.topicFidelity * 100)}%`
+              : '';
           const inferenceMode = data.inference?.mode ? ` via ${data.inference.mode}` : '';
           const modelHint = data.inference?.modelId ? ` (${data.inference.modelId})` : '';
-          showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}`, 'success');
+          showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}${fidelity}`, 'success');
           console.log('[Portal] Resource improved successfully');
           setTimeout(() => {
             loadResources();
@@ -2107,7 +2112,7 @@ document.addEventListener('keydown', (e) => {
           showNotification('Failed to improve resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Improve error:', error);
       }
     },
@@ -2170,7 +2175,7 @@ document.addEventListener('keydown', (e) => {
           showNotification('Failed to delete resource: ' + errorMsg, 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Delete error:', error);
       }
     },
@@ -2535,30 +2540,26 @@ document.getElementById('upload-resource-form')?.addEventListener('submit', asyn
       }
     }
   } catch (error) {
-    let errorMsg = 'Connection error. Please try again.';
-    
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      errorMsg = 'Network error. Please check your connection and try again.';
-    } else if (error instanceof Error) {
-      errorMsg = error.message;
-      // Provide user-friendly messages for common errors
-      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+    let errorMsg = workspaceErrorMessage(error);
+    if (error instanceof Error) {
+      const raw = error.message;
+      if (raw.includes('Failed to fetch') || raw.includes('NetworkError')) {
         errorMsg = 'Unable to connect to server. Please check your connection.';
-      } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+      } else if (raw.includes('401') || raw.includes('Unauthorized')) {
         errorMsg = 'Authentication failed. Please log in again.';
-      } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+      } else if (raw.includes('403') || raw.includes('Forbidden')) {
         errorMsg = 'You do not have permission to upload resources.';
-      } else if (errorMsg.includes('413') || errorMsg.includes('Payload Too Large')) {
+      } else if (raw.includes('413') || raw.includes('Payload Too Large')) {
         errorMsg = 'File is too large. Maximum size is 12MB.';
       }
     }
-    
+
     if (statusDiv) {
       statusDiv.textContent = errorMsg;
       statusDiv.className = 'status-message error';
     }
     showNotification('Upload failed: ' + errorMsg, 'error');
-    
+
     if (import.meta.env.MODE === 'development') {
       console.error('[Portal] Resource upload error:', error);
     }
@@ -2625,7 +2626,7 @@ document.getElementById('create-from-content-form')?.addEventListener('submit', 
       showNotification('Create from content failed: ' + errorMsg, 'error');
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Connection error. Please try again.';
+    const errorMsg = workspaceErrorMessage(error);
     if (statusDiv) { statusDiv.textContent = errorMsg; statusDiv.className = 'status-message error'; }
     showNotification('Create from content failed: ' + errorMsg, 'error');
   } finally {
@@ -2913,7 +2914,7 @@ function closePreviewModal(): void {
           showNotification(data.error || 'Failed to restore resource.', 'error');
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Restore error:', error);
       }
     },
@@ -2962,7 +2963,7 @@ document.getElementById('deduplicate-resources-btn')?.addEventListener('click', 
           console.error('[Portal] Deduplication failed:', data);
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Deduplication error:', error);
       }
     },
@@ -3009,7 +3010,7 @@ document.getElementById('seed-resources-btn')?.addEventListener('click', async (
           console.error('[Portal] Seed failed:', data);
         }
       } catch (error) {
-        showNotification('Connection error. Please try again.', 'error');
+        showNotification(workspaceErrorMessage(error), 'error');
         console.error('[Portal] Seed error:', error);
       }
     },

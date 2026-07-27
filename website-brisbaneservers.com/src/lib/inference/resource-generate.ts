@@ -16,7 +16,7 @@ import {
 } from './usage-ledger';
 import { completeInference, getInferenceProvider } from './inference-provider';
 
-export type InferenceMode = 'nvidia' | 'workers-ai' | 'template';
+export type InferenceMode = 'nvidia' | 'workers-ai' | 'template' | 'original';
 
 export interface GenerateBodyParams {
   seedText: string;

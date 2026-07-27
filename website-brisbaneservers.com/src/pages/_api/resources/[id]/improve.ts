@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { Extrapolator, VoiceMatcher } from '@voice-framework';
 
 /** Static build: API is served by standalone-api at runtime, not prerendered. */
 export function getStaticPaths() {
@@ -70,17 +71,23 @@ export const POST: APIRoute = async ({ params, request }) => {
       );
     }
 
-    const { profileManager, profileBuilder, extrapolator, voiceMatcher } = await getVoiceFramework();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
     const resolved = await resolveResourceVoiceProfile({
       requestedProfileId: resource.metadata?.voiceProfileId,
       profileManager,
       profileBuilder,
       resources,
     });
+    // Mirror Generate: scope Extrapolator/VoiceMatcher to the resolved consulting profile,
+    // not the singleton design-system defaults from getVoiceFramework().
+    const extrapolator = new Extrapolator(resolved.profile);
+    const voiceMatcher = new VoiceMatcher(resolved.profile);
 
     const rag = await buildRagContext(resource.content.slice(0, 1500), {
       topK: 6,
-      resourceId: resource.id
+      resourceId: resource.id,
+      industry: resource.industry,
+      minScore: 0.35,
     });
 
     if (isDevelopmentMode()) {
@@ -164,6 +171,7 @@ export const POST: APIRoute = async ({ params, request }) => {
           issues: voiceValidation.issues || [],
           strengths: voiceValidation.strengths || []
         },
+        topicFidelity: improved.topicFidelity,
         success: true
       }),
       {

@@ -48,15 +48,23 @@ export function buildImproveUserPrompt(params: {
   topic: string;
   originalContent: string;
   ragContextText?: string;
+  /** When false (default), ban design-system jargon unrelated to the industry topic. */
+  allowDesignSystemJargon?: boolean;
 }): string {
   const parts = [
-    `Improve this resource article while preserving factual intent and structure.`,
+    `Improve this resource article while preserving factual intent, industry focus, and structure.`,
     `Title: ${params.title}`,
     `Industry: ${params.industry}`,
     `Topic: ${params.topic}`,
+    `Stay on the ${params.industry} / ${params.topic} subject. Do not change the article into an unrelated technical domain.`,
   ];
+  if (!params.allowDesignSystemJargon) {
+    parts.push(
+      'Do NOT introduce design-system / meta jargon unrelated to this industry and topic (e.g. cipher, Fourier transform, wave function, golden ratio, phi, 1.618, 61.8, "mathematical precision", vectorized, permutation).'
+    );
+  }
   if (params.ragContextText?.trim()) {
-    parts.push('', 'Related knowledge base context:', params.ragContextText.trim());
+    parts.push('', 'Related knowledge base context (use only if on-topic):', params.ragContextText.trim());
   }
   parts.push(
     '',
@@ -64,7 +72,7 @@ export function buildImproveUserPrompt(params: {
     'Current article:',
     params.originalContent,
     '',
-    'Return the full improved article (markdown body only). Add clarity, evidence-led framing, and actionable detail where supported by the context — do not invent statistics or citations.'
+    'Return the full improved article (markdown body only). Add clarity, evidence-led framing, and actionable detail where supported by the context — do not invent statistics or citations. Prefer finishing incomplete sentences from the original over inventing new sections.'
   );
   return parts.join('\n');
 }

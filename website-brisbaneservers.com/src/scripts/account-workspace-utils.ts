@@ -19,6 +19,31 @@ export function escapeJsString(text: unknown): string {
     .replace(/\n/g, '\\n');
 }
 
+/**
+ * Prefer the real Error / API message over a blanket "Connection error".
+ * Keeps UI short enough for toasts and status lines.
+ */
+export function workspaceErrorMessage(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+): string {
+  if (error instanceof TypeError && /fetch|network|failed to fetch/i.test(error.message)) {
+    return 'Network error — check your connection and try again.';
+  }
+  if (error instanceof ReferenceError) {
+    return `Workspace error: ${error.message}`;
+  }
+  if (error instanceof Error) {
+    const msg = error.message.trim();
+    if (msg) return msg.length > 180 ? `${msg.slice(0, 177)}…` : msg;
+  }
+  if (typeof error === 'string' && error.trim()) {
+    const msg = error.trim();
+    return msg.length > 180 ? `${msg.slice(0, 177)}…` : msg;
+  }
+  return fallback;
+}
+
 export function treeGroupLabel(value: unknown, fallback: string): string {
   if (typeof value === 'string') {
     const trimmed = value.trim();

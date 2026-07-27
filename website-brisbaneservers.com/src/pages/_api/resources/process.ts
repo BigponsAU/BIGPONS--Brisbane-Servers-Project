@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { VoiceMatcher } from '@voice-framework';
+import { Extrapolator, VoiceMatcher } from '@voice-framework';
 import { requireEditor } from '../../../utils/auth';
 import { getVoiceFramework } from '../../../utils/voice-framework';
 import { loadResources, saveResources } from '../../../lib/resources-api';
@@ -74,7 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
     const shouldPublish = autoPublish === true;
 
     const resources = await loadResources();
-    const { profileManager, profileBuilder, extrapolator } = await getVoiceFramework();
+    const { profileManager, profileBuilder } = await getVoiceFramework();
     const resolved = await resolveResourceVoiceProfile({
       requestedProfileId: profileId,
       profileManager,
@@ -82,6 +82,7 @@ export const POST: APIRoute = async ({ request }) => {
       resources,
     });
 
+    const extrapolator = new Extrapolator(resolved.profile);
     const voiceMatcher = new VoiceMatcher(resolved.profile);
     const bodyText = String(content);
     let finalContent = bodyText;

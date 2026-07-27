@@ -5,6 +5,8 @@ import { searchSimilar } from './chunk-index';
 
 const MAX_CONTEXT_CHARS = 6000;
 const DEFAULT_TOP_K = 8;
+/** Default floor when callers ask for industry-scoped global fallback. */
+const DEFAULT_MIN_SCORE = 0.28;
 
 export interface RagContext {
   /** Concatenated retrieval blocks for prompting */
@@ -24,6 +26,10 @@ export async function buildRagContext(query: string, options?: {
   resourceId?: string;
   /** Exclude these resource ids from retrieval */
   excludeResourceIds?: string[];
+  /** Prefer same-industry parents when falling back to global search */
+  industry?: string;
+  /** Drop weak global matches (cosine). Local same-resource hits ignore this floor. */
+  minScore?: number;
 }): Promise<RagContext> {
   const start = Date.now();
   const client = createEmbeddingClient();
@@ -33,8 +39,19 @@ export async function buildRagContext(query: string, options?: {
     ? new Set(options.excludeResourceIds)
     : undefined;
   const topK = options?.topK ?? DEFAULT_TOP_K;
+  const minScore = options?.minScore;
+  const industryNorm = options?.industry?.trim().toLowerCase();
+
+  const industryAllowed = industryNorm
+    ? new Set(
+        resources
+          .filter((r) => (r.industry ?? '').trim().toLowerCase() === industryNorm)
+          .map((r) => r.id)
+      )
+    : null;
 
   let hits;
+  let usedLocal = false;
   if (options?.resourceId) {
     const local = await searchSimilar(qEmb, {
       topK: Math.max(3, topK),
@@ -43,19 +60,32 @@ export async function buildRagContext(query: string, options?: {
     });
     if (local.length > 0) {
       hits = local;
+      usedLocal = true;
     } else {
       hits = await searchSimilar(qEmb, {
-        topK,
+        topK: Math.max(topK * 3, 12),
         excludeResourceIds: exclude,
         resources
       });
     }
   } else {
     hits = await searchSimilar(qEmb, {
-      topK,
+      topK: Math.max(topK * 3, 12),
       excludeResourceIds: exclude,
       resources
     });
+  }
+
+  if (!usedLocal) {
+    const floor = minScore ?? (industryAllowed ? DEFAULT_MIN_SCORE : undefined);
+    hits = hits.filter((h) => {
+      if (floor != null && h.score < floor) return false;
+      if (industryAllowed && industryAllowed.size > 0 && !industryAllowed.has(h.chunk.resourceId)) {
+        return false;
+      }
+      return true;
+    });
+    hits = hits.slice(0, topK);
   }
 
   const parts: string[] = [];

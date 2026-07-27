@@ -222,8 +222,8 @@ export const POST: APIRoute = async ({ request }) => {
     let inferencePayload: { mode: string; modelId: string | null } | undefined;
 
     if (autoProcess) {
-      const { extrapolator } = await getVoiceFramework();
-      const { VoiceMatcher } = await import('@voice-framework');
+      const { Extrapolator, VoiceMatcher } = await import('@voice-framework');
+      const extrapolator = new Extrapolator(resolved.profile);
       const voiceMatcher = new VoiceMatcher(resolved.profile);
 
       if (preserveStructure) {

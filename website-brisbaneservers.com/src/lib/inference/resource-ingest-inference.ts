@@ -23,6 +23,8 @@ export async function enhanceIngestedContent(params: {
 }): Promise<ImproveBodyResult> {
   const rag = await buildRagContext(params.content.slice(0, 1500), {
     topK: 6,
+    industry: params.industry,
+    minScore: 0.35,
   });
 
   const stub: Resource = {

@@ -1,9 +1,21 @@
 # Dashboard wiring gaps & production standards
 
-**Last updated:** 2026-06-29  
-**Purpose:** Track UI wiring, standards, and intentional deferrals for `/account`.
+**Last updated:** 2026-07-27  
+**Purpose:** Track UI wiring, standards, intentional deferrals, and **live functional QA** for `/account`.
 
 **Related:** [DASHBOARD_UX_ELEMENT_MAP.md](DASHBOARD_UX_ELEMENT_MAP.md) · [DASHBOARD_FEATURE_MATRIX.md](DASHBOARD_FEATURE_MATRIX.md)
+
+---
+
+## Functional QA log (production)
+
+Cadence: find → document → fix → push → retest on `https://brisbaneservers.com/account/`.
+
+| Date | Panel / action | Symptom | Root cause | Fix | Retest |
+|------|----------------|---------|------------|-----|--------|
+| 2026-07-27 | Resources → **Improve** on healthcare draft | Button “worked” but body became design-system gibberish (cipher / Fourier / wave function / 1.618 / 61.8); truncated fragments; voice score could look better while content got worse | `POST /api/resources/:id/improve` used singleton `Extrapolator`/`VoiceMatcher` from `getVoiceFramework()` (bundled **Design System Voice**). Generate already scoped to `resolved.profile`. Voice gate ≥0.45 + template fallback rewarded jargon; no topic-fidelity guard | Scope Improve (+ process/upload ingest) to `new Extrapolator/VoiceMatcher(resolved.profile)`; topic-fidelity + jargon reject → keep original; tighten improve prompt; industry/minScore RAG for improve; `tests/resource-improve-fidelity.test.ts` | Pending deploy |
+| 2026-07-27 | Admin → Users soft-remove / restore | Markup/API exist; client may not wire Remove/Restore or removed table | Suspected client lag in `account-admin-users.ts` | Verify live; fix if confirmed | Pending |
+| 2026-07-27 | Admin → Users auth-audit pager | Prev/Next buttons may be unbound | Suspected single `limit=100` fetch | Verify live; fix if confirmed | Pending |
 
 ---
 
@@ -59,6 +71,7 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | **Keyboard nav** | Mode-aware 1–6 panel shortcuts |
 | **Growth semantic dedup** | `library-growth/dedup.ts` — vector similarity before materialize |
 | **Voice map semantic route** | `GET /api/voice-map/semantic` + query UI in Voice map panel |
+| **Improve topic fidelity** | Resolved-profile Extrapolator/VoiceMatcher; jargon/topic guard; keep original on fail |
 
 ---
 
