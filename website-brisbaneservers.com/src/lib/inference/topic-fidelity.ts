@@ -1,6 +1,7 @@
 /**
  * Topic fidelity helpers for Improve / ingest — reject outputs that drift into
  * unrelated design-system jargon or lose overlap with the original article.
+ * Industry-agnostic: applies to every industry/topic in the consulting library.
  */
 
 import { hashEmbedding } from '../semantic/embedding-client';
@@ -17,9 +18,15 @@ export const DESIGN_SYSTEM_JARGON_PATTERNS: RegExp[] = [
   /\b0\.618\b/,
   /\b61\.8\b/,
   /\b38\.2\b/,
+  /\b23\.6\b/,
+  /\b76\.4\b/,
   /\bmathematical\s+precision\b/i,
   /\bvectorized\b/i,
   /\bpermutation\b/i,
+  /\bdesign\s+blocks?\b/i,
+  /\bvisual\s+patterns?\b/i,
+  /for comprehensive integration/i,
+  /for comprehensive system integration/i,
 ];
 
 /** Minimum lexical/hash overlap with the original to accept an improve candidate. */
@@ -31,6 +38,37 @@ export function containsDesignSystemJargon(text: string): boolean {
 
 export function isDesignSystemVoiceProfile(profile: { voiceName?: string }): boolean {
   return (profile.voiceName ?? '').toLowerCase().includes('design system');
+}
+
+/**
+ * Strip design-system junk, RAG chunk markers, and empty debris from industry articles.
+ * Used when a prior bad Improve contaminated a draft — keeps purposeful topic prose.
+ */
+export function sanitizeDesignSystemContamination(text: string): string {
+  if (!text?.trim()) return text ?? '';
+
+  let cleaned = text
+    .replace(/\[[^\]]+\s+#\d+\][^\n]*/g, '')
+    .replace(/^Knowledge base context:\s*/gim, '')
+    .replace(/^---\s*$/gm, '');
+
+  const blocks = cleaned.split(/\n{2,}/);
+  const kept = blocks.filter((block) => {
+    const t = block.trim();
+    if (!t) return false;
+    if (DESIGN_SYSTEM_JARGON_PATTERNS.some((re) => re.test(t))) return false;
+    if (/^The\s+.+\s+(provides|maintains|creates|uses)\s+.+\s+with\s+[\d.]+/i.test(t)) {
+      return false;
+    }
+    if (/^-\s+\*\*[^*]+\*\*:\s+.+\s+for comprehensive/i.test(t)) return false;
+    return true;
+  });
+
+  return kept
+    .join('\n\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**
@@ -50,8 +88,6 @@ export function isTopicFaithful(
   options?: { allowDesignSystemJargon?: boolean }
 ): boolean {
   if (!candidate.trim()) return false;
-  // Always reject design-system jargon for consulting/industry improves —
-  // even when a prior bad Improve already contaminated the original.
   if (!options?.allowDesignSystemJargon && containsDesignSystemJargon(candidate)) {
     return false;
   }

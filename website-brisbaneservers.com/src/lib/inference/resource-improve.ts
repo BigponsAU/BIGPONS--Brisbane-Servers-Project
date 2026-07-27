@@ -19,8 +19,10 @@ import {
 } from './usage-ledger';
 import type { InferenceMode } from './resource-generate';
 import {
+  containsDesignSystemJargon,
   isDesignSystemVoiceProfile,
   isTopicFaithful,
+  sanitizeDesignSystemContamination,
   scoreTopicFidelity,
   TOPIC_FIDELITY_MIN,
 } from './topic-fidelity';
@@ -83,15 +85,22 @@ function acceptCandidate(
 }
 
 function keepOriginal(params: ImproveBodyParams): ImproveBodyResult {
-  const content = params.resource.content;
+  const raw = params.resource.content;
+  const allowDesign = isDesignSystemVoiceProfile(params.resolved.profile);
+  // If a prior bad Improve left design-system junk in an industry draft, strip it
+  // rather than preserving gibberish as "original".
+  const content =
+    !allowDesign && containsDesignSystemJargon(raw)
+      ? sanitizeDesignSystemContamination(raw) || raw
+      : raw;
   const validation = params.voiceMatcher.validateVoice(content);
   return {
     content,
-    inferenceMode: 'original',
-    modelId: 'topic-fidelity-guard',
+    inferenceMode: content === raw ? 'original' : 'original',
+    modelId: content === raw ? 'topic-fidelity-guard' : 'design-jargon-sanitize',
     voiceScore: validation.score ?? 0,
     voiceValid: validation.isValid ?? false,
-    topicFidelity: 1,
+    topicFidelity: scoreTopicFidelity(raw, content),
   };
 }
 
