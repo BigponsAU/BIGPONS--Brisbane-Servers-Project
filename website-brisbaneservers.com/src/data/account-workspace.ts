@@ -206,7 +206,7 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
     minRole: 'admin',
     mode: 'admin',
     section: 'platform',
-    title: 'Ops — platform health, search corpus, token queue, inference provider notes',
+    title: 'Ops — usage, search corpus, perk redemption queue',
   },
   {
     panel: 'admin-billing',

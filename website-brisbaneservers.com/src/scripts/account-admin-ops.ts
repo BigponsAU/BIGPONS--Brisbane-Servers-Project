@@ -174,6 +174,23 @@ async function loadSiteUsageSnapshot(ctx: PortalAccountContext): Promise<void> {
       parts.push('Per-user caps and grants live in Billing.');
       metaEl.textContent = parts.join(' ');
     }
+
+    const providerStatus = document.getElementById('admin-ops-provider-status');
+    if (providerStatus) {
+      const bits: string[] = [];
+      bits.push(`Active: ${data.provider ?? 'template'}.`);
+      if (data.nvidiaConfigured) {
+        bits.push(`NVIDIA NIM${data.nvidiaModel ? ` · ${data.nvidiaModel}` : ''} ready.`);
+      } else {
+        bits.push('NVIDIA NIM not configured.');
+      }
+      bits.push(
+        data.workersAiConfigured
+          ? 'Workers AI fallback ready.'
+          : 'Workers AI fallback not available.'
+      );
+      providerStatus.textContent = bits.join(' ');
+    }
   } catch {
     summaryEl.textContent = 'Could not reach the API to load site usage.';
   }
@@ -273,6 +290,9 @@ export async function loadAdminOpsPanel(ctx?: PortalAccountContext): Promise<voi
 
 export function bindAdminOpsPanel(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('refresh-admin-ops-usage')?.addEventListener('click', () => {
+    void loadSiteUsageSnapshot(resolveCtx());
+  });
+  document.getElementById('admin-ops-refresh-all')?.addEventListener('click', () => {
     void loadAdminOpsPanel(resolveCtx());
   });
   document.getElementById('refresh-admin-ops-token-queue')?.addEventListener('click', () => {

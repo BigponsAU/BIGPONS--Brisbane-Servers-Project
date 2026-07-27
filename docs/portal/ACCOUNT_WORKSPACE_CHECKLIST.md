@@ -65,14 +65,15 @@ Cross-reference [GO_LIVE_RUNBOOK.md](../operations/GO_LIVE_RUNBOOK.md) and [PROD
 
 ---
 
-## Phase 2 product (post-launch)
+## Phase 2 product (post-launch — optional)
+
+Most prior Phase 2 ideas that do not affect auth’d upload/generate are **unnecessary** (Vectorize, binary DOCX round-trip) — see [FEATURES_NOT_BUILT.md](../operations/FEATURES_NOT_BUILT.md).
+
+Still optional if maintainability needs it:
 
 1. Modularize `account-workspace-app.ts`
-2. Resources panel marketing bands
-3. Author propose-only growth queue
-4. Semantic vector dedup
-5. Case-study drafts at Cloudflare build time via API
-6. Cloudflare Vectorize (optional backend migration)
+2. Author propose-only growth queue
+3. Case-study drafts → curated flagship pages (manual promote remains the rule)
 
 ---
 

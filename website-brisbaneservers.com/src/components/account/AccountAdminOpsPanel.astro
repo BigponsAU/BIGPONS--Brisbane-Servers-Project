@@ -9,106 +9,70 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       semanticKey="account-admin-ops"
       eyebrow="Platform"
       title={accountWorkspace.adminOpsLabel}
-      byline="Site-wide AI usage health, search corpus, token redemptions, and inference provider notes."
+      byline="Today’s AI usage, public search corpus health, and perk redemptions that need a human follow-up."
       titleId="admin-ops-heading"
       variant="primary-light"
     >
-      <div slot="actions" class="section-actions admin-panel-quick-links" role="group" aria-label="Related panels">
+      <div slot="actions" class="section-actions admin-panel-quick-links admin-ops-toolbar">
         <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-billing')">Billing</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('analytics')">Insights</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('admin-users')">Users</button>
         <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('library-growth')">Library growth</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="navigateToPanel('site-review')">Site review</button>
+        <button type="button" id="admin-ops-refresh-all" class="btn btn-secondary btn-sm">Refresh</button>
       </div>
 
     <section class="admin-section admin-section--in-band" aria-labelledby="admin-ops-heading">
 
       <details class="panel-guidance-details">
-        <summary>Ops overview</summary>
+        <summary>What Ops is for</summary>
         <div class="panel-guidance-details__body">
-          <p><strong>Site usage snapshot</strong> shows total AI units consumed today and how many users are near or at cap.</p>
-          <p><strong>Search corpus</strong> feeds public site search via semantic chunks on the edge worker.</p>
-          <p><strong>Token queue</strong> lists spotlight and office-hours redemptions awaiting manual follow-up.</p>
+          <p><strong>Usage</strong> — site-wide AI units today (UTC) and how many accounts are near or at cap. Detailed per-user caps live in Billing.</p>
+          <p><strong>Search corpus</strong> — identity of the semantic index behind public site search.</p>
+          <p><strong>Perk queue</strong> — spotlight / office-hours redemptions waiting for manual fulfilment.</p>
         </div>
       </details>
 
-      <div class="admin-ops-grid admin-ops-grid--polished">
-        <div class="card admin-ops-card admin-ops-card--primary">
-          <div class="admin-ops-usage-header">
-            <h3 class="card-title">Site usage snapshot</h3>
-            <button type="button" id="refresh-admin-ops-usage" class="btn btn-secondary btn-sm">Refresh</button>
+      <div class="admin-ops-usage-strip" aria-live="polite">
+        <div class="admin-ops-usage-strip__main">
+          <p id="admin-ops-usage-summary" class="admin-queue-summary">Sign in to load site usage.</p>
+          <div id="admin-ops-usage-bar-wrap" class="admin-ops-usage-bar" hidden>
+            <div id="admin-ops-usage-bar-fill" class="admin-ops-usage-bar__fill"></div>
           </div>
-          <div class="admin-ops-usage-meter" aria-live="polite">
-            <p id="admin-ops-usage-summary" class="section-subtitle">Sign in to load site usage.</p>
-            <div id="admin-ops-usage-bar-wrap" class="admin-ops-usage-bar" hidden>
-              <div id="admin-ops-usage-bar-fill" class="admin-ops-usage-bar__fill"></div>
-            </div>
-            <p id="admin-ops-usage-meta" class="form-hint"></p>
-          </div>
+          <p id="admin-ops-usage-meta" class="form-hint"></p>
         </div>
+        <button type="button" id="refresh-admin-ops-usage" class="btn btn-secondary btn-sm">Refresh usage</button>
+      </div>
 
-        <div class="card admin-ops-card">
-          <div class="admin-ops-usage-header">
-            <h3 class="card-title">Search &amp; RAG corpus</h3>
+      <div class="admin-ops-workbench">
+        <section class="admin-ops-work-block" aria-labelledby="admin-ops-corpus-heading">
+          <div class="admin-ops-work-block__header">
+            <h3 id="admin-ops-corpus-heading" class="admin-billing-section-title">Search corpus</h3>
             <button type="button" id="refresh-admin-ops-search-corpus" class="btn btn-secondary btn-sm">Refresh</button>
           </div>
-          <p class="form-hint">
-            Public search bars call <code>GET /api/resources/search</code> (semantic chunks + proposition keywords).
-          </p>
+          <p class="section-subtitle">Public search uses semantic chunks on the edge worker (<code>GET /api/resources/search</code>).</p>
           <div id="admin-ops-search-corpus" class="admin-ops-search-corpus" aria-live="polite">
             <p class="form-hint">Loading corpus identity…</p>
           </div>
-        </div>
+        </section>
 
-        <div class="card admin-ops-card">
-          <div class="admin-ops-usage-header">
-            <h3 class="card-title">Token perk queue</h3>
+        <section class="admin-ops-work-block" aria-labelledby="admin-ops-queue-heading">
+          <div class="admin-ops-work-block__header">
+            <h3 id="admin-ops-queue-heading" class="admin-billing-section-title">Perk redemption queue</h3>
             <button type="button" id="refresh-admin-ops-token-queue" class="btn btn-secondary btn-sm">Refresh</button>
           </div>
-          <p class="form-hint">Spotlight and office-hours redemptions awaiting manual follow-up.</p>
+          <p class="section-subtitle">Spotlight and office-hours claims that need a human follow-up before marking done.</p>
           <div id="admin-ops-token-queue" class="admin-ops-token-queue" aria-live="polite"></div>
           <p id="admin-ops-token-queue-status" class="form-hint" role="status"></p>
-        </div>
-
-        <details class="card admin-ops-card admin-ops-card--collapsible">
-          <summary class="card-title">Inference providers</summary>
-          <div class="admin-ops-card__body">
-            <p class="section-subtitle">
-              Primary: <strong>NVIDIA NIM</strong> (<code>NVIDIA_API_KEY</code> on edge worker).
-              Fallback: <strong>Cloudflare Workers AI</strong> via the <code>[ai]</code> binding.
-            </p>
-            <p class="form-hint">Configure: <code>npm run configure:inference-nvidia</code> then <code>npm run sync:edge-worker-secrets</code>.</p>
-          </div>
-        </details>
-
-        <details class="card admin-ops-card admin-ops-card--collapsible">
-          <summary class="card-title">Enable inference on edge worker</summary>
-          <ol class="section-subtitle admin-ops-steps">
-            <li><code>npm run configure:inference-nvidia</code> — save <code>NVIDIA_API_KEY</code></li>
-            <li><code>npm run sync:edge-worker-secrets</code> — push secrets to Cloudflare Worker</li>
-            <li><code>npm run deploy:edge-worker</code> — deploy <code>INFERENCE_PROVIDER=nvidia</code> vars</li>
-            <li>Test <strong>Generate</strong> and <strong>Improve</strong> in Resources; check usage meter in Billing</li>
-          </ol>
-        </details>
-
-        <details class="card admin-ops-card admin-ops-card--collapsible" data-require-role="super-admin">
-          <summary class="card-title">Workers AI fallback</summary>
-          <div class="admin-ops-card__body">
-            <p class="section-subtitle">
-              Edge Worker <code>[ai]</code> binding (~10k neurons/day free). Used when NVIDIA is unavailable or rate-limited.
-            </p>
-            <p class="form-hint">When both NVIDIA and Workers AI are unavailable, generation uses the template engine (always free).</p>
-          </div>
-        </details>
-
-        <details class="card admin-ops-card admin-ops-card--collapsible" data-require-role="super-admin">
-          <summary class="card-title">Legacy voice-framework dashboard</summary>
-          <div class="admin-ops-card__body">
-            <p class="section-subtitle">
-              Docker dashboard on Render (port 3001) is deprecated. Voice lab, voice map, and admin panels here replace it.
-            </p>
-          </div>
-        </details>
+        </section>
       </div>
+
+      <details class="panel-guidance-details admin-ops-provider-notes">
+        <summary>Inference providers (status notes)</summary>
+        <div class="panel-guidance-details__body">
+          <p id="admin-ops-provider-status" class="section-subtitle">Provider status loads with usage.</p>
+          <p>Primary: <strong>NVIDIA NIM</strong> on the edge worker. Fallback: <strong>Cloudflare Workers AI</strong>. If both are unavailable, Generate/Improve use the free template path.</p>
+          <p class="form-hint">Secrets and deploy steps live in repo scripts (<code>configure:inference-nvidia</code>, <code>sync:edge-worker-secrets</code>) — not day-to-day Ops work.</p>
+        </div>
+      </details>
     </section>
     </AccountWorkspacePanelBand>
   </div>

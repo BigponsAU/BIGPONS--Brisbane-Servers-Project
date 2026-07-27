@@ -22,6 +22,7 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 | 2026-07-27 | Purpose-health standard → whole dashboard | Same class as Improve: 200 OK + score while product outcome wrong | Generate / growth / community-upload / rewrite / singleton save-score / orphan approve / false-success toasts / unwired bulk actions | Port fidelity guards; preserve contributor text; rewrite fail-closed; resolve-profile scoring; approve requires resource; purpose-aware toasts; wire Improve drafts + Export; Ops/Profiles/Growth copy honesty | **Code complete** — commit + live retest next |
 | 2026-07-28 | Remaining polish → complete health | Growth celebrate without fidelity; leftover BIGPONS/runbooks copy; billing Loading stuck; weak archive gate | Same class (false success / misleading copy) | Growth returns inference+fidelity; auto-publish floor 0.55; copy + billing + archive gates | **Pushed** `a6e7a5f` |
 | 2026-07-28 | Generate `topic-seed-fallback` | Live smoke: fallback dumped RAG context into body (len ~6k) with “mathematical precision” while reporting seed-fallback | `minimalSeedFallback` used `params.seedText` (RAG) and skipped jargon gate | Seed fallback = short on-topic stub only; deleted contaminated smoke drafts | **Retested OK** after `c2ebeee` worker deploy: len 299, 0 jargon hits, corpus contaminated=0 |
+| 2026-07-28 | Ops panel design + deferred scope | Ops was a card stack of runbook checklists; Vectorize/DOCX listed as open gaps | Wrong surface for day-to-day ops; optional infra misread as unfinished | Ops = usage strip + corpus + perk queue; mark Vectorize/DOCX/etc **unnecessary**; document case-study ≠ flagship | Code |
 
 ---
 
@@ -119,11 +120,13 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 
 ---
 
-## Intentionally deferred
+## Intentionally deferred / unnecessary
 
 | Surface | Notes |
 |---------|--------|
-| Cloudflare Vectorize backend migration | Optional — JSON/Postgres index in use |
+| Cloudflare Vectorize backend migration | **Unnecessary** for current product — JSON/API-host index in use. See [FEATURES_NOT_BUILT.md](../operations/FEATURES_NOT_BUILT.md) |
+| Binary DOCX/PDF round-trip | **Unnecessary** — auth’d markdown OCR/rewrite covers library uploads |
+| Case-study approve → flagship marketing page | **By design** — Approve creates resource/draft JSON; curated `case-studies.ts` pages stay manual |
 
 Stripe Customer Portal is **Live** (Overview → Manage subscription via `POST /api/billing/portal`).
 

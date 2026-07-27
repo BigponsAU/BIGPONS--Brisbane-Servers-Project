@@ -2138,6 +2138,66 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   gap: var(--space-lg);
 }
 
+.account-workspace-shell .admin-ops-toolbar {
+  flex-wrap: wrap;
+}
+
+.account-workspace-shell .admin-ops-usage-strip {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  margin: var(--space-md) 0 var(--space-xl);
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.account-workspace-shell .admin-ops-usage-strip__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-workspace-shell .admin-ops-usage-strip .admin-queue-summary {
+  margin: 0 0 var(--space-sm);
+}
+
+.account-workspace-shell .admin-ops-workbench {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+  .account-workspace-shell .admin-ops-workbench {
+    grid-template-columns: 1fr;
+  }
+
+  .account-workspace-shell .admin-ops-usage-strip {
+    flex-direction: column;
+  }
+}
+
+.account-workspace-shell .admin-ops-work-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+
+.account-workspace-shell .admin-ops-work-block .admin-billing-section-title {
+  margin: 0;
+}
+
+.account-workspace-shell .admin-ops-work-block .section-subtitle {
+  margin: 0 0 var(--space-md);
+}
+
+.account-workspace-shell .admin-ops-provider-notes {
+  margin-top: var(--space-lg);
+}
+
 .account-workspace-shell .admin-ops-usage-header {
   display: flex;
   align-items: center;

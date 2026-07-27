@@ -1,36 +1,59 @@
-# Features intentionally not built (yet)
+# Features intentionally not built / unnecessary
 
-**Last updated:** 2026-06-26
+**Last updated:** 2026-07-28
 
-This document records product and platform capabilities that are **deliberately out of scope** for the current production line, with reasoning. UI copy that mentions these items (e.g. Admin Ops cards) is informational — not a bug.
+Capabilities that are **out of product scope** (not dashboard health bugs). Uploads, Generate, Improve, and community contribute already require signed-in authorization — that is the production rule.
 
-**Related:** [EDGE_API_STATUS.md](EDGE_API_STATUS.md) · [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md)
-
----
-
-## Billing and AI credits
-
-| Feature | Status | Why not built yet |
-|---------|--------|-------------------|
-| **Stripe subscription** past daily AI cap | **Live** | Checkout + webhook + Customer Portal + `billing-accounts` corpus; +15 daily units when active. Requires `STRIPE_*` secrets on edge worker. |
-| **PayID manual top-up** + admin grant | **Live** | Admin Billing → PayID grant form; `POST /api/admin/usage/grant` |
-| **Custom invoice list UI** | Not planned | Users manage invoices via Stripe Customer Portal; admins use subscriber roster + Stripe Dashboard. |
-| **Automated credit purchase** | Not planned (short term) | Daily role-based caps + template fallback already prevent runaway cost on Workers AI free tier. Paid top-up is a business process, not a code gap. |
-
-**What ships today:** `GET /api/usage/me`, daily caps in `usage-ledger.ts`, template engine fallback, Workers AI binding, **Stripe AI Boost checkout** (`POST /api/billing/checkout`), **Stripe Customer Portal** (`POST /api/billing/portal`), **PayID admin grant** (`POST /api/admin/usage/grant`), **admin billing roster** (`GET /api/admin/billing/accounts`), **admin usage summary** (`GET /api/admin/usage/summary`).
+**Related:** [EDGE_API_STATUS.md](EDGE_API_STATUS.md) · [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md) · [DASHBOARD_WIRING_GAPS.md](../portal/DASHBOARD_WIRING_GAPS.md)
 
 ---
 
-## Voice and content tooling
+## Unnecessary for this product line (do not schedule)
 
-| Feature | Status | Why not built yet |
-|---------|--------|-------------------|
-| **3D voice topology canvas** | **Live** | WebGL orbit (`3D view`) plus 2D flat and isometric depth on Voice Map. |
-| **Topic guides in API corpus** | **Live** | All industry/topic guides sync to Neon on bootstrap (`topic-guide-*` resources). |
-| **Legacy voice-framework Docker dashboard** (Render port 3001) | **Retired** | Replaced by Voice Lab, Voice Map, and admin panels in `/account`. Separate cold-start host duplicated portal features. |
-| **PDF OCR & document rewrite** | **Live (v1)** | Dashboard **Documents — OCR & rewrite**: extract PDF/DOCX/images via local parse + NVIDIA vision (`moonshotai/kimi-k2.6`); structure-preserving voice rewrite (markdown skeleton, not binary styling). Legacy upload path also uses extract. |
-| **Binary format preservation** (Word/PDF fonts, logos) | Not planned (v1) | Edge Workers cannot round-trip DOCX/PDF layout without external conversion services; v1 outputs markdown structure + voice rewrite. |
-| **Single automated “article → publish” pipeline** | By design | Markdown/CMS articles and API-backed resources are both valid inputs. Auto-publishing through voice analysis without human review would bypass moderation and site-section review workflows. |
+These do **not** unlock authorized upload/generation workflows (already live). Treat as non-goals unless product strategy changes.
+
+| Item | Why unnecessary |
+|------|-----------------|
+| **Cloudflare Vectorize migration** | Semantic/RAG index already works on the API host corpus. Optional infra only. |
+| **Binary DOCX/PDF round-trip** (fonts, logos, layout) | Auth’d Documents OCR/rewrite already extracts + rewrites as markdown. Binary layout needs external converters — not required for the library. |
+| **Custom Stripe invoice list UI** | Stripe Customer Portal + admin Billing roster cover invoices. |
+| **Automated credit purchase checkout UX beyond AI Boost** | Role caps + template fallback + Stripe AI Boost / PayID grants already bound cost. |
+| **Stripe top-up for community tokens** | Paid top-up is for **AI daily units**; community tokens earn via contributions. |
+| **Fully autonomous article → publish** | Would bypass moderation / site review; human approve is intentional. |
+| **Legacy Render voice dashboard** | Retired — `/account` Voice Lab / Map / Ops replace it. |
+
+---
+
+## Case-study approve → flagship page (what this means)
+
+**Today (by design):**
+
+1. Library growth can propose a `case_study` topic gap.
+2. Admin **Approve** materializes a **resource draft** (and appends JSON to `case-study-drafts.json`).
+3. That does **not** automatically create the public marketing **flagship case-study page** (the curated entries in `src/data/case-studies.ts` that power live `/case-studies/...` pages).
+
+**Why:** Flagship pages are editorial — copy, client permission, and brand placement need a human promote into the static site data. Approve = “draft material ready in Resources / drafts file,” not “live marketing page.”
+
+**Not unfinished wiring** — documented Partial / intentional in growth UI copy.
+
+---
+
+## Billing and AI credits (live)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Stripe AI Boost** past daily AI cap | **Live** | Checkout + webhook + Customer Portal |
+| **PayID manual top-up** + admin grant | **Live** | Admin Billing → PayID grant |
+
+---
+
+## Voice and content tooling (live)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **3D / depth / 2D voice map** | **Live** | Voice Map panel |
+| **Topic guides in API corpus** | **Live** | Synced on bootstrap |
+| **PDF/DOCX OCR & markdown rewrite** | **Live (v1)** | Auth required; structure-preserving markdown, not binary round-trip |
 
 ---
 
@@ -38,50 +61,14 @@ This document records product and platform capabilities that are **deliberately 
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| **Earn tokens** | **Live** | Awarded on **accepted** contributions (auto-publish or admin approve); reject claws back |
-| **Redeem flat perks** | **Live** | Overview panel — AI boost, spotlight, office hours (no tiers) |
-| **Stripe / paid community-token top-up** | **Not built** | Stripe/PayID top up **AI daily units** only — not the community token ledger |
-
-**What ships today:** `GET /api/tokens/me`, `GET /api/tokens/perks`, `POST /api/tokens/redeem`, ledger in `token-ledger.ts`; earn via `contribution-tokens.ts` on accept.
+| **Earn / redeem perks** | **Live** | Accept awards; Overview redeem; Ops perk queue |
 
 ---
 
-## Voice map 3D
-
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **2D SVG map** | **Live** | Default — fast, accessible |
-| **Depth / isometric view** | **Live** | Opt-in toggle — no WebGL |
-| **WebGL 3D orbit canvas** | **Live** | `3D view` on Voice Map — drag to orbit corpus topology |
-
----
-
-## Public site content
-
-| Feature | Status | Why not built yet |
-|---------|--------|-------------------|
-| **Topic guides** for all industry hubs | **Live** | Full guides in `src/data/topic-guides/`; synced to API corpus for voice map + Brisbane profile. |
-| **More client showcase sites** | Curated | Only verified public presences are listed (e.g. Cool Finance). Placeholder cards are avoided on purpose. |
-
----
-
-## Infrastructure (not user-facing features)
+## Infrastructure
 
 | Item | Status | Notes |
 |------|--------|-------|
-| **Render API** (`brisbane-servers-api`) | **Retired** | Suspended 2026-06-11. Production API is the Cloudflare Worker only. |
-| **Render Postgres** (`brisbane-servers-db`) | **Decommission** | Superseded by Neon via Hyperdrive. Remove to avoid confusion and free-tier expiry. |
-| **Render MCP for deploys** | Legacy | Use `cloudflare-api` MCP for production. Render MCP only for decommission/history. |
+| **Render API / Postgres** | **Retired / decommission** | Production = Cloudflare Worker + Neon |
 
----
-
-## When to build next
-
-Suggested order after portal and edge are stable:
-
-1. **PayID grant admin UI** — shipped in Admin Billing.
-2. **Stripe subscription** past daily AI cap — shipped; configure Stripe secrets on worker.
-3. **Stripe** — if subscription revenue is prioritised over manual PayID.
-4. **Binary DOCX/PDF round-trip** — if customers need original fonts/logos preserved in-file (not markdown structure).
-
-Deploying repo changes to production (Worker + Pages) is tracked in [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md) — intentionally batched separately from infra cleanup.
+Deploying Worker + Pages is tracked in [PRODUCTION_GO_LIVE_STATUS.md](PRODUCTION_GO_LIVE_STATUS.md).
