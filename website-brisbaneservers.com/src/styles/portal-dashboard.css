@@ -62,6 +62,18 @@
   box-shadow: 0 0.75rem 2rem rgba(8, 27, 54, 0.04);
   position: relative;
   z-index: 1;
+  /* Legacy portal-workspace clip-path + overflow:hidden cuts card copy on resize/zoom */
+  overflow: visible;
+  clip-path: none;
+}
+
+.account-workspace-shell .login-card::before,
+.account-workspace-shell .login-card::after {
+  display: none;
+}
+
+.account-workspace-shell .login-card:hover {
+  transform: none;
 }
 
 .account-workspace-shell .workspace-toolbar-title {
@@ -105,8 +117,10 @@
 }
 
 .account-workspace-shell .section-header--workspace .section-title {
-  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
-  line-height: 1.2;
+  font-size: clamp(1.2rem, 1.35rem, 1.6rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .account-workspace-shell .section-header--workspace .section-intro__byline {
@@ -400,9 +414,11 @@
 .site-shell--marketing .account-workspace-shell .workspace-hero__title,
 .site-shell--portal .workspace-hero__title {
   margin: 0 0 var(--space-sm);
-  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
-  line-height: 1.15;
+  font-size: var(--text-2xl-practical);
+  line-height: 1.2;
   color: var(--primary-ink);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .site-shell--marketing .account-workspace-shell .workspace-hero__lead,
@@ -569,10 +585,11 @@
 .site-shell--marketing .account-workspace-shell .client-token-balance,
 .site-shell--portal .client-token-balance {
   margin: 0;
-  font-size: var(--text-2xl);
+  font-size: var(--text-2xl-practical);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
-  line-height: 1.1;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .site-shell--marketing .account-workspace-shell .client-token-label,
@@ -960,7 +977,8 @@
 body[data-page-id='account'] {
   --page-density-multiplier: 1;
   --page-measure-max: min(44rem, 100%);
-  --portal-sidebar-width: clamp(13.5rem, 14vw, 16.5rem);
+  /* rem-based so sidebar tracks browser zoom with type (avoid vw fighting rem) */
+  --portal-sidebar-width: clamp(13.5rem, 15rem, 16.5rem);
   --portal-drawer-width: min(20.5rem, calc(100vw - 2.5rem));
 }
 
@@ -980,7 +998,18 @@ body[data-page-id='account'] {
 }
 
 .account-workspace-shell .login-card {
-  padding: clamp(var(--space-lg), 3vw, var(--space-2xl));
+  padding: clamp(var(--space-lg), var(--space-xl), var(--space-2xl));
+}
+
+.account-workspace-shell .login-card h1,
+.account-workspace-shell .login-card h2,
+.account-workspace-shell .login-card__title {
+  /* Override legacy .login-card h2 { --text-xl } (~φ²) that oversizes form titles */
+  font-size: var(--text-xl-practical);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  max-width: 100%;
 }
 
 .account-workspace-shell .login-form {
@@ -991,6 +1020,22 @@ body[data-page-id='account'] {
 .account-workspace-shell .login-note {
   font-size: var(--text-sm);
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.account-workspace-shell .login-note {
+  /* Legacy negative top margin collapses stacked notes into clipped-looking overlap */
+  margin: 0 0 var(--space-sm);
+}
+
+.account-workspace-shell .login-benefits {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.account-workspace-shell .login-benefits li {
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .login-note--signup-jump {
@@ -1245,8 +1290,11 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 }
 
 .account-workspace-shell .account-basic-home__guide-card .contribute-how-it-works--compact .contribute-how-it-works__title {
-  font-size: var(--text-xl);
+  font-size: var(--text-xl-practical);
+  line-height: 1.25;
   margin-bottom: var(--space-md);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 @media (min-width: 56rem) {
@@ -1349,12 +1397,15 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 }
 
 .account-workspace-shell .sidebar-nav-item .nav-description {
-  display: block;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  line-height: 1.25;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .sidebar-workspace-title {
@@ -1776,11 +1827,15 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   .account-workspace-shell .header-title-mobile .workspace-toolbar-title {
     margin: 0;
     font-size: var(--text-sm);
-    line-height: 1.25;
+    line-height: 1.3;
     max-width: none;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     text-align: left;
   }
 
@@ -1915,7 +1970,7 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   }
 
   .account-workspace-shell .header-title-mobile .workspace-toolbar-title {
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
   }
 }
 
@@ -2861,7 +2916,10 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .account-workspace-shell .profiles-detail-title {
   margin: 0;
-  font-size: var(--text-xl);
+  font-size: var(--text-xl-practical);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .account-workspace-shell .profiles-detail-subtitle {
@@ -3404,7 +3462,8 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   overflow: hidden;
   font-size: var(--text-sm);
   line-height: 1.55;
-  min-height: 5.5em;
+  min-height: 0;
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .starter-block-actions {
@@ -3575,9 +3634,10 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   border-radius: var(--border-radius);
   background: color-mix(in srgb, var(--primary-color, #0a74da) 12%, var(--surface, #fff));
   color: var(--primary-dark, #0858a8);
-  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-size: clamp(1.35rem, 1.5rem, 1.85rem);
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .voice-lab-result__label {
@@ -3708,10 +3768,11 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 }
 
 .account-workspace-shell .markov-stat__value {
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-size: clamp(1.25rem, 1.4rem, 1.75rem);
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.2;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .markov-stat__value--sm {
@@ -3809,8 +3870,8 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .account-workspace-shell .markov-transition-list__edge {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .account-workspace-shell .markov-transition-list__count {
@@ -3950,9 +4011,12 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .account-workspace-shell .sidebar-user-email {
   display: block;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .account-workspace-shell .workspace-empty-state {
@@ -4079,4 +4143,127 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 /* `.btn { display: inline-flex }` overrides the UA [hidden] rule — keep CTAs truly hidden. */
 .account-workspace-shell .client-ai-usage-card .insight-card__actions .btn[hidden] {
   display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Text sizing + overflow — zoom/resize safe
+   Prefer rem / *-practical tokens over φ²/φ³ or vw type so copy is not clipped
+   by overflow:hidden, ellipsis, or clip-path when containers shrink.
+   -------------------------------------------------------------------------- */
+
+.account-workspace-shell .workspace-toolbar-title,
+.account-workspace-shell .sidebar-workspace-title,
+.account-workspace-shell .sidebar-mode-subtitle,
+.account-workspace-shell .sidebar-subtitle,
+.account-workspace-shell .section-intro__byline,
+.account-workspace-shell .section-intro__eyebrow,
+.account-workspace-shell .workspace-hero__lead,
+.account-workspace-shell .workspace-hero__eyebrow,
+.account-workspace-shell .workspace-empty-state h3,
+.account-workspace-shell .workspace-empty-state p,
+.account-workspace-shell .auth-confirmation-panel__title,
+.account-workspace-shell .auth-confirmation-panel__lead,
+.account-workspace-shell .auth-confirmation-panel__hint {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.account-workspace-shell .stat-value,
+.account-workspace-shell .stats-grid .stat-card .stat-value,
+.account-workspace-shell .dashboard-stats-grid .stat-value {
+  font-size: clamp(1.25rem, 1.5rem, 2rem);
+  line-height: 1.2;
+  min-height: 0;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: manual;
+  /* Gradient text can clip descenders when paired with overflow:hidden */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.account-workspace-shell .stat-content,
+.account-workspace-shell .stat-content h3,
+.account-workspace-shell .stat-description {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.account-workspace-shell .activity-title {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.account-workspace-shell .preview-card-title,
+.account-workspace-shell .tree-resource-title,
+.account-workspace-shell .profile-item-name,
+.account-workspace-shell .profile-card-v1__title,
+.account-workspace-shell .profile-card-v1__voice {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.account-workspace-shell .profile-card-v1__voice {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.account-workspace-shell .tree-resource-title {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.account-workspace-shell .profile-item-name {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.account-workspace-shell .nav-item-content,
+.account-workspace-shell .sidebar-nav-item .nav-item-content,
+.account-workspace-shell .header-left,
+.account-workspace-shell .activity-content,
+.account-workspace-shell .profiles-list-sidebar .profile-card-v1__heading {
+  min-width: 0;
+}
+
+.account-workspace-shell .login-form h3,
+.account-workspace-shell .auth-help-form h3 {
+  font-size: var(--text-lg);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  margin: 0 0 var(--space-sm);
+}
+
+@media (max-width: 63.99rem) {
+  .account-workspace-shell .stat-value,
+  .account-workspace-shell .client-token-balance,
+  .account-workspace-shell .markov-stat__value {
+    font-size: clamp(1.125rem, 1.35rem, 1.75rem);
+  }
 }
