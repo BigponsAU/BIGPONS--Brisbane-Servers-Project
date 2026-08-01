@@ -27,6 +27,11 @@ import {
 } from '../../../lib/documents/document-token-guard';
 import { DOCUMENT_TOKEN_COSTS } from '../../../data/document-token-costs';
 import { schedulePublicSurfaceUpdate } from '../../../lib/publish-public-surfaces';
+import {
+  buildEmbeddedImageMarkdown,
+  isImageUpload,
+  prependImageFigure,
+} from '../../../lib/resource-images';
 
 function mapExtractStatus(status: 'ready' | 'ocr' | 'failed'): ProcessingStatus {
   if (status === 'ready') return 'ready';
@@ -141,6 +146,22 @@ export const POST: APIRoute = async ({ request }) => {
 
     const content = extracted.text;
     const classified = { processingStatus: mapExtractStatus(extracted.processingStatus), text: content };
+
+    let imageEmbedWarning: string | undefined;
+    let imageMarkdown: string | undefined;
+    if (isImageUpload(file.name, file.type)) {
+      const altBase = (title || file.name.replace(/\.[^/.]+$/, '') || 'Uploaded').trim();
+      const embed = buildEmbeddedImageMarkdown({
+        fileName: file.name,
+        mimeType: extracted.mimeType || file.type || 'image/png',
+        bytes,
+        alt: `${altBase} visual`,
+      });
+      imageEmbedWarning = embed.warning;
+      if (embed.embedded) {
+        imageMarkdown = embed.markdown;
+      }
+    }
 
     const extractTokenCost = tokenCostForExtractMethod(extracted.method);
     const extractSpend = await spendDocumentTokens({
@@ -277,6 +298,10 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
+    if (imageMarkdown) {
+      processedContent = prependImageFigure(processedContent, imageMarkdown);
+    }
+
     const description = generateResourceCatalogDescription({
       voiceProfile: resolved.profile,
       title: resourceTitle,
@@ -368,7 +393,8 @@ export const POST: APIRoute = async ({ request }) => {
             method: extracted.method,
             charCount: extracted.charCount,
             visionModelId: extracted.visionModelId,
-            warning: extracted.warning,
+            warning: imageEmbedWarning || extracted.warning,
+            imageEmbedded: Boolean(imageMarkdown),
           },
           success: true,
           processed: autoProcess,
@@ -451,7 +477,8 @@ export const POST: APIRoute = async ({ request }) => {
             method: extracted.method,
             charCount: extracted.charCount,
             visionModelId: extracted.visionModelId,
-            warning: extracted.warning,
+            warning: imageEmbedWarning || extracted.warning,
+            imageEmbedded: Boolean(imageMarkdown),
           },
           success: true,
           processed: autoProcess

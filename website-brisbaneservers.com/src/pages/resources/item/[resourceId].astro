@@ -3,6 +3,7 @@ import SiteShell from '~/layouts/SiteShell.astro';
 import Hero from '~/components/Hero.astro';
 import InquiryForm from '~/components/InquiryForm.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import GuideInfographic from '~/components/GuideInfographic.astro';
 import { getIndustryBySlug, getTopicBySlug } from '~/data/industries';
 import { isIndexableResource } from '~/lib/content-registry';
 import { getPageDescriptor } from '~/lib/page-descriptors';
@@ -11,6 +12,7 @@ import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/pu
 import { sitePath } from '~/lib/site-path';
 import { normalizeTopicSlug } from '~/lib/resource-slug';
 import { wrapMarkdownDocument } from '~/lib/markdown-render';
+import '~/styles/topic-guide.css';
 
 export async function getStaticPaths() {
   const resources = (await getPublishedResourcesForPage()).filter(isIndexableResource);
@@ -23,6 +25,7 @@ const { resourceId } = Astro.params;
 const resource = await getPublishedResourceById(resourceId!);
 const industry = resource ? getIndustryBySlug(resource.industry) : null;
 const topic = resource ? getTopicBySlug(resource.industry, resource.topic) : null;
+const infographic = resource?.metadata?.infographic;
 
 if (!resource || !isIndexableResource(resource)) {
   return Astro.redirect('/resources');
@@ -78,6 +81,12 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
           </span>
         )}
       </div>
+
+      {infographic && (
+        <div class="resource-infographic" style="margin-bottom: var(--space-2xl);">
+          <GuideInfographic spec={infographic} variant="feature" />
+        </div>
+      )}
 
       <article class="resource-body" set:html={wrapMarkdownDocument(resource.content)} />
 
@@ -141,5 +150,16 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
     padding: 0.1em 0.35em;
     border-radius: 4px;
     font-size: 0.92em;
+  }
+
+  .resource-body :global(.markdown-figure) {
+    margin: var(--space-xl) 0;
+  }
+
+  .resource-body :global(.markdown-figure img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
   }
 </style>

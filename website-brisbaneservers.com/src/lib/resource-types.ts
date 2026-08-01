@@ -2,6 +2,8 @@
  * Normative resource shape — see docs/project/RESOURCE_CONTRACT.md
  */
 
+import type { InfographicSpec } from '../data/topic-guides/infographic-types';
+
 export type Visibility = 'public' | 'private' | 'starter';
 
 export type ProcessingStatus = 'ready' | 'queued' | 'ocr' | 'embedding' | 'failed';
@@ -59,6 +61,11 @@ export interface Resource {
     inferenceModelId?: string | null;
     /** Community upload provenance marker. */
     contributionSource?: 'community-upload';
+    /**
+     * Optional positioning-model SVG wiring (same shape as topic-guide GuideInfographic).
+     * Rendered on /resources/item/{id} when present.
+     */
+    infographic?: InfographicSpec;
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;

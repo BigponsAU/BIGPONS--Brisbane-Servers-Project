@@ -229,8 +229,9 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
         title: formData.get('title') || undefined,
         profileId: getWorkspaceVoiceProfileIdForApi(),
         options: {
-          length: formData.get('length'),
-          includeExamples: (document.getElementById('include-examples') as HTMLInputElement)?.checked
+          wordCount: formData.get('wordCount') || formData.get('length') || 1100,
+          includeExamples: (document.getElementById('include-examples') as HTMLInputElement)?.checked,
+          includeSvgWiring: (document.getElementById('include-svg-wiring') as HTMLInputElement)?.checked,
         }
       })
     });
@@ -1264,6 +1265,15 @@ function loadResourceDetail(resource: any): void {
         <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Description</h4>
         <p style="color: var(--portal-text-secondary); line-height: 1.6;">${escapeHtml(resource.description || 'No description available')}</p>
       </div>
+      ${
+        resource.metadata?.infographic
+          ? `<div style="margin-bottom: var(--space-lg); padding: var(--space-md); border: 1px solid var(--portal-border-light); border-radius: var(--border-radius); background: var(--portal-surface-subtle);">
+        <h4 style="margin: 0 0 var(--space-xs); font-size: var(--text-base);">SVG positioning diagram</h4>
+        <p style="margin: 0 0 var(--space-sm); color: var(--portal-text-secondary); font-size: var(--text-sm);"><strong>${escapeHtml(resource.metadata.infographic.title || 'Positioning model')}</strong> — ${escapeHtml(resource.metadata.infographic.caption || '')}</p>
+        <p style="margin: 0; font-size: var(--text-sm); color: var(--portal-text-secondary);">Nodes: ${escapeHtml((resource.metadata.infographic.nodes || []).map((n: { label?: string }) => String(n.label || '').replace(/\n/g, ' ')).filter(Boolean).join(' · ') || '—')}</p>
+      </div>`
+          : ''
+      }
       <div>
         <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Content</h4>
         <div style="background: var(--portal-surface-subtle); padding: var(--space-lg); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">

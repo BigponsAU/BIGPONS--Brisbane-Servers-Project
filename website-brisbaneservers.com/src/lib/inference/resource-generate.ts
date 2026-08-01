@@ -9,6 +9,7 @@ import type { Extrapolator } from '@voice-framework/generators/extrapolator';
 import type { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
 import type { AuthRole } from '../../utils/auth';
 import type { ResolvedResourceVoiceProfile } from '../resource-voice-profile';
+import { resolveGenerateLength } from '../generate-length';
 import { buildInferenceSystemPrompt, buildInferenceUserPrompt } from './prompt-builder';
 import {
   checkUsageCap,
@@ -38,7 +39,9 @@ export interface GenerateBodyParams {
   extrapolator: Extrapolator;
   voiceMatcher: VoiceMatcher;
   options?: {
-    length?: 'short' | 'medium' | 'long';
+    length?: 'short' | 'medium' | 'long' | 'full' | string | number;
+    /** Preferred over length when set (e.g. 600, 1100, 1600, 2200). */
+    wordCount?: string | number;
     includeExamples?: boolean;
   };
   reason?: UsageReason;
@@ -91,8 +94,9 @@ function acceptCandidate(
 
 async function generateTemplateBody(params: GenerateBodyParams): Promise<string> {
   const { textGenerator, extrapolator, seedText, options } = params;
+  const length = resolveGenerateLength(options?.length, options?.wordCount);
   const generated = textGenerator.generateText(seedText, {
-    length: options?.length || 'long',
+    length: length.templateLength,
     includeExamples: options?.includeExamples !== false,
     includeStructure: true,
     style: 'descriptive',
@@ -135,8 +139,10 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
   const reason = params.reason ?? 'inference_generate';
   const allowDesignJargon = isDesignSystemVoiceProfile(params.resolved.profile);
 
+  const length = resolveGenerateLength(params.options?.length, params.options?.wordCount);
+
   if (provider === 'nvidia' || provider === 'workers-ai') {
-    const estimatedUnits = unitsForGenerate(params.seedText.length + 2000);
+    const estimatedUnits = unitsForGenerate(params.seedText.length + length.targetWords * 6);
     const cap = await checkUsageCap(params.userId, params.userRole, estimatedUnits);
     if (!cap.ok) {
       console.warn(
@@ -151,9 +157,12 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
           topic: params.topic,
           title: params.title,
           userBrief: params.userBrief,
+          minWords: length.minWords,
+          maxWords: length.maxWords,
+          targetWords: length.targetWords,
           allowDesignSystemJargon: allowDesignJargon,
         });
-        const ai = await completeInference({ system, user, maxTokens: 1800 });
+        const ai = await completeInference({ system, user, maxTokens: length.maxTokens });
         const validation = params.voiceMatcher.validateVoice(ai.text);
         const score = validation.score ?? 0;
 

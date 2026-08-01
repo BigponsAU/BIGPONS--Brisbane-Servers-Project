@@ -20,6 +20,9 @@ import {
 import { generateResourceBody } from '../../../lib/inference/resource-generate';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 import { canAccessResource } from '../../../lib/resource-access';
+import { collectImagesFromResources, mergeRelatedImages } from '../../../lib/resource-images';
+import { resolveGenerateLength } from '../../../lib/generate-length';
+import { resolveResourceInfographic } from '../../../lib/resource-infographic';
 
 /**
  * Generate a new resource
@@ -107,7 +110,22 @@ export const POST: APIRoute = async ({ request }) => {
       options,
     });
 
-    const extrapolatedContent = generated.content;
+    const relatedImages = collectImagesFromResources(resources, rag.sourceResourceIds);
+    const extrapolatedContent = mergeRelatedImages(generated.content, relatedImages);
+    const lengthPlan = resolveGenerateLength(options?.length, options?.wordCount);
+
+    const includeSvgWiring = Boolean(options?.includeSvgWiring);
+    let infographicForMeta: Awaited<ReturnType<typeof resolveResourceInfographic>> | null = null;
+    if (includeSvgWiring) {
+      infographicForMeta = await resolveResourceInfographic({
+        industry,
+        topic,
+        title: resourceTitle,
+        contentExcerpt: extrapolatedContent,
+        userId: authResult.user.id,
+        userRole: authResult.user.role,
+      });
+    }
     const voiceValidation = {
       score: generated.voiceScore,
       isValid: generated.voiceValid,
@@ -177,6 +195,12 @@ export const POST: APIRoute = async ({ request }) => {
         sourceResourceIds: rag.sourceResourceIds,
         sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
       }) as import('../../../lib/resource-types').Resource['metadata'];
+      if (infographicForMeta) {
+        existingResource.metadata = {
+          ...existingResource.metadata,
+          infographic: infographicForMeta.spec,
+        };
+      }
 
       await saveResources(resources);
 
@@ -213,6 +237,14 @@ export const POST: APIRoute = async ({ request }) => {
             strengths: voiceValidation.strengths || []
           },
           topicFidelity: generated.topicFidelity,
+          length: {
+            targetWords: lengthPlan.targetWords,
+            minWords: lengthPlan.minWords,
+            maxWords: lengthPlan.maxWords,
+          },
+          infographic: infographicForMeta
+            ? { included: true, source: infographicForMeta.source, id: infographicForMeta.spec.id }
+            : { included: false },
           success: true,
           updated: true,
           message: 'Resource updated (duplicate prevented)'
@@ -237,18 +269,21 @@ export const POST: APIRoute = async ({ request }) => {
       ownerId: authResult.user.id,
       version: 1,
       status: 'draft',
-      metadata: mergeInferenceMetadata(undefined, {
-        wordCount: extrapolatedContent.split(/\s+/).length,
-        voiceScore: voiceValidation.score || 0,
-        topicFidelity: generated.topicFidelity,
-        voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution,
-        inferenceMode: generated.inferenceMode,
-        modelId: generated.modelId,
-        sourceResourceId: rag.sourceResourceIds[0],
-        sourceResourceIds: rag.sourceResourceIds,
-        sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
-      }) as import('../../../lib/resource-types').Resource['metadata'],
+      metadata: {
+        ...(mergeInferenceMetadata(undefined, {
+          wordCount: extrapolatedContent.split(/\s+/).length,
+          voiceScore: voiceValidation.score || 0,
+          topicFidelity: generated.topicFidelity,
+          voiceProfileId: resolved.voiceProfileId,
+          voiceProfileResolution: resolved.resolution,
+          inferenceMode: generated.inferenceMode,
+          modelId: generated.modelId,
+          sourceResourceId: rag.sourceResourceIds[0],
+          sourceResourceIds: rag.sourceResourceIds,
+          sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
+        }) as import('../../../lib/resource-types').Resource['metadata']),
+        ...(infographicForMeta ? { infographic: infographicForMeta.spec } : {}),
+      },
     };
 
     resources.push(resource);
@@ -287,6 +322,14 @@ export const POST: APIRoute = async ({ request }) => {
           strengths: voiceValidation.strengths || []
         },
         topicFidelity: generated.topicFidelity,
+        length: {
+          targetWords: lengthPlan.targetWords,
+          minWords: lengthPlan.minWords,
+          maxWords: lengthPlan.maxWords,
+        },
+        infographic: infographicForMeta
+          ? { included: true, source: infographicForMeta.source, id: infographicForMeta.spec.id }
+          : { included: false },
         success: true
       }),
       {

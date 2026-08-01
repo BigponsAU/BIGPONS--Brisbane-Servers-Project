@@ -8,6 +8,19 @@ function escapeHtml(text: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Allow http(s), site-relative, and data:image/* URLs only. */
+function safeImgSrc(raw: string): string | null {
+  const src = String(raw ?? '').trim();
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return escapeHtml(src);
+  if (src.startsWith('/') && !src.startsWith('//')) return escapeHtml(src);
+  if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(src)) {
+    // Data URLs must not be HTML-escaped (breaks base64).
+    return src.replace(/"/g, '');
+  }
+  return null;
+}
+
 export function renderMarkdownHtml(source: string): string {
   const escaped = escapeHtml(source);
   return escaped
@@ -19,6 +32,19 @@ export function renderMarkdownHtml(source: string): string {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/^\* (.+)$/gm, '<li>$1</li>')
     .replace(/(<li>.*<\/li>\n?)+/g, (block) => `<ul>${block}</ul>`)
+    // Images before links so ![alt](url) is not treated as a link.
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt: string, url: string) => {
+      // url was HTML-escaped with the rest of the document; unescape common entities for validation.
+      const rawUrl = String(url)
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"');
+      const safe = safeImgSrc(rawUrl);
+      if (!safe) return '';
+      const altText = String(alt ?? '');
+      return `<figure class="markdown-figure"><img src="${safe}" alt="${altText}" loading="lazy" decoding="async" /></figure>`;
+    })
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     .replace(/\n\n/g, '</p><p>')
     .replace(/\n/g, '<br />');

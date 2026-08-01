@@ -28,9 +28,16 @@ export function buildInferenceUserPrompt(params: {
   topic: string;
   title: string;
   userBrief?: string;
+  /** Approximate body length; defaults applied by callers via resolveGenerateLength. */
+  minWords?: number;
+  maxWords?: number;
+  targetWords?: number;
   /** When false (default), ban design-system jargon unrelated to the industry topic. */
   allowDesignSystemJargon?: boolean;
 }): string {
+  const minWords = params.minWords ?? 850;
+  const maxWords = params.maxWords ?? 1500;
+  const targetWords = params.targetWords ?? Math.round((minWords + maxWords) / 2);
   const parts = [
     `Title: ${params.title}`,
     `Industry: ${params.industry}`,
@@ -47,7 +54,9 @@ export function buildInferenceUserPrompt(params: {
     '',
     params.seedText,
     '',
-    'Write a complete resource article (800–1500 words) suitable for the Brisbane Servers resource library.'
+    `Write a complete resource article of about ${targetWords} words (aim for ${minWords}–${maxWords} words) suitable for a full Brisbane Servers resource library page.`,
+    'Use clear markdown headings and enough practical depth that the article stands alone as a full page — not a short stub.',
+    'If the seed includes markdown images (![...](...)), keep figures that are relevant to the topic; do not invent new image URLs.'
   );
   return parts.filter(Boolean).join('\n');
 }
@@ -92,7 +101,7 @@ export function buildDocumentRewriteSystemPrompt(profile: VoiceProfile): string 
     buildInferenceSystemPrompt(profile),
     'You rewrite existing documents in the target voice while preserving document structure.',
     'CRITICAL rules:',
-    '- Keep every heading level (# ## ###), list type, table layout (markdown tables), block quote, and section order.',
+    '- Keep every heading level (# ## ###), list type, table layout (markdown tables), block quote, markdown images (![alt](url)), and section order.',
     '- Do NOT alter logos, letterhead, footer boilerplate, company legal names, or brand colour/style references.',
     '- Rewrite informational prose only — facts may be clarified but not invented.',
     '- Return markdown body only; no preamble.',
