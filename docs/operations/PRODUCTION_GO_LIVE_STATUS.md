@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-07-15 — hide /account API connectivity flash
+**Last synced:** 2026-08-22 — purpose-specific glyphs and sentence-case headings
+
+### 2026-08-22 — Purpose-specific glyphs and sentence-case headings
+
+- **Site** — Replaced Font Awesome with named SVG FeatureGlyph marks (industry, card, and chrome). Headings use sentence case; industry hub names stay Title Case. Font Awesome CDN removed from CSP and Pages headers.
+- **Deploy** — push `0bd5600` → Cloudflare Pages production `8511d0a2` (**success**, 2026-08-22). Live: `https://brisbaneservers.com`.
+- **Verify** — `npm run verify:production -- --api https://api.brisbaneservers.com` **PASS**.
 
 ### 2026-07-15 — Hide healthy-path API connectivity banner on /account
 
