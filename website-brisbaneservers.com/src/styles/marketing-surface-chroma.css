@@ -1,0 +1,331 @@
+/**
+ * Marketing surface chroma — coloured page glyphs, vibrant cards, inked copy.
+ * Does not retouch the hero constellation (.sierpinski-satellite / .satellite-node-icon).
+ */
+
+:root {
+  --page-ink-strong: #0f172a;
+}
+
+/* ─── Page icons (FeatureGlyph), not constellation marks ─── */
+.feature-glyph {
+  color: var(--primary-color);
+}
+
+.card-icon--glyph .feature-glyph,
+.marketing-capability-row__icon .feature-glyph,
+.topic-card .feature-glyph,
+.topic-guide-panel__marker .feature-glyph,
+.guide-blend__value-card .feature-glyph,
+.error-fallback-icon .feature-glyph,
+.search-hint-glyph {
+  color: var(--card-chroma, var(--primary-color));
+}
+
+.feature-glyph--privacy,
+.feature-glyph--lock,
+.feature-glyph--verified,
+.feature-glyph--credential,
+.feature-glyph--identity,
+.feature-glyph--insight,
+.feature-glyph--mission,
+.feature-glyph--evidence,
+.feature-glyph--approved,
+.feature-glyph--tokens,
+.feature-glyph--complexity,
+.feature-glyph--warning,
+.feature-glyph--visibility,
+.feature-glyph--sliders,
+.feature-glyph--site-compliance,
+.feature-glyph--quality-trace {
+  color: var(--accent-violet);
+}
+
+.feature-glyph--grants,
+.feature-glyph--growth,
+.feature-glyph--community,
+.feature-glyph--partnership,
+.feature-glyph--clients,
+.feature-glyph--loyalty,
+.feature-glyph--hospitality,
+.feature-glyph--retail,
+.feature-glyph--appointments,
+.feature-glyph--booking,
+.feature-glyph--time,
+.feature-glyph--publishing,
+.feature-glyph--craft,
+.feature-glyph--pressure,
+.feature-glyph--next {
+  color: var(--accent-pink);
+}
+
+.feature-glyph--automation,
+.feature-glyph--robot,
+.feature-glyph--data-systems,
+.feature-glyph--delivery,
+.feature-glyph--results,
+.feature-glyph--commerce,
+.feature-glyph--design,
+.feature-glyph--workflow,
+.feature-glyph--shop-floor,
+.feature-glyph--manufacturing,
+.feature-glyph--construction,
+.feature-glyph--finance,
+.feature-glyph--healthcare,
+.feature-glyph--clinical,
+.feature-glyph--inventory,
+.feature-glyph--billing,
+.feature-glyph--practice,
+.feature-glyph--pos,
+.feature-glyph--quoting,
+.feature-glyph--reporting,
+.feature-glyph--logistics,
+.feature-glyph--calendar,
+.feature-glyph--speed,
+.feature-glyph--tradeoffs,
+.feature-glyph--plug {
+  color: var(--accent-teal);
+}
+
+.sierpinski-satellite .feature-glyph,
+.satellite-node-icon,
+.satellite-node-icon .feature-glyph {
+  color: inherit;
+}
+
+/* ─── Card chroma cycle ─── */
+.card:nth-child(4n + 1),
+.topic-card:nth-child(4n + 1),
+.resource-topic-card:nth-child(4n + 1),
+.guide-blend__value-card:nth-child(4n + 1) {
+  --card-chroma: var(--primary-color);
+  --card-chroma-rgb: var(--primary-color-rgb);
+}
+
+.card:nth-child(4n + 2),
+.topic-card:nth-child(4n + 2),
+.resource-topic-card:nth-child(4n + 2),
+.guide-blend__value-card:nth-child(4n + 2) {
+  --card-chroma: var(--accent-violet);
+  --card-chroma-rgb: var(--accent-violet-rgb);
+}
+
+.card:nth-child(4n + 3),
+.topic-card:nth-child(4n + 3),
+.resource-topic-card:nth-child(4n + 3),
+.guide-blend__value-card:nth-child(4n + 3) {
+  --card-chroma: var(--accent-teal);
+  --card-chroma-rgb: var(--accent-teal-rgb);
+}
+
+.card:nth-child(4n + 4),
+.topic-card:nth-child(4n + 4),
+.resource-topic-card:nth-child(4n + 4),
+.guide-blend__value-card:nth-child(4n + 4) {
+  --card-chroma: var(--accent-pink);
+  --card-chroma-rgb: var(--accent-pink-rgb);
+}
+
+.card .feature-glyph {
+  color: var(--card-chroma, var(--primary-color));
+}
+
+.card:hover .feature-glyph,
+.card:hover .card-icon {
+  color: var(--card-chroma, var(--primary-color));
+}
+
+.topic-card,
+.resource-topic-card {
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.16) 100%
+    );
+  border-color: rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.26);
+}
+
+.topic-card .feature-glyph {
+  color: var(--card-chroma, var(--primary-color));
+}
+
+/* ─── Grounded / point-strip panels ─── */
+.home-info-panel {
+  background:
+    linear-gradient(
+      155deg,
+      rgba(var(--primary-color-rgb), 0.14) 0%,
+      rgba(var(--accent-violet-rgb), 0.12) 48%,
+      rgba(var(--accent-teal-rgb), 0.1) 100%
+    );
+  border-color: rgba(var(--primary-color-rgb), 0.32);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 10px 28px rgba(8, 27, 54, 0.07);
+}
+
+.home-info-panel__lead,
+.home-point-strip__body {
+  color: var(--text-secondary);
+}
+
+.home-point-strip__title {
+  color: var(--text-primary);
+}
+
+.home-point-strip__item:nth-child(3n + 1) {
+  background: rgba(var(--primary-color-rgb), 0.16);
+  border-color: rgba(var(--primary-color-rgb), 0.32);
+}
+
+.home-point-strip__item:nth-child(3n + 2) {
+  background: rgba(var(--accent-violet-rgb), 0.16);
+  border-color: rgba(var(--accent-violet-rgb), 0.32);
+}
+
+.home-point-strip__item:nth-child(3n + 3) {
+  background: rgba(var(--accent-teal-rgb), 0.16);
+  border-color: rgba(var(--accent-teal-rgb), 0.32);
+}
+
+.home-info-panel--on-dark {
+  background:
+    linear-gradient(
+      155deg,
+      rgba(var(--primary-color-rgb), 0.34) 0%,
+      rgba(var(--accent-violet-rgb), 0.28) 52%,
+      rgba(var(--accent-pink-rgb), 0.18) 100%
+    );
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.home-info-panel--on-dark .home-info-panel__eyebrow {
+  color: #fff;
+}
+
+.home-info-panel--on-dark .home-info-panel__lead,
+.home-info-panel--on-dark .home-point-strip__body {
+  color: var(--text-on-dark-muted);
+}
+
+.home-info-panel--on-dark .home-point-strip__title {
+  color: var(--text-on-dark);
+}
+
+.home-info-panel--on-dark .home-point-strip__item:nth-child(3n + 1) {
+  background: rgba(var(--primary-color-rgb), 0.36);
+  border-color: rgba(147, 197, 253, 0.45);
+}
+
+.home-info-panel--on-dark .home-point-strip__item:nth-child(3n + 2) {
+  background: rgba(var(--accent-violet-rgb), 0.34);
+  border-color: rgba(196, 181, 253, 0.45);
+}
+
+.home-info-panel--on-dark .home-point-strip__item:nth-child(3n + 3) {
+  background: rgba(var(--accent-teal-rgb), 0.3);
+  border-color: rgba(94, 234, 212, 0.4);
+}
+
+.section-context-visual__panel {
+  padding: 0.35rem 0.15rem;
+}
+
+.section-context-visual__node--blue {
+  fill: rgba(var(--primary-color-rgb), 0.22);
+  stroke: var(--primary-color);
+}
+
+.section-context-visual__node--violet {
+  fill: rgba(var(--accent-violet-rgb), 0.22);
+  stroke: var(--accent-violet);
+}
+
+.section-context-visual__node--teal {
+  fill: rgba(var(--accent-teal-rgb), 0.22);
+  stroke: var(--accent-teal);
+}
+
+.section-context-visual__node--pink {
+  fill: rgba(var(--accent-pink-rgb), 0.2);
+  stroke: var(--accent-pink);
+}
+
+.section-context-visual__svg {
+  opacity: 1;
+}
+
+.section-context-visual__index {
+  color: #fff;
+  background: var(--primary-color);
+}
+
+.section-context-visual__item:nth-child(3n + 2) .section-context-visual__index {
+  background: var(--accent-violet);
+}
+
+.section-context-visual__item:nth-child(3n + 3) .section-context-visual__index {
+  background: var(--accent-teal);
+}
+
+.section-context-visual__offerings > li:nth-child(4n + 1) .section-context-visual__offering {
+  background: rgba(var(--primary-color-rgb), 0.12);
+  border-color: rgba(var(--primary-color-rgb), 0.28);
+}
+
+.section-context-visual__offerings > li:nth-child(4n + 2) .section-context-visual__offering {
+  background: rgba(var(--accent-violet-rgb), 0.12);
+  border-color: rgba(var(--accent-violet-rgb), 0.28);
+}
+
+.section-context-visual__offerings > li:nth-child(4n + 3) .section-context-visual__offering {
+  background: rgba(var(--accent-teal-rgb), 0.12);
+  border-color: rgba(var(--accent-teal-rgb), 0.28);
+}
+
+.section-context-visual__offerings > li:nth-child(4n + 4) .section-context-visual__offering {
+  background: rgba(var(--accent-pink-rgb), 0.12);
+  border-color: rgba(var(--accent-pink-rgb), 0.28);
+}
+
+/* ─── Stronger page copy ─── */
+.section-description,
+.section-intro-phi,
+.card-description,
+.home-info-panel__lead,
+.semantic-child {
+  color: var(--text-secondary);
+}
+
+.semantic-parent,
+.card-title,
+.section-title {
+  color: var(--text-primary);
+}
+
+.marketing-capability-row__icon {
+  color: var(--card-chroma, var(--primary-color));
+  background: rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.16);
+  border-color: rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.3);
+}
+
+.marketing-capability-row__item:nth-child(4n + 1) {
+  --card-chroma: var(--primary-color);
+  --card-chroma-rgb: var(--primary-color-rgb);
+}
+
+.marketing-capability-row__item:nth-child(4n + 2) {
+  --card-chroma: var(--accent-violet);
+  --card-chroma-rgb: var(--accent-violet-rgb);
+}
+
+.marketing-capability-row__item:nth-child(4n + 3) {
+  --card-chroma: var(--accent-teal);
+  --card-chroma-rgb: var(--accent-teal-rgb);
+}
+
+.marketing-capability-row__item:nth-child(4n + 4) {
+  --card-chroma: var(--accent-pink);
+  --card-chroma-rgb: var(--accent-pink-rgb);
+}

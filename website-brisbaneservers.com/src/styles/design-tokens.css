@@ -214,11 +214,10 @@
   --color-calm-light: var(--primary-light);
   --color-calm-dark: var(--primary-dark);
   
-  /* Text Colors */
-  --text-primary: #1A1A1A;
-  /* Secondary/muted: keep clear of light page washes (#FAFBFC / #F8F9FA) */
-  --text-secondary: #4b5563;
-  --text-light: #64748b;
+  /* Text Colors — inked for light washes (avoid grey-on-white fade) */
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-light: #475569;
   
   /* Background Colors */
   --bg-primary: var(--primary-ultra-light);
@@ -255,8 +254,8 @@
 
   /* Text on dark surfaces */
   --text-on-dark: #FFFFFF;
-  --text-on-dark-muted: rgba(255, 255, 255, 0.82);
-  --text-on-dark-subtle: rgba(255, 255, 255, 0.68);
+  --text-on-dark-muted: rgba(255, 255, 255, 0.94);
+  --text-on-dark-subtle: rgba(255, 255, 255, 0.86);
   
   /* ============================================
      ORIGINAL BRISBANE SERVERS COLOR PALETTE

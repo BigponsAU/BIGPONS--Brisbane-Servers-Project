@@ -51,10 +51,10 @@ const uid = `ctx-${Math.random().toString(36).slice(2, 9)}`;
           <line x1="60" y1="100" x2="160" y2="55" stroke={`url(#${uid}-edge)`} stroke-width="2" />
           <line x1="160" y1="55" x2="260" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="2" />
           <line x1="160" y1="55" x2="160" y2="145" stroke={`url(#${uid}-edge)`} stroke-width="2" />
-          <circle cx="60" cy="100" r="28" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
-          <circle cx="260" cy="100" r="28" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
-          <circle cx="160" cy="55" r="24" fill="#fff" stroke="#5B6FD6" stroke-width="1.5" opacity="0.95" />
-          <circle cx="160" cy="145" r="24" fill="#fff" stroke="#0A74DA" stroke-width="1.5" opacity="0.95" />
+          <circle class="section-context-visual__node--blue" cx="60" cy="100" r="28" stroke-width="1.8" />
+          <circle class="section-context-visual__node--pink" cx="260" cy="100" r="28" stroke-width="1.8" />
+          <circle class="section-context-visual__node--violet" cx="160" cy="55" r="24" stroke-width="1.8" />
+          <circle class="section-context-visual__node--teal" cx="160" cy="145" r="24" stroke-width="1.8" />
         </svg>
         <ol class="section-context-visual__list">
           {proofPoints.map((point, index) => (
@@ -82,10 +82,10 @@ const uid = `ctx-${Math.random().toString(36).slice(2, 9)}`;
           aria-hidden="true"
           focusable="false"
         >
-          <rect x="24" y="24" width="120" height="56" rx="8" fill="#fff" stroke="#0A74DA" stroke-width="1.2" opacity="0.95" />
-          <rect x="176" y="24" width="120" height="56" rx="8" fill="#fff" stroke="#0A74DA" stroke-width="1.2" opacity="0.95" />
-          <rect x="24" y="100" width="120" height="56" rx="8" fill="#fff" stroke="#5B6FD6" stroke-width="1.2" opacity="0.95" />
-          <rect x="176" y="100" width="120" height="56" rx="8" fill="#fff" stroke="#5B6FD6" stroke-width="1.2" opacity="0.95" />
+          <rect class="section-context-visual__node--blue" x="24" y="24" width="120" height="56" rx="8" stroke-width="1.5" />
+          <rect class="section-context-visual__node--violet" x="176" y="24" width="120" height="56" rx="8" stroke-width="1.5" />
+          <rect class="section-context-visual__node--teal" x="24" y="100" width="120" height="56" rx="8" stroke-width="1.5" />
+          <rect class="section-context-visual__node--pink" x="176" y="100" width="120" height="56" rx="8" stroke-width="1.5" />
           <line x1="84" y1="80" x2="84" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
           <line x1="236" y1="80" x2="236" y2="100" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />
           <line x1="144" y1="52" x2="176" y2="52" stroke={`url(#${uid}-edge)`} stroke-width="1.5" />

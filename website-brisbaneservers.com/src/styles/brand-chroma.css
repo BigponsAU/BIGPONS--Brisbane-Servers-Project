@@ -446,8 +446,8 @@ input[type='submit'].btn-primary {
 /* ─── Dark hero-wash bands: legible copy + white cards ─── */
 .section--hero-wash > .container > .section-description,
 .section--hero-wash > .container > .section-description :is(.semantic-text, .semantic-child, .semantic-normal, .semantic-medium) {
-  color: rgba(255, 255, 255, 0.9) !important;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.96) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.96) !important;
 }
 
 .section--hero-wash > .container > .section-title :is(.semantic-text, .semantic-high, .semantic-parent) {
@@ -456,8 +456,13 @@ input[type='submit'].btn-primary {
 }
 
 .section--hero-wash .card {
-  background: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.16) 100%
+    ) !important;
+  border: 1px solid rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.32) !important;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22) !important;
 }
 

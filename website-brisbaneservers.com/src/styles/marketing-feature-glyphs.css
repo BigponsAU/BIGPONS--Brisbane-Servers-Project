@@ -3,7 +3,7 @@
 .feature-glyph {
     display: block;
     flex-shrink: 0;
-    color: var(--primary-dark, var(--primary-color));
+    color: var(--card-chroma, var(--primary-color));
 }
 
 .marketing-capability-row {

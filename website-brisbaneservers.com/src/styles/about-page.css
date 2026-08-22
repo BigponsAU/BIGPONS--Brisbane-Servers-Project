@@ -40,12 +40,18 @@
   min-height: clamp(8.5rem, 9.5vw, 11rem);
   padding: clamp(1rem, 1.2vw, 1.45rem) !important;
   border-left: none !important;
-  background-color: rgba(255, 255, 255, 0.94);
-  background-image: radial-gradient(
-    120% 85% at 100% 0%,
-    rgba(var(--accent-violet-rgb), 0.09) 0%,
-    transparent 60%
-  );
+  background-color: transparent;
+  background-image:
+    radial-gradient(
+      120% 85% at 100% 0%,
+      rgba(var(--card-chroma-rgb, var(--accent-violet-rgb)), 0.2) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.14) 100%
+    );
   box-shadow:
     0 4px 24px rgba(15, 23, 42, 0.055),
     0 0 0 1px rgba(var(--primary-color-rgb), 0.09),

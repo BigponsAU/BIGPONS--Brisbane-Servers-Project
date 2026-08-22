@@ -99,13 +99,21 @@ const resolvedHref =
   .card {
     display: flex;
     flex-direction: column;
-    background: var(--surface-elevated);
+    --card-chroma: var(--primary-color);
+    --card-chroma-rgb: var(--primary-color-rgb);
+    background:
+      linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.97) 0%,
+        rgba(var(--card-chroma-rgb), 0.14) 58%,
+        rgba(var(--card-chroma-rgb), 0.1) 100%
+      );
     border-radius: var(--card-border-radius);
     padding: var(--card-padding);
     transition: var(--transition);
     text-decoration: none;
     color: inherit;
-    border: var(--phi-line-width) solid var(--site-panel-border, var(--border-light));
+    border: var(--phi-line-width) solid rgba(var(--card-chroma-rgb), 0.28);
     box-shadow: var(--card-shadow);
   }
 
@@ -116,7 +124,7 @@ const resolvedHref =
   .card:hover {
     box-shadow: var(--shadow-additive-strong, var(--card-shadow-hover));
     transform: translateY(calc(var(--space-xs) * var(--phi-inv) * -1));
-    border-color: var(--border-accent);
+    border-color: var(--card-chroma, var(--border-accent));
   }
 
   .card:focus {
@@ -179,10 +187,10 @@ const resolvedHref =
 
   .card-icon {
     font-size: var(--icon-lg);
-    color: var(--primary-dark);
+    color: var(--card-chroma, var(--primary-color));
     margin-bottom: var(--space-md);
-    background: rgba(var(--primary-color-rgb), 0.08);
-    border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+    background: rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.18);
+    border: 1px solid rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.32);
     width: fit-content;
     padding: var(--space-sm);
     border-radius: var(--phi-radius-atypical-a);
