@@ -1,6 +1,7 @@
 ---
 import SemanticText from './SemanticText.astro';
 import InquiryAside from './InquiryAside.astro';
+import FeatureGlyph from './marketing/FeatureGlyph.astro';
 import { valueProposition } from '../data/value-proposition';
 
 interface Props {
@@ -163,7 +164,7 @@ const hasFlanks = showAside || hasCustomAside;
             </div>
 
             <button type="submit" class="btn btn-primary btn-block" aria-describedby="submit-hint">
-              <i class="fas fa-paper-plane" aria-hidden="true"></i>
+              <FeatureGlyph name="send" size={16} />
               <span>{preferenceField ? 'Request consultation' : inquiry.submitLabel}</span>
             </button>
             <span id="submit-hint" class="sr-only">Submit your enquiry</span>

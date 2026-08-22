@@ -285,7 +285,7 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
     // Re-enable submit button
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Generate Resource';
+      submitBtn.textContent = 'Generate resource';
     }
   }
 });
@@ -485,22 +485,22 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
               ` : typeFilter === 'starter' ? `
                 <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; justify-content: center;">
                   <button class="btn btn-primary" onclick="navigateToPanel('dashboard');">
-                    View Starter Blocks on Dashboard
+                    View starter blocks on dashboard
                   </button>
                   <button class="btn btn-secondary" onclick="document.getElementById('resource-type-filter').value = 'user'; loadResources();">
-                    View My Resources
+                    View my resources
                   </button>
                 </div>
               ` : `
                 <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; justify-content: center;">
                   <button class="btn btn-primary" onclick="focusResourceCreationSection('generate')">
-                    Generate Resource
+                    Generate resource
                   </button>
                   <button class="btn btn-primary" onclick="focusResourceCreationSection('upload')">
-                    Upload Resource
+                    Upload resource
                   </button>
                   <button class="btn btn-secondary" onclick="document.getElementById('resource-type-filter').value = 'starter'; loadResources();">
-                    Browse Starter Blocks
+                    Browse starter blocks
                   </button>
                 </div>
               `}
@@ -847,7 +847,7 @@ function showResourceTreeError(treeContainer: HTMLElement, message: string): voi
     if (toggleIcon) {
       toggleIcon.innerHTML = '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>';
     }
-    if (toggleText) toggleText.textContent = 'List View';
+    if (toggleText) toggleText.textContent = 'List view';
     
     // Ensure tree is built if resources are loaded
     if (getWorkspaceResources() && getWorkspaceResources().length > 0) {
@@ -860,7 +860,7 @@ function showResourceTreeError(treeContainer: HTMLElement, message: string): voi
     if (toggleIcon) {
       toggleIcon.innerHTML = '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>';
     }
-    if (toggleText) toggleText.textContent = 'Tree View';
+    if (toggleText) toggleText.textContent = 'Tree view';
     
     // Reload resources to refresh list view
     if (getWorkspaceResources() && getWorkspaceResources().length > 0) {

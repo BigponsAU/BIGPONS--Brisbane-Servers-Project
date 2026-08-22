@@ -6,7 +6,7 @@ import { industries } from '../../data/industries';
       <div class="modal-overlay" onclick="closeViewModal()"></div>
       <div class="modal-content">
         <div class="modal-header">
-          <h2 id="view-resource-title">View Resource</h2>
+          <h2 id="view-resource-title">View resource</h2>
           <button class="modal-close" onclick="closeViewModal()" aria-label="Close modal">&times;</button>
         </div>
         <div class="modal-body" id="view-resource-body">
@@ -40,7 +40,7 @@ import { industries } from '../../data/industries';
       <div class="modal-overlay" onclick="closeEditModal()"></div>
       <div class="modal-content modal-large">
         <div class="modal-header">
-          <h2 id="edit-resource-title">Edit Resource</h2>
+          <h2 id="edit-resource-title">Edit resource</h2>
           <button class="modal-close" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
         </div>
         <form id="edit-resource-form" class="modal-body" action="javascript:void(0)" aria-label="Edit resource form">
@@ -52,7 +52,7 @@ import { industries } from '../../data/industries';
           <div class="form-group">
             <label for="edit-resource-industry">Industry</label>
             <select id="edit-resource-industry" required>
-              <option value="">Select Industry...</option>
+              <option value="">Select industry...</option>
               {industries.map(industry => (
                 <option value={industry.slug}>{industry.name}</option>
               ))}
@@ -81,7 +81,7 @@ import { industries } from '../../data/industries';
         </form>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-          <button type="submit" form="edit-resource-form" class="btn btn-primary">Save Changes</button>
+          <button type="submit" form="edit-resource-form" class="btn btn-primary">Save changes</button>
         </div>
       </div>
     </div>

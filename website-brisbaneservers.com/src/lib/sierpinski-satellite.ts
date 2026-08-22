@@ -1,29 +1,17 @@
 /** SSR + shared Sierpinski satellite geometry (deterministic — no Math.random). */
 
+import {
+  featureGlyphInner,
+  SATELLITE_GLYPH_NAMES,
+  type FeatureGlyphName,
+} from './marketing/feature-glyphs';
+
 export interface SatelliteNode {
   x: number;
   y: number;
   level: number;
   size: number;
 }
-
-const ICONS = [
-  'fa-cog',
-  'fa-rocket',
-  'fa-database',
-  'fa-shield-alt',
-  'fa-globe',
-  'fa-box',
-  'fa-tools',
-  'fa-cloud',
-  'fa-brain',
-  'fa-bolt',
-  'fa-lock',
-  'fa-code-branch',
-  'fa-users',
-  'fa-chart-bar',
-  'fa-plug',
-] as const;
 
 const PURPLE_GLOW_RGB = '139, 92, 246';
 const BLUE_NODE = '#3b82f6';
@@ -89,20 +77,21 @@ function connectionMarkup(from: SatelliteNode, to: SatelliteNode, seq: number): 
   ].join('');
 }
 
-function nodeMarkup(node: SatelliteNode, iconClass: string, nodeIndex: number): string {
+function nodeMarkup(node: SatelliteNode, glyph: FeatureGlyphName, nodeIndex: number): string {
   const delay = ((nodeIndex % 20) * 0.35).toFixed(3);
   const haloR = node.size * 1.85;
   const ringR = node.size * 1.2;
-  const iconSize = node.size * 0.8;
+  const glyphSize = node.size * 1.15;
+  const scale = (glyphSize * 2) / 24;
 
   return [
     `<g class="satellite-node" transform="translate(${node.x}, ${node.y})" style="--satellite-node-delay:${delay}s">`,
     `<circle r="${haloR}" fill="rgba(${PURPLE_GLOW_RGB}, 0.14)" class="satellite-neuron-halo"></circle>`,
     `<circle r="${ringR}" fill="white" opacity="0.9" class="satellite-node-ring"></circle>`,
     `<circle r="${node.size}" fill="${BLUE_NODE}" class="satellite-node-core"></circle>`,
-    `<foreignObject x="${-node.size}" y="${-node.size}" width="${node.size * 2}" height="${node.size * 2}">`,
-    `<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${iconSize}px"><i class="fas ${iconClass}" aria-hidden="true"></i></div>`,
-    `</foreignObject>`,
+    `<g transform="translate(${-glyphSize},${-glyphSize}) scale(${scale})" color="#fff" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">`,
+    featureGlyphInner(glyph),
+    `</g>`,
     `</g>`,
   ].join('');
 }
@@ -151,7 +140,7 @@ export function buildSierpinskiSatelliteMarkup(): {
   });
 
   const nodeParts = nodes.map((node, index) =>
-    nodeMarkup(node, ICONS[index % ICONS.length], index),
+    nodeMarkup(node, SATELLITE_GLYPH_NAMES[index % SATELLITE_GLYPH_NAMES.length], index),
   );
 
   return {

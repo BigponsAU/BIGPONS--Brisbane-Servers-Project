@@ -300,7 +300,8 @@
   opacity: 0.8;
 }
 
-.guide-blend .topic-guide-panel__marker i {
+.guide-blend .topic-guide-panel__marker i,
+.guide-blend .topic-guide-panel__marker .feature-glyph {
   font-size: 1rem;
   opacity: 0.85;
 }
@@ -441,7 +442,8 @@
   border: 1px solid rgba(var(--primary-color-rgb), 0.1);
 }
 
-.guide-blend__value-card i {
+.guide-blend__value-card i,
+.guide-blend__value-card .feature-glyph {
   display: block;
   margin-bottom: var(--space-xs);
   color: var(--primary-color);

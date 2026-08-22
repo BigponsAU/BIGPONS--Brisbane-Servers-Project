@@ -12,6 +12,7 @@ import MarketingPageBands from '../components/MarketingPageBands.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import ProjectObjectivePanel from '../components/ProjectObjectivePanel.astro';
 import SiteLink from '../components/SiteLink.astro';
+import FeatureGlyph from '../components/marketing/FeatureGlyph.astro';
 import {
   brisbaneServersProjectObjective,
   projectPurposeNav,
@@ -92,17 +93,17 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
           <Card
             title="Inference, not assertion"
             description={valueProposition.voice.inferenceNotAssertion}
-            icon="fas fa-check-circle"
+            featureGlyph="verified"
           />
           <Card
             title="Industry context"
             description="Retail, healthcare, hospitality, professional services, and more — each hub links recommendations to regulations, incentives, and day-to-day operating reality."
-            icon="fas fa-industry"
+            featureGlyph="industry-index"
           />
           <Card
             title="Action-ready guidance"
             description={valueProposition.voice.actionablePrimary}
-            icon="fas fa-book"
+            featureGlyph="book"
           />
         </CardGrid>
       </div>
@@ -160,22 +161,22 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
           <Card
             title="Context and constraints"
             description="Sector pressures, compliance obligations, and operating rhythm, so recommendations follow your business model rather than a generic catalogue."
-            icon="fas fa-map-marker-alt"
+            featureGlyph="location"
           />
           <Card
             title="Evidence and trade-offs"
             description="Grants, integration cost, and sequencing clearly outlined, including what to defer when budget or capacity is constrained."
-            icon="fas fa-balance-scale"
+            featureGlyph="tradeoffs"
           />
           <Card
             title="Next actions"
             description="Practical next steps you can start immediately or incorporate into a scoped engagement with Brisbane Servers."
-            icon="fas fa-arrow-right"
+            featureGlyph="next"
           />
           <Card
             title="Reviewed for consistency"
             description="Published guides are scored against our voice profile so tone stays evidence-led and implementation-ready; scores above 80% indicate strong alignment."
-            icon="fas fa-check-circle"
+            featureGlyph="verified"
           />
         </CardGrid>
       </div>
@@ -212,7 +213,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
                 <div class="topic-cards" style="margin-top: var(--space-lg);">
                   {industry.topics.map((topic) => (
                     <a href={`/resources/${industry.slug}/${topic.slug}`} class="topic-card">
-                      <i class={topic.icon}></i>
+                      <FeatureGlyph name={topic.icon} size={16} />
                       <span>{topic.name}</span>
                     </a>
                   ))}

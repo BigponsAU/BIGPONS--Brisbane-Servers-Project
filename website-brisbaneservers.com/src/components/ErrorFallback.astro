@@ -1,31 +1,33 @@
 ---
 /**
  * Error Fallback Component
- * 
+ *
  * Provides graceful fallback UI when content fails to load or is unavailable.
  * Implements Gestalt principles through clear visual hierarchy and information grouping.
  */
+import FeatureGlyph from './marketing/FeatureGlyph.astro';
+import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 interface Props {
   title?: string;
   message?: string;
   actionText?: string;
   actionHref?: string;
-  icon?: string;
+  icon?: FeatureGlyphName;
 }
 
 const {
-  title = 'Content Unavailable',
+  title = 'Content unavailable',
   message = 'We encountered an issue loading this content. Please try again later or contact us for assistance.',
   actionText,
   actionHref,
-  icon = 'fas fa-exclamation-triangle'
+  icon = 'warning'
 } = Astro.props;
 ---
 
 <div class="error-fallback">
   <div class="error-fallback-icon">
-    <i class={icon}></i>
+    <FeatureGlyph name={icon} size={32} />
   </div>
   <h3 class="error-fallback-title">{title}</h3>
   <p class="error-fallback-message">{message}</p>

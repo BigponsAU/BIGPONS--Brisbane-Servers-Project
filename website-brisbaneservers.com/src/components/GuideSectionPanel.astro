@@ -1,16 +1,18 @@
 ---
 import SemanticText from './SemanticText.astro';
+import FeatureGlyph from './marketing/FeatureGlyph.astro';
 import type { TopicGuideSection } from '../data/topic-guides/types';
+import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 interface Props {
   section: TopicGuideSection;
-  meta?: { icon: string; step: string };
+  meta?: { icon: FeatureGlyphName; step: string };
   wide?: boolean;
 }
 
 const { section, meta, wide = false } = Astro.props;
 const step = meta?.step ?? '';
-const icon = meta?.icon ?? 'fas fa-layer-group';
+const icon = meta?.icon ?? 'layer';
 ---
 
 <section
@@ -20,7 +22,7 @@ const icon = meta?.icon ?? 'fas fa-layer-group';
 >
   <div class="topic-guide-panel__marker" aria-hidden="true">
     {step && <span class="topic-guide-panel__step text-kicker">{step}</span>}
-    <i class={icon}></i>
+    <FeatureGlyph name={icon} size={16} />
   </div>
   <div class="topic-guide-panel__content">
     <h3 class="topic-guide-panel__title" id={`${section.id}-heading`}>

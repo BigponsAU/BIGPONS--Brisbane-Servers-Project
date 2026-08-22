@@ -2,9 +2,11 @@
 import SemanticText from './SemanticText.astro';
 import GuideInfographic from './GuideInfographic.astro';
 import GuideSectionPanel from './GuideSectionPanel.astro';
+import FeatureGlyph from './marketing/FeatureGlyph.astro';
 import { getInfographicSpec } from '../data/topic-guides/infographics';
 import type { HubCard } from '../data/resource-hub-copy';
 import type { IndustryOverviewGuide, TopicGuide } from '../data/topic-guides/types';
+import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 interface Props {
   guide: TopicGuide | IndustryOverviewGuide;
@@ -15,12 +17,12 @@ interface Props {
   class?: string;
 }
 
-const SECTION_META: Record<string, { icon: string; step: string }> = {
-  pressure: { icon: 'fas fa-compress-alt', step: '01' },
-  outcomes: { icon: 'fas fa-bullseye', step: '02' },
-  tradeoffs: { icon: 'fas fa-sliders-h', step: '03' },
-  grants: { icon: 'fas fa-map-marked-alt', step: '04' },
-  sequencing: { icon: 'fas fa-stream', step: '03' },
+const SECTION_META: Record<string, { icon: FeatureGlyphName; step: string }> = {
+  pressure: { icon: 'pressure', step: '01' },
+  outcomes: { icon: 'mission', step: '02' },
+  tradeoffs: { icon: 'sliders', step: '03' },
+  grants: { icon: 'map', step: '04' },
+  sequencing: { icon: 'sequence', step: '03' },
 };
 
 const JUMP_LABELS: Record<string, string> = {
@@ -141,7 +143,7 @@ const hasPairedLayout = Boolean(infographic && modelSections.length > 0);
     >
       <div class="topic-guide-panel__marker" aria-hidden="true">
         <span class="topic-guide-panel__step">→</span>
-        <i class="fas fa-arrow-right"></i>
+        <FeatureGlyph name="next" size={16} />
       </div>
       <div class="topic-guide-panel__content">
         <h3 class="topic-guide-panel__title" id="guide-next-actions-heading">
@@ -172,7 +174,7 @@ const hasPairedLayout = Boolean(infographic && modelSections.length > 0);
           <ul class="guide-blend__value-grid">
             {opportunityCards.map((card) => (
               <li class="guide-blend__value-card">
-                <i class={card.icon} aria-hidden="true"></i>
+                <FeatureGlyph name={card.icon} size={18} />
                 <strong>{card.title}</strong>
                 <p>
                   <SemanticText text={card.description} semanticLevel="normal" isChild={true} />

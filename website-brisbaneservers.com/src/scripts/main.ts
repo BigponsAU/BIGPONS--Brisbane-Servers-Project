@@ -1269,7 +1269,7 @@ async function submitInquiryForm(form: HTMLFormElement | null): Promise<void> {
         const originalBtnHtml = submitBtn?.innerHTML ?? '';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span> Sending…</span>';
+            submitBtn.innerHTML = '<svg class="btn-glyph btn-glyph--spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="9" opacity="0.25"/><path d="M21 12a9 9 0 0 0-9-9"/></svg><span> Sending…</span>';
         }
 
         showFormMessage(form, 'Sending your enquiry…', 'success');
@@ -1296,7 +1296,7 @@ async function submitInquiryForm(form: HTMLFormElement | null): Promise<void> {
         if (response.ok && payload.success) {
             if (submitBtn) {
                 submitBtn.classList.add('success');
-                submitBtn.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i><span> Enquiry sent</span>';
+                submitBtn.innerHTML = '<svg class="btn-glyph" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span> Enquiry sent</span>';
             }
             form.querySelectorAll('.form-group').forEach(group => {
                 group.classList.add('success');

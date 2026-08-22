@@ -3,6 +3,7 @@ import PageHero from '../PageHero.astro';
 import MarketingPageBands from '../MarketingPageBands.astro';
 import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 import SiteLink from '../SiteLink.astro';
+import FeatureGlyph from '../marketing/FeatureGlyph.astro';
 
 export interface LegalTocItem {
   id: string;
@@ -100,7 +101,7 @@ const {
 
         <aside class="legal-contact-card" aria-labelledby="legal-contact-heading">
           <div class="legal-contact-card__icon" aria-hidden="true">
-            <i class="fas fa-envelope-open-text"></i>
+            <FeatureGlyph name="envelope" size={22} />
           </div>
           <div class="legal-contact-card__content">
             <h2 class="legal-contact-card__title h4" id="legal-contact-heading">Questions or requests</h2>

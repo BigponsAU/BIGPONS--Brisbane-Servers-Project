@@ -33,7 +33,7 @@ export function buildCaseStudyDraftFromGrowth(
     cardTitle: proposal.title,
     navLabel: proposal.title.slice(0, 48),
     cardDescription: resource.description || excerpt,
-    icon: 'fas fa-briefcase',
+    icon: 'professional-services',
     industryFilter: industry,
     relatedResourcesHref: `/resources/${industry}`,
     heroTitle: proposal.title,
@@ -50,7 +50,7 @@ export function buildCaseStudyDraftFromGrowth(
         title: 'Voice-aligned delivery',
         description:
           'Draft case study material generated with the site default voice (not a new per-case-study profile).',
-        icon: 'fas fa-chart-line',
+        icon: 'results',
       },
     ],
     technologies: 'Voice framework resource pipeline, semantic index, Cloudflare Pages static publish.',

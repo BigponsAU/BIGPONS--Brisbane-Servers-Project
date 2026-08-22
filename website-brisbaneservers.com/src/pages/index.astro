@@ -109,7 +109,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
               <Card
                 title={industry?.name || 'Industry'}
                 description={industry?.description || 'Learn more about our solutions for this industry.'}
-                icon={industry?.icon || 'fas fa-industry'}
+                featureGlyph={industry?.icon || 'manufacturing'}
                 href={industry?.slug ? `/resources/${industry.slug}` : '/resources'}
                 actionLabel="View industry resources"
                 size="small"
@@ -119,7 +119,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
             <Card
               title="Industries we serve"
               description="We support multiple industries with practical technology direction, connected implementation guidance, and measurable improvement pathways."
-              icon="fas fa-industry"
+              featureGlyph="industry-index"
               href="/resources"
               actionLabel="Browse resources"
               size="medium"
@@ -153,26 +153,26 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <Card
             title="Innovation-first delivery"
             description="Solutions are designed for your context, not recycled templates, using modern tooling where it reduces risk and cost, and proven technology where reliability is the responsible choice."
-            icon="fas fa-industry"
+            featureGlyph="insight"
             size="medium"
             emphasis={true}
           />
           <Card
             title="Grants and incentives"
             description="We map digital transformation grants, tax incentives, and subsidies that match your industry and project shape, so funding opportunities are part of the plan from the start."
-            icon="fas fa-dollar-sign"
+            featureGlyph="grants"
             size="medium"
           />
           <Card
             title="Reality-based recommendations"
             description="Budget, team capacity, compliance, and timeline are first-class inputs. You get what fits your operations, not what a vendor catalogue insists you should buy."
-            icon="fas fa-search"
+            featureGlyph="semantic-search"
             size="medium"
           />
           <Card
             title="Your time protected"
             description="We absorb research, vendor comparison, and technical discernment so leadership can stay on operations while still making informed commitments."
-            icon="fas fa-clock"
+            featureGlyph="time"
             size="medium"
           />
         </CardGrid>
@@ -223,13 +223,13 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <Card
             title="Our mission"
             description="Providing access to truth in technology for Australian businesses, while supporting domestic growth through evidence-based solutions."
-            icon="fas fa-bullseye"
+            featureGlyph="mission"
             size="medium"
           />
           <Card
             title="Practical expertise"
             description="Brisbane Servers is operated by BIGPONS, providing practical technology expertise to Australian businesses — scoped to constraints, not vendor fashion."
-            icon="fas fa-certificate"
+            featureGlyph="credential"
             size="medium"
           />
         </CardGrid>
@@ -265,17 +265,17 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <Card
             title="Resource constraints"
             description="Running operations leaves limited time for research, feasibility checks, and vendor evaluation, so decision support must be focused."
-            icon="fas fa-clock"
+            featureGlyph="time"
           />
           <Card
             title="Information complexity"
             description="Competing tools, changing platforms, and conflicting vendor claims create noise. We isolate what fits your context and what does not."
-            icon="fas fa-info-circle"
+            featureGlyph="complexity"
           />
           <Card
             title="Strategic assessment"
             description="We evaluate your scale, budget, grants, and industry constraints to identify options that are both feasible and worthwhile."
-            icon="fas fa-search"
+            featureGlyph="semantic-search"
           />
         </CardGrid>
 
@@ -327,25 +327,25 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
           <Card
             title="Industry expertise"
             description={`Guidance tailored to retail, healthcare, hospitality, manufacturing, and professional services, with practical starting points for each. <a href="${sitePath('/resources')}" class="evidence-citation">View resources</a>`}
-            icon="fas fa-industry"
+            featureGlyph="industry-index"
             size="medium"
           />
           <Card
             title="Financial optimisation"
             description={`Direction on grants, subsidies, and tax incentives that can reduce implementation cost for your industry and goals. <a href="${sitePath('/projects')}" class="evidence-citation">View examples</a>`}
-            icon="fas fa-dollar-sign"
+            featureGlyph="grants"
             size="medium"
           />
           <Card
             title="Process automation"
             description={`Focused automation opportunities that reduce repetitive work and free capacity for higher-value tasks. <a href="${sitePath('/projects')}" class="evidence-citation">View case studies</a>`}
-            icon="fas fa-cogs"
+            featureGlyph="automation"
             size="medium"
           />
           <Card
             title="Value-based framework"
             description="Recommendations are grounded in business scale, budget, available grants, industry requirements, and measurable outcomes."
-            icon="fas fa-chart-line"
+            featureGlyph="results"
             size="medium"
           />
         </CardGrid>
@@ -368,7 +368,7 @@ const displayIndustries = industriesFallback(safeIndustries).slice(0, 4);
             <Card
               title={card.title}
               description={card.description}
-              icon={card.icon}
+              featureGlyph={card.icon}
               size="medium"
             />
           ))}

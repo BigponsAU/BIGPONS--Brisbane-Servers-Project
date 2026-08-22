@@ -50,7 +50,7 @@ export const curatedCaseStudies: CaseStudy[] = [
     navLabel: 'Retail inventory and e-commerce',
     cardDescription:
       'Brisbane retail SME transitioning from manual tracking to automated inventory with e-commerce integration, delivered through a grant-assisted rollout.',
-    icon: 'fas fa-store',
+    icon: 'retail',
     industryFilter: 'retail',
     relatedResourcesHref: '/resources/retail',
     heroTitle: 'Retail: inventory and e-commerce integration',
@@ -93,25 +93,25 @@ The solution was designed to scale with the business while remaining cost-effect
         title: 'Time savings',
         description:
           'Reduced inventory management time from 8 hours per week to 1 hour per week. Owner can focus on growing the business instead of data entry.',
-        icon: 'fas fa-clock',
+        icon: 'time',
       },
       {
         title: 'Accuracy improvement',
         description:
           'Stock level accuracy increased from 75% to 98%. Eliminated overselling and missed sales opportunities.',
-        icon: 'fas fa-check-circle',
+        icon: 'verified',
       },
       {
         title: 'Cost efficiency',
         description:
           'Grant assistance covered 60% of implementation costs. Monthly operational savings exceed system costs.',
-        icon: 'fas fa-dollar-sign',
+        icon: 'grants',
       },
       {
         title: 'Scalability',
         description:
           'System designed to handle 3x current inventory levels without additional infrastructure costs.',
-        icon: 'fas fa-chart-line',
+        icon: 'results',
       },
     ],
     technologies:
@@ -132,7 +132,7 @@ The solution was designed to scale with the business while remaining cost-effect
     navLabel: 'Gallery semantic search',
     cardDescription:
       'Australian gallery implementing semantic categorisation with NLP-assisted search, helping visitors explore collections by style, theme, and technique.',
-    icon: 'fas fa-palette',
+    icon: 'craft',
     industryFilter: 'retail',
     relatedResourcesHref: '/resources/retail/customer-systems',
     heroTitle: 'Gallery: semantic search and categorisation',
@@ -174,25 +174,25 @@ Rollout stayed incremental — the in-room experience unchanged while the online
         title: 'Faster discovery',
         description:
           'Average time-to-relevant artwork on the site dropped sharply; fewer "nothing matched" search sessions.',
-        icon: 'fas fa-search',
+        icon: 'semantic-search',
       },
       {
         title: 'Staff capacity',
         description:
           'Repeat style-and-theme enquiries reduced; curators spend more time on sales conversations and hang planning.',
-        icon: 'fas fa-users',
+        icon: 'clients',
       },
       {
         title: 'Publishing speed',
         description:
           'New works go live in one workflow — metadata, images, and related links — instead of ad hoc page edits.',
-        icon: 'fas fa-bolt',
+        icon: 'speed',
       },
       {
         title: 'Visitor engagement',
         description:
           'More pages per session and longer on-site time on collection and artwork routes after semantic browse launched.',
-        icon: 'fas fa-chart-line',
+        icon: 'results',
       },
     ],
     technologies:
@@ -213,7 +213,7 @@ Rollout stayed incremental — the in-room experience unchanged while the online
     navLabel: 'Healthcare patient management',
     cardDescription:
       'Brisbane medical practice implementing APP-aligned patient management with automated appointments and secure records through a phased rollout.',
-    icon: 'fas fa-heartbeat',
+    icon: 'healthcare',
     industryFilter: 'healthcare',
     relatedResourcesHref: '/resources/healthcare',
     heroTitle: 'Healthcare: patient management system',
@@ -258,24 +258,24 @@ Throughout implementation, we ensured all systems met Australian Privacy Princip
         title: 'Reduced no-shows',
         description:
           'Automated reminders reduced no-show rates from 25% to 8%, improving practice efficiency and patient care.',
-        icon: 'fas fa-calendar-check',
+        icon: 'appointments',
       },
       {
         title: 'Compliance assurance',
         description:
           'Full APP alignment with automated audit trails, secure data storage, and consent management systems.',
-        icon: 'fas fa-shield-alt',
+        icon: 'privacy',
       },
       {
         title: 'Time efficiency',
         description: 'Administrative time reduced by 40%, allowing staff to focus on patient care.',
-        icon: 'fas fa-clock',
+        icon: 'time',
       },
       {
         title: 'Improved access',
         description:
           'Patients can book appointments online 24/7, improving accessibility and satisfaction.',
-        icon: 'fas fa-user-check',
+        icon: 'approved',
       },
     ],
     technologies:
@@ -296,7 +296,7 @@ Throughout implementation, we ensured all systems met Australian Privacy Princip
     navLabel: 'Spreadsheet to database',
     cardDescription:
       'Professional services firm moving beyond spreadsheets to a governed database with semantic search and automated reporting for accuracy and scalability.',
-    icon: 'fas fa-database',
+    icon: 'data-systems',
     industryFilter: 'professional-services',
     relatedResourcesHref: '/resources/professional-services',
     heroTitle: 'Professional services: spreadsheet to database',
@@ -341,25 +341,25 @@ Training and change management ran alongside each phase so adoption matched tech
         title: 'Search efficiency',
         description:
           'Staff locate prior client work in minutes instead of hours — semantic search across approved content.',
-        icon: 'fas fa-search',
+        icon: 'semantic-search',
       },
       {
         title: 'Reporting automation',
         description:
           'Weekly management reports run on schedule; partners review exceptions instead of rebuilding spreadsheets.',
-        icon: 'fas fa-chart-bar',
+        icon: 'results',
       },
       {
         title: 'Data integrity',
         description:
           'Version conflicts eliminated; single source of truth for client and matter records.',
-        icon: 'fas fa-database',
+        icon: 'data-systems',
       },
       {
         title: 'Scalable operations',
         description:
           'System supports growing headcount without proportional admin overhead.',
-        icon: 'fas fa-arrow-up',
+        icon: 'growth',
       },
     ],
     technologies:

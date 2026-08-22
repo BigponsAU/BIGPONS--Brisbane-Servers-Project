@@ -38,7 +38,7 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                           </svg>
                         </div>
                         <div class="stat-content">
-                          <h3>Total Resources</h3>
+                          <h3>Total resources</h3>
                           <p class="stat-value" id="dashboard-total-resources">-</p>
                           <p class="stat-description">All content items</p>
                         </div>
@@ -76,7 +76,7 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                           </svg>
                         </div>
                         <div class="stat-content">
-                          <h3>Avg Voice Score</h3>
+                          <h3>Average voice score</h3>
                           <p class="stat-value" id="dashboard-avg-score">-</p>
                           <p class="stat-description">Quality metric</p>
                         </div>
@@ -170,7 +170,7 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                     <div class="dashboard-starter-blocks">
                       <div class="starter-blocks-header">
                         <div>
-                          <h3 class="workspace-section-title">Starter Blocks</h3>
+                          <h3 class="workspace-section-title">Starter blocks</h3>
                           <p class="starter-blocks-description">Pre-built industry templates you can copy into your library. <span id="starter-blocks-count" class="starter-blocks-count" aria-live="polite"></span></p>
                         </div>
                         <button id="refresh-starter-blocks" class="btn btn-secondary btn-sm" onclick="loadStarterBlocks()" aria-label="Refresh starter blocks">
@@ -188,14 +188,14 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                     </div>
 
                     <div class="dashboard-quick-actions">
-                      <h3 class="workspace-section-title">Quick Actions</h3>
+                      <h3 class="workspace-section-title">Quick actions</h3>
                       <div class="quick-actions-grid">
                         <button type="button" class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('resources'); setTimeout(() => focusResourceCreationSection('generate'), 100);">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                           </svg>
-                          <span class="quick-action-label">Generate Resource</span>
+                          <span class="quick-action-label">Generate resource</span>
                         </button>
                         <button type="button" class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('resources'); setTimeout(() => focusResourceCreationSection('upload'), 100);">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,7 +203,7 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                           </svg>
-                          <span class="quick-action-label">Upload Resource</span>
+                          <span class="quick-action-label">Upload resource</span>
                         </button>
                         <button class="quick-action-card" data-min-role="editor" onclick="navigateToPanel('profiles');">
                           <svg class="quick-action-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -225,13 +225,13 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                             <line x1="12" y1="20" x2="12" y2="4"></line>
                             <line x1="6" y1="20" x2="6" y2="14"></line>
                           </svg>
-                          <span class="quick-action-label">View Analytics</span>
+                          <span class="quick-action-label">View analytics</span>
                         </button>
                       </div>
                     </div>
 
                     <div class="dashboard-recent-activity">
-                      <h3 class="workspace-section-title">Recent Activity</h3>
+                      <h3 class="workspace-section-title">Recent activity</h3>
                       <p class="workspace-section-hint">Double-click a draft to move it to the bin (vectors kept for collation).</p>
                       <div id="recent-activity-list" class="activity-list">
                         <div class="activity-loading">Loading recent activity...</div>
@@ -240,8 +240,8 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
 
                     <div class="dashboard-resource-preview">
                       <div class="preview-header">
-                        <h3 class="workspace-section-title">My Resources</h3>
-                        <a href="#" onclick="navigateToPanel('resources'); return false;" class="preview-link">View All →</a>
+                        <h3 class="workspace-section-title">My resources</h3>
+                        <a href="#" onclick="navigateToPanel('resources'); return false;" class="preview-link">View all →</a>
                       </div>
                       <div id="recent-resources-preview" class="resources-preview-grid">
                         <div class="preview-loading">Loading resources...</div>

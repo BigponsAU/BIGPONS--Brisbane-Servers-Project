@@ -91,7 +91,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   <div class="form-group">
                     <label for="document-industry">Industry</label>
                     <select id="document-industry">
-                      <option value="">Select Industry...</option>
+                      <option value="">Select industry...</option>
                       {industries.map(industry => (
                         <option value={industry.slug}>{industry.name}</option>
                       ))}
@@ -115,7 +115,7 @@ import { accountWorkspace } from '../../data/account-workspace';
           <!-- Resource Upload Section -->
           <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="upload-resource-heading">
             <div class="section-header section-header--collapsible">
-              <h2 id="upload-resource-heading">Upload Resource</h2>
+              <h2 id="upload-resource-heading">Upload resource</h2>
               <button type="button" class="section-toggle" aria-expanded="true" aria-controls="upload-resource-content" onclick="toggleSection('upload-resource-content', this)" aria-label="Collapse Upload section">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
@@ -126,7 +126,7 @@ import { accountWorkspace } from '../../data/account-workspace';
             <div class="card" style="position: relative; overflow: hidden;">
               <form id="upload-resource-form" class="resource-form" action="javascript:void(0)" aria-label="Resource upload form" enctype="multipart/form-data">
                 <div class="form-group">
-                  <label for="upload-file">Upload File</label>
+                  <label for="upload-file">Upload file</label>
                   <input type="file" id="upload-file" name="file" accept=".txt,.md,.html,.htm,.docx,.pdf,.png,.jpg,.jpeg,.webp" />
                   <small style="color: var(--text-secondary); margin-top: var(--space-xs); display: block;">
                     Supported: Text, Markdown, HTML, PDF, Word (.docx), and images. PDFs and scans use NVIDIA vision OCR on the edge worker when needed.
@@ -136,7 +136,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   <div class="form-group">
                     <label for="upload-industry">Industry</label>
                     <select id="upload-industry" name="industry" required>
-                      <option value="">Select Industry...</option>
+                      <option value="">Select industry...</option>
                       {industries.map(industry => (
                         <option value={industry.slug}>{industry.name}</option>
                       ))}
@@ -194,7 +194,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                     <div class="form-group">
                       <label for="process-industry">Industry</label>
                       <select id="process-industry" name="industry" required>
-                        <option value="">Select Industry...</option>
+                        <option value="">Select industry...</option>
                         {industries.map(industry => (
                           <option value={industry.slug}>{industry.name}</option>
                         ))}
@@ -224,7 +224,7 @@ import { accountWorkspace } from '../../data/account-workspace';
           <!-- Resource Generation Section -->
           <section class="admin-section admin-section-collapsible resources-create-panel" data-min-role="editor" aria-labelledby="generate-resource-heading">
             <div class="section-header">
-              <h2 id="generate-resource-heading">Generate New Resource</h2>
+              <h2 id="generate-resource-heading">Generate new resource</h2>
               <button type="button" class="section-toggle" aria-expanded="false" aria-controls="generate-resource-content" onclick="toggleSection('generate-resource-content', this)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="18 15 12 9 6 15"></polyline>
@@ -238,7 +238,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   <div class="form-group">
                     <label for="resource-industry">Industry</label>
                     <select id="resource-industry" name="industry" required>
-                      <option value="">Select Industry...</option>
+                      <option value="">Select industry...</option>
                       {industries.map(industry => (
                         <option value={industry.slug}>{industry.name}</option>
                       ))}
@@ -280,7 +280,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   </p>
                 </div>
                 <div class="resource-form-actions">
-                  <button type="submit" class="btn btn-primary btn-sm">Generate Resource</button>
+                  <button type="submit" class="btn btn-primary btn-sm">Generate resource</button>
                 </div>
                 <div id="generate-status" class="status-message" role="status" aria-live="polite"></div>
               </form>
@@ -319,7 +319,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                     <rect x="14" y="14" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
-                  <span id="view-toggle-text">List View</span>
+                  <span id="view-toggle-text">List view</span>
                 </button>
               </div>
             </div>
@@ -329,7 +329,7 @@ import { accountWorkspace } from '../../data/account-workspace';
               <!-- Tree Navigation Panel -->
               <aside class="resource-tree-panel" id="resource-tree-panel">
                 <div class="tree-header">
-                  <h3>Resource Tree</h3>
+                  <h3>Resource tree</h3>
                   <div class="tree-search">
                     <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <circle cx="11" cy="11" r="8"></circle>
@@ -472,16 +472,16 @@ import { accountWorkspace } from '../../data/account-workspace';
                   </div>
                   <label for="status-filter" class="sr-only">Filter by status</label>
                   <select id="status-filter" class="filter-select" aria-label="Filter by status">
-                    <option value="">All Status</option>
+                    <option value="">All status</option>
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>
                   <label for="resource-type-filter" class="sr-only">Filter by type</label>
                   <select id="resource-type-filter" class="filter-select" aria-label="Filter by resource type">
-                    <option value="user">My Resources</option>
-                    <option value="starter">Starter Blocks</option>
-                    <option value="all">All Resources</option>
+                    <option value="user">My resources</option>
+                    <option value="starter">Starter blocks</option>
+                    <option value="all">All resources</option>
                     <option value="removed" class="admin-only-option" hidden>Removed from workspace</option>
                   </select>
                 </div>

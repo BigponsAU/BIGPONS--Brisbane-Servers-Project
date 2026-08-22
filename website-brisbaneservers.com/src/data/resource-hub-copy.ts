@@ -1,10 +1,11 @@
 import type { Industry, Topic } from './industries';
 import { valueProposition } from './value-proposition';
+import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 export interface HubCard {
   title: string;
   description: string;
-  icon: string;
+  icon: FeatureGlyphName;
 }
 
 /** Hero title for an industry hub — outcome-led, not catalogue-led. */
@@ -44,19 +45,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Client and matter visibility',
         description:
           'When every interaction is findable and matters have a single source of truth, partners spend less time reconstructing context — and clients experience fewer “can you resend that?” moments that erode confidence.',
-        icon: 'fas fa-users',
+        icon: 'clients',
       },
       {
         title: 'Document and workflow leverage',
         description:
           'Template discipline and controlled automation turn repeatable drafting into margin — not by replacing judgment, but by removing rework that never should have been manual.',
-        icon: 'fas fa-file-alt',
+        icon: 'documents',
       },
       {
         title: 'Revenue capture without friction',
         description:
           'Time that is captured accurately and invoiced on rhythm improves cash flow without adding admin theatre — especially when billing ties to the same systems that hold client work.',
-        icon: 'fas fa-dollar-sign',
+        icon: 'billing',
       },
     ],
     retail: [
@@ -64,19 +65,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Single view of stock and sales',
         description:
           'POS, e-commerce, and warehouse signals that agree reduce oversell, emergency freight, and blind promotions — the cost of inconsistency is measurable once channels multiply.',
-        icon: 'fas fa-boxes',
+        icon: 'inventory',
       },
       {
         title: 'Channel growth without chaos',
         description:
           'Online and in-store can share catalogue and fulfilment logic when integration is scoped in phases — so expansion does not mean a second shadow inventory.',
-        icon: 'fas fa-shopping-cart',
+        icon: 'commerce',
       },
       {
         title: 'Retention that pays for itself',
         description:
           'Loyalty and CRM only matter when they change behaviour you can see — repeat visits, basket size, or reduced acquisition cost — not when they are vanity dashboards.',
-        icon: 'fas fa-star',
+        icon: 'loyalty',
       },
     ],
     healthcare: [
@@ -84,19 +85,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Clinical workflow that stays defensible',
         description:
           'Records and scheduling that match how clinicians actually work reduce double-entry and after-hours catch-up — the prerequisite for any patient-facing improvement.',
-        icon: 'fas fa-user-md',
+        icon: 'clinical',
       },
       {
         title: 'Privacy and access by design',
         description:
           'Australian privacy expectations are not a checklist after build — access controls, audit trails, and retention policy belong in the architecture conversation from the first scope line.',
-        icon: 'fas fa-shield-alt',
+        icon: 'privacy',
       },
       {
         title: 'Capacity without waiting-room chaos',
         description:
           'Reminders, waitlists, and calendar discipline recover chair time and reduce no-shows — often the fastest win before larger system change.',
-        icon: 'fas fa-calendar-check',
+        icon: 'appointments',
       },
     ],
     hospitality: [
@@ -104,19 +105,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Bookings that match service rhythm',
         description:
           'Tables, rooms, and events on one reliable flow reduce double-bookings and front-of-house firefighting — guests notice smoothness before they notice “technology.”',
-        icon: 'fas fa-calendar-alt',
+        icon: 'booking',
       },
       {
         title: 'POS tied to what you sell',
         description:
           'Menu, inventory, and payments that reconcile daily make margin visible per service period — essential when labour and supply costs swing weekly.',
-        icon: 'fas fa-cash-register',
+        icon: 'pos',
       },
       {
         title: 'Automation where staff time is thin',
         description:
           'Communications, alerts, and reporting that run without constant supervision free managers for service quality — scoped so automation does not fight the floor.',
-        icon: 'fas fa-robot',
+        icon: 'robot',
       },
     ],
     construction: [
@@ -124,19 +125,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Job visibility from quote to handover',
         description:
           'When status, variations, and site photos live in one place, disputes shrink and supervisors stop living in message threads — that visibility is the basis for sensible platform spend.',
-        icon: 'fas fa-hard-hat',
+        icon: 'construction',
       },
       {
         title: 'Quoting and margin discipline',
         description:
           'Structured estimating and change control protect margin on fixed-price work — technology earns its place when it reduces surprise cost, not when it adds another login.',
-        icon: 'fas fa-clipboard-list',
+        icon: 'quoting',
       },
       {
         title: 'Compliance evidence on demand',
         description:
           'Safety, licensing, and subcontractor documentation that is retrievable beats folder archaeology at audit time — especially across multiple active sites.',
-        icon: 'fas fa-shield-alt',
+        icon: 'privacy',
       },
     ],
     finance: [
@@ -144,19 +145,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Close cycles without heroics',
         description:
           'Reconciliation and reporting that run on rhythm reduce month-end crunch — freeing partners and controllers for client-facing and strategic work.',
-        icon: 'fas fa-chart-line',
+        icon: 'finance',
       },
       {
         title: 'Client-ready transparency',
         description:
           'Portals and automated reporting that clients actually use strengthen retention — when the alternative is email attachments and version confusion.',
-        icon: 'fas fa-handshake',
+        icon: 'partnership',
       },
       {
         title: 'Controls that scale with the book',
         description:
           'Segregation of duties, audit logs, and integration to source systems matter more as transaction volume grows — not as compliance theatre.',
-        icon: 'fas fa-lock',
+        icon: 'lock',
       },
     ],
     manufacturing: [
@@ -164,19 +165,19 @@ export function industryOpportunityCards(industry: Industry): HubCard[] {
         title: 'Floor truth in near real time',
         description:
           'Production counts and downtime reasons that match the floor make planning credible — without that signal, MRP and dashboards optimise fiction.',
-        icon: 'fas fa-industry',
+        icon: 'manufacturing',
       },
       {
         title: 'Quality that contains cost',
         description:
           'Traceability and defect capture early in the process reduce scrap and recall risk — the business case is waste avoided, not software for its own sake.',
-        icon: 'fas fa-check-double',
+        icon: 'check-double',
       },
       {
         title: 'Supply chain you can commit to',
         description:
           'Inventory and supplier lead times that align with orders prevent expedite fees and customer disappointment — integration is sequenced, not big-bang.',
-        icon: 'fas fa-truck',
+        icon: 'logistics',
       },
     ],
   };
@@ -188,18 +189,18 @@ function defaultOpportunityCards(industryName: string): HubCard[] {
     {
       title: 'Operating reality first',
       description: `For ${industryName}, technology only matters when it removes friction you already pay for — duplicated work, blind spots, or compliance risk — with costs visible before commitment.`,
-      icon: 'fas fa-search',
+      icon: 'semantic-search',
     },
     {
       title: 'Grants and sequencing',
       description:
         'Australian incentives and phased delivery can change what is feasible — we map programs and order of work so funding supports scope, not scope chasing funding.',
-      icon: 'fas fa-dollar-sign',
+      icon: 'grants',
     },
     {
       title: 'Evidence you can act on',
       description: valueProposition.fragments.evidenceLed,
-      icon: 'fas fa-book',
+      icon: 'book',
     },
   ];
 }
@@ -224,19 +225,19 @@ export function topicDecisionCards(topic: Topic, industry: Industry): HubCard[] 
     {
       title: 'Your context',
       description: `We start from how your ${industry.name} operation actually runs — team size, existing tools, compliance, and budget — so ${topic.name.toLowerCase()} recommendations are feasible, not aspirational.`,
-      icon: 'fas fa-map-marker-alt',
+      icon: 'location',
     },
     {
       title: 'Evidence and trade-offs',
       description:
         'Options are compared using documented outcomes, integration cost, and measurable impact, with grants and incentives included where they materially change feasibility.',
-      icon: 'fas fa-balance-scale',
+      icon: 'tradeoffs',
     },
     {
       title: 'Next actions',
       description:
         'Each guide ends with practical sequencing: what to address first, what to defer, and what to lock into scope before major spend.',
-      icon: 'fas fa-arrow-right',
+      icon: 'next',
     },
   ];
 }
@@ -247,18 +248,18 @@ export function topicOpportunityCards(topic: Topic, industry: Industry): HubCard
     {
       title: 'Where value shows up',
       description: `For ${topic.name.toLowerCase()}, value is time returned to billable or customer-facing work, fewer errors that cost rework, and decisions made from one source of truth — not dashboard vanity.`,
-      icon: 'fas fa-chart-line',
+      icon: 'results',
     },
     {
       title: 'Grants and phased delivery',
       description:
         'Digital transformation and industry programmes can offset implementation when project structure matches eligibility; we surface this early so scope and funding remain aligned.',
-      icon: 'fas fa-hand-holding-usd',
+      icon: 'grants',
     },
     {
       title: 'Engage with agreed scope',
       description: valueProposition.fragments.agreedDelivery,
-      icon: 'fas fa-comments',
+      icon: 'conversation',
     },
   ];
 }

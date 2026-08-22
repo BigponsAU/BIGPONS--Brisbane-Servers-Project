@@ -83,8 +83,6 @@ const jsonLd = mergeJsonLdGraph(
   ...structuredData,
 );
 
-/** Account workspace uses inline SVG/icons — skip Font Awesome CDN (~70KB). */
-const skipFontAwesome = pageId === 'account';
 /** Cloudflare Pages sets CF_PAGES_COMMIT_SHA at build; fall back for local/dev. */
 const siteBuildStamp =
   (import.meta.env.CF_PAGES_COMMIT_SHA as string | undefined)?.slice(0, 12) ||
@@ -264,7 +262,6 @@ const siteBuildStamp =
         document.addEventListener('submit', blockStaticFormPost, true);
       })();
     </script>
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     {pageId === 'account' && <link rel="dns-prefetch" href="https://api.brisbaneservers.com" />}
     {pageId === 'account' && <link rel="preconnect" href="https://api.brisbaneservers.com" crossorigin />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -278,19 +275,6 @@ const siteBuildStamp =
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
     </noscript>
-    {!skipFontAwesome && (
-      <>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-          media="print"
-          onload="this.media='all'"
-        />
-        <noscript>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-        </noscript>
-      </>
-    )}
     {styleProfile === 'full' && <MarketingDecorStyles />}
   </head>
   <body

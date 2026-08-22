@@ -136,7 +136,7 @@ export const workspaceNavItems: WorkspaceNavItem[] = [
     minRole: 'editor',
     mode: 'creator',
     section: 'voice',
-    title: 'Voice Profiles — manage voice characteristics',
+    title: 'Voice profiles — manage voice characteristics',
   },
   {
     panel: 'voice-lab',

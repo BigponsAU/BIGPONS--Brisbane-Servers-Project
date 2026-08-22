@@ -51,25 +51,25 @@ export const brisbane2032Infrastructure = {
           title: 'Physical and transport paths',
           description:
             'Fibre backbones, diverse routes, last-mile upgrades to venues and transport hubs, and wireless densification where fixed lines cannot meet mobility needs.',
-          icon: 'fas fa-network-wired',
+          icon: 'network',
         },
         {
           title: 'Active networking hardware',
           description:
             'Switches, routers, load balancers, firewalls, and edge appliances specified for throughput, latency budgets, and failure domains — with spares and configuration management, not ad hoc rack builds.',
-          icon: 'fas fa-server',
+          icon: 'server',
         },
         {
           title: 'Compute and platform capacity',
           description:
             'Data centre and cloud capacity for ticketing, media, analytics, identity, and venue systems — with autoscaling limits, regional placement, and DR that match agreed recovery objectives.',
-          icon: 'fas fa-database',
+          icon: 'data-systems',
         },
         {
           title: 'Observability and security',
           description:
             'Telemetry, capacity dashboards, DDoS and access controls, and runbooks tied to named owners — so operators see saturation before users do, and incidents have a documented chain of command.',
-          icon: 'fas fa-shield-alt',
+          icon: 'privacy',
         },
       ],
     },

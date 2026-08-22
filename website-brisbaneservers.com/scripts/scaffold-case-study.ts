@@ -24,7 +24,7 @@ const template = `  {
     navLabel: '${title}',
     cardDescription:
       'One-sentence summary for cards and navigation — industry, scope, and outcome.',
-    icon: 'fas fa-briefcase',
+    icon: 'professional-services',
     industryFilter: 'professional-services',
     relatedResourcesHref: '/resources/professional-services',
     heroTitle: '${title}',
@@ -41,7 +41,7 @@ const template = `  {
       {
         title: 'Outcome headline',
         description: 'Measurable or observable result the client can evaluate.',
-        icon: 'fas fa-chart-line',
+        icon: 'results',
       },
     ],
     technologies: 'List the core systems, integrations, or platforms used.',

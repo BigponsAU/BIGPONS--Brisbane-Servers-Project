@@ -85,10 +85,10 @@
 
 .legal-toc__label {
   margin: 0 0 var(--space-md);
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--primary-dark);
 }
 
@@ -148,11 +148,11 @@
 
 .legal-aside-card__eyebrow {
   margin: 0 0 var(--space-xs);
-  font-size: 0.72rem;
+  font-size: var(--text-sm);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--primary-dark);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--primary-color);
 }
 
 .legal-aside-card__title {

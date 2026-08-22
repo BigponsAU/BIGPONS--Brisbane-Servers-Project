@@ -459,10 +459,10 @@ footer {
 /* Primary nav columns: distinct from contact/info blocks (methodology: label + tight link stack) */
 .footer-section--menu .footer-title,
 .footer-subsection--menu > .footer-title {
-    font-size: 0.8125rem;
-    font-weight: var(--font-weight-bold);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-size: 0.9375rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--text-on-dark-subtle);
     margin-bottom: 1.125rem;
 }
@@ -3110,9 +3110,11 @@ section.hero .hero-subtitle .semantic-child,
 i[class*="fa-"],
 [class*="icon"],
 .btn-icon,
+.btn-glyph,
 .search-icon,
 .error-fallback-icon,
-.error-fallback-icon i {
+.error-fallback-icon i,
+.error-fallback-icon .feature-glyph {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
     display: inline-block;
@@ -3168,7 +3170,8 @@ i[class*="fa-"],
 }
 
 /* Font Awesome icons in general */
-i[class*="fa-"] {
+i[class*="fa-"],
+.feature-glyph {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center;
     display: inline-block;
@@ -3177,9 +3180,25 @@ i[class*="fa-"] {
 /* Icon hover states for interactive elements */
 a:hover i[class*="fa-"],
 button:hover i[class*="fa-"],
-.card:hover i[class*="fa-"] {
+.card:hover i[class*="fa-"],
+a:hover .feature-glyph,
+button:hover .feature-glyph,
+.card:hover .feature-glyph {
     transform: scale(1.1);
     color: var(--primary-color);
+}
+
+.btn-glyph {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.btn-glyph--spin {
+    animation: glyph-spin 0.8s linear infinite;
+}
+
+@keyframes glyph-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Icon tartan accent on hover */
@@ -3746,9 +3765,11 @@ p.text-long {
     font-weight: var(--font-weight-medium);
 }
 
-.topic-card i {
+.topic-card i,
+.topic-card .feature-glyph {
     font-size: 1.25rem;
     color: var(--primary-color);
+    flex-shrink: 0;
 }
 
 .topic-card:hover {

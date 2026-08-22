@@ -974,7 +974,7 @@ export function bootAccountWorkspaceDashboard(): void {
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
             </svg>
-            <p style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-xs);">View All Starter Blocks</p>
+            <p style="font-weight: var(--font-weight-semibold); margin-bottom: var(--space-xs);">View all starter blocks</p>
             <p style="font-size: var(--text-sm); color: var(--portal-text-tertiary);">${starterBlocks.length - 12} more available</p>
           </div>
         </div>

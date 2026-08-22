@@ -2,15 +2,15 @@
 import { sitePath } from '../lib/site-path';
 import SemanticText from './SemanticText.astro';
 import FeatureGlyph from './marketing/FeatureGlyph.astro';
-import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
+import { resolveFeatureGlyph, type FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 
 /**
  * Card Component Props
- * 
+ *
  * @interface Props
  * @property {string} title - The card title text (required)
  * @property {string} description - The card description text (required)
- * @property {string} [icon] - Font Awesome icon class (e.g., 'fas fa-check')
+ * @property {string} [icon] - Glyph name or legacy Font Awesome class
  * @property {FeatureGlyphName} [featureGlyph] - Inline SVG glyph (preferred on marketing pages)
  * @property {string} [href] - Optional link URL. If provided, card becomes a link
  * @property {string} [actionLabel] - Visible CTA on link cards (default: "View details")
@@ -23,7 +23,7 @@ import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
 interface Props {
   title: string;
   description: string;
-  icon?: string;
+  icon?: string | FeatureGlyphName;
   featureGlyph?: FeatureGlyphName;
   href?: string;
   /** Shown on link cards as a button-like affordance (default: View details) */
@@ -36,7 +36,7 @@ interface Props {
 }
 
 const { 
-  title = 'Card Title', 
+  title = 'Card title', 
   description = '', 
   icon, 
   featureGlyph,
@@ -48,6 +48,8 @@ const {
   layout = 'standard',
   emphasis = false
 } = Astro.props;
+
+const resolvedGlyph = featureGlyph ?? resolveFeatureGlyph(icon);
 
 const Tag = href ? 'a' : 'div';
 const cardClass = [
@@ -71,17 +73,13 @@ const resolvedHref =
   role={href ? undefined : 'article'}
   aria-label={href ? `${title}. ${description}` : undefined}
 >
-  {(featureGlyph || icon) && (
-    <div class:list={['card-icon', featureGlyph && 'card-icon--glyph']} aria-hidden="true">
-      {featureGlyph ? (
-        <FeatureGlyph name={featureGlyph} size={22} />
-      ) : (
-        <i class={icon}></i>
-      )}
+  {resolvedGlyph && (
+    <div class="card-icon card-icon--glyph" aria-hidden="true">
+      <FeatureGlyph name={resolvedGlyph} size={22} />
     </div>
   )}
   <h3 class="card-title">
-    <SemanticText text={title || 'Card Title'} semanticLevel={semanticLevel} isParent={true} />
+    <SemanticText text={title || 'Card title'} semanticLevel={semanticLevel} isParent={true} />
   </h3>
   {description && (
     <p class="card-description" set:html={description} />

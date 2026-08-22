@@ -3178,8 +3178,9 @@ img.bigpons-brain-mark {
   display: inline-flex;
   margin-bottom: var(--space-sm);
   font-size: var(--text-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: var(--font-weight-semibold);
   color: var(--primary-dark);
 }
 

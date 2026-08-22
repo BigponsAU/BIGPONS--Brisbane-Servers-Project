@@ -1,14 +1,15 @@
 /**
  * Light copy helpers for non-heading chrome (eyebrows / kickers).
  *
- * Site copy policy (after SemanticText stopped rewriting casing):
- * - Section titles, card titles, CTAs: sentence case (first word + proper nouns).
+ * Site copy policy:
+ * - Section titles, card titles, CTAs, and workspace headings: sentence case
+ *   (first word + proper nouns). Do not force case in CSS.
  * - Industry hub names: Title Case with & from industries.ts (canonical).
  * - Legal document names: Title Case (Privacy Policy, Terms of Service).
  * - Brand / product names: preserve authored casing (Brisbane Servers, BIGPONS).
+ * - True kickers (section numbers, status badges) may use `.text-kicker`.
  *
- * Do not use these helpers for body or heading text — SemanticText renders
- * authored casing and punctuation as written.
+ * SemanticText renders authored casing and punctuation as written.
  */
 
 /**

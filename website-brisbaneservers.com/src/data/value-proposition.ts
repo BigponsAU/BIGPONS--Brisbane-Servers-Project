@@ -45,7 +45,7 @@ export const valueProposition = {
   },
 
   home: {
-    title: 'Technology Consulting for Australian Businesses',
+    title: 'Technology consulting for Australian businesses',
     description:
       'Tailored technology consulting for Australian businesses: web applications, automation, integration, and ongoing support—with clear scope and delivery aligned to agreement.',
     heroTitle: 'Access to truth in technology',
@@ -95,25 +95,25 @@ export const valueProposition = {
         title: 'Efficient delivery',
         description:
           'We run the analysis and preparation work; you focus on decisions. Outputs stay clear, actionable, and implementation-ready.',
-        icon: 'fas fa-bolt',
+        icon: 'speed',
       },
       {
         title: 'Australian market expertise',
         description:
           'Brisbane-based, serving Australian businesses — local market conditions, regulatory requirements, grant programs, and proven implementation strategies.',
-        icon: 'fas fa-map-marker-alt',
+        icon: 'location',
       },
       {
         title: 'Clear ownership',
         description:
           'You approve direction, budget, and risk. We prepare the analysis, comparisons, and documentation so those decisions stay grounded in evidence.',
-        icon: 'fas fa-handshake',
+        icon: 'partnership',
       },
       {
         title: 'Decision-ready documentation',
         description:
           'Trade-offs, costs, and sequencing are documented before major spend, so leadership can approve with confidence and revisit as priorities change.',
-        icon: 'fas fa-file-alt',
+        icon: 'documents',
       },
     ],
     inquiryPanel: {

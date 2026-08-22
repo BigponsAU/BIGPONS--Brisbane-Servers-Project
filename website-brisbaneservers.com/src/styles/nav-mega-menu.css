@@ -128,11 +128,11 @@ body.nav-mobile-open .nav-dropdown {
 .nav-mega__heading {
   margin: 0 0 var(--space-xs);
   padding: 0 var(--space-sm);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--primary-color);
 }
 
 .nav-mega__list {
@@ -255,11 +255,11 @@ body.nav-mobile-open .nav-dropdown {
 .mobile-menu__kicker {
   margin: 0;
   padding: 0 var(--space-xs);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--primary-color);
 }
 
 /* Feature card: Resources, Projects, About (native expand/collapse) */
@@ -347,11 +347,11 @@ body.nav-mobile-open .nav-dropdown {
 .mobile-menu__block-label {
   margin: 0 0 var(--space-xs);
   padding: 0 var(--space-xs);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--primary-color);
 }
 
 .mobile-menu__block-list {

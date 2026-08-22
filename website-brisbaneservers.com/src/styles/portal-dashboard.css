@@ -406,8 +406,8 @@
   margin: 0 0 var(--space-xs);
   font-size: var(--text-sm);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--primary-color);
 }
 
@@ -549,9 +549,9 @@
   margin: 0;
   font-size: var(--text-sm);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text-primary);
 }
 
 .site-shell--marketing .account-workspace-shell .insight-card__body,
@@ -3245,11 +3245,11 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 .account-workspace-shell .analytics-section > .workspace-section-title,
 .account-workspace-shell .analytics-section__header .workspace-section-title {
   margin: 0 0 var(--space-md);
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text-primary);
 }
 
 .account-workspace-shell .workspace-section-hint {
