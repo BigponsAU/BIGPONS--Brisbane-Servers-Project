@@ -72,6 +72,10 @@ const { connections, nodes, viewBox } = buildSierpinskiSatelliteMarkup();
     animation-delay: var(--satellite-node-delay);
   }
 
+  .satellite-node-icon {
+    pointer-events: none;
+  }
+
   .satellite-node:hover .satellite-node-ring {
     filter: brightness(1.05);
   }
