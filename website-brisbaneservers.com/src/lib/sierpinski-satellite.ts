@@ -73,20 +73,27 @@ function connectionMarkup(from: SatelliteNode, to: SatelliteNode, seq: number): 
   ].join('');
 }
 
+export function constellationIconPlacement(nodeSize: number): { x: number; y: number; width: number } {
+  const width = nodeSize * 1.15;
+  const x = -width / 2;
+  return { x, y: x, width };
+}
+
 function nodeMarkup(node: SatelliteNode, iconInner: string, nodeIndex: number): string {
   const delay = ((nodeIndex % 20) * 0.35).toFixed(3);
   const haloR = node.size * 1.85;
   const ringR = node.size * 1.2;
-  const iconSize = node.size * 1.12;
-  const scale = iconSize / 24;
+  const icon = constellationIconPlacement(node.size);
 
   return [
     `<g class="satellite-node" transform="translate(${node.x}, ${node.y})" style="--satellite-node-delay:${delay}s">`,
     `<circle r="${haloR}" fill="rgba(${PURPLE_GLOW_RGB}, 0.14)" class="satellite-neuron-halo"></circle>`,
     `<circle r="${ringR}" fill="white" opacity="0.9" class="satellite-node-ring"></circle>`,
     `<circle r="${node.size}" fill="${BLUE_NODE}" class="satellite-node-core"></circle>`,
-    `<g class="satellite-node-icon" transform="translate(${-iconSize / 2},${-iconSize / 2}) scale(${scale})" fill="#fff" stroke="none" shape-rendering="geometricPrecision" aria-hidden="true">`,
+    `<g class="satellite-node-icon" transform="translate(${icon.x}, ${icon.y})">`,
+    `<svg width="${icon.width}" height="${icon.width}" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="hidden" fill="#fff" stroke="none" aria-hidden="true">`,
     iconInner,
+    `</svg>`,
     `</g>`,
     `</g>`,
   ].join('');
