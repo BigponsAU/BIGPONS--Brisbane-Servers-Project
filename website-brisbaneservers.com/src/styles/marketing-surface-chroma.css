@@ -94,7 +94,9 @@
 }
 
 /* ─── Card chroma cycle ─── */
-.card:nth-child(4n + 1),
+.card-grid > .card:nth-child(4n + 1),
+.card-grid-grid > .card:nth-child(4n + 1),
+.main-home .home-sections-shell .section .card-grid > .card:nth-child(4n + 1),
 .topic-card:nth-child(4n + 1),
 .resource-topic-card:nth-child(4n + 1),
 .guide-blend__value-card:nth-child(4n + 1) {
@@ -102,7 +104,9 @@
   --card-chroma-rgb: var(--primary-color-rgb);
 }
 
-.card:nth-child(4n + 2),
+.card-grid > .card:nth-child(4n + 2),
+.card-grid-grid > .card:nth-child(4n + 2),
+.main-home .home-sections-shell .section .card-grid > .card:nth-child(4n + 2),
 .topic-card:nth-child(4n + 2),
 .resource-topic-card:nth-child(4n + 2),
 .guide-blend__value-card:nth-child(4n + 2) {
@@ -110,7 +114,9 @@
   --card-chroma-rgb: var(--accent-violet-rgb);
 }
 
-.card:nth-child(4n + 3),
+.card-grid > .card:nth-child(4n + 3),
+.card-grid-grid > .card:nth-child(4n + 3),
+.main-home .home-sections-shell .section .card-grid > .card:nth-child(4n + 3),
 .topic-card:nth-child(4n + 3),
 .resource-topic-card:nth-child(4n + 3),
 .guide-blend__value-card:nth-child(4n + 3) {
@@ -118,7 +124,9 @@
   --card-chroma-rgb: var(--accent-teal-rgb);
 }
 
-.card:nth-child(4n + 4),
+.card-grid > .card:nth-child(4n + 4),
+.card-grid-grid > .card:nth-child(4n + 4),
+.main-home .home-sections-shell .section .card-grid > .card:nth-child(4n + 4),
 .topic-card:nth-child(4n + 4),
 .resource-topic-card:nth-child(4n + 4),
 .guide-blend__value-card:nth-child(4n + 4) {
@@ -126,7 +134,9 @@
   --card-chroma-rgb: var(--accent-pink-rgb);
 }
 
-.card .feature-glyph {
+.card .feature-glyph,
+.main-home .home-sections-shell .section .card .feature-glyph,
+.main-home .home-sections-shell .section .card-icon {
   color: var(--card-chroma, var(--primary-color));
 }
 

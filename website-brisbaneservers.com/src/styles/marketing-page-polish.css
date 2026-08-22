@@ -403,8 +403,13 @@ a.search-result-item:focus-visible {
 }
 
 .site-main--marketing .marketing-page-bands .card {
-    border-color: rgba(var(--primary-color-rgb), 0.12);
-    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.26);
+    background:
+        linear-gradient(
+            165deg,
+            rgba(255, 255, 255, 0.96) 0%,
+            rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.16) 100%
+        );
     box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.85) inset,
         0 8px 24px rgba(var(--primary-ink-rgb, 15 23 42), 0.06);

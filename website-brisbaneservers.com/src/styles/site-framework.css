@@ -1168,7 +1168,7 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   padding-inline-start: 0;
   max-width: min(84ch, 100%);
   font-size: clamp(1rem, 0.92rem + 0.3vw, 1.28rem);
-  color: rgba(var(--primary-ink-rgb), 0.82);
+  color: var(--text-secondary);
 }
 
 .main-home .home-sections-shell .section .card-grid-grid {
@@ -1186,15 +1186,21 @@ main:not(.site-main) .section.section--hero-wash > .container :is(.evidence-sect
   transform: none !important;
   padding: clamp(1rem, 1.2vw, 1.5rem) !important;
   border-left: none !important;
-  background-color: rgba(255, 255, 255, 0.94);
-  background-image: radial-gradient(
-    120% 85% at 100% 0%,
-    var(--home-card-tint-a) 0%,
-    transparent 58%
-  );
+  background-color: transparent;
+  background-image:
+    radial-gradient(
+      120% 85% at 100% 0%,
+      rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.22) 0%,
+      transparent 58%
+    ),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.14) 100%
+    );
   box-shadow:
     0 4px 28px rgba(15, 23, 42, 0.055),
-    0 0 0 1px rgba(var(--home-card-ring-rgb), 0.1),
+    0 0 0 1px rgba(var(--card-chroma-rgb, var(--primary-color-rgb)), 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
