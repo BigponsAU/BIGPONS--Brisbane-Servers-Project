@@ -1,6 +1,7 @@
 import type { Industry, Topic } from './industries';
 import { valueProposition } from './value-proposition';
 import type { FeatureGlyphName } from '../lib/marketing/feature-glyphs';
+import { formatHeadingCopy } from '../lib/copy-style';
 
 export interface HubCard {
   title: string;
@@ -10,7 +11,7 @@ export interface HubCard {
 
 /** Hero title for an industry hub — outcome-led, not catalogue-led. */
 export function industryHeroTitle(industry: Industry): string {
-  return `${industry.name}: decisions grounded in sector context`;
+  return formatHeadingCopy(`${industry.name}: decisions grounded in sector context`);
 }
 
 /** Section lead tying operating reality to technology necessity. */
@@ -207,7 +208,7 @@ function defaultOpportunityCards(industryName: string): HubCard[] {
 
 /** Topic hero — positions the topic inside the industry narrative. */
 export function topicHeroTitle(topic: Topic, industry: Industry): string {
-  return `${topic.name} for ${industry.name}`;
+  return formatHeadingCopy(`${topic.name} for ${industry.name}`);
 }
 
 export function topicHeroSubtitle(topic: Topic, industry: Industry): string {

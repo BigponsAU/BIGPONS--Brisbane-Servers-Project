@@ -1,4 +1,6 @@
 ---
+import { formatHeadingCopy } from '../lib/copy-style';
+
 interface Props {
   text: string;
   class?: string;
@@ -7,8 +9,8 @@ interface Props {
   isChild?: boolean;
   parentClass?: string;
   /**
-   * @deprecated No longer needed — SemanticText always renders authored casing.
-   * Kept so existing call sites (Header, Footer, brand marks) keep compiling.
+   * @deprecated Parent headings use Title Case; brand marks stay as authored.
+   * Kept so existing call sites (Header, Footer) keep compiling.
    */
   preserveCase?: boolean;
 }
@@ -20,7 +22,10 @@ const {
   isParent = false,
   isChild = false,
   parentClass = '',
+  preserveCase = false,
 } = Astro.props;
+
+const displayText = isParent && !preserveCase ? formatHeadingCopy(text) : text;
 
 // Semantic levels map to typography weight/hierarchy only — never rewrite copy.
 const semanticClasses = [
@@ -34,7 +39,7 @@ const semanticClasses = [
 ---
 
 <span class={semanticClasses} data-semantic-level={semanticLevel}>
-  {text}
+  {displayText}
 </span>
 
 <style>

@@ -247,7 +247,7 @@ export const FEATURE_GLYPH_INNER: Record<FeatureGlyphName, string> = {
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
 };
 
-/** Hero satellite nodes — same stroke family as marketing glyphs. */
+/** Compact filled marks for the hero constellation live in sierpinski-satellite.ts. */
 export const SATELLITE_GLYPH_NAMES: FeatureGlyphName[] = [
   'delivery',
   'speed',

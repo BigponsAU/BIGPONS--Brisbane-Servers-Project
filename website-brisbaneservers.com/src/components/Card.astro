@@ -3,6 +3,7 @@ import { sitePath } from '../lib/site-path';
 import SemanticText from './SemanticText.astro';
 import FeatureGlyph from './marketing/FeatureGlyph.astro';
 import { resolveFeatureGlyph, type FeatureGlyphName } from '../lib/marketing/feature-glyphs';
+import { formatHeadingCopy } from '../lib/copy-style';
 
 /**
  * Card Component Props
@@ -35,10 +36,10 @@ interface Props {
   emphasis?: boolean;
 }
 
-const { 
-  title = 'Card title', 
-  description = '', 
-  icon, 
+const {
+  title = 'Card title',
+  description = '',
+  icon,
   featureGlyph,
   href,
   actionLabel = 'View details',
@@ -50,6 +51,7 @@ const {
 } = Astro.props;
 
 const resolvedGlyph = featureGlyph ?? resolveFeatureGlyph(icon);
+const headingTitle = formatHeadingCopy(title || 'Card Title');
 
 const Tag = href ? 'a' : 'div';
 const cardClass = [
@@ -71,7 +73,7 @@ const resolvedHref =
   href={resolvedHref} 
   {...dataAttr}
   role={href ? undefined : 'article'}
-  aria-label={href ? `${title}. ${description}` : undefined}
+  aria-label={href ? `${headingTitle}. ${description}` : undefined}
 >
   {resolvedGlyph && (
     <div class="card-icon card-icon--glyph" aria-hidden="true">
@@ -79,7 +81,7 @@ const resolvedHref =
     </div>
   )}
   <h3 class="card-title">
-    <SemanticText text={title || 'Card title'} semanticLevel={semanticLevel} isParent={true} />
+    <SemanticText text={headingTitle} semanticLevel={semanticLevel} isParent={true} />
   </h3>
   {description && (
     <p class="card-description" set:html={description} />

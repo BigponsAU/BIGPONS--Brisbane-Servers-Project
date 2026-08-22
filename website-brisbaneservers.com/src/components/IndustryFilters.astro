@@ -11,7 +11,7 @@ const { currentFilter = 'all' } = Astro.props;
 
 <div class="industry-filters">
   <button class={`filter-btn ${currentFilter === 'all' ? 'active' : ''}`} data-filter="all">
-    <SemanticText text="All industries" semanticLevel="medium" />
+    <SemanticText text="All Industries" semanticLevel="medium" />
   </button>
   {industries.map((industry) => (
     <button 

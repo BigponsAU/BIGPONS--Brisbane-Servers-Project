@@ -28,7 +28,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'client-management',
-        name: 'Client management systems',
+        name: 'Client Management Systems',
         slug: 'client-management-systems',
         description:
           'A single, defensible view of clients and matters reduces rework and protects relationships — essential when partners and staff cannot afford to hunt for context before every call or deadline.',
@@ -36,7 +36,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'document-automation',
-        name: 'Document automation',
+        name: 'Document Automation',
         slug: 'document-automation',
         description:
           'Repeatable documents should not consume senior time — controlled templates and automation recover margin on high-volume work without replacing professional judgment.',
@@ -44,7 +44,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'billing-time',
-        name: 'Billing & time tracking',
+        name: 'Billing & Time Tracking',
         slug: 'billing-time-tracking',
         description:
           'Revenue leakage from uncaptured time and slow invoicing is measurable — systems that match how professionals actually work improve cash flow without adding admin theatre.',
@@ -52,7 +52,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'practice-management',
-        name: 'Practice management',
+        name: 'Practice Management',
         slug: 'practice-management',
         description:
           'Workflows, deadlines, and compliance sit on one integrated spine when practice management is scoped to how the firm operates — not imposed as a generic legal-tech catalogue.',
@@ -70,7 +70,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'inventory-pos',
-        name: 'Inventory & POS systems',
+        name: 'Inventory & POS Systems',
         slug: 'inventory-pos',
         description:
           'Accurate stock and till data are prerequisites for confident trading — integration and reorder logic earn their place when oversell and emergency freight stop being normal.',
@@ -78,7 +78,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'e-commerce',
-        name: 'E-commerce integration',
+        name: 'E-Commerce Integration',
         slug: 'e-commerce',
         description:
           'Growing online without a second shadow inventory requires catalogue, payment, and fulfilment scoped to how you already sell — sequenced so channel expansion does not break the store.',
@@ -86,7 +86,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'customer-systems',
-        name: 'Customer systems',
+        name: 'Customer Systems',
         slug: 'customer-systems',
         description:
           'Loyalty and CRM only justify spend when they change behaviour you can measure — repeat visits, basket size, or acquisition cost — not when they are reporting vanity.',
@@ -104,7 +104,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'patient-management',
-        name: 'Patient management systems',
+        name: 'Patient Management Systems',
         slug: 'patient-management',
         description:
           'Clinical and administrative staff need one coherent patient record — double-entry and after-hours catch-up are signals that the current stack is costing capacity, not just inconvenience.',
@@ -112,7 +112,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'compliance',
-        name: 'Compliance & security',
+        name: 'Compliance & Security',
         slug: 'compliance',
         description:
           'Privacy, retention, and access control belong in the architecture conversation from the first scope line — retrofitting compliance after build is the expensive path Australian practices cannot afford.',
@@ -120,7 +120,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'appointments',
-        name: 'Appointment management',
+        name: 'Appointment Management',
         slug: 'appointments',
         description:
           'No-shows and manual scheduling consume chair time — reminders, waitlists, and calendar discipline are often the fastest win before larger clinical system change.',
@@ -138,7 +138,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'booking',
-        name: 'Booking & reservation systems',
+        name: 'Booking & Reservation Systems',
         slug: 'booking',
         description:
           'Double-bookings and front-of-house firefighting erode guest experience — reliable booking flow is the basis for staffing and revenue decisions, not an add-on brochure feature.',
@@ -146,7 +146,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'pos-integration',
-        name: 'POS integration',
+        name: 'POS Integration',
         slug: 'pos-integration',
         description:
           'Menu, payments, and inventory that reconcile daily make margin visible per service period — essential when labour and supply costs move weekly.',
@@ -154,7 +154,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'automation',
-        name: 'Automation & efficiency',
+        name: 'Automation & Efficiency',
         slug: 'automation',
         description:
           'Communications, alerts, and reporting that run without constant supervision free managers for service quality — scoped so automation supports the floor instead of fighting it.',
@@ -172,7 +172,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'job-costing',
-        name: 'Job costing & variations',
+        name: 'Job Costing & Variations',
         slug: 'job-costing-variations',
         description:
           'Quote-to-invoice control when variations and committed costs must stay visible — margin is decided before the final claim, not in a spreadsheet after the fact.',
@@ -180,7 +180,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'site-compliance',
-        name: 'Site compliance & diaries',
+        name: 'Site Compliance & Diaries',
         slug: 'site-compliance',
         description:
           'SWMS, inductions, and site evidence linked to the job — so principal contractors and auditors get answers in minutes, not archaeology.',
@@ -198,7 +198,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'client-reporting',
-        name: 'Client reporting packs',
+        name: 'Client Reporting Packs',
         slug: 'client-reporting',
         description:
           'Standardised management reporting without monthly rebuilds — partners review exceptions, not formulas.',
@@ -206,7 +206,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'workflow-compliance',
-        name: 'Workflow & compliance',
+        name: 'Workflow & Compliance',
         slug: 'workflow-compliance',
         description:
           'BAS, tax, and audit jobs with visible sign-off — named owners and timestamps you can defend.',
@@ -224,7 +224,7 @@ export const industries: Industry[] = [
     topics: [
       {
         id: 'shop-floor',
-        name: 'Shop floor tracking',
+        name: 'Shop Floor Tracking',
         slug: 'shop-floor-tracking',
         description:
           'WIP and downtime visible before the customer calls — schedules grounded in what the floor actually did.',
@@ -232,7 +232,7 @@ export const industries: Industry[] = [
       },
       {
         id: 'quality-trace',
-        name: 'Quality & traceability',
+        name: 'Quality & Traceability',
         slug: 'quality-traceability',
         description:
           'Batch genealogy for recalls and audits — answer which customers got which lot without paper travellers.',

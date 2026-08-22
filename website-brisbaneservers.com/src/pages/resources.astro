@@ -18,6 +18,7 @@ import {
   projectPurposeNav,
 } from '../data/brisbane-servers-project-objective';
 import { industries } from '../data/industries';
+import { formatHeadingCopy } from '../lib/copy-style';
 import { valueProposition } from '../data/value-proposition';
 import { resourcesHubSeo } from '../lib/content-seo';
 import { resourceVoiceInterconnection } from '../lib/portal-voice-framework';
@@ -214,7 +215,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = resourcesHubSeo(
                   {industry.topics.map((topic) => (
                     <a href={`/resources/${industry.slug}/${topic.slug}`} class="topic-card">
                       <FeatureGlyph name={topic.icon} size={16} />
-                      <span>{topic.name}</span>
+                      <span>{formatHeadingCopy(topic.name)}</span>
                     </a>
                   ))}
                 </div>
