@@ -97,6 +97,7 @@
 .section-chroma--blue,
 .home-band--about,
 .home-band--proof,
+.home-band--solutions,
 .home-band--partnership,
 .about-band,
 .marketing-page-bands--about > .section {
@@ -107,6 +108,7 @@
 .section-chroma-held,
 .home-band--about,
 .home-band--proof,
+.home-band--solutions,
 .home-band--partnership,
 .about-band,
 .marketing-page-bands--about > .section {
@@ -118,6 +120,7 @@
 .section-chroma-held .card.card-emphasis,
 .home-band--about .card,
 .home-band--proof .card,
+.home-band--solutions .card,
 .home-band--partnership .card,
 .about-band .card,
 .marketing-page-bands--about > .section .card {
@@ -139,6 +142,8 @@
 .home-band--about .card-icon,
 .home-band--proof .card .feature-glyph,
 .home-band--proof .card-icon,
+.home-band--solutions .card .feature-glyph,
+.home-band--solutions .card-icon,
 .home-band--partnership .card .feature-glyph,
 .home-band--partnership .card-icon,
 .about-band .card .feature-glyph,
@@ -149,45 +154,23 @@
 .section-chroma-held .card-icon,
 .home-band--about .card-icon,
 .home-band--proof .card-icon,
+.home-band--solutions .card-icon,
 .home-band--partnership .card-icon,
 .about-band .card-icon {
   background: rgba(var(--section-chroma-rgb, var(--primary-color-rgb)), 0.1);
   border-color: rgba(var(--section-chroma-rgb, var(--primary-color-rgb)), 0.24);
 }
 
-.section-chroma-held .home-info-panel,
-.home-band--proof .home-info-panel {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.28);
+.section-chroma-held .card .card-title,
+.section-chroma-held .card .card-title :is(.semantic-text, .semantic-high, .semantic-parent),
+.home-band--solutions .card .card-title,
+.home-band--solutions .card .card-title :is(.semantic-text, .semantic-high, .semantic-parent) {
+  color: #0b1220;
 }
 
-.section-chroma-held .home-info-panel:not(.home-info-panel--on-dark),
-.home-band--about .home-info-panel:not(.home-info-panel--on-dark) {
-  background: #fff;
-  border-color: rgba(var(--section-chroma-rgb, var(--primary-color-rgb)), 0.22);
-}
-
-.section-chroma-held .home-point-strip__item,
-.home-band--proof .home-point-strip__item,
-.home-band--about .home-point-strip__item {
-  background: #fff;
-  border-color: rgba(var(--section-chroma-rgb, var(--primary-color-rgb)), 0.2);
-}
-
-.section-chroma-held.section--hero-wash .home-point-strip__item,
-.home-band--proof .home-point-strip__item {
-  background: #fff;
-  border-color: rgba(var(--primary-color-rgb), 0.2);
-}
-
-.section-chroma-held.section--hero-wash .home-point-strip__title,
-.home-band--proof .home-point-strip__title {
-  color: var(--text-primary);
-}
-
-.section-chroma-held.section--hero-wash .home-point-strip__body,
-.home-band--proof .home-point-strip__body {
-  color: var(--text-secondary);
+.section-chroma-held .card .card-description,
+.home-band--solutions .card .card-description {
+  color: #1e293b;
 }
 
 /* ─── Card chroma cycle ─── */
@@ -442,11 +425,13 @@
 .section-chroma-held .card-grid-grid > .card:nth-child(n),
 .home-band--about .card-grid > .card:nth-child(n),
 .home-band--proof .card-grid > .card:nth-child(n),
+.home-band--solutions .card-grid > .card:nth-child(n),
 .home-band--partnership .card-grid > .card:nth-child(n),
 .about-band .card-grid > .card:nth-child(n),
 .main-home .home-sections-shell .section.section-chroma-held .card-grid > .card:nth-child(n),
 .main-home .home-sections-shell .section.home-band--about .card-grid > .card:nth-child(n),
 .main-home .home-sections-shell .section.home-band--proof .card-grid > .card:nth-child(n),
+.main-home .home-sections-shell .section.home-band--solutions .card-grid > .card:nth-child(n),
 .main-home .home-sections-shell .section.home-band--partnership .card-grid > .card:nth-child(n) {
   --card-chroma: var(--section-chroma, var(--primary-color));
   --card-chroma-rgb: var(--section-chroma-rgb, var(--primary-color-rgb));
@@ -455,10 +440,12 @@
 .section-chroma-held .card,
 .home-band--about .card,
 .home-band--proof .card,
+.home-band--solutions .card,
 .home-band--partnership .card,
 .about-band .card,
 .section--hero-wash.section-chroma-held .card,
-.section--hero-wash.home-band--proof .card {
+.section--hero-wash.home-band--proof .card,
+.section--hero-wash.home-band--solutions .card {
   background: #fff !important;
   background-color: #fff !important;
   background-image: none !important;
@@ -495,7 +482,21 @@
 .section-chroma-held .feature-glyph--location,
 .home-band--about .feature-glyph,
 .home-band--proof .feature-glyph,
+.home-band--solutions .feature-glyph,
 .home-band--partnership .feature-glyph,
 .about-band .feature-glyph {
   color: var(--section-chroma, var(--primary-color));
+}
+
+.section--hero-wash.section-chroma-held .card .card-title,
+.section--hero-wash.section-chroma-held .card .card-title :is(.semantic-text, .semantic-high, .semantic-parent),
+.home-band--solutions .card .card-title,
+.home-band--solutions .card .card-title :is(.semantic-text, .semantic-high, .semantic-parent) {
+  color: #0b1220 !important;
+  -webkit-text-fill-color: #0b1220 !important;
+}
+
+.section--hero-wash.section-chroma-held .card .card-description,
+.home-band--solutions .card .card-description {
+  color: #1e293b !important;
 }
