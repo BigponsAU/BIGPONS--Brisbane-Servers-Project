@@ -2,7 +2,12 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-10-28 — portal article actions, diagrams, and industry tags
+**Last synced:** 2026-10-28 — cookie bar no longer covers account sign-in
+
+### 2026-10-28 — Cookie bar offset on `/account`
+
+- **Site** — Cookie banner measures its height and pads the login screen so Create account stays usable.
+- **Deploy** — Cloudflare Pages production `e70454ae` from `54055a3` (**success**, 2026-10-28). Live: `https://brisbaneservers.com/account/`.
 
 ### 2026-10-28 — Portal article actions live
 
