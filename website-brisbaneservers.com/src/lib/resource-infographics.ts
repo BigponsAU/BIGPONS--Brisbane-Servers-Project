@@ -1,6 +1,6 @@
 import type { InfographicSpec } from '../data/topic-guides/infographic-types';
 import type { Resource } from './resource-types';
-import { normalizeInfographicSpec } from './resource-infographic';
+import { normalizeInfographicSpec } from './resource-infographic-spec';
 
 export const MAX_RESOURCE_DIAGRAMS = 4;
 
