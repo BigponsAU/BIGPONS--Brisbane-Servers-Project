@@ -11,6 +11,7 @@ export type ResourceTag = {
   label: string;
   status: ResourceTagStatus;
   proposedBy?: string;
+  applicant?: string;
 };
 
 export type TagProposal = {
@@ -107,6 +108,7 @@ export function buildResourceTagCatalog(params: {
           label: proposal?.label || humanizeTagLabel(slug),
           status: 'pending',
           proposedBy: proposal?.proposedBy || resource.ownerId,
+          applicant: resource.generatedBy || proposal?.proposedBy || resource.ownerId,
         });
       }
       continue;
@@ -130,20 +132,29 @@ export function tagDraftResourceId(userId: string, slug: string): string {
   return `tag-proposal-${userId}-${slug}`.slice(0, 80);
 }
 
+export function tagCatalogResourceId(slug: string): string {
+  return `tag-catalog-${slug}`.slice(0, 80);
+}
+
 export function buildTagDraftResource(params: {
   slug: string;
   label: string;
   userId: string;
   userEmail?: string;
   status?: TagProposal['status'];
+  id?: string;
 }): Resource {
   const slug = params.slug;
+  const status = params.status || 'pending';
   return {
-    id: tagDraftResourceId(params.userId, slug),
+    id: params.id || tagDraftResourceId(params.userId, slug),
     industry: slug,
     topic: 'tag-proposal',
-    title: `${params.label} (industry tag draft)`,
-    description: `${params.label} is a personal industry tag. It stays in your drafts until an admin approves it for the public library.`,
+    title: `${params.label} (industry ${status === 'approved' ? 'catalog' : 'application'})`,
+    description:
+      status === 'approved'
+        ? `${params.label} is an approved industry on the library.`
+        : `${params.label} is an industry application. Authors can draft against it; an admin must approve it before it is public.`,
     content: '',
     generatedAt: new Date().toISOString(),
     generatedBy: params.userEmail,
@@ -156,7 +167,7 @@ export function buildTagDraftResource(params: {
       tagProposal: {
         slug,
         label: params.label,
-        status: params.status || 'draft',
+        status,
         proposedBy: params.userId,
       },
     },
@@ -225,7 +236,120 @@ export function nextTagProposalForWrite(params: {
   return {
     slug,
     label: existingProposal?.label || humanizeTagLabel(slug),
-    status: params.isAdmin ? 'approved' : existingProposal?.status === 'pending' ? 'pending' : 'draft',
+    status: params.isAdmin ? 'approved' : existingProposal?.status === 'approved' ? 'approved' : 'pending',
     proposedBy: existingProposal?.proposedBy || params.userId,
   };
+}
+
+export function upsertIndustryTagProposal(params: {
+  label: string;
+  resources: Resource[];
+  userId: string;
+  userEmail?: string;
+  isAdmin: boolean;
+}): { resources: Resource[]; tag: ResourceTag; changed: boolean } {
+  const slug = normalizeIndustrySlug(params.label);
+  const label = humanizeTagLabel(slug) || params.label.trim();
+  const catalog = buildResourceTagCatalog({
+    resources: params.resources,
+    userId: params.userId,
+    isAdmin: params.isAdmin,
+  });
+  const existing = catalog.tags.find((tag) => tag.slug === slug);
+  if (existing?.status === 'canonical' || existing?.status === 'approved') {
+    return { resources: params.resources, tag: existing, changed: false };
+  }
+
+  const next = [...params.resources];
+  if (params.isAdmin) {
+    const id = tagCatalogResourceId(slug);
+    const idx = next.findIndex((resource) => resource.id === id);
+    const record = buildTagDraftResource({
+      slug,
+      label,
+      userId: params.userId,
+      userEmail: params.userEmail,
+      status: 'approved',
+      id,
+    });
+    if (idx < 0) next.push(record);
+    else next[idx] = { ...next[idx], title: record.title, description: record.description, metadata: record.metadata };
+    return {
+      resources: next,
+      tag: { slug, label, status: 'approved', proposedBy: params.userId, applicant: params.userEmail },
+      changed: true,
+    };
+  }
+
+  const id = tagDraftResourceId(params.userId, slug);
+  const idx = next.findIndex((resource) => resource.id === id);
+  const record = buildTagDraftResource({
+    slug,
+    label,
+    userId: params.userId,
+    userEmail: params.userEmail,
+    status: 'pending',
+  });
+  if (idx < 0) next.push(record);
+  else {
+    next[idx] = {
+      ...next[idx],
+      title: record.title,
+      description: record.description,
+      metadata: {
+        ...next[idx].metadata,
+        tagDraftOnly: true,
+        tagProposal: { slug, label, status: 'pending', proposedBy: params.userId },
+      },
+    };
+  }
+  return {
+    resources: next,
+    tag: { slug, label, status: 'pending', proposedBy: params.userId, applicant: params.userEmail },
+    changed: true,
+  };
+}
+
+export function applyIndustryTagModeration(params: {
+  slug: string;
+  action: 'approve' | 'reject';
+  resources: Resource[];
+  adminUserId: string;
+  adminEmail?: string;
+}): { resources: Resource[]; updated: number } {
+  const slug = normalizeIndustrySlug(params.slug);
+  const labelFallback = humanizeTagLabel(slug);
+  let updated = 0;
+  const next = params.resources.map((resource) => {
+    if (normalizeIndustrySlug(resource.industry) !== slug) return resource;
+    const current = resource.metadata?.tagProposal;
+    updated += 1;
+    return {
+      ...resource,
+      metadata: {
+        ...resource.metadata,
+        tagProposal: {
+          slug,
+          label: current?.label || labelFallback,
+          status: params.action === 'approve' ? 'approved' : 'rejected',
+          proposedBy: current?.proposedBy || resource.ownerId,
+        },
+      },
+    };
+  });
+  if (params.action === 'approve' && !next.some((resource) => resource.id === tagCatalogResourceId(slug))) {
+    const sample = next.find((resource) => normalizeIndustrySlug(resource.industry) === slug);
+    next.push(
+      buildTagDraftResource({
+        slug,
+        label: sample?.metadata?.tagProposal?.label || labelFallback,
+        userId: params.adminUserId,
+        userEmail: params.adminEmail,
+        status: 'approved',
+        id: tagCatalogResourceId(slug),
+      }),
+    );
+    updated += 1;
+  }
+  return { resources: next, updated };
 }

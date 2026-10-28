@@ -35,7 +35,6 @@ import { displayCatalogDescription } from '../lib/catalog-copy';
 import { listResourceInfographics } from '../lib/resource-infographics';
 import { humanizeTagLabel } from '../lib/resource-tags';
 import { revealWorkspaceModal, hideWorkspaceModal } from './workspace-modal';
-import { showPromptDialog } from './portal-confirm-dialog';
 import type { VoiceContextApi } from './account-workspace-voice-context';
 
 export type ResourceCreateSection = 'generate' | 'upload' | 'paste';
@@ -1293,18 +1292,22 @@ function loadResourceDetail(resource: any): void {
   }
 }
 
+const PROPOSE_INDUSTRY_VALUE = '__propose__';
+
 function industrySelectOptions(selectedSlug: string, extra: { slug: string; label: string }[] = []): string {
   const selected = normalizeIndustrySlug(selectedSlug);
   const seen = new Set(industries.map((industry) => industry.slug));
   const extras = extra.filter((tag) => tag.slug && !seen.has(tag.slug));
   return [
+    `<option value="">Select industry…</option>`,
+    `<option value="${PROPOSE_INDUSTRY_VALUE}">Propose a new industry…</option>`,
     ...industries.map(
       (industry) =>
         `<option value="${escapeHtml(industry.slug)}"${industry.slug === selected ? ' selected' : ''}>${escapeHtml(industry.name)}</option>`,
     ),
     ...extras.map(
       (tag) =>
-        `<option value="${escapeHtml(tag.slug)}"${tag.slug === selected ? ' selected' : ''}>${escapeHtml(tag.label)} (draft tag)</option>`,
+        `<option value="${escapeHtml(tag.slug)}"${tag.slug === selected ? ' selected' : ''}>${escapeHtml(tag.label)} (awaiting approval)</option>`,
     ),
   ].join('');
 }
@@ -1323,66 +1326,111 @@ async function loadTagCatalog(): Promise<CatalogTag[]> {
 }
 
 function fillIndustrySelect(select: HTMLSelectElement, tags: CatalogTag[], selectedSlug = ''): void {
-  const selected = normalizeIndustrySlug(selectedSlug || select.value);
-  const placeholder = '<option value="">Select industry…</option>';
+  const selected = normalizeIndustrySlug(selectedSlug === PROPOSE_INDUSTRY_VALUE ? '' : selectedSlug || select.value);
   const canonical = tags.filter((tag) => tag.status === 'canonical' || tag.status === 'approved');
-  const drafts = tags.filter((tag) => tag.status === 'draft' || tag.status === 'pending');
+  const applications = tags.filter((tag) => tag.status === 'draft' || tag.status === 'pending');
   const option = (tag: CatalogTag, note = '') =>
     `<option value="${escapeHtml(tag.slug)}"${tag.slug === selected ? ' selected' : ''}>${escapeHtml(tag.label)}${note}</option>`;
-  select.innerHTML =
-    placeholder +
-    canonical.map((tag) => option(tag)).join('') +
-    drafts.map((tag) => option(tag, tag.status === 'pending' ? ' (awaiting approval)' : ' (your draft)')).join('');
+  select.innerHTML = [
+    '<option value="">Select industry…</option>',
+    `<option value="${PROPOSE_INDUSTRY_VALUE}">Propose a new industry…</option>`,
+    ...canonical.map((tag) => option(tag)),
+    ...applications.map((tag) => option(tag, ' (awaiting approval)')),
+  ].join('');
   if (selected && ![...select.options].some((item) => item.value === selected)) {
-    select.insertAdjacentHTML('beforeend', option({ slug: selected, label: humanizeTagLabel(selected) }, ' (your draft)'));
+    select.insertAdjacentHTML('beforeend', option({ slug: selected, label: humanizeTagLabel(selected) }, ' (awaiting approval)'));
+    select.value = selected;
+  } else if (selected) {
     select.value = selected;
   }
 }
 
-function ensureIndustryAddButton(select: HTMLSelectElement): void {
+async function submitIndustryProposal(select: HTMLSelectElement, label: string): Promise<void> {
+  const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/tags`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ label }),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Could not submit that industry application.');
+  }
+  const tag = data.tag as CatalogTag;
+  const tags = await loadTagCatalog();
+  fillIndustrySelect(select, tags, tag.slug);
+  select.value = tag.slug;
+  const panel = select.closest('[data-industry-field]')?.querySelector('[data-industry-propose-panel]') as HTMLElement | null;
+  if (panel) panel.hidden = true;
+  const message =
+    tag.status === 'approved'
+      ? `${tag.label} is now on the industry list.`
+      : `${tag.label} submitted for approval. You can use it on drafts now.`;
+  showNotification(message, 'success');
+}
+
+function ensureIndustryProposeField(select: HTMLSelectElement): void {
   if (select.dataset.tagEnhanced === 'true') return;
   select.dataset.tagEnhanced = 'true';
-  const row = document.createElement('div');
-  row.className = 'industry-tag-row';
-  select.parentNode?.insertBefore(row, select);
-  row.appendChild(select);
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'btn btn-secondary btn-sm industry-tag-add';
-  button.textContent = 'Add industry';
-  row.appendChild(button);
-  const hint = document.createElement('p');
-  hint.className = 'form-hint industry-tag-hint';
-  hint.textContent = 'New industries stay in your drafts until an admin approves them for the public library.';
-  row.parentNode?.insertBefore(hint, row.nextSibling);
-  button.addEventListener('click', () => {
+
+  let field = select.closest('[data-industry-field]') as HTMLElement | null;
+  if (!field) {
+    field = document.createElement('div');
+    field.className = 'industry-field';
+    field.dataset.industryField = 'true';
+    select.parentNode?.insertBefore(field, select);
+    field.appendChild(select);
+    field.insertAdjacentHTML(
+      'beforeend',
+      `<div class="industry-propose" hidden data-industry-propose-panel>
+        <label>New industry name</label>
+        <div class="industry-tag-row">
+          <input type="text" data-industry-propose-input placeholder="e.g. Legal services" autocomplete="off" />
+          <button type="button" class="btn btn-secondary btn-sm" data-industry-propose-submit>Submit for approval</button>
+        </div>
+        <p class="form-hint">This is an application. You can draft against it now; an admin approves it before the public library uses it.</p>
+      </div>`,
+    );
+  }
+
+  const panel = field.querySelector('[data-industry-propose-panel]') as HTMLElement | null;
+  const input = field.querySelector('[data-industry-propose-input]') as HTMLInputElement | null;
+  const submit = field.querySelector('[data-industry-propose-submit]') as HTMLButtonElement | null;
+
+  const openPropose = () => {
+    if (panel) panel.hidden = false;
+    input?.focus();
+  };
+
+  select.addEventListener('change', () => {
+    if (select.value !== PROPOSE_INDUSTRY_VALUE) {
+      if (panel) panel.hidden = true;
+      return;
+    }
+    select.value = '';
+    openPropose();
+  });
+
+  submit?.addEventListener('click', () => {
     void (async () => {
-      const label = await showPromptDialog({
-        title: 'Add industry tag',
-        message: 'Name the industry this article belongs to. You can use it on drafts immediately; publishing needs approval.',
-        placeholder: 'e.g. Legal services',
-      });
-      if (!label) return;
+      const label = input?.value.trim() || '';
+      if (!label) {
+        showNotification('Name the industry first.', 'warning');
+        return;
+      }
       try {
-        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/tags`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ label }),
-        });
-        const data = await response.json();
-        if (!response.ok || !data.success) {
-          showNotification(data.error || 'Could not add that industry tag.', 'error');
-          return;
-        }
-        const tag = data.tag as CatalogTag;
-        const tags = await loadTagCatalog();
-        fillIndustrySelect(select, tags, tag.slug);
-        select.value = tag.slug;
-        showNotification(`${tag.label} saved as a draft industry tag.`, 'success');
+        await submitIndustryProposal(select, label);
+        if (input) input.value = '';
       } catch (error) {
         showNotification(workspaceErrorMessage(error), 'error');
       }
     })();
+  });
+
+  input?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      submit?.click();
+    }
   });
 }
 
@@ -1399,7 +1447,7 @@ async function bindIndustryTagSelects(preferredSlug = ''): Promise<void> {
   ids.forEach((id) => {
     const select = document.getElementById(id) as HTMLSelectElement | null;
     if (!select) return;
-    ensureIndustryAddButton(select);
+    ensureIndustryProposeField(select);
     fillIndustrySelect(select, tags, preferredSlug || select.value);
   });
 }
@@ -1431,7 +1479,6 @@ function openDetailEditMode(id: string): void {
       <div class="form-group">
         <label for="detail-edit-industry">Industry</label>
         <select id="detail-edit-industry" class="form-control" required>
-          <option value="">Select industry…</option>
           ${industrySelectOptions(industrySlug)}
         </select>
       </div>
@@ -1473,7 +1520,7 @@ async function saveDetailEdit(id: string): Promise<void> {
   const description = (document.getElementById('detail-edit-description') as HTMLTextAreaElement)?.value.trim();
   const content = readMarkdownFieldValue('detail-edit-content');
 
-  if (!title || !industry || !topic || !description || !content) {
+  if (!title || !industry || industry === PROPOSE_INDUSTRY_VALUE || !topic || !description || !content) {
     showNotification('Please fill in all required fields.', 'warning');
     return;
   }
@@ -2052,7 +2099,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
   const description = (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value.trim();
   const content = readMarkdownFieldValue('edit-resource-content');
 
-  if (!title || !industry || !topic || !description || !content) {
+  if (!title || !industry || industry === PROPOSE_INDUSTRY_VALUE || !topic || !description || !content) {
     showNotification('Please fill in all required fields.', 'warning');
     return;
   }

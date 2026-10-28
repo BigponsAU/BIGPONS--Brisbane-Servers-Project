@@ -1,5 +1,5 @@
 ---
-import { industries } from '../../data/industries';
+import IndustrySelectField from './IndustrySelectField.astro';
 ---
     <!-- View Resource Modal -->
     <div id="view-resource-modal" class="modal" role="dialog" aria-labelledby="view-resource-title" aria-hidden="true">
@@ -51,12 +51,7 @@ import { industries } from '../../data/industries';
           </div>
           <div class="form-group">
             <label for="edit-resource-industry">Industry</label>
-            <select id="edit-resource-industry" required>
-              <option value="">Select industry...</option>
-              {industries.map(industry => (
-                <option value={industry.slug}>{industry.name}</option>
-              ))}
-            </select>
+            <IndustrySelectField id="edit-resource-industry" required />
           </div>
           <div class="form-group">
             <label for="edit-resource-topic">Topic</label>

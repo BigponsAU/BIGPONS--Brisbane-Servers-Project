@@ -29,8 +29,15 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 
       <p id="moderation-queue-summary" class="admin-queue-summary" role="status" aria-live="polite"></p>
       <section class="admin-section admin-section--in-band" aria-labelledby="industry-tag-moderation-heading">
-        <h3 id="industry-tag-moderation-heading">Industry tags</h3>
-        <p class="section-subtitle">Approve new industries before they appear on the public library. Authors can still draft against them.</p>
+        <h3 id="industry-tag-moderation-heading">Industry applications</h3>
+        <p class="section-subtitle">Authors propose industries from the resource forms. Approve them here like other library applications, or create one yourself — that is live immediately.</p>
+        <form id="admin-create-industry-form" class="industry-create-form" action="javascript:void(0)">
+          <label for="admin-create-industry-name">Create industry</label>
+          <div class="industry-tag-row">
+            <input id="admin-create-industry-name" type="text" placeholder="e.g. Legal services" autocomplete="off" />
+            <button type="submit" class="btn btn-primary btn-sm">Create industry</button>
+          </div>
+        </form>
         <div id="industry-tag-moderation" class="moderation-queue" aria-live="polite"></div>
       </section>
 

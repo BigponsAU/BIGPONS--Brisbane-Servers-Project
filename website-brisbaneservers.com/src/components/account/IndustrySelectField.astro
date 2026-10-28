@@ -1,0 +1,39 @@
+---
+import { industries } from '../../data/industries';
+
+interface Props {
+  id: string;
+  name?: string;
+  required?: boolean;
+}
+
+const { id, name, required = false } = Astro.props;
+const proposeId = `${id}-propose`;
+---
+<div class="industry-field" data-industry-field>
+  <select id={id} name={name} required={required} data-industry-select>
+    <option value="">Select industry…</option>
+    <option value="__propose__">Propose a new industry…</option>
+    {industries.map((industry) => (
+      <option value={industry.slug}>{industry.name}</option>
+    ))}
+  </select>
+  <div class="industry-propose" hidden data-industry-propose-panel>
+    <label for={proposeId}>New industry name</label>
+    <div class="industry-tag-row">
+      <input
+        id={proposeId}
+        type="text"
+        data-industry-propose-input
+        placeholder="e.g. Legal services"
+        autocomplete="off"
+      />
+      <button type="button" class="btn btn-secondary btn-sm" data-industry-propose-submit>
+        Submit for approval
+      </button>
+    </div>
+    <p class="form-hint">
+      This is an application. You can draft against it now; an admin approves it before the public library uses it.
+    </p>
+  </div>
+</div>

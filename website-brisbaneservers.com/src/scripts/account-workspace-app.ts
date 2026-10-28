@@ -1779,7 +1779,7 @@ export function bootAccountWorkspaceDashboard(): void {
     const industry = (document.getElementById('resource-industry') as HTMLSelectElement)?.value;
     const topic = (document.getElementById('resource-topic') as HTMLInputElement)?.value;
     
-    if (!industry || !topic?.trim()) {
+    if (!industry || industry === '__propose__' || !topic?.trim()) {
       e.preventDefault();
       showNotification('Please select an industry and enter a topic.', 'warning');
       return false;

@@ -1,8 +1,8 @@
 ---
-import { industries } from '../../data/industries';
 import SectionIntro from '../SectionIntro.astro';
 import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 import { accountWorkspace } from '../../data/account-workspace';
+import IndustrySelectField from './IndustrySelectField.astro';
 ---
               <div id="resources-panel" class="portal-panel panel-shell" role="main" aria-label="Resources management" style="display: none;">
                 <div class="admin-content resources-panel-layout">
@@ -90,12 +90,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="document-industry">Industry</label>
-                    <select id="document-industry">
-                      <option value="">Select industry...</option>
-                      {industries.map(industry => (
-                        <option value={industry.slug}>{industry.name}</option>
-                      ))}
-                    </select>
+                    <IndustrySelectField id="document-industry" />
                   </div>
                   <div class="form-group">
                     <label for="document-topic">Topic</label>
@@ -135,12 +130,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="upload-industry">Industry</label>
-                    <select id="upload-industry" name="industry" required>
-                      <option value="">Select industry...</option>
-                      {industries.map(industry => (
-                        <option value={industry.slug}>{industry.name}</option>
-                      ))}
-                    </select>
+                    <IndustrySelectField id="upload-industry" name="industry" required />
                   </div>
                   <div class="form-group">
                     <label for="upload-topic">Topic</label>
@@ -193,12 +183,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                   <div class="form-row">
                     <div class="form-group">
                       <label for="process-industry">Industry</label>
-                      <select id="process-industry" name="industry" required>
-                        <option value="">Select industry...</option>
-                        {industries.map(industry => (
-                          <option value={industry.slug}>{industry.name}</option>
-                        ))}
-                      </select>
+                      <IndustrySelectField id="process-industry" name="industry" required />
                     </div>
                     <div class="form-group">
                       <label for="process-topic">Topic</label>
@@ -237,12 +222,7 @@ import { accountWorkspace } from '../../data/account-workspace';
                 <div class="form-row">
                   <div class="form-group">
                     <label for="resource-industry">Industry</label>
-                    <select id="resource-industry" name="industry" required>
-                      <option value="">Select industry...</option>
-                      {industries.map(industry => (
-                        <option value={industry.slug}>{industry.name}</option>
-                      ))}
-                    </select>
+                    <IndustrySelectField id="resource-industry" name="industry" required />
                   </div>
                   <div class="form-group">
                     <label for="resource-topic">Topic</label>

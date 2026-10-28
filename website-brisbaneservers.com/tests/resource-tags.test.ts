@@ -4,6 +4,7 @@ import {
   isValidTagSlug,
   prepareIndustryForResourceWrite,
   buildTagDraftResource,
+  upsertIndustryTagProposal,
 } from '../src/lib/resource-tags';
 
 const draft = (overrides: Partial<Resource> = {}): Resource => ({
@@ -36,7 +37,7 @@ describe('resource tags', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.industry).toBe('legal-services');
-      expect(result.tagProposal?.status).toBe('draft');
+      expect(result.tagProposal?.status).toBe('pending');
     }
   });
 
@@ -72,5 +73,32 @@ describe('resource tags', () => {
     });
     expect(stub.metadata?.tagDraftOnly).toBe(true);
     expect(stub.topic).toBe('tag-proposal');
+    expect(stub.metadata?.tagProposal?.status).toBe('pending');
+  });
+
+  it('queues an author industry as an application', () => {
+    const result = upsertIndustryTagProposal({
+      label: 'Legal Services',
+      resources: [],
+      userId: 'user-1',
+      userEmail: 'author@example.com',
+      isAdmin: false,
+    });
+    expect(result.tag.status).toBe('pending');
+    expect(result.resources).toHaveLength(1);
+    expect(result.resources[0].metadata?.tagProposal?.status).toBe('pending');
+  });
+
+  it('lets an admin create an approved catalog industry', () => {
+    const result = upsertIndustryTagProposal({
+      label: 'Legal Services',
+      resources: [],
+      userId: 'admin-1',
+      userEmail: 'admin@example.com',
+      isAdmin: true,
+    });
+    expect(result.tag.status).toBe('approved');
+    expect(result.resources[0].id).toContain('tag-catalog-');
+    expect(result.resources[0].metadata?.tagProposal?.status).toBe('approved');
   });
 });

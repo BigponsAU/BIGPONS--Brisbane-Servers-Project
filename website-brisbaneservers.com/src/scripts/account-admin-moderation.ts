@@ -289,7 +289,44 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
     setQueueSummary(0);
   }
 
+  bindAdminIndustryCreate(ctx);
   await loadPendingIndustryTags(ctx);
+}
+
+function bindAdminIndustryCreate(ctx: PortalAccountContext): void {
+  const form = document.getElementById('admin-create-industry-form') as HTMLFormElement | null;
+  if (!form || form.dataset.bound === 'true') return;
+  form.dataset.bound = 'true';
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = document.getElementById('admin-create-industry-name') as HTMLInputElement | null;
+    const label = input?.value.trim() || '';
+    if (!label) {
+      showAuthBanner('Name the industry first.', 'error');
+      return;
+    }
+    void runWorkspaceGuardedAction('admin-create-industry', {
+      run: async () => {
+        const response = await workspaceFetch(`${ctx.apiBaseUrl}/resources/tags`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || 'Could not create industry');
+        }
+        if (input) input.value = '';
+        showAuthBanner(
+          payload.tag?.status === 'approved'
+            ? `${payload.tag.label} is on the industry list.`
+            : `${payload.tag?.label || label} submitted.`,
+          'success',
+        );
+        await loadPendingIndustryTags(ctx);
+      },
+    });
+  });
 }
 
 async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void> {
@@ -300,15 +337,15 @@ async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void>
     const data = await res.json();
     const pending = Array.isArray(data.pending) ? data.pending : [];
     if (!pending.length) {
-      host.innerHTML = '<p class="status-message">No industry tags waiting for approval.</p>';
+      host.innerHTML = '<p class="status-message">No industry applications waiting for approval.</p>';
       return;
     }
     host.innerHTML = pending
       .map(
-        (tag: { slug: string; label: string }) => `
+        (tag: { slug: string; label: string; applicant?: string; proposedBy?: string }) => `
         <div class="moderation-queue-item" data-tag-slug="${escapeHtml(tag.slug)}">
           <span class="moderation-queue-item__title">${escapeHtml(tag.label)}</span>
-          <span class="moderation-queue-item__meta">${escapeHtml(tag.slug)}</span>
+          <span class="moderation-queue-item__meta">${escapeHtml(tag.applicant || tag.proposedBy || 'application')} · ${escapeHtml(tag.slug)}</span>
           <span class="moderation-queue-item__actions">
             <button type="button" class="btn btn-success btn-sm" data-tag-action="approve">Approve</button>
             <button type="button" class="btn btn-danger btn-sm" data-tag-action="reject">Reject</button>
@@ -325,11 +362,11 @@ async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void>
         void runWorkspaceGuardedAction(`tag:${action}:${slug}`, {
           confirm: () =>
             showConfirmDialog({
-              title: action === 'approve' ? 'Approve industry tag' : 'Reject industry tag',
+              title: action === 'approve' ? 'Approve industry application' : 'Reject industry application',
               message:
                 action === 'approve'
                   ? `Add ${slug} to the public industry list?`
-                  : `Reject ${slug}? Authors keep their drafts but cannot publish under this tag.`,
+                  : `Reject ${slug}? Authors keep their drafts but cannot publish under this industry.`,
               confirmLabel: action === 'approve' ? 'Approve' : 'Reject',
               variant: action === 'approve' ? 'primary' : 'danger',
             }),
@@ -341,7 +378,7 @@ async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void>
             });
             const payload = await response.json();
             if (!response.ok || !payload.success) {
-              throw new Error(payload.error || 'Could not update tag');
+              throw new Error(payload.error || 'Could not update industry application');
             }
             await loadPendingIndustryTags(ctx);
           },
@@ -349,6 +386,6 @@ async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void>
       });
     });
   } catch (error) {
-    host.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load industry tags.'))}</p>`;
+    host.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load industry applications.'))}</p>`;
   }
 }

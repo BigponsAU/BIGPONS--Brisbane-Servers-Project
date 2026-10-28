@@ -104,7 +104,7 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | **Panel band consistency** | All 11 panels — `AccountWorkspacePanelBand` or Overview/Resources bands |
 | Inline + modal edit | `account-workspace-resources.ts`, modals (`revealWorkspaceModal`) |
 | **WYSIWYG** | `workspace-markdown-field.ts` — TipTap pieces (heading/paragraph/list/quote/diagram) + Visual / Markdown / Preview |
-| **Industry tags** | `POST/PUT /api/resources/tags` — author drafts; Admin → Moderation approve |
+| **Industry tags** | Select **Propose a new industry…** (application queue); Admin → Moderation create/approve |
 | Styled confirms | All workspace + admin scripts (growth, moderation, ops, users, voice reindex) |
 | Resource permissions | `resource-permissions.ts` — client + API |
 | Preview modal | `#preview-resource-modal` |

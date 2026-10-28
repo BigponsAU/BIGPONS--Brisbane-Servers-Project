@@ -91,6 +91,18 @@ describe('dashboard production standards', () => {
     expect(source).toContain('registerPortalWorkspaceFunctions');
   });
 
+  it('industry select exposes propose-before-choose and admin create', async () => {
+    const field = await readFile(path.resolve('src/components/account/IndustrySelectField.astro'), 'utf8');
+    const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
+    const moderationUi = await readFile(path.resolve('src/components/account/AccountModerationPanel.astro'), 'utf8');
+    const moderation = await readFile(path.resolve('src/scripts/account-admin-moderation.ts'), 'utf8');
+    expect(field).toContain('Propose a new industry');
+    expect(field).toContain('__propose__');
+    expect(resources).toContain('PROPOSE_INDUSTRY_VALUE');
+    expect(moderationUi).toContain('admin-create-industry-form');
+    expect(moderation).toContain('bindAdminIndustryCreate');
+  });
+
   it('cookie consent offsets page content while the banner is open', async () => {
     const source = await readFile(path.resolve('src/components/CookieConsent.astro'), 'utf8');
     const css = await readFile(path.resolve('src/styles/cookie-consent.css'), 'utf8');

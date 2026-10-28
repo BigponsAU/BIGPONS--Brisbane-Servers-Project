@@ -3839,9 +3839,40 @@
     align-items: center;
   }
 
-  .industry-tag-row select {
+  .industry-tag-row select,
+  .industry-field > select,
+  .industry-tag-row input {
     flex: 1;
     min-width: 0;
+  }
+
+  .industry-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .industry-propose {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--portal-border-light);
+    border-radius: var(--border-radius);
+    background: var(--portal-surface-subtle);
+  }
+
+  .industry-propose label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: var(--text-sm);
+  }
+
+  .industry-create-form {
+    margin: 0 0 var(--space-md);
+  }
+
+  .industry-create-form label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-weight: var(--font-weight-semibold);
   }
 
   .industry-tag-hint {
