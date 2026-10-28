@@ -319,8 +319,9 @@ export function applyIndustryTagModeration(params: {
 }): { resources: Resource[]; updated: number } {
   const slug = normalizeIndustrySlug(params.slug);
   const labelFallback = humanizeTagLabel(slug);
+  const status: TagProposal['status'] = params.action === 'approve' ? 'approved' : 'rejected';
   let updated = 0;
-  const next = params.resources.map((resource) => {
+  const next: Resource[] = params.resources.map((resource) => {
     if (normalizeIndustrySlug(resource.industry) !== slug) return resource;
     const current = resource.metadata?.tagProposal;
     updated += 1;
@@ -331,7 +332,7 @@ export function applyIndustryTagModeration(params: {
         tagProposal: {
           slug,
           label: current?.label || labelFallback,
-          status: params.action === 'approve' ? 'approved' : 'rejected',
+          status,
           proposedBy: current?.proposedBy || resource.ownerId,
         },
       },
