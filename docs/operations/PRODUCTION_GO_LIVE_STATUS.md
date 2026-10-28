@@ -2,7 +2,14 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-08-22 — purpose-specific glyphs and sentence-case headings
+**Last synced:** 2026-10-28 — portal article actions, diagrams, and industry tags
+
+### 2026-10-28 — Portal article actions live
+
+- **Site** — View/Preview open workspace viewing; catalog descriptions stay with the article; authors compose from editable pieces and insert/regenerate diagrams in the editor; custom industry tags stay in drafts until approval.
+- **Deploy** — Worker `brisbane-servers-api-edge` success; Cloudflare Pages production `a956f2c0` from `30cf037` (**success**, 2026-10-28). Live: `https://brisbaneservers.com` and `https://api.brisbaneservers.com`.
+- **Verify** — `npm run verify:production -- --api https://api.brisbaneservers.com` **PASS**.
+- **Note** — GitHub CI still fails on `npm audit` (high severity). Pages and Worker deploys are independent and succeeded.
 
 ### 2026-08-22 — Purpose-specific glyphs and sentence-case headings
 
