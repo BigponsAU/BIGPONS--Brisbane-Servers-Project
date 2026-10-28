@@ -13,6 +13,8 @@ import { enhanceIngestedContent } from '../../../lib/inference/resource-ingest-i
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 import { runIndexPipeline } from '../../../lib/semantic/pipeline';
 import { schedulePublicSurfaceUpdate } from '../../../lib/publish-public-surfaces';
+import { isAdminRole } from '../../../lib/workspace-roles';
+import { prepareIndustryForResourceWrite } from '../../../lib/resource-tags';
 
 /**
  * Process content directly (without file upload)
@@ -70,10 +72,37 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const resourceTitle = title || `${topic} for ${industry}`;
-    const shouldPublish = autoPublish === true;
-
     const resources = await loadResources();
+    const industryWrite = prepareIndustryForResourceWrite({
+      industry,
+      resources,
+      userId: authResult.user.id,
+      isAdmin: isAdminRole(authResult.user.role),
+    });
+    if (!industryWrite.ok) {
+      return new Response(
+        JSON.stringify({ error: industryWrite.error, code: industryWrite.code, success: false }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    const publishGate = autoPublish
+      ? prepareIndustryForResourceWrite({
+          industry: industryWrite.industry,
+          resources,
+          userId: authResult.user.id,
+          isAdmin: isAdminRole(authResult.user.role),
+          publishing: true,
+        })
+      : industryWrite;
+    const industrySlug = industryWrite.industry;
+    const resourceTitle = title || `${topic} for ${industrySlug}`;
+    const shouldPublish = autoPublish === true && publishGate.ok;
+    const tagProposal =
+      publishGate.ok
+        ? publishGate.tagProposal
+        : industryWrite.tagProposal
+          ? { ...industryWrite.tagProposal, status: 'pending' as const }
+          : industryWrite.tagProposal;
     const { profileManager, profileBuilder } = await getVoiceFramework();
     const resolved = await resolveResourceVoiceProfile({
       requestedProfileId: profileId,
@@ -96,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
       const enhanced = await enhanceIngestedContent({
         content: bodyText,
         title: resourceTitle,
-        industry,
+        industry: industrySlug,
         topic,
         userId: authResult.user.id,
         userRole: authResult.user.role,
@@ -121,14 +150,14 @@ export const POST: APIRoute = async ({ request }) => {
     const description = generateResourceCatalogDescription({
       voiceProfile: resolved.profile,
       title: resourceTitle,
-      industry,
+      industry: industrySlug,
       topicLabel: topic,
       bodyExcerpt: finalContent,
     });
 
     const user = authResult.user;
     const resource = buildResourceFromEditorProcess({
-      industry,
+      industry: industrySlug,
       topic,
       title: resourceTitle,
       body: finalContent,
@@ -136,18 +165,21 @@ export const POST: APIRoute = async ({ request }) => {
       generatedBy: user.email,
       ownerId: user.id,
       shouldPublish,
-      metadata: mergeInferenceMetadata(undefined, {
-        wordCount: finalContent.split(/\s+/).length,
-        voiceScore: voiceScore || voiceValidation.score || 0,
-        voiceProfileId: resolved.voiceProfileId,
-        voiceProfileResolution: resolved.resolution,
-        ...(skipEnhance !== true
-          ? {
-              inferenceMode: inferenceMode as 'nvidia' | 'workers-ai' | 'template',
-              modelId: modelId ?? undefined,
-            }
-          : {}),
-      }) as import('../../../lib/resource-types').Resource['metadata'],
+      metadata: {
+        ...mergeInferenceMetadata(undefined, {
+          wordCount: finalContent.split(/\s+/).length,
+          voiceScore: voiceScore || voiceValidation.score || 0,
+          voiceProfileId: resolved.voiceProfileId,
+          voiceProfileResolution: resolved.resolution,
+          ...(skipEnhance !== true
+            ? {
+                inferenceMode: inferenceMode as 'nvidia' | 'workers-ai' | 'template',
+                modelId: modelId ?? undefined,
+              }
+            : {}),
+        }),
+        ...(tagProposal ? { tagProposal } : {}),
+      } as import('../../../lib/resource-types').Resource['metadata'],
     });
 
     resources.push(resource);

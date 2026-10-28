@@ -224,6 +224,7 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
     container.innerHTML = '<p class="status-message">Sign in again to view the moderation queue.</p>';
     setQueueSummary(0);
     resetModerationDetail();
+    await loadPendingIndustryTags(ctx);
     return;
   }
 
@@ -235,6 +236,7 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
     if (!res.ok) {
       container.innerHTML = '<p class="status-message">Admin access required to view the moderation queue.</p>';
       setQueueSummary(0);
+      await loadPendingIndustryTags(ctx);
       return;
     }
 
@@ -248,6 +250,7 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
     if (!items.length) {
       container.innerHTML =
         '<p class="status-message">No pending community uploads or workspace submissions.</p>';
+      await loadPendingIndustryTags(ctx);
       return;
     }
 
@@ -284,5 +287,68 @@ export async function loadModerationQueue(ctx: PortalAccountContext): Promise<vo
   } catch (error) {
     container.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load moderation queue.'))}</p>`;
     setQueueSummary(0);
+  }
+
+  await loadPendingIndustryTags(ctx);
+}
+
+async function loadPendingIndustryTags(ctx: PortalAccountContext): Promise<void> {
+  const host = document.getElementById('industry-tag-moderation');
+  if (!host) return;
+  try {
+    const res = await workspaceFetch(`${ctx.apiBaseUrl}/resources/tags`);
+    const data = await res.json();
+    const pending = Array.isArray(data.pending) ? data.pending : [];
+    if (!pending.length) {
+      host.innerHTML = '<p class="status-message">No industry tags waiting for approval.</p>';
+      return;
+    }
+    host.innerHTML = pending
+      .map(
+        (tag: { slug: string; label: string }) => `
+        <div class="moderation-queue-item" data-tag-slug="${escapeHtml(tag.slug)}">
+          <span class="moderation-queue-item__title">${escapeHtml(tag.label)}</span>
+          <span class="moderation-queue-item__meta">${escapeHtml(tag.slug)}</span>
+          <span class="moderation-queue-item__actions">
+            <button type="button" class="btn btn-success btn-sm" data-tag-action="approve">Approve</button>
+            <button type="button" class="btn btn-danger btn-sm" data-tag-action="reject">Reject</button>
+          </span>
+        </div>`,
+      )
+      .join('');
+    host.querySelectorAll('[data-tag-action]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const row = (btn as HTMLElement).closest('[data-tag-slug]') as HTMLElement | null;
+        const slug = row?.dataset.tagSlug;
+        const action = (btn as HTMLElement).dataset.tagAction as 'approve' | 'reject';
+        if (!slug || !action) return;
+        void runWorkspaceGuardedAction(`tag:${action}:${slug}`, {
+          confirm: () =>
+            showConfirmDialog({
+              title: action === 'approve' ? 'Approve industry tag' : 'Reject industry tag',
+              message:
+                action === 'approve'
+                  ? `Add ${slug} to the public industry list?`
+                  : `Reject ${slug}? Authors keep their drafts but cannot publish under this tag.`,
+              confirmLabel: action === 'approve' ? 'Approve' : 'Reject',
+              variant: action === 'approve' ? 'primary' : 'danger',
+            }),
+          run: async () => {
+            const response = await workspaceFetch(`${ctx.apiBaseUrl}/resources/tags`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ slug, action }),
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+              throw new Error(payload.error || 'Could not update tag');
+            }
+            await loadPendingIndustryTags(ctx);
+          },
+        });
+      });
+    });
+  } catch (error) {
+    host.innerHTML = `<p class="status-message">${escapeHtml(workspaceErrorMessage(error, 'Could not load industry tags.'))}</p>`;
   }
 }

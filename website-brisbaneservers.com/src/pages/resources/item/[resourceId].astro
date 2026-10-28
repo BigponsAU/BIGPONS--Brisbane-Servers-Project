@@ -12,6 +12,8 @@ import { getPublishedResourceById, getPublishedResourcesForPage } from '~/lib/pu
 import { sitePath } from '~/lib/site-path';
 import { normalizeTopicSlug } from '~/lib/resource-slug';
 import { wrapMarkdownDocument } from '~/lib/markdown-render';
+import { listResourceInfographics, contentHasAnyDiagramMarker } from '~/lib/resource-infographics';
+import { displayCatalogDescription } from '~/lib/catalog-copy';
 import '~/styles/topic-guide.css';
 
 export async function getStaticPaths() {
@@ -25,7 +27,17 @@ const { resourceId } = Astro.params;
 const resource = await getPublishedResourceById(resourceId!);
 const industry = resource ? getIndustryBySlug(resource.industry) : null;
 const topic = resource ? getTopicBySlug(resource.industry, resource.topic) : null;
-const infographic = resource?.metadata?.infographic;
+const infographics = resource ? listResourceInfographics(resource) : [];
+const description = resource
+  ? displayCatalogDescription({
+      description: resource.description,
+      title: resource.title,
+      industry: resource.industry,
+      topicLabel: resource.topic,
+      bodyExcerpt: resource.content,
+    })
+  : '';
+const diagramsInBody = resource ? contentHasAnyDiagramMarker(resource.content || '') : false;
 
 if (!resource || !isIndexableResource(resource)) {
   return Astro.redirect('/resources');
@@ -44,7 +56,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
 
 <SiteShell
   title={publishedResourcePageTitle(resource)}
-  description={resource.description}
+  description={description}
   ogType="article"
   structuredData={structuredData}
   currentPath={currentPath}
@@ -57,7 +69,7 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
 >
   <Breadcrumbs items={breadcrumbItems} />
 
-  <Hero title={resource.title} subtitle={resource.description} />
+  <Hero title={resource.title} subtitle={description} />
 
   <section class="section">
     <div class="bg-pattern-angular bg-pattern-light"></div>
@@ -82,13 +94,13 @@ const { structuredData, breadcrumbs: breadcrumbItems } = publishedResourceSeo(
         )}
       </div>
 
-      {infographic && (
+      {!diagramsInBody && infographics.length > 0 && infographics.map((spec) => (
         <div class="resource-infographic" style="margin-bottom: var(--space-2xl);">
-          <GuideInfographic spec={infographic} variant="feature" />
+          <GuideInfographic spec={spec} variant="feature" />
         </div>
-      )}
+      ))}
 
-      <article class="resource-body" set:html={wrapMarkdownDocument(resource.content)} />
+      <article class="resource-body" set:html={wrapMarkdownDocument(resource.content, infographics)} />
 
       {resource.metadata?.voiceScore && (
         <div style="margin-top: var(--space-2xl); padding: var(--space-lg); background: var(--surface-elevated); border-radius: var(--border-radius); border-left: 4px solid var(--primary-color);">

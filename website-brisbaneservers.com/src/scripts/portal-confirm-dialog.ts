@@ -2,6 +2,7 @@
  * Styled confirmation dialog — replaces window.confirm() across the account workspace.
  */
 import { escapeHtml } from './account-workspace-utils';
+import { revealWorkspaceModal } from './workspace-modal';
 
 export type ConfirmDialogOptions = {
   title: string;
@@ -69,6 +70,7 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
     `;
 
     const modal = host.querySelector('.modal') as HTMLElement;
+    if (modal) revealWorkspaceModal(modal);
     const okBtn = host.querySelector('[data-portal-confirm-ok]') as HTMLButtonElement;
     const cancelBtns = host.querySelectorAll('[data-portal-confirm-cancel]');
 
@@ -123,6 +125,8 @@ export function showPromptDialog(options: PromptDialogOptions): Promise<string |
       </div>
     `;
 
+    const promptModal = host.querySelector('.modal') as HTMLElement;
+    if (promptModal) revealWorkspaceModal(promptModal);
     const input = host.querySelector('[data-portal-prompt-input]') as HTMLInputElement;
     const okBtn = host.querySelector('[data-portal-prompt-ok]') as HTMLButtonElement;
     const cancelBtns = host.querySelectorAll('[data-portal-prompt-cancel]');

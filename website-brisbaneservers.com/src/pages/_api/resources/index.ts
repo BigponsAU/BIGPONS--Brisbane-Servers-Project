@@ -6,6 +6,7 @@ import {
   type Resource
 } from '../../../lib/resources-api';
 import { filterResourcesForUser } from '../../../lib/resource-access';
+import { isTagDraftResource } from '../../../lib/resource-types';
 
 /**
  * Get all resources
@@ -58,7 +59,7 @@ export const GET: APIRoute = async ({ request }) => {
       removedOnly,
       includeBinned,
       binnedOnly,
-    });
+    }).filter((resource) => !isTagDraftResource(resource));
 
     // Query filters
     if (industry) {

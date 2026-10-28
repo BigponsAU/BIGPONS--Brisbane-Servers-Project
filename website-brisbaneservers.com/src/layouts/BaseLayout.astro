@@ -212,18 +212,19 @@ const siteBuildStamp =
               document.body.style.overflow = '';
               document.body.style.pointerEvents = '';
             }
-            // Close modals
+            // Close leftover dialogs without inline display/pointer-events.
+            // Those inline styles beat .modal[aria-hidden=false] and made View/Preview look dead.
             var modals = document.querySelectorAll('.modal');
             for (var i = 0; i < modals.length; i++) {
+              if (modals[i].getAttribute('aria-hidden') === 'false') continue;
               modals[i].setAttribute('aria-hidden', 'true');
-              modals[i].style.display = 'none';
-              modals[i].style.pointerEvents = 'none';
+              modals[i].style.removeProperty('display');
+              modals[i].style.removeProperty('pointer-events');
             }
-            // Remove overlays
             var overlays = document.querySelectorAll('.modal-overlay');
             for (var i = 0; i < overlays.length; i++) {
-              overlays[i].style.display = 'none';
-              overlays[i].style.pointerEvents = 'none';
+              overlays[i].style.removeProperty('display');
+              overlays[i].style.removeProperty('pointer-events');
             }
             // Close route-stuck mega menus (SSR used to mark <li> active and block Sign in).
             var stuckDropdowns = document.querySelectorAll('.nav-dropdown.active, .nav-dropdown.is-open');

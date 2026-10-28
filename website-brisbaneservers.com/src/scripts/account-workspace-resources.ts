@@ -31,6 +31,11 @@ import { trackPortalAction, trackPortalError } from './portal-markov-tracker';
 import { mountMarkdownFields, readMarkdownFieldValue, setMarkdownFieldValue } from './workspace-markdown-field';
 import { portalActionFailure } from './portal-action';
 import { wrapMarkdownDocument } from '../lib/markdown-render';
+import { displayCatalogDescription } from '../lib/catalog-copy';
+import { listResourceInfographics } from '../lib/resource-infographics';
+import { humanizeTagLabel } from '../lib/resource-tags';
+import { revealWorkspaceModal, hideWorkspaceModal } from './workspace-modal';
+import { showPromptDialog } from './portal-confirm-dialog';
 import type { VoiceContextApi } from './account-workspace-voice-context';
 
 export type ResourceCreateSection = 'generate' | 'upload' | 'paste';
@@ -76,6 +81,16 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
 
   function resourcePermissions(resource: any) {
     return getResourceActionPermissions(getWorkspaceUser(), resource);
+  }
+
+  function articleDescription(resource: any): string {
+    return displayCatalogDescription({
+      description: resource?.description,
+      title: resource?.title || 'Untitled',
+      industry: resource?.industry || '',
+      topicLabel: resource?.topic || '',
+      bodyExcerpt: resource?.content || '',
+    });
   }
 
   /**
@@ -231,7 +246,7 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
         options: {
           wordCount: formData.get('wordCount') || formData.get('length') || 1100,
           includeExamples: (document.getElementById('include-examples') as HTMLInputElement)?.checked,
-          includeSvgWiring: (document.getElementById('include-svg-wiring') as HTMLInputElement)?.checked,
+          includeSvgWiring: true,
         }
       })
     });
@@ -682,7 +697,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             ` : ''}
           </div>
           <div class="resource-content">
-            ${escapeHtml(resourceExcerpt(resource) || 'No description available')}
+            ${escapeHtml(articleDescription(resource) || resourceExcerpt(resource) || 'No description available')}
             ${resourceExcerpt(resource).length >= 150 ? `
               <a href="#" class="resource-description-toggle" onclick="event.preventDefault(); this.previousSibling.classList.toggle('resource-content-expanded'); this.textContent = this.previousSibling.classList.contains('resource-content-expanded') ? 'Show less' : 'Show more';">
                 Show more
@@ -1263,38 +1278,130 @@ function loadResourceDetail(resource: any): void {
     contentEl.innerHTML = `
       <div style="margin-bottom: var(--space-lg);">
         <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Description</h4>
-        <p style="color: var(--portal-text-secondary); line-height: 1.6;">${escapeHtml(resource.description || 'No description available')}</p>
+        <p class="resource-detail-description">${escapeHtml(articleDescription(resource))}</p>
       </div>
-      ${
-        resource.metadata?.infographic
-          ? `<div style="margin-bottom: var(--space-lg); padding: var(--space-md); border: 1px solid var(--portal-border-light); border-radius: var(--border-radius); background: var(--portal-surface-subtle);">
-        <h4 style="margin: 0 0 var(--space-xs); font-size: var(--text-base);">SVG positioning diagram</h4>
-        <p style="margin: 0 0 var(--space-sm); color: var(--portal-text-secondary); font-size: var(--text-sm);"><strong>${escapeHtml(resource.metadata.infographic.title || 'Positioning model')}</strong> — ${escapeHtml(resource.metadata.infographic.caption || '')}</p>
-        <p style="margin: 0; font-size: var(--text-sm); color: var(--portal-text-secondary);">Nodes: ${escapeHtml((resource.metadata.infographic.nodes || []).map((n: { label?: string }) => String(n.label || '').replace(/\n/g, ' ')).filter(Boolean).join(' · ') || '—')}</p>
-      </div>`
-          : ''
-      }
       <div>
         <h4 style="margin-bottom: var(--space-sm); font-size: var(--text-base); font-weight: var(--font-weight-semibold);">Content</h4>
-        <div style="background: var(--portal-surface-subtle); padding: var(--space-lg); border-radius: var(--border-radius); border: 1px solid var(--portal-border-light);">
-          ${resource.content ? wrapMarkdownDocument(resource.content) : '<p style="margin: 0; color: var(--portal-text-secondary);">No content available</p>'}
+        <div class="resource-detail-body">
+          ${resource.content ? wrapMarkdownDocument(resource.content, listResourceInfographics(resource)) : '<p style="margin: 0; color: var(--portal-text-secondary);">No content available</p>'}
         </div>
       </div>
-      <div class="resource-detail-actions" style="margin-top: var(--space-xl); display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
+      <div class="resource-detail-actions">
         ${buildResourceActionsHtml(resource, 'detail')}
       </div>
     `;
   }
 }
 
-function industrySelectOptions(selectedSlug: string): string {
+function industrySelectOptions(selectedSlug: string, extra: { slug: string; label: string }[] = []): string {
   const selected = normalizeIndustrySlug(selectedSlug);
-  return industries
-    .map(
+  const seen = new Set(industries.map((industry) => industry.slug));
+  const extras = extra.filter((tag) => tag.slug && !seen.has(tag.slug));
+  return [
+    ...industries.map(
       (industry) =>
         `<option value="${escapeHtml(industry.slug)}"${industry.slug === selected ? ' selected' : ''}>${escapeHtml(industry.name)}</option>`,
-    )
-    .join('');
+    ),
+    ...extras.map(
+      (tag) =>
+        `<option value="${escapeHtml(tag.slug)}"${tag.slug === selected ? ' selected' : ''}>${escapeHtml(tag.label)} (draft tag)</option>`,
+    ),
+  ].join('');
+}
+
+type CatalogTag = { slug: string; label: string; status?: string };
+
+async function loadTagCatalog(): Promise<CatalogTag[]> {
+  try {
+    const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/tags`);
+    const data = await response.json();
+    if (response.ok && Array.isArray(data.tags)) return data.tags;
+  } catch (error) {
+    console.warn('[Portal] Failed to load industry tags', error);
+  }
+  return industries.map((industry) => ({ slug: industry.slug, label: industry.name, status: 'canonical' }));
+}
+
+function fillIndustrySelect(select: HTMLSelectElement, tags: CatalogTag[], selectedSlug = ''): void {
+  const selected = normalizeIndustrySlug(selectedSlug || select.value);
+  const placeholder = '<option value="">Select industry…</option>';
+  const canonical = tags.filter((tag) => tag.status === 'canonical' || tag.status === 'approved');
+  const drafts = tags.filter((tag) => tag.status === 'draft' || tag.status === 'pending');
+  const option = (tag: CatalogTag, note = '') =>
+    `<option value="${escapeHtml(tag.slug)}"${tag.slug === selected ? ' selected' : ''}>${escapeHtml(tag.label)}${note}</option>`;
+  select.innerHTML =
+    placeholder +
+    canonical.map((tag) => option(tag)).join('') +
+    drafts.map((tag) => option(tag, tag.status === 'pending' ? ' (awaiting approval)' : ' (your draft)')).join('');
+  if (selected && ![...select.options].some((item) => item.value === selected)) {
+    select.insertAdjacentHTML('beforeend', option({ slug: selected, label: humanizeTagLabel(selected) }, ' (your draft)'));
+    select.value = selected;
+  }
+}
+
+function ensureIndustryAddButton(select: HTMLSelectElement): void {
+  if (select.dataset.tagEnhanced === 'true') return;
+  select.dataset.tagEnhanced = 'true';
+  const row = document.createElement('div');
+  row.className = 'industry-tag-row';
+  select.parentNode?.insertBefore(row, select);
+  row.appendChild(select);
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn-secondary btn-sm industry-tag-add';
+  button.textContent = 'Add industry';
+  row.appendChild(button);
+  const hint = document.createElement('p');
+  hint.className = 'form-hint industry-tag-hint';
+  hint.textContent = 'New industries stay in your drafts until an admin approves them for the public library.';
+  row.parentNode?.insertBefore(hint, row.nextSibling);
+  button.addEventListener('click', () => {
+    void (async () => {
+      const label = await showPromptDialog({
+        title: 'Add industry tag',
+        message: 'Name the industry this article belongs to. You can use it on drafts immediately; publishing needs approval.',
+        placeholder: 'e.g. Legal services',
+      });
+      if (!label) return;
+      try {
+        const response = await workspaceFetch(`${getVoiceApiUrl()}/resources/tags`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          showNotification(data.error || 'Could not add that industry tag.', 'error');
+          return;
+        }
+        const tag = data.tag as CatalogTag;
+        const tags = await loadTagCatalog();
+        fillIndustrySelect(select, tags, tag.slug);
+        select.value = tag.slug;
+        showNotification(`${tag.label} saved as a draft industry tag.`, 'success');
+      } catch (error) {
+        showNotification(workspaceErrorMessage(error), 'error');
+      }
+    })();
+  });
+}
+
+async function bindIndustryTagSelects(preferredSlug = ''): Promise<void> {
+  const ids = [
+    'resource-industry',
+    'upload-industry',
+    'process-industry',
+    'document-industry',
+    'edit-resource-industry',
+    'detail-edit-industry',
+  ];
+  const tags = await loadTagCatalog();
+  ids.forEach((id) => {
+    const select = document.getElementById(id) as HTMLSelectElement | null;
+    if (!select) return;
+    ensureIndustryAddButton(select);
+    fillIndustrySelect(select, tags, preferredSlug || select.value);
+  });
 }
 
 function openDetailEditMode(id: string): void {
@@ -1334,7 +1441,7 @@ function openDetailEditMode(id: string): void {
       </div>
       <div class="form-group">
         <label for="detail-edit-description">Description</label>
-        <textarea id="detail-edit-description" class="form-control" rows="3" required>${escapeHtml(resource.description || '')}</textarea>
+        <textarea id="detail-edit-description" class="form-control" rows="3" required>${escapeHtml(articleDescription(resource))}</textarea>
       </div>
       <div class="form-group">
         <label for="detail-edit-content">Content</label>
@@ -1351,7 +1458,12 @@ function openDetailEditMode(id: string): void {
     event.preventDefault();
     void saveDetailEdit(id);
   });
-  mountMarkdownFields(contentEl);
+  mountMarkdownFields(contentEl, {
+    resourceId: id,
+    getVoiceApiUrl,
+    onResourceUpdated: (updated) => upsertWorkspaceResource(updated),
+  });
+  void bindIndustryTagSelects(industrySlug);
 }
 
 async function saveDetailEdit(id: string): Promise<void> {
@@ -1612,7 +1724,7 @@ function openViewModal(id: string): void {
 
   if (!modal || !titleEl || !bodyEl) return;
 
-  titleEl.textContent = escapeHtml(resource.title);
+  titleEl.textContent = resource.title || 'View resource';
   editBtn!.setAttribute('onclick', `closeViewModal(); editResource('${escapeJsString(id)}');`);
 
   const voiceScore = resource.metadata?.voiceScore || 0;
@@ -1642,24 +1754,20 @@ function openViewModal(id: string): void {
     </div>
     <div style="margin-bottom: var(--space-lg);">
       <h3 style="margin-bottom: var(--space-md);">Description</h3>
-      <p style="line-height: 1.6; color: var(--text-secondary);">${escapeHtml(resource.description)}</p>
+      <p style="line-height: 1.6; color: var(--text-secondary);">${escapeHtml(articleDescription(resource))}</p>
     </div>
     <div>
       <h3 style="margin-bottom: var(--space-md);">Content</h3>
-      <div style="line-height: 1.8; color: var(--text-primary); background: var(--bg-accent); padding: var(--space-lg); border-radius: var(--border-radius); max-height: 400px; overflow-y: auto;">${wrapMarkdownDocument(resource.content || '')}</div>
+      <div class="resource-view-body">${wrapMarkdownDocument(resource.content || '', listResourceInfographics(resource))}</div>
     </div>
   `;
 
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
+  modal.classList.add('modal-large');
+  revealWorkspaceModal(modal);
 }
 
 function closeViewModal(): void {
-  const modal = document.getElementById('view-resource-modal');
-  if (modal) {
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
+  hideWorkspaceModal(document.getElementById('view-resource-modal'));
 }
 
 // Edit Resource Modal Functions
@@ -1686,7 +1794,7 @@ function openEditModal(id: string): void {
     industrySelect.value = normalizeIndustrySlug(resource.industry);
   }
   (document.getElementById('edit-resource-topic') as HTMLInputElement)!.value = resource.topic;
-  (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value = resource.description;
+  (document.getElementById('edit-resource-description') as HTMLTextAreaElement)!.value = articleDescription(resource);
   const statusSelect = document.getElementById('edit-resource-status') as HTMLSelectElement;
   if (statusSelect) {
     statusSelect.value = resource.status;
@@ -1698,17 +1806,20 @@ function openEditModal(id: string): void {
       : 'Use Publish / Unpublish buttons to change live status';
   }
 
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  mountMarkdownFields(modal);
+  revealWorkspaceModal(modal);
+  mountMarkdownFields(modal, {
+    resourceId: id,
+    getVoiceApiUrl,
+    onResourceUpdated: (updated) => upsertWorkspaceResource(updated),
+  });
   setMarkdownFieldValue('edit-resource-content', resource.content || '');
+  void bindIndustryTagSelects(normalizeIndustrySlug(resource.industry));
 }
 
 function closeEditModal(): void {
   const modal = document.getElementById('edit-resource-modal');
+  hideWorkspaceModal(modal);
   if (modal) {
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
     (document.getElementById('edit-resource-form') as HTMLFormElement)!.reset();
   }
 }
@@ -2025,27 +2136,8 @@ document.addEventListener('keydown', (e) => {
       closePreviewModal();
     }
     
-    // Close ALL modals aggressively
-    const allModals = document.querySelectorAll('.modal');
-    allModals.forEach((modal: Element) => {
-      const htmlModal = modal as HTMLElement;
-      htmlModal.setAttribute('aria-hidden', 'true');
-      htmlModal.style.display = 'none';
-      htmlModal.style.pointerEvents = 'none';
-      htmlModal.classList.remove('active');
-      
-      const closeBtn = modal.querySelector('.modal-close');
-      if (closeBtn) {
-        (closeBtn as HTMLElement).click();
-      }
-    });
-    
-    // Remove any stuck overlays
-    const overlays = document.querySelectorAll('.modal-overlay');
-    overlays.forEach((overlay: Element) => {
-      const htmlOverlay = overlay as HTMLElement;
-      htmlOverlay.style.display = 'none';
-      htmlOverlay.style.pointerEvents = 'none';
+    document.querySelectorAll('.modal').forEach((modal: Element) => {
+      hideWorkspaceModal(modal as HTMLElement);
     });
     
     // Close info card
@@ -2905,20 +2997,15 @@ function openPreviewModal(id: string): void {
       ${resource.portalRemovedAt ? '<span class="badge badge-archived">Removed from workspace</span>' : ''}
       <span class="voice-score">Voice score: ${voiceScoreText}</span>
     </div>
-    <p class="resource-preview-description">${escapeHtml(resource.description || '')}</p>
-    ${wrapMarkdownDocument(resource.content || '')}
+    <p class="resource-preview-description">${escapeHtml(articleDescription(resource))}</p>
+    ${wrapMarkdownDocument(resource.content || '', listResourceInfographics(resource))}
   `;
 
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
+  revealWorkspaceModal(modal);
 }
 
 function closePreviewModal(): void {
-  const modal = document.getElementById('preview-resource-modal');
-  if (modal) {
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
+  hideWorkspaceModal(document.getElementById('preview-resource-modal'));
 }
 
 (window as any).closePreviewModal = closePreviewModal;
@@ -3069,6 +3156,7 @@ document.getElementById('seed-resources-btn')?.addEventListener('click', async (
   setupResourceFilters();
   initializeCollapsibleSections();
   initWorkspaceVoiceProfileSelect();
+  void bindIndustryTagSelects();
 
   return {
     loadResources,

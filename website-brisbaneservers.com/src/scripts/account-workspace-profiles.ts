@@ -2,6 +2,7 @@
 import { workspaceFetch } from '../lib/client-api';
 import { escapeHtml, showWorkspaceNotification, runWorkspaceGuardedAction, withWorkspaceActionGuard, workspaceErrorMessage } from './account-workspace-utils';
 import { showConfirmDialog } from './portal-confirm-dialog';
+import { revealWorkspaceModal } from './workspace-modal';
 
 export type ProfilesWorkspaceDeps = {
   getVoiceApiUrl: () => string;
@@ -990,7 +991,6 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
   const corpusIds: string[] = Array.isArray(profile.corpusResourceIds) ? (profile.corpusResourceIds as string[]) : [];
   const modal = document.createElement('div');
   modal.className = 'modal';
-  modal.setAttribute('aria-hidden', 'false');
 
   const visualizationContainer = document.createElement('div');
   visualizationContainer.className = 'profile-visualizations-full';
@@ -1019,7 +1019,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
   if (modalBody) modalBody.appendChild(visualizationContainer);
 
   document.body.appendChild(modal);
-  document.body.style.overflow = 'hidden';
+  revealWorkspaceModal(modal);
 }
 
 (window as any).viewProfile = async (id: string) => {
@@ -1305,7 +1305,6 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
     // Show analysis modal
     const modal = document.createElement('div');
     modal.className = 'modal';
-    modal.setAttribute('aria-hidden', 'false');
     
     const duplicatesFound = similarities.filter(s => s.similarity >= 0.85).length;
     const similarFound = similarities.filter(s => s.similarity >= 0.7 && s.similarity < 0.85).length;
@@ -1393,7 +1392,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
     `;
     
     document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
+    revealWorkspaceModal(modal);
   } catch (error) {
     showNotification('Failed to analyze duplicates: ' + (error instanceof Error ? error.message : 'Unknown error'), 'error');
     console.error('[Portal] Error analyzing duplicates:', error);
@@ -1519,7 +1518,6 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
             setTimeout(() => {
               const resultsModal = document.createElement('div');
               resultsModal.className = 'modal';
-              resultsModal.setAttribute('aria-hidden', 'false');
               resultsModal.innerHTML = `
             <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
             <div class="modal-content">
@@ -1553,7 +1551,7 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
             </div>
           `;
           document.body.appendChild(resultsModal);
-          document.body.style.overflow = 'hidden';
+          revealWorkspaceModal(resultsModal);
         }, 500);
       }
       

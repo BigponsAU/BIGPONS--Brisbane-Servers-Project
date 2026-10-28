@@ -28,6 +28,11 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       </details>
 
       <p id="moderation-queue-summary" class="admin-queue-summary" role="status" aria-live="polite"></p>
+      <section class="admin-section admin-section--in-band" aria-labelledby="industry-tag-moderation-heading">
+        <h3 id="industry-tag-moderation-heading">Industry tags</h3>
+        <p class="section-subtitle">Approve new industries before they appear on the public library. Authors can still draft against them.</p>
+        <div id="industry-tag-moderation" class="moderation-queue" aria-live="polite"></div>
+      </section>
 
       <div class="moderation-workspace">
         <aside class="moderation-queue-pane" aria-label="Pending uploads">

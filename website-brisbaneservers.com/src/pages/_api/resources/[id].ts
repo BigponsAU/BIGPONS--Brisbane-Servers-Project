@@ -19,6 +19,9 @@ import {
   shouldRebuildForResourceChange,
 } from '../../../lib/deploy-rebuild';
 import { resolveResourceVoiceProfile } from '../../../lib/resource-voice-profile';
+import { catalogDescriptionFromArticle, isContaminatedCatalogCopy } from '../../../lib/catalog-copy';
+import { isAdminRole } from '../../../lib/workspace-roles';
+import { prepareIndustryForResourceWrite } from '../../../lib/resource-tags';
 
 /**
  * Get a specific resource
@@ -237,8 +240,62 @@ export const PUT: APIRoute = async ({ params, request }) => {
     }
 
     const isSuperAdmin = authResult.user.role === 'super-admin';
-    const { restoreToWorkspace: _restore, ...contentUpdates } = updates as Record<string, unknown>;
+    const {
+      restoreToWorkspace: _restore,
+      metadata: _clientMetadata,
+      ownerId: _clientOwnerId,
+      id: _clientId,
+      ...contentUpdates
+    } = updates as Record<string, unknown>;
     const nextStatus = (contentUpdates.status as Resource['status']) ?? existing.status;
+    const nextIndustry = String((contentUpdates.industry as string) ?? existing.industry);
+    const industryWrite = prepareIndustryForResourceWrite({
+      industry: nextIndustry,
+      resources,
+      userId: authResult.user.id,
+      isAdmin: isAdminRole(authResult.user.role),
+      existing,
+      publishing: nextStatus === 'published' && existing.status !== 'published',
+    });
+    if (!industryWrite.ok) {
+      const pendingProposal = prepareIndustryForResourceWrite({
+        industry: nextIndustry,
+        resources,
+        userId: authResult.user.id,
+        isAdmin: false,
+        existing,
+      });
+      if (pendingProposal.ok && pendingProposal.tagProposal) {
+        resources[idx] = {
+          ...existing,
+          industry: pendingProposal.industry,
+          metadata: {
+            ...existing.metadata,
+            tagProposal: { ...pendingProposal.tagProposal, status: 'pending' },
+          },
+          version: existing.version + 1,
+        };
+        await saveResources(resources);
+      }
+      return new Response(
+        JSON.stringify({ error: industryWrite.error, code: industryWrite.code, success: false }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    const nextTitle = String((contentUpdates.title as string) ?? existing.title);
+    const nextTopic = String((contentUpdates.topic as string) ?? existing.topic);
+    const nextContent = String((contentUpdates.content as string) ?? existing.content ?? '');
+    let nextDescription = String((contentUpdates.description as string) ?? existing.description ?? '');
+    if (!nextDescription || isContaminatedCatalogCopy(nextDescription)) {
+      nextDescription = catalogDescriptionFromArticle({
+        title: nextTitle,
+        industry: industryWrite.industry,
+        topicLabel: nextTopic,
+        bodyExcerpt: nextContent,
+      });
+    }
+
     resources[idx] = {
       ...existing,
       ...contentUpdates,
@@ -247,14 +304,24 @@ export const PUT: APIRoute = async ({ params, request }) => {
       portalRemovedAt: existing.portalRemovedAt,
       binnedAt: existing.binnedAt,
       version: existing.version + 1,
-      industry: (contentUpdates.industry as string) ?? existing.industry,
-      topic: (contentUpdates.topic as string) ?? existing.topic,
+      industry: industryWrite.industry,
+      topic: nextTopic,
+      title: nextTitle,
+      description: nextDescription,
+      content: nextContent,
       ownerId:
-        isSuperAdmin && typeof contentUpdates.ownerId === 'string'
-          ? contentUpdates.ownerId
+        isSuperAdmin && typeof _clientOwnerId === 'string'
+          ? _clientOwnerId
           : existing.ownerId,
       wasEverPublished: existing.wasEverPublished === true || nextStatus === 'published',
     };
+
+    if (industryWrite.tagProposal) {
+      resources[idx].metadata = {
+        ...resources[idx].metadata,
+        tagProposal: industryWrite.tagProposal,
+      };
+    }
 
     if (contentUpdates.content) {
       const { profileManager, profileBuilder } = await getVoiceFramework();

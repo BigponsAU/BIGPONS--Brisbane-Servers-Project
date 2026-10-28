@@ -43,8 +43,10 @@ export const standaloneApiRoutes: RouteDefinition[] = [
   { path: '/api/resources/seed', loadModule: () => import('../src/pages/_api/resources/seed') },
   { path: '/api/resources/deduplicate', loadModule: () => import('../src/pages/_api/resources/deduplicate') },
   { path: '/api/resources/community-upload', loadModule: () => import('../src/pages/_api/resources/community-upload') },
+  { path: '/api/resources/tags', loadModule: () => import('../src/pages/_api/resources/tags') },
   { path: '/api/resources/:id', loadModule: () => import('../src/pages/_api/resources/[id]') },
   { path: '/api/resources/:id/improve', loadModule: () => import('../src/pages/_api/resources/[id]/improve') },
+  { path: '/api/resources/:id/diagrams', loadModule: () => import('../src/pages/_api/resources/[id]/diagrams') },
 
   { path: '/api/profiles', loadModule: () => import('../src/pages/_api/profiles/index') },
   { path: '/api/profiles/default', loadModule: () => import('../src/pages/_api/profiles/default') },

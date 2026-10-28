@@ -8,9 +8,9 @@ import { CONSULTING_FALLBACK_VOICE_PROFILE } from './consulting-voice-fallback';
 import type { VoiceProfile } from '@voice-framework/models/voice-profile';
 import type { ProfileManager } from '@voice-framework/storage/profile-manager';
 import type { ProfileBuilder } from '@voice-framework/builders/profile-builder';
-import { TextGenerator } from '@voice-framework/generators/text-generator';
 import type { Resource, VoiceProfileResolutionKind } from './resource-types';
 import { isPublicResource } from './resource-types';
+import { catalogDescriptionFromArticle } from './catalog-copy';
 
 /** @deprecated Design System JSON must not drive portal resolution — use consulting fallback. */
 export const BUNDLED_VOICE_PROFILE = CONSULTING_FALLBACK_VOICE_PROFILE;
@@ -137,34 +137,20 @@ export async function resolveResourceVoiceProfileForLibraryGrowth(
 }
 
 /**
- * Hub / card description in the active voice (not a fixed character truncation of body).
+ * Hub / card / workspace blurb must describe the article topic — never the
+ * voice generator. TextGenerator previously emitted design-system filler.
  */
 export function generateResourceCatalogDescription(params: {
-  voiceProfile: VoiceProfile;
+  voiceProfile?: VoiceProfile;
   title: string;
   industry: string;
   topicLabel: string;
   bodyExcerpt: string;
 }): string {
-  const excerpt = params.bodyExcerpt.replace(/\s+/g, ' ').trim().slice(0, 800);
-  const seed = `${params.title}. Industry: ${params.industry}. Topic: ${params.topicLabel}. Source summary: ${excerpt}`;
-  const gen = new TextGenerator(params.voiceProfile);
-  let text = gen.generateText(seed, {
-    length: 'short',
-    includeExamples: false,
-    includeStructure: false,
-    style: 'descriptive'
+  return catalogDescriptionFromArticle({
+    title: params.title,
+    industry: params.industry,
+    topicLabel: params.topicLabel,
+    bodyExcerpt: params.bodyExcerpt,
   });
-  text = text
-    .replace(/#{1,6}\s+[^\n]+\n?/g, '')
-    .replace(/\*\*/g, '')
-    .replace(/^\s*[-*]\s+/gm, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-
-  if (!text) {
-    const fallback = excerpt.slice(0, 400);
-    return fallback || `${params.title} — ${params.industry} / ${params.topicLabel}`;
-  }
-  return text;
 }

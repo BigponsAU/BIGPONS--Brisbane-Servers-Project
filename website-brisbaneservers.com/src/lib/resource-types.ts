@@ -66,6 +66,16 @@ export interface Resource {
      * Rendered on /resources/item/{id} when present.
      */
     infographic?: InfographicSpec;
+    /** Additional diagrams; `infographic` remains the first for older readers. */
+    infographics?: InfographicSpec[];
+    tagProposal?: {
+      slug: string;
+      label: string;
+      status: 'draft' | 'pending' | 'approved' | 'rejected';
+      proposedBy?: string;
+    };
+    /** Hidden stub so a custom industry tag can be drafted before an article exists. */
+    tagDraftOnly?: boolean;
   };
   /** Embedding model id used for chunks (e.g. openai text-embedding-3-small) */
   embeddingModel?: string;
@@ -113,4 +123,9 @@ export function isVisibleInPortalWorkspace(resource: Resource): boolean {
 /** Draft/archived row moved to the bin — retained for vector collation, not active workspace. */
 export function isBinnedResource(resource: Resource): boolean {
   return Boolean(resource.binnedAt);
+}
+
+/** Industry-tag placeholder — not an article; hidden from the workspace tree. */
+export function isTagDraftResource(resource: Resource): boolean {
+  return resource.metadata?.tagDraftOnly === true || resource.topic === 'tag-proposal';
 }

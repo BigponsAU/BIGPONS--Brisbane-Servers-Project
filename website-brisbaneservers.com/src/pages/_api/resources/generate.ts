@@ -23,6 +23,13 @@ import { canAccessResource } from '../../../lib/resource-access';
 import { collectImagesFromResources, mergeRelatedImages } from '../../../lib/resource-images';
 import { resolveGenerateLength } from '../../../lib/generate-length';
 import { resolveResourceInfographic } from '../../../lib/resource-infographic';
+import {
+  appendDiagramMarker,
+  infographicsMetadata,
+  listResourceInfographics,
+} from '../../../lib/resource-infographics';
+import { isAdminRole } from '../../../lib/workspace-roles';
+import { prepareIndustryForResourceWrite } from '../../../lib/resource-tags';
 
 /**
  * Generate a new resource
@@ -65,8 +72,21 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const resourceTitle = title || `${topic} for ${industry}`;
     const resources = await loadResources();
+    const industryWrite = prepareIndustryForResourceWrite({
+      industry,
+      resources,
+      userId: authResult.user.id,
+      isAdmin: isAdminRole(authResult.user.role),
+    });
+    if (!industryWrite.ok) {
+      return new Response(JSON.stringify({ error: industryWrite.error, code: industryWrite.code, success: false }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    const industrySlug = industryWrite.industry;
+    const resourceTitle = title || `${topic} for ${industrySlug}`;
     const { profileManager, profileBuilder } = await getVoiceFramework();
     const resolved = await resolveResourceVoiceProfile({
       requestedProfileId: profileId,
@@ -79,15 +99,15 @@ export const POST: APIRoute = async ({ request }) => {
     const extrapolator = new Extrapolator(resolved.profile);
     const voiceMatcher = new VoiceMatcher(resolved.profile);
     const existingPre = resources.find(
-      (r) => r.industry === industry && topicsMatch(r.topic, topic)
+      (r) => r.industry === industrySlug && topicsMatch(r.topic, topic) && r.topic !== 'tag-proposal',
     );
-    const rag = await buildRagContext(`${industry} ${topic} ${resourceTitle}`, {
+    const rag = await buildRagContext(`${industrySlug} ${topic} ${resourceTitle}`, {
       topK: 8,
       excludeResourceIds: existingPre ? [existingPre.id] : []
     });
     const seedText = rag.contextText
-      ? `Knowledge base context:\n${rag.contextText}\n\n---\nTask: ${resourceTitle}. ${topic} solutions for ${industry} businesses.`
-      : `${resourceTitle}. ${topic} solutions for ${industry} businesses.`;
+      ? `Knowledge base context:\n${rag.contextText}\n\n---\nTask: ${resourceTitle}. ${topic} solutions for ${industrySlug} businesses.`
+      : `${resourceTitle}. ${topic} solutions for ${industrySlug} businesses.`;
 
     if (isDevelopmentMode()) {
       console.log(
@@ -97,7 +117,7 @@ export const POST: APIRoute = async ({ request }) => {
     
     const generated = await generateResourceBody({
       seedText,
-      industry,
+      industry: industrySlug,
       topic,
       title: resourceTitle,
       userBrief: typeof userBrief === 'string' ? userBrief.trim() : undefined,
@@ -114,11 +134,11 @@ export const POST: APIRoute = async ({ request }) => {
     const extrapolatedContent = mergeRelatedImages(generated.content, relatedImages);
     const lengthPlan = resolveGenerateLength(options?.length, options?.wordCount);
 
-    const includeSvgWiring = Boolean(options?.includeSvgWiring);
     let infographicForMeta: Awaited<ReturnType<typeof resolveResourceInfographic>> | null = null;
-    if (includeSvgWiring) {
+    const existingDiagrams = existingPre ? listResourceInfographics(existingPre) : [];
+    if (existingDiagrams.length === 0) {
       infographicForMeta = await resolveResourceInfographic({
-        industry,
+        industry: industrySlug,
         topic,
         title: resourceTitle,
         contentExcerpt: extrapolatedContent,
@@ -148,7 +168,7 @@ export const POST: APIRoute = async ({ request }) => {
     const description = generateResourceCatalogDescription({
       voiceProfile: resolved.profile,
       title: resourceTitle,
-      industry,
+      industry: industrySlug,
       topicLabel: topic,
       bodyExcerpt: extrapolatedContent
     });
@@ -158,7 +178,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Check for existing resource with same industry + topic (only update if caller can access it)
     const matchedResource = resources.find(
-      (r) => r.industry === industry && topicsMatch(r.topic, topic)
+      (r) => r.industry === industrySlug && topicsMatch(r.topic, topic) && r.topic !== 'tag-proposal',
     );
     const existingResource =
       matchedResource && canAccessResource(authResult.user, matchedResource)
@@ -167,7 +187,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (existingResource) {
       // Update existing resource instead of creating duplicate
-      console.log(`[API] Found existing resource for ${industry}/${topic}, updating instead of creating duplicate`);
+      console.log(`[API] Found existing resource for ${industrySlug}/${topic}, updating instead of creating duplicate`);
 
       const beforeSnapshot: Resource = { ...existingResource };
       
@@ -195,10 +215,18 @@ export const POST: APIRoute = async ({ request }) => {
         sourceResourceIds: rag.sourceResourceIds,
         sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
       }) as import('../../../lib/resource-types').Resource['metadata'];
-      if (infographicForMeta) {
+      if (industryWrite.tagProposal) {
         existingResource.metadata = {
           ...existingResource.metadata,
-          infographic: infographicForMeta.spec,
+          tagProposal: industryWrite.tagProposal,
+        };
+      }
+      if (infographicForMeta) {
+        const nextContent = appendDiagramMarker(existingResource.content || '', infographicForMeta.spec.id);
+        existingResource.content = nextContent;
+        existingResource.metadata = {
+          ...existingResource.metadata,
+          ...infographicsMetadata([infographicForMeta.spec, ...existingDiagrams]),
         };
       }
 
@@ -258,8 +286,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Create new resource if no duplicate found
     const resource: Resource = {
-      id: `${industry}-${topicSlug}-${Date.now()}`,
-      industry,
+      id: `${industrySlug}-${topicSlug}-${Date.now()}`,
+      industry: industrySlug,
       topic: topicSlug, // Use normalized slug
       title: resourceTitle,
       description,
@@ -282,9 +310,13 @@ export const POST: APIRoute = async ({ request }) => {
           sourceResourceIds: rag.sourceResourceIds,
           sourceKind: rag.sourceResourceIds.length ? 'rag' : 'generate',
         }) as import('../../../lib/resource-types').Resource['metadata']),
-        ...(infographicForMeta ? { infographic: infographicForMeta.spec } : {}),
+        ...(infographicForMeta ? infographicsMetadata([infographicForMeta.spec]) : {}),
+        ...(industryWrite.tagProposal ? { tagProposal: industryWrite.tagProposal } : {}),
       },
     };
+    if (infographicForMeta) {
+      resource.content = appendDiagramMarker(resource.content, infographicForMeta.spec.id);
+    }
 
     resources.push(resource);
     await saveResources(resources);
