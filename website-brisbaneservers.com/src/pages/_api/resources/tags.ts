@@ -56,8 +56,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const body = await request.json().catch(() => ({}));
-  const label = String((body as { label?: string }).label || '').trim();
-  const slug = normalizeIndustrySlug(label);
+  const requestedLabel = String((body as { label?: string }).label || '').trim();
+  const slug = normalizeIndustrySlug(requestedLabel);
   if (!isValidTagSlug(slug)) {
     return new Response(
       JSON.stringify({
@@ -78,7 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
     isAdmin,
   });
   const status = isAdmin ? 'approved' : proposal?.status === 'approved' ? 'approved' : 'draft';
-  const label = proposal?.label || humanizeTagLabel(slug);
+  const label = proposal?.label || humanizeTagLabel(slug) || requestedLabel;
   const stubId = tagDraftResourceId(authResult.user.id, slug);
   const existingIndex = resources.findIndex((resource) => resource.id === stubId);
   if (existingIndex < 0 && status !== 'approved') {
