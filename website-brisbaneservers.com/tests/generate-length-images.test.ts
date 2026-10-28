@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveGenerateLength } from '../src/lib/generate-length';
+import { buildOnTopicArticle, countWords } from '../src/lib/inference/on-topic-article';
 import {
   buildEmbeddedImageMarkdown,
   extractMarkdownImages,
@@ -20,6 +21,24 @@ describe('resolveGenerateLength', () => {
     const resolved = resolveGenerateLength('short', 2200);
     expect(resolved.targetWords).toBe(2200);
     expect(resolved.maxTokens).toBeGreaterThan(3000);
+  });
+});
+
+describe('on-topic article word bands', () => {
+  it.each([600, 1100, 1600, 2200] as const)('fills the ~%s word option', (target) => {
+    const plan = resolveGenerateLength(undefined, target);
+    const article = buildOnTopicArticle({
+      industry: 'professional-services',
+      topic: 'operational-compliance',
+      title: 'Operational Compliance',
+      minWords: plan.minWords,
+      maxWords: plan.maxWords,
+    });
+    const words = countWords(article);
+    expect(words).toBeGreaterThanOrEqual(plan.minWords);
+    expect(words).toBeLessThanOrEqual(plan.maxWords + 1);
+    expect(article.toLowerCase()).toContain('operational');
+    expect(article.toLowerCase()).not.toMatch(/wave function|1\.618|cipher/);
   });
 });
 

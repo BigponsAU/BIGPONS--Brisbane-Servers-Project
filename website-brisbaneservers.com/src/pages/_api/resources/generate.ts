@@ -18,6 +18,7 @@ import {
   resolveResourceVoiceProfile
 } from '../../../lib/resource-voice-profile';
 import { generateResourceBody } from '../../../lib/inference/resource-generate';
+import { ensureArticleWordBand } from '../../../lib/inference/on-topic-article';
 import { mergeInferenceMetadata } from '../../../lib/inference/inference-metadata';
 import { canAccessResource } from '../../../lib/resource-access';
 import { collectImagesFromResources, mergeRelatedImages } from '../../../lib/resource-images';
@@ -131,8 +132,18 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const relatedImages = collectImagesFromResources(resources, rag.sourceResourceIds);
-    const extrapolatedContent = mergeRelatedImages(generated.content, relatedImages);
     const lengthPlan = resolveGenerateLength(options?.length, options?.wordCount);
+    const extrapolatedContent = mergeRelatedImages(
+      ensureArticleWordBand(generated.content, {
+        industry: industrySlug,
+        topic,
+        title: resourceTitle,
+        brief: typeof userBrief === 'string' ? userBrief.trim() : undefined,
+        minWords: lengthPlan.minWords,
+        maxWords: lengthPlan.maxWords,
+      }),
+      relatedImages,
+    );
 
     let infographicForMeta: Awaited<ReturnType<typeof resolveResourceInfographic>> | null = null;
     const existingDiagrams = existingPre ? listResourceInfographics(existingPre) : [];

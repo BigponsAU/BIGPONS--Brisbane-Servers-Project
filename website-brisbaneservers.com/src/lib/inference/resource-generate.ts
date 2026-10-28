@@ -23,6 +23,7 @@ import {
   isGenerateFaithful,
   scoreTopicFidelity,
 } from './topic-fidelity';
+import { buildOnTopicArticle, countWords, ensureArticleWordBand } from './on-topic-article';
 
 export type InferenceMode = 'nvidia' | 'workers-ai' | 'template' | 'original';
 
@@ -95,43 +96,39 @@ function acceptCandidate(
 async function generateTemplateBody(params: GenerateBodyParams): Promise<string> {
   const { textGenerator, extrapolator, seedText, options } = params;
   const length = resolveGenerateLength(options?.length, options?.wordCount);
+  if (!isDesignSystemVoiceProfile(params.resolved.profile)) {
+    return buildOnTopicArticle({
+      industry: params.industry,
+      topic: params.topic,
+      title: params.title,
+      brief: params.userBrief,
+      minWords: length.minWords,
+      maxWords: length.maxWords,
+    });
+  }
   const generated = textGenerator.generateText(seedText, {
     length: length.templateLength,
     includeExamples: options?.includeExamples !== false,
     includeStructure: true,
     style: 'descriptive',
   });
-  // Design Extrapolator invents golden-ratio / cipher expansions — skip for consulting.
-  if (isDesignSystemVoiceProfile(params.resolved.profile)) {
-    return extrapolator.extrapolate(generated, {
-      expansionLevel: 'moderate',
-      addExamples: true,
-      addDetails: true,
-    });
-  }
-  return generated;
+  return extrapolator.extrapolate(generated, {
+    expansionLevel: 'moderate',
+    addExamples: true,
+    addDetails: true,
+  });
 }
 
-function minimalSeedFallback(params: GenerateBodyParams): GenerateBodyResult {
-  // Never dump RAG / seedText into the body — it can carry contaminated chunks.
-  const brief = (params.userBrief || '').trim();
-  const content = [
-    `# ${params.title}`,
-    '',
-    `${params.topic.replace(/-/g, ' ')} guidance for ${params.industry} organisations.`,
-    '',
-    brief ||
-      `Practical notes on ${params.topic.replace(/-/g, ' ')} for ${params.industry} teams in Australia. Review and expand this draft with industry-specific detail before publishing.`,
-  ].join('\n');
-  const validation = params.voiceMatcher.validateVoice(content);
-  return {
-    content,
-    inferenceMode: 'template',
-    modelId: 'topic-seed-fallback',
-    voiceScore: validation.score ?? 0,
-    voiceValid: validation.isValid ?? false,
-    topicFidelity: scoreTopicFidelity(topicAnchor(params), content),
-  };
+function bandedArticle(params: GenerateBodyParams, content: string): string {
+  const length = resolveGenerateLength(params.options?.length, params.options?.wordCount);
+  return ensureArticleWordBand(content, {
+    industry: params.industry,
+    topic: params.topic,
+    title: params.title,
+    brief: params.userBrief,
+    minWords: length.minWords,
+    maxWords: length.maxWords,
+  });
 }
 
 export async function generateResourceBody(params: GenerateBodyParams): Promise<GenerateBodyResult> {
@@ -166,40 +163,77 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
         const validation = params.voiceMatcher.validateVoice(ai.text);
         const score = validation.score ?? 0;
 
-        if (score >= 0.45) {
-          const accepted = acceptCandidate(params, ai.text, ai.provider, ai.modelId);
-          if (accepted) {
-            await recordUsage({
-              userId: params.userId,
-              units: estimatedUnits,
-              reason,
-              modelId: ai.modelId,
+        let article = ai.text;
+        if (isGenerateFaithful({
+          industry: params.industry,
+          topic: params.topic,
+          title: params.title,
+          seedText: params.seedText,
+          candidate: article,
+          allowDesignSystemJargon: allowDesignJargon,
+        }) && countWords(article) < length.minWords) {
+          try {
+            const more = await completeInference({
+              system,
+              user: [
+                `Continue the same ${params.industry} / ${params.topic} article.`,
+                `You have ${countWords(article)} words; write until you reach about ${length.targetWords} (at least ${length.minWords}).`,
+                'Do not restart. No preamble. Markdown only.',
+                '',
+                article.slice(-1800),
+              ].join('\n'),
+              maxTokens: length.maxTokens,
             });
-            return accepted;
+            if (more.text.trim()) {
+              article = `${article.trim()}\n\n${more.text.trim()}`;
+            }
+          } catch (continueErr) {
+            console.warn(`[inference] length continuation failed`, continueErr);
           }
-          console.warn(`[inference] generate AI rejected for topic fidelity; template fallback`);
-        } else {
-          console.warn(`[inference] voice score ${score} below threshold; template fallback`);
         }
+
+        article = bandedArticle(params, article);
+        const accepted = acceptCandidate(params, article, ai.provider, ai.modelId);
+        if (accepted && (score >= 0.35 || countWords(article) >= length.minWords)) {
+          await recordUsage({
+            userId: params.userId,
+            units: estimatedUnits,
+            reason,
+            modelId: ai.modelId,
+          });
+          return accepted;
+        }
+        console.warn(
+          `[inference] generate AI rejected (voice=${score}); on-topic article fallback`,
+        );
       } catch (err) {
         console.warn(`[inference] ${provider} failed; template fallback`, err);
       }
     }
   }
 
-  const templateContent = await generateTemplateBody(params);
+  const templateContent = bandedArticle(params, await generateTemplateBody(params));
   const templateAccepted = acceptCandidate(
     params,
     templateContent,
     'template',
-    'voice-framework-template'
+    'on-topic-article'
   );
   if (templateAccepted) {
     return templateAccepted;
   }
 
   console.warn(
-    `[inference] generate falling back to minimal on-topic seed for ${params.industry}/${params.topic}`
+    `[inference] generate falling back to banded on-topic article for ${params.industry}/${params.topic}`
   );
-  return minimalSeedFallback(params);
+  const fallback = bandedArticle(params, '');
+  const validation = params.voiceMatcher.validateVoice(fallback);
+  return {
+    content: fallback,
+    inferenceMode: 'template',
+    modelId: 'on-topic-article',
+    voiceScore: validation.score ?? 0,
+    voiceValid: validation.isValid ?? false,
+    topicFidelity: scoreTopicFidelity(topicAnchor(params), fallback),
+  };
 }

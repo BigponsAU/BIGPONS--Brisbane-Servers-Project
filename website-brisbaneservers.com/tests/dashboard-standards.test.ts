@@ -103,6 +103,12 @@ describe('dashboard production standards', () => {
     expect(moderation).toContain('bindAdminIndustryCreate');
   });
 
+  it('workspace modals teleport to body so they are not clipped', async () => {
+    const source = await readFile(path.resolve('src/scripts/workspace-modal.ts'), 'utf8');
+    expect(source).toContain('document.body.appendChild');
+    expect(source).toContain('workspace-modal-open');
+  });
+
   it('cookie consent offsets page content while the banner is open', async () => {
     const source = await readFile(path.resolve('src/components/CookieConsent.astro'), 'utf8');
     const css = await readFile(path.resolve('src/styles/cookie-consent.css'), 'utf8');

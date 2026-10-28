@@ -4395,26 +4395,17 @@
   .modal-content {
     position: relative;
     background: var(--portal-surface-elevated);
-    border-radius: var(--border-radius);
+    border-radius: 1.15rem;
     box-shadow: var(--portal-shadow-xl);
     max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
+    width: min(90vw, 800px);
+    max-height: min(90dvh, 920px);
     display: flex;
     flex-direction: column;
     z-index: 1001;
     overflow: hidden;
     animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid var(--portal-border);
-    /* Sierpinski path-aligned corners */
-    clip-path: polygon(
-      0% 0%,
-      100% 0%,
-      100% calc(100% - 20px),
-      calc(100% - 20px) 100%,
-      20px 100%,
-      0% calc(100% - 20px)
-    );
   }
 
   @keyframes modalSlideIn {
@@ -4455,8 +4446,10 @@
     z-index: 0;
   }
 
+  .modal-content.modal-large,
   .modal-large {
-    max-width: 1200px;
+    width: min(92vw, 68rem);
+    max-width: min(92vw, 68rem);
   }
 
   .modal-header {
