@@ -231,3 +231,21 @@ body > .cookie-consent {
     animation: none;
   }
 }
+
+/* Keep page content (especially /account sign-in cards) above the fixed bar. */
+html.cookie-consent-visible {
+  scroll-padding-bottom: var(--cookie-consent-offset, 0px);
+}
+
+html.cookie-consent-visible body {
+  padding-bottom: var(--cookie-consent-offset, 0px);
+}
+
+html.cookie-consent-visible .account-workspace-shell .login-screen,
+html.cookie-consent-visible .site-shell--portal #login-screen.login-screen {
+  padding-bottom: calc(var(--space-xl, 2rem) + var(--cookie-consent-offset, 0px));
+  min-height: min(
+    88vh,
+    calc(100dvh - var(--site-main-offset-top, 5rem) - var(--cookie-consent-offset, 0px))
+  );
+}

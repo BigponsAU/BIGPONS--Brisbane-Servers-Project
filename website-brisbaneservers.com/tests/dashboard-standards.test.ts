@@ -13,6 +13,8 @@ const ACCOUNT_SCRIPTS = [
   'account-admin-ops.ts',
   'account-admin-billing.ts',
   'account-admin-users.ts',
+  'workspace-markdown-field.ts',
+  'workspace-modal.ts',
 ];
 
 const PANEL_FILES = [
@@ -87,6 +89,15 @@ describe('dashboard production standards', () => {
     expect(source).toContain('trackResourceCreation');
     expect(source).toContain('getPortalMarkovSummary');
     expect(source).toContain('registerPortalWorkspaceFunctions');
+  });
+
+  it('cookie consent offsets page content while the banner is open', async () => {
+    const source = await readFile(path.resolve('src/components/CookieConsent.astro'), 'utf8');
+    const css = await readFile(path.resolve('src/styles/cookie-consent.css'), 'utf8');
+    expect(source).toContain('cookie-consent-visible');
+    expect(source).toContain('--cookie-consent-offset');
+    expect(css).toContain('html.cookie-consent-visible');
+    expect(css).toContain('#login-screen');
   });
 
   it('passkey login binds in the always-loaded auth chunk, not post-auth extensions', async () => {

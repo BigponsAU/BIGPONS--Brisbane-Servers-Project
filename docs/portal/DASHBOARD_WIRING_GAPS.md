@@ -1,6 +1,6 @@
 # Dashboard wiring gaps & production standards
 
-**Last updated:** 2026-07-27  
+**Last updated:** 2026-10-28  
 **Purpose:** Track UI wiring, standards, intentional deferrals, and **live functional QA** for `/account`.
 
 **Related:** [DASHBOARD_UX_ELEMENT_MAP.md](DASHBOARD_UX_ELEMENT_MAP.md) · [DASHBOARD_FEATURE_MATRIX.md](DASHBOARD_FEATURE_MATRIX.md)
@@ -13,6 +13,8 @@ Cadence: find → document → fix → push → retest on `https://brisbaneserve
 
 | Date | Panel / action | Symptom | Root cause | Fix | Retest |
 |------|----------------|---------|------------|-----|--------|
+| 2026-10-28 | `/account` sign-in | Cookie bar covered Create account / footer links | Fixed banner with no page offset | Measure banner height → `--cookie-consent-offset`; pad login screen while `.cookie-consent-visible` | Local standards test; live retest after Pages |
+| 2026-10-28 | Resources workspace | View/Preview dead; catalog jargon; no custom tags; diagrams only as generate checkbox | Modal `display:none` restamp; TextGenerator copy; tags unpublished; AI spec pulled into client bundle | `revealWorkspaceModal`; catalog-from-article; draft tags + moderation; piece/diagram editor; split `resource-infographic-spec.ts` | **Live** Pages `a956f2c0` / `30cf037` — hard-refresh `/account` |
 | 2026-07-27 | Resources → **Improve** on healthcare draft | Button “worked” but body became design-system gibberish (cipher / Fourier / wave function / 1.618 / 61.8); truncated fragments; voice score could look better while content got worse | `POST /api/resources/:id/improve` used singleton `Extrapolator`/`VoiceMatcher` from `getVoiceFramework()` (bundled **Design System Voice**). Generate already scoped to `resolved.profile`. Voice gate ≥0.45 + template fallback rewarded jargon; no topic-fidelity guard | Scope Improve (+ process/upload ingest) to `new Extrapolator/VoiceMatcher(resolved.profile)`; topic-fidelity + jargon reject → keep original; skip design Extrapolator for consulting profiles; tighten improve prompt; industry/minScore RAG; `tests/resource-improve-fidelity.test.ts` | **Retested OK** (2026-07-27): clean healthcare draft stayed on-topic; `mode=original` when AI/template unsafe; no cipher/Fourier/1.618 leak |
 | 2026-07-27 | Admin → Users soft-remove / restore | Markup/API exist; client did not render Remove/Restore or populate removed table | Client lag in `account-admin-users.ts` | Wire Remove (DELETE), Restore (POST action), `includeRemoved=1`, removed table; replace `window.alert` with styled notification | **Retested OK** after Pages `e4e6a4b`: 18 Remove buttons; summary `18 active · 0 removed` |
 | 2026-07-27 | Admin → Users auth-audit pager | Prev/Next buttons unbound (single `limit=100` fetch) | Client never bound pager or used `offset` | Page size 25 + prev/next handlers calling `/admin/auth-audit?limit&offset` | **Retested OK**: shows `1–25 of 263`; Next advances |
@@ -100,8 +102,9 @@ Once **published**, a resource remains in the **public catalog**, **`search-inde
 | Capability | Module / surface |
 |------------|------------------|
 | **Panel band consistency** | All 11 panels — `AccountWorkspacePanelBand` or Overview/Resources bands |
-| Inline + modal edit | `account-workspace-resources.ts`, modals |
-| **WYSIWYG** | `workspace-markdown-field.ts` — TipTap Visual / Markdown / Preview |
+| Inline + modal edit | `account-workspace-resources.ts`, modals (`revealWorkspaceModal`) |
+| **WYSIWYG** | `workspace-markdown-field.ts` — TipTap pieces (heading/paragraph/list/quote/diagram) + Visual / Markdown / Preview |
+| **Industry tags** | `POST/PUT /api/resources/tags` — author drafts; Admin → Moderation approve |
 | Styled confirms | All workspace + admin scripts (growth, moderation, ops, users, voice reindex) |
 | Resource permissions | `resource-permissions.ts` — client + API |
 | Preview modal | `#preview-resource-modal` |
