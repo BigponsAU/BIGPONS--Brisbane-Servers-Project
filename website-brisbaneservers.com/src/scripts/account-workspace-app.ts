@@ -34,7 +34,8 @@ import { getWorkspaceResources, setWorkspaceResources, upsertWorkspaceResource }
 import { escapeHtml, escapeJsString, treeGroupLabel, treeSlug, resourceExcerpt, showWorkspaceNotification, runWorkspaceGuardedAction, setStarterBlockCardsBusy, setElementBusy, workspaceErrorMessage } from './account-workspace-utils';
 import { hasWorkspaceCapability, type WorkspaceMinRole } from '../lib/workspace-roles';
 import { workspaceNavItems } from '../data/account-workspace';
-import { showConfirmDialog } from './portal-confirm-dialog';
+import { dismissPortalDialog, showConfirmDialog } from './portal-confirm-dialog';
+import { hoistWorkspaceOverlays } from './workspace-modal';
 import {
   bootWorkspaceGlobalSearch,
   focusWorkspaceGlobalSearch,
@@ -66,6 +67,7 @@ export function bootAccountWorkspaceDashboard(): void {
   if (dashboardBooted) return;
   dashboardBooted = true;
 
+  hoistWorkspaceOverlays();
   applyAccountWorkspaceFormDefaults();
 
   const rt = tryGetPortalRuntime();
@@ -1174,8 +1176,7 @@ export function bootAccountWorkspaceDashboard(): void {
         } else if (modalId === 'preview-resource-modal') {
           win.closePreviewModal?.();
         } else if (modalId === 'portal-confirm-host' || modal.classList.contains('portal-confirm-modal')) {
-          document.getElementById('portal-confirm-host')!.innerHTML = '';
-          document.body.style.overflow = '';
+          dismissPortalDialog();
         }
       });
 

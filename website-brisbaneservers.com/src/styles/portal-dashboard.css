@@ -69,8 +69,22 @@ body > .modal .modal-body {
   overflow-y: auto;
 }
 
+body > .modal .modal-header,
+body > .modal .modal-footer {
+  flex-shrink: 0;
+}
+
 body > .modal .modal-footer {
   padding: 0.9rem 1.35rem 1.1rem;
+}
+
+body > .modal.portal-confirm-modal .modal-content,
+body > .portal-confirm-modal .modal-content {
+  width: min(28rem, calc(100vw - 2rem));
+  max-width: min(28rem, calc(100vw - 2rem));
+  max-height: min(80dvh, 36rem);
+  overflow: visible;
+  clip-path: none;
 }
 
 .resource-reader {

@@ -103,10 +103,28 @@ describe('dashboard production standards', () => {
     expect(moderation).toContain('bindAdminIndustryCreate');
   });
 
+  it('confirm dialogs bind actions on the teleported modal, not the empty host', async () => {
+    const source = await readFile(path.resolve('src/scripts/portal-confirm-dialog.ts'), 'utf8');
+    expect(source).toContain('revealWorkspaceModal(modal)');
+    expect(source).toContain("modal.querySelector('[data-portal-confirm-ok]')");
+    expect(source).toContain('hideWorkspaceModal(modal)');
+    expect(source).toContain('dismissPortalDialog');
+    expect(source).not.toMatch(/host\.querySelector\(\s*'\[data-portal-confirm-ok\]'/);
+  });
+
   it('workspace modals teleport to body so they are not clipped', async () => {
     const source = await readFile(path.resolve('src/scripts/workspace-modal.ts'), 'utf8');
     expect(source).toContain('document.body.appendChild');
     expect(source).toContain('workspace-modal-open');
+    expect(source).toContain('hoistWorkspaceOverlays');
+    expect(source).toContain('portal-confirm-host');
+  });
+
+  it('confirm and resource modals are not nested in the clipped workspace root', async () => {
+    const page = await readFile(path.resolve('src/components/account/AccountWorkspacePage.astro'), 'utf8');
+    const afterShell = page.indexOf('</AccountWorkspaceShell>');
+    expect(page.indexOf('id="portal-confirm-host"')).toBeGreaterThan(afterShell);
+    expect(page.indexOf('<AccountResourceModals')).toBeGreaterThan(afterShell);
   });
 
   it('cookie consent offsets page content while the banner is open', async () => {

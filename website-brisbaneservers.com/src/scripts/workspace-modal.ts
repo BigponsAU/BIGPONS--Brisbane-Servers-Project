@@ -62,3 +62,28 @@ export function hideWorkspaceModal(modal: HTMLElement | null | undefined): void 
   restoreModalHome(modal);
   syncModalOpenClass();
 }
+
+/** Close a dynamically created .modal (profiles, etc.) and release the open-count lock. */
+export function dismissCreatedModal(from: HTMLElement | EventTarget | null): void {
+  const el = from instanceof HTMLElement ? from : null;
+  const modal = el?.closest('.modal') as HTMLElement | null;
+  if (!modal) return;
+  hideWorkspaceModal(modal);
+  modal.remove();
+}
+
+/** Move overlays out of overflow-x:clip workspace so fixed dialogs fill the viewport. */
+export function hoistWorkspaceOverlays(): void {
+  const ids = ['portal-confirm-host', 'notification-container', 'info-card', 'view-resource-modal', 'preview-resource-modal', 'edit-resource-modal'];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el && el.parentElement !== document.body) {
+      document.body.appendChild(el);
+    }
+  }
+}
+
+if (typeof window !== 'undefined') {
+  (window as unknown as { dismissCreatedModal: typeof dismissCreatedModal }).dismissCreatedModal =
+    dismissCreatedModal;
+}

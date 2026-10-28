@@ -1,8 +1,11 @@
 /**
- * Styled confirmation dialog — replaces window.confirm() across the account workspace.
+ * Styled confirmation dialog — replaces the native confirm/prompt across the account workspace.
+ *
+ * The dialog is teleported to document.body (workspace overflow would clip it).
+ * Bind actions on the modal node after teleport — never query #portal-confirm-host.
  */
 import { escapeHtml } from './account-workspace-utils';
-import { revealWorkspaceModal } from './workspace-modal';
+import { hideWorkspaceModal, revealWorkspaceModal } from './workspace-modal';
 
 export type ConfirmDialogOptions = {
   title: string;
@@ -23,17 +26,28 @@ export type PromptDialogOptions = {
   inputType?: 'text' | 'url';
 };
 
+let dismissActive: (() => void) | null = null;
+
 function getConfirmHost(): HTMLElement {
   let host = document.getElementById('portal-confirm-host');
   if (!host) {
     host = document.createElement('div');
     host.id = 'portal-confirm-host';
+  }
+  if (host.parentElement !== document.body) {
     document.body.appendChild(host);
   }
   return host;
 }
 
+/** Escape / overlay teardown that still resolves the open promise. */
+export function dismissPortalDialog(): void {
+  dismissActive?.();
+}
+
 export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolean> {
+  dismissActive?.();
+
   return new Promise((resolve) => {
     const host = getConfirmHost();
     const confirmLabel = options.confirmLabel ?? 'Confirm';
@@ -70,20 +84,23 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
     `;
 
     const modal = host.querySelector('.modal') as HTMLElement;
-    if (modal) revealWorkspaceModal(modal);
-    const okBtn = host.querySelector('[data-portal-confirm-ok]') as HTMLButtonElement;
-    const cancelBtns = host.querySelectorAll('[data-portal-confirm-cancel]');
+    revealWorkspaceModal(modal);
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const okBtn = modal.querySelector('[data-portal-confirm-ok]') as HTMLButtonElement | null;
+    const cancelBtns = modal.querySelectorAll('[data-portal-confirm-cancel]');
 
+    let settled = false;
     const finish = (accepted: boolean) => {
-      document.body.style.overflow = previousOverflow;
-      modal.setAttribute('aria-hidden', 'true');
+      if (settled) return;
+      settled = true;
+      if (dismissActive === finishFalse) dismissActive = null;
+      hideWorkspaceModal(modal);
       host.innerHTML = '';
       document.removeEventListener('keydown', onKeyDown);
       resolve(accepted);
     };
+    const finishFalse = () => finish(false);
+    dismissActive = finishFalse;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -93,13 +110,25 @@ export function showConfirmDialog(options: ConfirmDialogOptions): Promise<boolea
     };
 
     okBtn?.focus();
-    okBtn?.addEventListener('click', () => finish(true));
-    cancelBtns.forEach((btn) => btn.addEventListener('click', () => finish(false)));
+    okBtn?.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      finish(true);
+    });
+    cancelBtns.forEach((btn) =>
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        finish(false);
+      }),
+    );
     document.addEventListener('keydown', onKeyDown);
   });
 }
 
 export function showPromptDialog(options: PromptDialogOptions): Promise<string | null> {
+  dismissActive?.();
+
   return new Promise((resolve) => {
     const host = getConfirmHost();
     const confirmLabel = options.confirmLabel ?? 'OK';
@@ -126,20 +155,24 @@ export function showPromptDialog(options: PromptDialogOptions): Promise<string |
     `;
 
     const promptModal = host.querySelector('.modal') as HTMLElement;
-    if (promptModal) revealWorkspaceModal(promptModal);
-    const input = host.querySelector('[data-portal-prompt-input]') as HTMLInputElement;
-    const okBtn = host.querySelector('[data-portal-prompt-ok]') as HTMLButtonElement;
-    const cancelBtns = host.querySelectorAll('[data-portal-prompt-cancel]');
+    revealWorkspaceModal(promptModal);
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const input = promptModal.querySelector('[data-portal-prompt-input]') as HTMLInputElement | null;
+    const okBtn = promptModal.querySelector('[data-portal-prompt-ok]') as HTMLButtonElement | null;
+    const cancelBtns = promptModal.querySelectorAll('[data-portal-prompt-cancel]');
 
+    let settled = false;
     const finish = (value: string | null) => {
-      document.body.style.overflow = previousOverflow;
+      if (settled) return;
+      settled = true;
+      if (dismissActive === finishNull) dismissActive = null;
+      hideWorkspaceModal(promptModal);
       host.innerHTML = '';
       document.removeEventListener('keydown', onKeyDown);
       resolve(value);
     };
+    const finishNull = () => finish(null);
+    dismissActive = finishNull;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -148,14 +181,24 @@ export function showPromptDialog(options: PromptDialogOptions): Promise<string |
       }
       if (event.key === 'Enter' && document.activeElement === input) {
         event.preventDefault();
-        finish(input.value.trim() || null);
+        finish(input?.value.trim() || null);
       }
     };
 
     input?.focus();
     input?.select();
-    okBtn?.addEventListener('click', () => finish(input?.value.trim() || null));
-    cancelBtns.forEach((btn) => btn.addEventListener('click', () => finish(null)));
+    okBtn?.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      finish(input?.value.trim() || null);
+    });
+    cancelBtns.forEach((btn) =>
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        finish(null);
+      }),
+    );
     document.addEventListener('keydown', onKeyDown);
   });
 }

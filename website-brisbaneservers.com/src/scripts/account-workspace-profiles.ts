@@ -997,11 +997,11 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
   renderProfileVisualizations(profile, visualizationContainer);
 
   modal.innerHTML = `
-    <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
+    <div class="modal-overlay" onclick="dismissCreatedModal(this)"></div>
     <div class="modal-content modal-large">
       <div class="modal-header">
         <h2>Voice Profile: ${escapeHtml(String(profile.name || 'Unnamed'))}</h2>
-        <button class="modal-close" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" aria-label="Close modal">&times;</button>
+        <button class="modal-close" onclick="dismissCreatedModal(this)" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body">
         ${buildProfileMetaHtml(profile)}
@@ -1010,7 +1010,7 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
       </div>
       <div class="modal-footer profiles-detail-actions">
         ${buildProfileActionsHtml(profile)}
-        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal')?.remove(); document.body.style.overflow = '';">Close</button>
+        <button type="button" class="btn btn-secondary" onclick="dismissCreatedModal(this)">Close</button>
       </div>
     </div>
   `;
@@ -1310,11 +1310,11 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
     const similarFound = similarities.filter(s => s.similarity >= 0.7 && s.similarity < 0.85).length;
 
     modal.innerHTML = `
-      <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
+      <div class="modal-overlay" onclick="dismissCreatedModal(this)"></div>
       <div class="modal-content modal-large">
         <div class="modal-header">
           <h2>Neural Library Analysis</h2>
-          <button class="modal-close" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" aria-label="Close modal">&times;</button>
+          <button class="modal-close" onclick="dismissCreatedModal(this)" aria-label="Close modal">&times;</button>
         </div>
         <div class="modal-body">
           <div style="margin-bottom: var(--space-xl);">
@@ -1385,8 +1385,8 @@ function openProfileDetailModal(profile: Record<string, unknown>): void {
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Close</button>
-          ${duplicatesFound > 0 ? `<button class="btn btn-warning" onclick="this.closest('.modal').remove(); document.body.style.overflow = ''; deduplicateProfiles();">Sculpt Library Now</button>` : ''}
+          <button class="btn btn-secondary" onclick="dismissCreatedModal(this)">Close</button>
+          ${duplicatesFound > 0 ? `<button class="btn btn-warning" onclick="dismissCreatedModal(this); deduplicateProfiles();">Sculpt Library Now</button>` : ''}
         </div>
       </div>
     `;
@@ -1519,11 +1519,11 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
               const resultsModal = document.createElement('div');
               resultsModal.className = 'modal';
               resultsModal.innerHTML = `
-            <div class="modal-overlay" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';"></div>
+            <div class="modal-overlay" onclick="dismissCreatedModal(this)"></div>
             <div class="modal-content">
               <div class="modal-header">
                 <h2>Sculpting Results</h2>
-                <button class="modal-close" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" aria-label="Close modal">&times;</button>
+                <button class="modal-close" onclick="dismissCreatedModal(this)" aria-label="Close modal">&times;</button>
               </div>
               <div class="modal-body">
                 <p><strong>Profiles removed:</strong> ${removed}</p>
@@ -1545,8 +1545,8 @@ function calculateProfileSimilarityForAnalysis(p1: any, p2: any): { similarity: 
                 ` : ''}
               </div>
               <div class="modal-footer">
-                <button class="btn btn-primary" onclick="this.closest('.modal').remove(); document.body.style.overflow = ''; loadProfiles();">Refresh Profiles</button>
-                <button class="btn btn-secondary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Close</button>
+                <button class="btn btn-primary" onclick="dismissCreatedModal(this); loadProfiles();">Refresh Profiles</button>
+                <button class="btn btn-secondary" onclick="dismissCreatedModal(this)">Close</button>
               </div>
             </div>
           `;
