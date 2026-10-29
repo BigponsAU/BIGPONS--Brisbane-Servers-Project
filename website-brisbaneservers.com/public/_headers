@@ -4,7 +4,8 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com; frame-ancestors 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://*.cloudflare.com; script-src-elem 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://challenges.cloudflare.com https://*.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://api.brisbaneservers.com https://*.cloudflare.com https://cloudflareinsights.com https://*.cloudflareinsights.com wss:; frame-src 'self' https://accounts.google.com https://challenges.cloudflare.com; upgrade-insecure-requests
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, must-revalidate
+  CDN-Cache-Control: no-cache
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
@@ -23,3 +24,11 @@
 
 /search-index.json
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/build-id.txt
+  Cache-Control: no-store, no-cache, must-revalidate
+  CDN-Cache-Control: no-store
+
+/account*
+  Cache-Control: no-store
+  CDN-Cache-Control: no-store

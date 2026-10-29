@@ -120,6 +120,19 @@ describe('dashboard production standards', () => {
     expect(source).toContain('portal-confirm-host');
   });
 
+  it('deploys bust HTML cache without clearing consent cookies', async () => {
+    const headers = await readFile(path.resolve('public/_headers'), 'utf8');
+    const layout = await readFile(path.resolve('src/layouts/BaseLayout.astro'), 'utf8');
+    const refresh = await readFile(path.resolve('src/scripts/site-cache-refresh.ts'), 'utf8');
+    expect(headers).toContain('/build-id.txt');
+    expect(headers).toContain('CDN-Cache-Control: no-store');
+    expect(headers).toContain('Cache-Control: no-cache, must-revalidate');
+    expect(layout).toContain('/build-id.txt');
+    expect(layout).toContain("cache: 'no-store'");
+    expect(refresh).toContain('cookie-consent-preference');
+    expect(refresh).toContain('serviceWorker');
+  });
+
   it('confirm and resource modals are not nested in the clipped workspace root', async () => {
     const page = await readFile(path.resolve('src/components/account/AccountWorkspacePage.astro'), 'utf8');
     const afterShell = page.indexOf('</AccountWorkspaceShell>');

@@ -81,6 +81,9 @@ out
 # Astro cache
 .astro/
 
+# Generated at Pages/Astro build — not a source of truth
+website-brisbaneservers.com/public/build-id.txt
+
 # Package build outputs
 voice-framework/dist/
 voice-framework/test-results/

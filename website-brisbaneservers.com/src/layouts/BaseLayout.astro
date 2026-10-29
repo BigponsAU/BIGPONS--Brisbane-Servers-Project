@@ -134,7 +134,7 @@ const siteBuildStamp =
     {pageId === 'account' && (
       <script src="/account-inline-boot.js" data-cfasync="false" />
     )}
-    {/* Build-aware cache reset — runs before modules so phones leave stale shells. */}
+    {/* Deploy-aware cache reset — /build-id.txt is never stored, so stale HTML still notices a new Pages build. Consent and auth cookies are kept. */}
     <script is:inline data-cfasync="false" define:vars={{ siteBuildStamp }}>
       (function () {
         'use strict';
@@ -143,61 +143,85 @@ const siteBuildStamp =
         var GUARD = 'bs.cacheReloadOnce';
         var params = new URLSearchParams(location.search);
         var force = params.has('refresh') || params.get('cache') === 'reset';
-        var prev = null;
-        try {
-          prev = localStorage.getItem(KEY);
-        } catch (e) {}
-        function clearCaches(done) {
-          var finish = function () {
-            try {
-              localStorage.setItem(KEY, BUILD);
-              sessionStorage.setItem(GUARD, '1');
-            } catch (e) {}
+        if (params.has('_b') || params.has('_v') || force) {
+          params.delete('_b');
+          params.delete('_v');
+          params.delete('refresh');
+          params.delete('cache');
+          var clean = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+          history.replaceState(null, '', clean);
+        }
+        function dropCaches(thenGo) {
+          var next = typeof thenGo === 'function' ? thenGo : function () {};
+          var sw = Promise.resolve();
+          try {
+            if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+              sw = navigator.serviceWorker.getRegistrations().then(function (regs) {
+                return Promise.all(
+                  regs.map(function (reg) {
+                    return reg.unregister();
+                  }),
+                );
+              });
+            }
+          } catch (e) {}
+          var http = Promise.resolve();
+          try {
+            if (window.caches && caches.keys) {
+              http = caches.keys().then(function (keys) {
+                return Promise.all(
+                  keys.map(function (k) {
+                    return caches.delete(k);
+                  }),
+                );
+              });
+            }
+          } catch (e) {}
+          Promise.all([sw, http]).then(next, next);
+        }
+        function reloadTo(id) {
+          try {
+            localStorage.setItem(KEY, id);
+            sessionStorage.setItem(GUARD, id);
+          } catch (e) {}
+          dropCaches(function () {
             var u = new URL(location.href);
-            u.searchParams.delete('refresh');
-            u.searchParams.delete('cache');
-            u.searchParams.set('_v', BUILD.slice(0, 12));
+            u.searchParams.set('_b', String(id).slice(0, 12));
             location.replace(u.toString());
-          };
-          if (!(window.caches && caches.keys)) {
-            finish();
-            return;
-          }
-          caches
-            .keys()
-            .then(function (keys) {
-              return Promise.all(
-                keys.map(function (k) {
-                  return caches.delete(k);
-                }),
-              );
-            })
-            .then(finish, finish);
+          });
         }
-        window.__bsRefreshSite = function () {
-          try {
-            localStorage.removeItem(KEY);
-          } catch (e) {}
-          var u = new URL(location.href);
-          u.searchParams.set('refresh', '1');
-          location.assign(u.toString());
-        };
-        if (force || (prev && prev !== BUILD)) {
-          // Avoid infinite reload loops if storage is blocked.
+        function maybeReload(remote) {
+          if (!remote || remote === 'local-dev') return;
           var looping = false;
+          var prev = null;
           try {
-            looping = sessionStorage.getItem(GUARD) === BUILD;
+            looping = sessionStorage.getItem(GUARD) === remote;
+            prev = localStorage.getItem(KEY);
           } catch (e) {}
-          if (!looping) {
-            try {
-              sessionStorage.setItem(GUARD, BUILD);
-            } catch (e) {}
-            clearCaches();
-            return;
-          }
+          if (looping) return;
+          if (prev === remote && BUILD === remote) return;
+          reloadTo(remote);
+        }
+        var stored = null;
+        try {
+          stored = localStorage.getItem(KEY);
+        } catch (e) {}
+        if (force || (stored && stored !== BUILD)) {
+          maybeReload(BUILD);
+        } else {
+          try {
+            if (!stored) localStorage.setItem(KEY, BUILD);
+          } catch (e) {}
         }
         try {
-          if (!prev) localStorage.setItem(KEY, BUILD);
+          fetch('/build-id.txt?t=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
+            .then(function (res) {
+              return res.ok ? res.text() : '';
+            })
+            .then(function (text) {
+              maybeReload(String(text || '').trim().slice(0, 40));
+            })
+            .catch(function () {});
         } catch (e) {}
       })();
     </script>
