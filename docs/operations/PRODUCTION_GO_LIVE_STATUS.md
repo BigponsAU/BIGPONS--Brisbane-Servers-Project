@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-10-28 — cookie bar no longer covers account sign-in
+**Last synced:** 2026-11-14 — Google Tag and sign-up conversion live
+
+### 2026-11-14 — Google Tag and sign-up conversion
+
+- **Site** — `GTM-M88HFRL3` loads after cookie consent on the public site, account workspace, and `/portal` redirect. A created account sends Google Ads conversion `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp`.
+- **Deploy** — Cloudflare Pages production `b7a5630c` from `bcd4748` (**success**, 2026-11-14). Live build `bcd47483234d` on `https://brisbaneservers.com` and `https://brisbaneservers.com/account/`.
+- **Note** — The earlier production build of `bcd133d` failed typecheck (`SubSection` was undefined). That type error is fixed in `bcd4748`.
 
 ### 2026-10-28 — Cookie bar offset on `/account`
 
