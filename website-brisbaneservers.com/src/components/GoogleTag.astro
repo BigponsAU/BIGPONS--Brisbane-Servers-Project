@@ -14,7 +14,12 @@
     window.__bsGtmLoaded = true;
     window.__bsLoadGoogleTag = function () {};
     window.__bsTrackSignupConversion = function () {
+      window.gtag('event', 'sign_up');
       window.gtag('event', 'conversion', { send_to: SIGNUP_CONVERSION });
+    };
+    window.__bsTrackEnquiryConversion = function () {
+      window.gtag('event', 'enquiry');
+      window.gtag('event', 'generate_lead');
     };
   })();
 </script>

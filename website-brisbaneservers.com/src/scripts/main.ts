@@ -1307,6 +1307,7 @@ async function submitInquiryForm(form: HTMLFormElement | null): Promise<void> {
                 'success',
             );
             form.reset();
+            (window as Window & { __bsTrackEnquiryConversion?: () => void }).__bsTrackEnquiryConversion?.();
             return;
         }
 

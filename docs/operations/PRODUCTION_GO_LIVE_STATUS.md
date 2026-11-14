@@ -2,7 +2,12 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-11-15 — Google Tag loads without waiting for the cookie banner
+**Last synced:** 2026-11-15 — enquiry and sign-up events fire from the forms
+
+### 2026-11-15 — Enquiry and sign-up events
+
+- **Site** — A successful enquiry calls `enquiry` and `generate_lead`. A created account still sends `sign_up` and Ads conversion `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp`.
+- **Note** — The published container has no separate enquiry `send_to` label. Paste that snippet if the enquiry conversion should use its own Ads label.
 
 ### 2026-11-15 — Google Tag is not held for consent
 
