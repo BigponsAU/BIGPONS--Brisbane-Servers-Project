@@ -3,7 +3,7 @@
  * placement follow this topic’s priorities — not a shared heading list.
  */
 
-export const DOCUMENT_STRUCTURE_SEED_VERSION = 3;
+export const DOCUMENT_STRUCTURE_SEED_VERSION = 4;
 export const ARTICLE_DIAGRAM_SLOT = ':::diagram-here:::';
 
 export function humanizeLabel(value: string): string {
@@ -91,7 +91,7 @@ export function detectArticleShape(params: {
     if (
       shape === 'compliance' &&
       /\b(operat|workflow|process)/.test(blob([params.topic])) &&
-      !/audit|privacy|retention|consent/.test(text)
+      !/compliance|audit|privacy|retention|consent|policy|record/.test(text)
     ) {
       return 'sequence';
     }

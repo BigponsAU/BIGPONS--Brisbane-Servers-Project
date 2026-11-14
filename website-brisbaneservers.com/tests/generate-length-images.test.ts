@@ -46,9 +46,10 @@ describe('on-topic article word bands', () => {
     const headings = [...article.matchAll(/^#{1,3}\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase());
     expect(new Set(headings).size).toBe(headings.length);
     expect(article).toMatch(/^## /m);
+    expect(article).not.toMatch(/Pilot notes|before you wide/i);
     const diagramAt = article.indexOf(':::diagram-here:::');
-    expect(diagramAt).toBeGreaterThan(article.indexOf('## How work actually runs'));
-    expect(article.slice(Math.max(0, diagramAt - 280), diagramAt)).toMatch(/picture|figure|sequence|join/i);
+    expect(diagramAt).toBeGreaterThan(article.indexOf('## Evidence along the path'));
+    expect(article.slice(Math.max(0, diagramAt - 280), diagramAt)).toMatch(/picture|figure|sequence|join|evidence/i);
     expect(article.slice(diagramAt, diagramAt + 280)).toMatch(/picture|figure|path|Thursday/i);
     if (target >= 1100) {
       expect(article).toMatch(/^### /m);

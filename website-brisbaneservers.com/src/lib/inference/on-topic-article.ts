@@ -61,41 +61,23 @@ function diagramDiscussion(topicLabel: string, industryLabel: string): { before:
 }
 
 export const FILLER_HEADING_RE =
-  /^(going deeper(?:\s+on)?|working detail:?|practice note(?:\s+\d+)?|more on|a closer look(?:\s+at)?|digging(?:\s+deeper)?\s+into)\b/i;
+  /^(going deeper(?:\s+on)?|working detail:?|practice note(?:\s+\d+)?|more on|a closer look(?:\s+at)?|digging(?:\s+deeper)?\s+into|pilot notes|a tight operating aside|what follows from)\b/i;
+
+const STOCK_HEADING_RE =
+  /pilot notes|before you wide[nr]|ten minutes or it is decoration|shadows, drives|privacy as an operating note|what [“"']done[”"'] means without a meeting|cadence that fits a lean week|the exception that teaches/i;
 
 function voiceHeadingBank(topicLabel: string, industryLabel: string): string[] {
-  return [
-    `What ${topicLabel} costs by Thursday`,
-    `How ${industryLabel} staff actually brief`,
-    `The exception that teaches`,
-    `Handover that survives leave`,
-    `Language the floor already uses`,
-    `When not to add another field`,
-    `Cadence that fits a lean week`,
-    `Privacy as an operating note`,
-    `What “done” means without a meeting`,
-    `Pilot notes before you widen`,
-    `Shadows, drives, and why they exist`,
-    `Ten minutes or it is decoration`,
-    `One object, one next action`,
-    `The deputy when the owner is away`,
-    `Close-out in the same record`,
-    `Signals you can say in a sentence`,
-    `Trust when the file and the floor disagree`,
-    `A Monday pack that is not a performance`,
-    `Where judgment stays human`,
-    `What ${industryLabel} should refuse to automate`,
-    `The first week’s real notes`,
-    `Ageing exceptions, not folklore`,
-    `A trail a staff member can explain`,
-    `Why ${topicLabel} still stalls in chat`,
-  ];
+  const plan = planArticleStructure({ topic: topicLabel, industry: industryLabel });
+  const fromSpine = plan.sections.map((section) => section.title);
+  const extras = overflowNotes(plan.shape, topicLabel, industryLabel).map((note) => note.title);
+  return [...fromSpine, ...extras];
 }
 
 export function markdownHasFillerHeadings(markdown: string): boolean {
-  return [...markdown.matchAll(/^#{1,3}\s+(.+)$/gm)].some((match) =>
-    FILLER_HEADING_RE.test(match[1].trim()),
-  );
+  return [...markdown.matchAll(/^#{1,4}\s+(.+)$/gm)].some((match) => {
+    const title = match[1].trim();
+    return FILLER_HEADING_RE.test(title) || STOCK_HEADING_RE.test(title);
+  });
 }
 
 export function rewriteFillerHeadings(markdown: string, topic: string, industry: string): string {
@@ -104,9 +86,11 @@ export function rewriteFillerHeadings(markdown: string, topic: string, industry:
   const bank = voiceHeadingBank(topicLabel, industryLabel);
   let i = 0;
   const used = new Set<string>();
-  return markdown.replace(/^(#{1,3})\s+(.+)$/gm, (_full, hashes: string, title: string) => {
+  return markdown.replace(/^(#{1,4})\s+(.+)$/gm, (_full, hashes: string, title: string) => {
     const trimmed = String(title).trim();
-    if (!FILLER_HEADING_RE.test(trimmed)) return `${hashes} ${trimmed}`;
+    if (!FILLER_HEADING_RE.test(trimmed) && !STOCK_HEADING_RE.test(trimmed)) {
+      return `${hashes} ${trimmed}`;
+    }
     let next = bank[i % bank.length];
     i += 1;
     while (used.has(next.toLowerCase())) {
@@ -119,61 +103,62 @@ export function rewriteFillerHeadings(markdown: string, topic: string, industry:
 }
 
 function overflowNotes(
+  shape: ReturnType<typeof planArticleStructure>['shape'],
   topicLabel: string,
   industryLabel: string,
 ): Array<{ title: string; body: string }> {
+  if (shape === 'compliance') {
+    return [
+      {
+        title: 'What the file has to prove',
+        body: `A ${industryLabel} ${topicLabel} record is useful only if someone can produce it on Thursday: who acted, when, and under which rule. If the answer lives in email, the evidence is already gone.`,
+      },
+      {
+        title: 'Retention in the same system',
+        body: `Keep the working file and the retained file in one path. A second “compliance folder” is how ${topicLabel} forks and how an auditor is shown the wrong version.`,
+      },
+      {
+        title: 'Access that matches the role',
+        body: `Who can see a ${topicLabel} file is part of the work, not a later IT ticket. Role, retention, and a trail a staff member can explain keep this ${industryLabel} practice publishable.`,
+      },
+      {
+        title: 'The awkward call stays human',
+        body: `Automation can surface a missing consent or an overdue review. It cannot take the client conversation. ${industryLabel} judgment stays with the person who can say yes or no.`,
+      },
+    ];
+  }
+  if (shape === 'roster') {
+    return [
+      {
+        title: 'The 6am gap',
+        body: `If nobody is named for the next ${topicLabel} block, ${industryLabel} already knows the call will land on the person who always picks up. Write the cover before the gap.`,
+      },
+      {
+        title: 'Swaps that leave a trail',
+        body: `A swap that exists only in a message is not coverage. The live ${topicLabel} record should show who is on after the change.`,
+      },
+    ];
+  }
+  if (shape === 'handover') {
+    return [
+      {
+        title: 'What leave must not reset',
+        body: `The next person inherits the object, the owner, and the next action. If they ask “where are we?”, ${topicLabel} is still tribal in this ${industryLabel} shop.`,
+      },
+    ];
+  }
   return [
     {
-      title: 'Handover completeness',
-      body: `At each handoff, the next person should inherit the object, the owner, and the next action. If they have to ask “where are we?” then ${topicLabel} is still tribal knowledge in this ${industryLabel} shop.`,
+      title: `What a ${industryLabel} week actually costs`,
+      body: `Count the minutes spent reconstructing ${topicLabel} before a client conversation. That tax is the supporting point — not a second manifesto.`,
     },
     {
-      title: 'Exceptions that stay visible',
-      body: `Late, incomplete, and dual-record cases should sit on one list with an age. Hide them in a chat thread and they become folklore. Surface them in the same ${topicLabel} view used on Monday.`,
+      title: 'One live path, then the join',
+      body: `Late and dual-record cases should sit on one list with an age. Hide them in chat and they become folklore. Surface them in the same ${topicLabel} view used on Monday.`,
     },
     {
-      title: 'A briefing without rebuilding slides',
-      body: `${industryLabel} leaders should be able to talk from the live record. If the pack is rebuilt in PowerPoint every week, the operating picture is a performance, not a practice.`,
-    },
-    {
-      title: 'Access that matches the role',
-      body: `Who can see a file is part of ${topicLabel}, not a later IT ticket. Role, retention, and a trail a staff member can explain are the Australian operating notes that keep this work publishable.`,
-    },
-    {
-      title: 'Pilot notes from week one',
-      body: `Write what actually happened: which field was skipped, which exception fired, who was away. Those notes are the spec. Widen the ${topicLabel} path only when they look like a normal ${industryLabel} week.`,
-    },
-    {
-      title: 'Signals you can say in a sentence',
-      body: `If a metric needs a footnote, drop it. Cycle time, exception count, and completeness at handover are enough for most ${industryLabel} stand-ups. Three numbers beat a decorated dashboard.`,
-    },
-    {
-      title: 'The deputy and the calendar',
-      body: `If the owner is away, ${topicLabel} still has to move. Name a deputy and put the fifteen-minute review on a calendar ${industryLabel} staff can see. Cadence that lives in someone’s head is not cadence.`,
-    },
-    {
-      title: 'Close-out, not another folder',
-      body: `When the job, episode, or booking is done, close it in the same record. A second “archive” folder is how ${topicLabel} forks. ${industryLabel} teams should find the end of the path without asking who keeps the real file.`,
-    },
-    {
-      title: 'Shadows and personal drives',
-      body: `If people keep a private spreadsheet “just in case”, the official ${topicLabel} path is too slow or too preachy. Shorten it. Then retire the shadow. Australian ${industryLabel} operators will not wait for a perfect schema.`,
-    },
-    {
-      title: 'Ten minutes or it is decoration',
-      body: `Time a real stand-up against the live view. If it takes longer than ten minutes to answer “what is true this morning?”, strip the ${topicLabel} board until it can. Decoration is worse than a short list.`,
-    },
-    {
-      title: 'One object, one next action',
-      body: `Every row should name the object and the next action. Status words without a verb are how ${industryLabel} work stalls. ${topicLabel} is a path, not a mood.`,
-    },
-    {
-      title: 'What “done” looks like this Thursday',
-      body: `Write done as a check a new staff member can apply: complete record, named owner, no open exception. If done needs a meeting to interpret, ${topicLabel} is still a brochure.`,
-    },
-    {
-      title: 'Widen only after the notes look real',
-      body: `A second team inherits the path that survived week one, not the slide. If ${industryLabel} leadership skips the notes, they will scale a fiction. Keep ${topicLabel} expansion boring and earned.`,
+      title: 'A briefing from the live record',
+      body: `${industryLabel} leaders should talk from the current ${topicLabel} record. If the pack is rebuilt in slides every week, the operating picture is a performance.`,
     },
   ];
 }
@@ -216,7 +201,7 @@ export function buildOnTopicArticle(params: {
     existingMarkdown: keepSeed ? seed : undefined,
   });
   const spine = plan.sections;
-  const extras = overflowNotes(topicLabel, industryLabel);
+  const extras = overflowNotes(plan.shape, topicLabel, industryLabel);
   const used = keepSeed ? existingHeadings(seed) : new Set<string>();
   const picture = diagramDiscussion(topicLabel, industryLabel);
 
@@ -283,24 +268,17 @@ export function buildOnTopicArticle(params: {
     parts.push(`#### ${note.title}`, note.body);
   }
 
-  while (countWords(parts.join('\n\n')) < params.minWords) {
-    const n = extra;
-    extra += 1;
-    const heading = voiceHeadingBank(topicLabel, industryLabel)[n % voiceHeadingBank(topicLabel, industryLabel).length];
-    const key = heading.toLowerCase();
-    if (used.has(key)) {
-      if (extra > 40) break;
-      continue;
-    }
-    used.add(key);
-    parts.push(
-      `#### ${heading}`,
-      `On a live ${industryLabel} week, ${topicLabel} still needs a current fact, a named owner, and a next action that does not live in chat. Write it once, in the language the floor already uses.`,
-    );
-    if (extra > 40) break;
+  let markdown = parts.join('\n\n');
+  if (countWords(markdown) < params.minWords) {
+    markdown = fillArticleToBand(markdown, {
+      industry: params.industry,
+      topic: params.topic,
+      title,
+      minWords: params.minWords,
+      maxWords: params.maxWords,
+    });
   }
-
-  return trimToMaxWords(parts.join('\n\n'), params.maxWords);
+  return trimToMaxWords(markdown, params.maxWords);
 }
 
 export function ensureArticleWordBand(

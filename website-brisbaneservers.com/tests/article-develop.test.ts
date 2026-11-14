@@ -7,7 +7,7 @@ describe('article shape', () => {
     expect(detectArticleShape({ topic: 'patient-scheduling', industry: 'healthcare' })).toBe('roster');
     expect(detectArticleShape({ topic: 'e-commerce', industry: 'retail' })).toBe('client');
     expect(detectArticleShape({ topic: 'operational-compliance', industry: 'professional-services' })).toBe(
-      'sequence',
+      'compliance',
     );
     expect(detectArticleShape({ topic: 'clinical-handover', industry: 'healthcare' })).toBe('handover');
   });

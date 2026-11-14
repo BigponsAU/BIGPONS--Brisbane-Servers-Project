@@ -166,13 +166,14 @@ export function developArticle(params: {
   );
 }
 
-const FILL_ASIDES = [
-  ['Handover completeness', 'At each handoff the next person inherits the object, the owner, and the next action.'],
-  ['Exceptions that stay visible', 'Late and dual-record cases sit on one list with an age, not in a chat thread.'],
-  ['A briefing without rebuilding slides', 'Leaders should talk from the live record, not a weekly performance pack.'],
-  ['Ten minutes or it is decoration', 'If “what is true this morning?” takes longer than ten minutes, strip the board.'],
-  ['One object, one next action', 'Status words without a verb are how the week stalls.'],
-];
+function fillAsidesFor(topic: string, industry: string): Array<[string, string]> {
+  const plan = planArticleStructure({ topic, industry });
+  const fromPlan = plan.sections
+    .filter((section) => section.role === 'aside' || section.weight === 1)
+    .map((section) => [section.title, `This aside only exists because the main ${topic} claim is true in ${industry}.`] as [string, string]);
+  if (fromPlan.length) return fromPlan;
+  return [[`A short ${topic} check`, `If this detail is not used in a ${industry} decision this month, hide it.`]];
+}
 
 export function fillArticleToBand(
   content: string,
@@ -194,7 +195,7 @@ export function fillArticleToBand(
     const mode: DevelopMode = guard % 3 === 1 ? 'support' : guard % 3 === 2 ? 'aside' : 'continue';
     if (mode === 'aside' && guard > 2) {
       const used = usedHeadings(chunks);
-      const pick = FILL_ASIDES[guard % FILL_ASIDES.length];
+      const pick = fillAsidesFor(topic, industry)[guard % fillAsidesFor(topic, industry).length];
       const title = uniqueTitle(pick[0], used);
       next = joinArticleChunks([
         ...chunks,
