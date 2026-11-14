@@ -68,6 +68,11 @@ function filterRows<T extends { email: string; status?: string; subscriptionStat
   });
 }
 
+function setKpi(id: string, value: string): void {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
 function renderStripeStatus(data: {
   stripeConfigured?: boolean;
   activeCount?: number;
@@ -76,11 +81,14 @@ function renderStripeStatus(data: {
   const el = document.getElementById('admin-billing-stripe-status');
   if (!el) return;
   if (!data.stripeConfigured) {
+    setKpi('admin-billing-kpi-stripe', 'Not configured');
     el.innerHTML =
       '<strong>Stripe not configured.</strong> Set <code>STRIPE_SECRET_KEY</code>, <code>STRIPE_AI_BOOST_PRICE_ID</code>, and <code>STRIPE_WEBHOOK_SECRET</code> on the edge worker.';
     return;
   }
-  el.innerHTML = `<strong>Stripe live.</strong> ${data.activeCount ?? 0} active subscriber(s). AI Boost adds +${data.subscriptionDailyBonus ?? 15} daily units while active. Webhook: <code>POST /api/billing/webhook</code>`;
+  setKpi('admin-billing-kpi-stripe', 'Live');
+  setKpi('admin-billing-kpi-subs', String(data.activeCount ?? 0));
+  el.innerHTML = `<strong>Stripe live.</strong> ${data.activeCount ?? 0} active AI Boost subscriber(s). +${data.subscriptionDailyBonus ?? 15} daily units while active. Webhook: <code>POST /api/billing/webhook</code>`;
 }
 
 function renderSubscribersTable(query = ''): void {
@@ -159,6 +167,8 @@ function renderSummary(totals?: {
 }): void {
   const summary = document.getElementById('admin-billing-summary');
   if (!summary || !totals) return;
+  setKpi('admin-billing-kpi-used', String(totals.totalUsed));
+  setKpi('admin-billing-kpi-cap', String(totals.usersAtCap));
   summary.textContent = `${totals.totalUsed} units used today across ${totals.usersWithUsage} user(s) · ${totals.usersNearCap} near cap · ${totals.usersAtCap} at cap · ${totals.activeUsers} active accounts`;
 }
 

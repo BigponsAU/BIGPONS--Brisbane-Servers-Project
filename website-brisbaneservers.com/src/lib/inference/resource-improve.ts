@@ -9,7 +9,10 @@ import type { VoiceMatcher } from '@voice-framework/generators/voice-matcher';
 import type { AuthRole } from '../../utils/auth';
 import type { Resource } from '../resource-types';
 import type { ResolvedResourceVoiceProfile } from '../resource-voice-profile';
+import { resolveGenerateLength } from '../generate-length';
 import { buildInferenceSystemPrompt, buildImproveUserPrompt } from './prompt-builder';
+import { countWords, ensureArticleWordBand } from './on-topic-article';
+import { developArticle, type DevelopMode } from './article-develop';
 import { completeInference, getInferenceProvider } from './inference-provider';
 import {
   checkUsageCap,
@@ -36,6 +39,7 @@ export interface ImproveBodyParams {
   extrapolator: Extrapolator;
   voiceMatcher: VoiceMatcher;
   reason?: UsageReason;
+  develop?: { mode: DevelopMode; heading?: string };
 }
 
 export interface ImproveBodyResult {
@@ -84,9 +88,42 @@ function acceptCandidate(
   };
 }
 
+function needsDocumentSeed(content: string): boolean {
+  const headings = [...content.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase());
+  const unique = new Set(headings);
+  return (
+    /Going deeper|Working detail:|Practice note\s+\d+/i.test(content) ||
+    countWords(content) < 400 ||
+    unique.size < 3
+  );
+}
+
+function structuredArticle(params: ImproveBodyParams): string {
+  const plan = resolveGenerateLength(undefined, params.resource.metadata?.wordCount || 1600);
+  return ensureArticleWordBand(params.resource.content, {
+    industry: params.resource.industry,
+    topic: params.resource.topic,
+    title: params.resource.title,
+    minWords: plan.minWords,
+    maxWords: plan.maxWords,
+  });
+}
+
 function keepOriginal(params: ImproveBodyParams): ImproveBodyResult {
   const raw = params.resource.content;
   const allowDesign = isDesignSystemVoiceProfile(params.resolved.profile);
+  if (needsDocumentSeed(raw)) {
+    const rebuilt = structuredArticle(params);
+    const validation = params.voiceMatcher.validateVoice(rebuilt);
+    return {
+      content: rebuilt,
+      inferenceMode: 'template',
+      modelId: 'document-structure-seed',
+      voiceScore: validation.score ?? 0,
+      voiceValid: validation.isValid ?? false,
+      topicFidelity: scoreTopicFidelity(raw, rebuilt),
+    };
+  }
   // If a prior bad Improve left design-system junk in an industry draft, strip it
   // rather than preserving gibberish as "original".
   const content =
@@ -127,13 +164,24 @@ export async function improveResourceBody(params: ImproveBodyParams): Promise<Im
           originalContent: params.resource.content,
           ragContextText: params.ragContextText,
           allowDesignSystemJargon: allowDesignJargon,
+          develop: params.develop,
         });
         const ai = await completeInference({ system, user, maxTokens: 1400 });
         const validation = params.voiceMatcher.validateVoice(ai.text);
         const score = validation.score ?? 0;
 
         if (score >= 0.45) {
-          const accepted = acceptCandidate(params, ai.text, ai.provider, ai.modelId);
+          const plan = resolveGenerateLength(undefined, params.resource.metadata?.wordCount || 1600);
+          const article = params.develop
+            ? ai.text
+            : ensureArticleWordBand(ai.text, {
+                industry: params.resource.industry,
+                topic: params.resource.topic,
+                title: params.resource.title,
+                minWords: plan.minWords,
+                maxWords: plan.maxWords,
+              });
+          const accepted = acceptCandidate(params, article, ai.provider, ai.modelId);
           if (accepted) {
             await recordUsage({
               userId: params.userId,
@@ -153,6 +201,19 @@ export async function improveResourceBody(params: ImproveBodyParams): Promise<Im
         console.warn(`[inference] improve ${provider} failed; template fallback`, err);
       }
     }
+  }
+
+  if (params.develop) {
+    const developed = developArticle({
+      content: params.resource.content,
+      industry: params.resource.industry,
+      topic: params.resource.topic,
+      title: params.resource.title,
+      mode: params.develop.mode,
+      heading: params.develop.heading,
+    });
+    const developedAccepted = acceptCandidate(params, developed, 'template', 'article-develop');
+    if (developedAccepted) return developedAccepted;
   }
 
   const templateContent = improveTemplateBody(params);

@@ -9,6 +9,7 @@ import { wrapMarkdownDocument } from '../lib/markdown-render';
 import { diagramMarker } from '../lib/resource-infographics';
 import {
   articlePieceTemplate,
+  changeHeadingLevel,
   duplicatePiece,
   insertPieceAfter,
   movePiece,
@@ -17,6 +18,7 @@ import {
   type ArticlePieceNode,
 } from '../lib/workspace-article-pieces';
 import { workspaceFetch } from '../lib/client-api';
+import { developArticle, type DevelopMode } from '../lib/inference/article-develop';
 import { showPromptDialog } from './portal-confirm-dialog';
 import { showWorkspaceNotification } from './account-workspace-utils';
 
@@ -149,6 +151,40 @@ function applyPieces(editor: Editor, nodes: ArticlePieceNode[], _focusIndex?: nu
   editor.commands.focus();
 }
 
+function articleFieldContext(textarea: HTMLTextAreaElement): { industry: string; topic: string; title: string } {
+  const root = textarea.closest('form, .resource-detail-edit, .modal, .account-workspace-shell') || document;
+  const valueOf = (ids: string[]) => {
+    for (const id of ids) {
+      const el = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`);
+      if (el?.value?.trim()) return el.value.trim();
+    }
+    return '';
+  };
+  return {
+    title: valueOf(['detail-edit-title', 'edit-resource-title-input', 'resource-title']),
+    industry: valueOf(['detail-edit-industry', 'edit-resource-industry', 'resource-industry']),
+    topic: valueOf(['detail-edit-topic', 'edit-resource-topic', 'resource-topic']),
+  };
+}
+
+function selectedHeadingTitle(editor: Editor): string | undefined {
+  const { $from } = editor.state.selection;
+  for (let depth = $from.depth; depth > 0; depth -= 1) {
+    const node = $from.node(depth);
+    if (node.type.name === 'heading' && node.textContent.trim()) return node.textContent.trim();
+  }
+  const index = selectedTopIndex(editor);
+  const pieces = docPieces(editor);
+  for (let i = index; i >= 0; i -= 1) {
+    const piece = pieces[i];
+    if (piece?.type === 'heading') {
+      const text = (piece.content || []).map((child) => child.text || '').join('').trim();
+      if (text) return text;
+    }
+  }
+  return undefined;
+}
+
 function selectedTopIndex(editor: Editor): number {
   const { $from } = editor.state.selection;
   if ($from.depth < 1) return Math.max(0, editor.state.doc.childCount - 1);
@@ -232,7 +268,7 @@ function createTipTapEditor(mount: HTMLElement, textarea: HTMLTextAreaElement): 
     element: mount,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3, 4] },
+        heading: { levels: [1, 2, 3, 4] },
       }),
       Link.configure({
         openOnClick: false,
@@ -245,6 +281,57 @@ function createTipTapEditor(mount: HTMLElement, textarea: HTMLTextAreaElement): 
   });
   tipTapEditors.set(textarea, editor);
   return editor;
+}
+
+async function runDevelopAction(
+  textarea: HTMLTextAreaElement,
+  editor: Editor,
+  mode: DevelopMode,
+): Promise<void> {
+  syncTextareaFromEditor(textarea, editor);
+  const ctx = articleFieldContext(textarea);
+  const heading = selectedHeadingTitle(editor);
+  const local = developArticle({
+    content: textarea.value,
+    industry: ctx.industry || 'this industry',
+    topic: ctx.topic || 'this work',
+    title: ctx.title,
+    mode,
+    heading,
+  });
+  setMarkdownFieldValue(textarea.id, local);
+  showWorkspaceNotification(
+    mode === 'support'
+      ? 'Supporting section added under this point.'
+      : mode === 'aside'
+        ? 'Short aside added.'
+        : 'This point was given more depth.',
+    'success',
+  );
+
+  const options = fieldOptions.get(textarea);
+  const resourceId = options?.resourceId;
+  const api = options?.getVoiceApiUrl?.();
+  if (!resourceId || !api || mode !== 'continue') return;
+
+  try {
+    const response = await workspaceFetch(`${api}/resources/${resourceId}/improve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        develop: mode,
+        heading,
+        content: local,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success || typeof data.resource?.content !== 'string') return;
+    setMarkdownFieldValue(textarea.id, data.resource.content);
+    options?.onResourceUpdated?.(data.resource);
+    showWorkspaceNotification('Generated more on the main point.', 'success');
+  } catch {
+    /* Local develop already applied. */
+  }
 }
 
 function bindPieceEditor(
@@ -274,11 +361,22 @@ function bindPieceEditor(
             chain.setLink({ href: url }).run();
           }
         });
-      } else if (cmd === 'paragraph' || cmd === 'heading' || cmd === 'subheading' || cmd === 'list' || cmd === 'quote') {
+      } else if (
+        cmd === 'paragraph' ||
+        cmd === 'title' ||
+        cmd === 'heading' ||
+        cmd === 'subheading' ||
+        cmd === 'list' ||
+        cmd === 'quote'
+      ) {
         insertArticlePiece(editor, cmd);
         syncTextareaFromEditor(textarea, editor);
       } else if (cmd === 'diagram') void runDiagramAction(textarea, editor, 'generate');
       else if (cmd === 'diagram-regen') void runDiagramAction(textarea, editor, 'regenerate');
+      else if (cmd === 'develop-expand') void runDevelopAction(textarea, editor, 'expand');
+      else if (cmd === 'develop-support') void runDevelopAction(textarea, editor, 'support');
+      else if (cmd === 'develop-aside') void runDevelopAction(textarea, editor, 'aside');
+      else if (cmd === 'develop-continue') void runDevelopAction(textarea, editor, 'continue');
     });
   });
 
@@ -289,6 +387,8 @@ function bindPieceEditor(
       const nodes = docPieces(editor);
       if (action === 'up') applyPieces(editor, movePiece(nodes, index, -1), Math.max(0, index - 1));
       else if (action === 'down') applyPieces(editor, movePiece(nodes, index, 1), Math.min(nodes.length - 1, index + 1));
+      else if (action === 'bigger') applyPieces(editor, changeHeadingLevel(nodes, index, -1), index);
+      else if (action === 'smaller') applyPieces(editor, changeHeadingLevel(nodes, index, 1), index);
       else if (action === 'duplicate') applyPieces(editor, duplicatePiece(nodes, index), index + 1);
       else if (action === 'remove') applyPieces(editor, removePiece(nodes, index), Math.max(0, index - 1));
       else if (action === 'paragraph' || action === 'heading' || action === 'list' || action === 'quote') {
@@ -328,13 +428,21 @@ export function enhanceMarkdownTextarea(
     </div>
     <div class="workspace-markdown-field__insert" role="toolbar" aria-label="Insert a piece into the article">
       <span class="workspace-markdown-field__insert-label">Insert</span>
-      <button type="button" class="workspace-markdown-field__fmt" data-cmd="heading" title="Add a heading">Heading</button>
-      <button type="button" class="workspace-markdown-field__fmt" data-cmd="subheading" title="Add a subheading">Subheading</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="title" title="Add a page title">Title</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="heading" title="Add a section heading">Heading</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="subheading" title="Add a subsection">Subheading</button>
       <button type="button" class="workspace-markdown-field__fmt" data-cmd="paragraph" title="Add a paragraph">Paragraph</button>
       <button type="button" class="workspace-markdown-field__fmt" data-cmd="list" title="Add a list">List</button>
       <button type="button" class="workspace-markdown-field__fmt" data-cmd="quote" title="Add a quoted note">Quote</button>
       <button type="button" class="workspace-markdown-field__fmt" data-cmd="diagram" title="Insert a positioning diagram">Diagram</button>
       <button type="button" class="workspace-markdown-field__fmt" data-cmd="diagram-regen" title="Regenerate the selected or last diagram">Regenerate diagram</button>
+    </div>
+    <div class="workspace-markdown-field__develop" role="toolbar" aria-label="Develop this article">
+      <span class="workspace-markdown-field__insert-label">Develop</span>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="develop-expand" title="Add depth to the selected section">Deepen this</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="develop-support" title="Add a supporting section that follows from this point">Add supporting</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="develop-aside" title="Add a short aside">Add aside</button>
+      <button type="button" class="workspace-markdown-field__fmt" data-cmd="develop-continue" title="Generate more on the main point">More on the main point</button>
     </div>
   `;
   wrapper.insertBefore(formatBar, textarea);
@@ -347,6 +455,8 @@ export function enhanceMarkdownTextarea(
     <span class="workspace-markdown-field__insert-label">This piece</span>
     <button type="button" class="workspace-markdown-field__fmt" data-block="up" title="Move up">Up</button>
     <button type="button" class="workspace-markdown-field__fmt" data-block="down" title="Move down">Down</button>
+    <button type="button" class="workspace-markdown-field__fmt" data-block="bigger" title="Make this heading larger">Larger heading</button>
+    <button type="button" class="workspace-markdown-field__fmt" data-block="smaller" title="Make this heading a subsection">Smaller heading</button>
     <button type="button" class="workspace-markdown-field__fmt" data-block="duplicate" title="Duplicate this piece">Duplicate</button>
     <button type="button" class="workspace-markdown-field__fmt" data-block="remove" title="Remove this piece">Remove</button>
     <button type="button" class="workspace-markdown-field__fmt" data-block="paragraph" title="Add a paragraph below">Add paragraph</button>
@@ -356,7 +466,7 @@ export function enhanceMarkdownTextarea(
   const hint = document.createElement('p');
   hint.className = 'workspace-markdown-field__hint';
   hint.textContent =
-    'Each heading, paragraph, list, quote, and diagram is its own piece. Click into one to edit it, then insert or move pieces to build the article.';
+    'Develop the page around the main point: deepen a section, add supporting or an aside, and keep the diagram next to the join it explains.';
   wrapper.insertBefore(hint, textarea);
 
   const visual = document.createElement('div');

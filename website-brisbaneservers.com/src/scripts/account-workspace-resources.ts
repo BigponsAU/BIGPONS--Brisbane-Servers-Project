@@ -35,6 +35,12 @@ import { displayCatalogDescription } from '../lib/catalog-copy';
 import { listResourceInfographics } from '../lib/resource-infographics';
 import { humanizeTagLabel } from '../lib/resource-tags';
 import { revealWorkspaceModal, hideWorkspaceModal } from './workspace-modal';
+import {
+  loadResourcesUiState,
+  rememberCreateFields,
+  saveResourcesUiState,
+  topicExpansionKey,
+} from './portal-resources-ui-state';
 import type { VoiceContextApi } from './account-workspace-voice-context';
 
 export type ResourceCreateSection = 'generate' | 'upload' | 'paste';
@@ -58,7 +64,7 @@ export type ResourcesWorkspaceDeps = {
 };
 
 export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
-  loadResources: (options?: { revealResourceId?: string }) => Promise<void>;
+  loadResources: (options?: { revealResourceId?: string; quiet?: boolean }) => Promise<void>;
   selectResource: (resourceId: string) => void;
 } {
   const {
@@ -117,9 +123,9 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     const sm = context === 'list' ? ' btn-sm' : '';
     const buttons: string[] = [];
 
-    if (context === 'detail') {
-      buttons.push(`<button class="btn btn-primary${sm}" onclick="viewResource('${id}')">View full</button>`);
-    }
+    buttons.push(
+      `<button class="btn btn-primary${sm}" onclick="viewResource('${id}')">${context === 'detail' ? 'View full' : 'View'}</button>`,
+    );
 
     if (perms.edit) {
       const editHandler =
@@ -170,6 +176,50 @@ export function registerResourcesWorkspace(deps: ResourcesWorkspaceDeps): {
     }
 
     return buttons.join('');
+  }
+
+  function resourceDetailActionsEl(): HTMLElement | null {
+    return document.getElementById('resource-detail-actions');
+  }
+
+  function setResourceDetailActions(html: string): void {
+    const footer = resourceDetailActionsEl();
+    if (!footer) return;
+    footer.innerHTML = html;
+    footer.hidden = !html.trim();
+  }
+
+  function isWorkspaceModalOpen(id: string): boolean {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    return el.getAttribute('aria-hidden') === 'false' || el.dataset.workspaceModalOpen === '1';
+  }
+
+  function refreshOpenResourceSurfaces(id: string): void {
+    const resource = getWorkspaceResourceById<any>(id);
+    if (!resource) return;
+    if (selectedResourceId === id) {
+      if (detailEditResourceId === id) detailEditResourceId = null;
+      loadResourceDetail(resource);
+    }
+    if (isWorkspaceModalOpen('view-resource-modal')) openViewModal(id);
+    if (isWorkspaceModalOpen('preview-resource-modal')) openPreviewModal(id);
+  }
+
+  async function applyResourceMutation(id: string, resource?: unknown): Promise<void> {
+    if (resource) {
+      upsertWorkspaceResource(resource);
+    } else {
+      try {
+        await fetchResourceById(getVoiceApiUrl(), id);
+      } catch {
+        /* list reload below still runs */
+      }
+    }
+    refreshOpenResourceSurfaces(id);
+    await loadResources({ revealResourceId: id, quiet: true });
+    refreshOpenResourceSurfaces(id);
+    void loadDashboardData();
   }
 
   const {
@@ -271,12 +321,19 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
         statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : outcome.type === 'error' ? 'error' : 'info'}`;
       }
       showNotification(outcome.message, outcome.type);
+      rememberCreateFields({
+        industry: String(formData.get('industry') || ''),
+        topic: String(formData.get('topic') || ''),
+        wordCount: String(formData.get('wordCount') || formData.get('length') || ''),
+      });
       form.reset();
-      setTimeout(() => {
-        console.log('[Portal] Refreshing resources after generation');
-        void loadResources(createdId ? { revealResourceId: createdId } : undefined);
-        loadDashboardData();
-      }, 500);
+      restoreCreateFields();
+      if (createdId) {
+        await applyResourceMutation(createdId, data.resource);
+      } else {
+        await loadResources({ quiet: true });
+        void loadDashboardData();
+      }
     } else {
       const errorMsg = data.error || 'Generation failed';
       portalActionFailure('generateResource', new Error(errorMsg));
@@ -305,29 +362,30 @@ document.getElementById('generate-resource-form')?.addEventListener('submit', as
 });
 
 // Load resources
-async function loadResources(options?: { revealResourceId?: string }): Promise<void> {
+async function loadResources(options?: { revealResourceId?: string; quiet?: boolean }): Promise<void> {
   const listDiv = document.getElementById('resources-list');
   const treeContainer = document.getElementById('resource-tree');
   
-  // Show loading in both views
-  if (listDiv) {
-    listDiv.innerHTML = `
-      <div class="loading-message">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-md);">
-          <div class="loading-spinner"></div>
-          <p>Loading resources...</p>
+  if (!options?.quiet) {
+    if (listDiv) {
+      listDiv.innerHTML = `
+        <div class="loading-message">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-md);">
+            <div class="loading-spinner"></div>
+            <p>Loading resources...</p>
+          </div>
         </div>
-      </div>
-    `;
-  }
-  
-  if (treeContainer) {
-    treeContainer.innerHTML = `
-      <div class="tree-loading">
-        <div class="loading-spinner"></div>
-        <p>Loading resource tree...</p>
-      </div>
-    `;
+      `;
+    }
+    
+    if (treeContainer) {
+      treeContainer.innerHTML = `
+        <div class="tree-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading resource tree...</p>
+        </div>
+      `;
+    }
   }
 
   try {
@@ -343,8 +401,10 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
     }
 
     const response = await workspaceFetch(url, {
+      cache: 'no-store',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
       }
     });
 
@@ -531,7 +591,6 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
           const voiceScoreClass = voiceScore >= 0.8 ? 'voice-score-high' : voiceScore >= 0.6 ? 'voice-score-medium' : 'voice-score-low';
           const voiceScoreText = voiceScore ? `${Math.round(voiceScore * 100)}%` : 'N/A';
           const inferenceBadge = formatInferenceBadge(resource.metadata);
-          const perms = resourcePermissions(resource);
         
           // Safe date parsing
           let dateText = 'Unknown';
@@ -546,95 +605,6 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
             console.warn('[Portal] Invalid date for resource:', resource.id, resource.generatedAt);
           }
           
-          const primaryActions = [];
-          const secondaryActions = [];
-          
-          // Primary actions (always visible on hover)
-          primaryActions.push(`<button class="btn btn-primary btn-sm" onclick="viewResource('${escapeJsString(resource.id)}')" aria-label="View resource">
-            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            View
-          </button>`);
-          
-          if (resource.status === 'draft' && perms.publish) {
-            primaryActions.push(`<button class="btn btn-success btn-sm" onclick="publishResource('${escapeJsString(resource.id)}')" aria-label="Publish">
-              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Publish
-            </button>`);
-          }
-          
-          // Secondary actions (in dropdown)
-          if (perms.edit) {
-          secondaryActions.push(`<button class="btn" onclick="editResource('${escapeJsString(resource.id)}')">
-            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            Edit
-          </button>`);
-          }
-          
-          secondaryActions.push(`<button class="btn" onclick="previewResource('${escapeJsString(resource.id)}')">
-            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-            Preview
-          </button>`);
-          
-          if (resource.status === 'published' && perms.unpublish) {
-            secondaryActions.push(`<button class="btn" onclick="unpublishResource('${escapeJsString(resource.id)}')">
-              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-              Unpublish
-            </button>`);
-          }
-          
-          if (perms.improve) {
-          secondaryActions.push(`<button class="btn" onclick="improveResource('${escapeJsString(resource.id)}')">
-            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-              <polyline points="17 6 23 6 23 12"></polyline>
-            </svg>
-            Improve
-          </button>`);
-          }
-          
-          if (resource.status !== 'archived' && perms.archive) {
-            secondaryActions.push(`<button class="btn" onclick="archiveResource('${escapeJsString(resource.id)}')">
-              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="21 16 21 22 3 22 3 16"></polyline>
-                <line x1="7" y1="16" x2="7" y2="2"></line>
-                <line x1="17" y1="16" x2="17" y2="2"></line>
-              </svg>
-              Archive
-            </button>`);
-          } else if (perms.unarchive) {
-            secondaryActions.push(`<button class="btn" onclick="unarchiveResource('${escapeJsString(resource.id)}')">
-              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="5 8 10 13 19 2"></polyline>
-              </svg>
-              Unarchive
-            </button>`);
-          }
-          
-          if (perms.delete) {
-          secondaryActions.push(`<button class="btn" onclick="deleteResource('${escapeJsString(resource.id)}')" style="color: var(--portal-error);">
-            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            ${resource.status === 'published' ? 'Remove' : 'Move to bin'}
-          </button>`);
-          }
-
           const isStarterBlock = resource.isStarterBlock === true;
           const starterBlockBadge = isStarterBlock ? '<span class="badge badge-starter" style="background: var(--portal-primary); color: var(--portal-text-inverse);">STARTER BLOCK</span>' : '';
           
@@ -721,26 +691,7 @@ async function loadResources(options?: { revealResourceId?: string }): Promise<v
                   Preview
                 </button>
               </div>
-            ` : `
-            <div class="resource-actions-primary">
-              ${primaryActions.join('')}
-            </div>
-            `}
-            <div class="resource-actions-secondary">
-              <div class="resource-actions-more">
-                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); this.closest('.resource-actions-more').classList.toggle('active');" aria-label="More actions">
-                  <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="12" cy="5" r="1"></circle>
-                    <circle cx="12" cy="19" r="1"></circle>
-                  </svg>
-                  More
-                </button>
-                <div class="resource-actions-dropdown">
-                  ${secondaryActions.join('')}
-                </div>
-              </div>
-            </div>
+            ` : buildResourceActionsHtml(resource, 'list')}
           </div>
         </article>
           `;
@@ -1002,22 +953,7 @@ function buildResourceTree(resources: any[]): void {
     });
 
     treeContainer.innerHTML = html;
-
-    setTimeout(() => {
-      const firstIndustry = treeContainer.querySelector('.tree-node[data-industry]');
-      const industryId = firstIndustry?.querySelector('.tree-node-header')?.getAttribute('data-tree-node-id');
-      if (industryId) {
-        (window as any).toggleTreeNode(industryId);
-
-        const firstTopic = firstIndustry?.querySelector('.tree-node[data-topic]');
-        const topicId = firstTopic?.querySelector('.tree-node-header')?.getAttribute('data-tree-node-id');
-        if (topicId) {
-          setTimeout(() => {
-            (window as any).toggleTreeNode(topicId);
-          }, 100);
-        }
-      }
-    }, 50);
+    restoreTreeExpansion(treeContainer);
   } catch (error) {
     console.error('[Portal] Error building resource tree:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -1053,6 +989,7 @@ function buildResourceTree(resources: any[]): void {
     button.setAttribute('aria-expanded', 'true');
     if (svg) svg.style.transform = 'rotate(0deg)';
   }
+  saveResourcesUiState({ sections: { [contentId]: !isExpanded } });
 };
 
 function expandResourceSection(contentId: string): void {
@@ -1134,51 +1071,140 @@ if (document.readyState === 'loading') {
   initializeCollapsibleSections();
 }
 
+function applySectionExpanded(contentId: string, expanded: boolean): void {
+  const content = document.getElementById(contentId);
+  const toggle = document.querySelector(`.section-toggle[aria-controls="${contentId}"]`) as HTMLElement | null;
+  if (!content || !toggle) return;
+  const svg = toggle.querySelector('svg') as SVGElement | null;
+  if (expanded) {
+    content.style.display = 'block';
+    content.classList.remove('collapsed');
+    toggle.setAttribute('aria-expanded', 'true');
+    if (svg) svg.style.transform = 'rotate(0deg)';
+  } else {
+    content.style.display = 'none';
+    content.classList.add('collapsed');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (svg) svg.style.transform = 'rotate(-90deg)';
+  }
+}
+
+function restoreCreateFields(): void {
+  const state = loadResourcesUiState();
+  const industryIds = ['resource-industry', 'upload-industry', 'process-industry', 'document-industry'];
+  const topicIds = ['resource-topic', 'upload-topic', 'process-topic', 'document-topic'];
+  for (const id of industryIds) {
+    const el = document.getElementById(id) as HTMLSelectElement | null;
+    if (!el || el.value) continue;
+    if (
+      state.lastIndustry &&
+      state.lastIndustry !== '__propose__' &&
+      Array.from(el.options).some((option) => option.value === state.lastIndustry)
+    ) {
+      el.value = state.lastIndustry;
+    }
+  }
+  for (const id of topicIds) {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    if (!el || el.value) continue;
+    if (state.lastTopic) el.value = state.lastTopic;
+  }
+  const length = document.getElementById('content-length') as HTMLSelectElement | null;
+  if (
+    length &&
+    state.lastWordCount &&
+    Array.from(length.options).some((option) => option.value === state.lastWordCount)
+  ) {
+    length.value = state.lastWordCount;
+  }
+}
+
+function bindCreateFieldMemory(): void {
+  const rememberIndustry = (event: Event) => {
+    const value = (event.target as HTMLSelectElement | null)?.value || '';
+    if (value && value !== '__propose__') rememberCreateFields({ industry: value });
+  };
+  const rememberTopic = (event: Event) => {
+    rememberCreateFields({ topic: (event.target as HTMLInputElement | null)?.value || '' });
+  };
+  ['resource-industry', 'upload-industry', 'process-industry', 'document-industry'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('change', rememberIndustry);
+  });
+  ['resource-topic', 'upload-topic', 'process-topic', 'document-topic'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('change', rememberTopic);
+    document.getElementById(id)?.addEventListener('blur', rememberTopic);
+  });
+  document.getElementById('content-length')?.addEventListener('change', (event) => {
+    rememberCreateFields({ wordCount: (event.target as HTMLSelectElement | null)?.value || '' });
+  });
+}
+
 function initializeCollapsibleSections() {
+  const stored = loadResourcesUiState().sections;
   document.querySelectorAll('.section-toggle').forEach(toggle => {
     const contentId = toggle.getAttribute('aria-controls');
     if (contentId) {
-      const content = document.getElementById(contentId);
-      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-      const svg = toggle.querySelector('svg') as SVGElement;
-      
-      if (content) {
-        if (!isExpanded) {
-          content.style.display = 'none';
-          content.classList.add('collapsed');
-          if (svg) svg.style.transform = 'rotate(-90deg)';
-        } else {
-          content.style.display = 'block';
-          content.classList.remove('collapsed');
-          if (svg) svg.style.transform = 'rotate(0deg)';
-        }
-      }
+      const htmlExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      const expanded = Object.prototype.hasOwnProperty.call(stored, contentId)
+        ? Boolean(stored[contentId])
+        : htmlExpanded;
+      applySectionExpanded(contentId, expanded);
     }
   });
 }
 
 // Toggle tree node
+function setTreeNodeExpanded(parent: Element, expanded: boolean): void {
+  const nodeId = parent.querySelector('.tree-node-header')?.getAttribute('data-tree-node-id');
+  const toggle = nodeId ? document.getElementById(`toggle-${nodeId}`) : null;
+  if (expanded) {
+    parent.classList.add('expanded');
+    parent.setAttribute('aria-expanded', 'true');
+    toggle?.classList.add('expanded');
+    parent.querySelector('.tree-node-header')?.classList.add('active');
+  } else {
+    parent.classList.remove('expanded');
+    parent.setAttribute('aria-expanded', 'false');
+    toggle?.classList.remove('expanded');
+    parent.querySelector('.tree-node-header')?.classList.remove('active');
+  }
+}
+
+function persistTreeExpansion(treeContainer: ParentNode = document): void {
+  const expandedIndustries = Array.from(treeContainer.querySelectorAll('.tree-node.expanded[data-industry]'))
+    .map((node) => node.getAttribute('data-industry') || '')
+    .filter(Boolean);
+  const expandedTopics = Array.from(treeContainer.querySelectorAll('.tree-node.expanded[data-topic]'))
+    .map((node) => {
+      const topic = node.getAttribute('data-topic') || '';
+      const industry = node.closest('.tree-node[data-industry]')?.getAttribute('data-industry') || '';
+      return industry && topic ? topicExpansionKey(industry, topic) : '';
+    })
+    .filter(Boolean);
+  saveResourcesUiState({ expandedIndustries, expandedTopics });
+}
+
+function restoreTreeExpansion(treeContainer: HTMLElement): void {
+  const state = loadResourcesUiState();
+  const industries = new Set(state.expandedIndustries);
+  const topics = new Set(state.expandedTopics);
+  treeContainer.querySelectorAll('.tree-node[data-industry]').forEach((node) => {
+    const label = node.getAttribute('data-industry') || '';
+    setTreeNodeExpanded(node, industries.has(label));
+  });
+  treeContainer.querySelectorAll('.tree-node[data-topic]').forEach((node) => {
+    const topic = node.getAttribute('data-topic') || '';
+    const industry = node.closest('.tree-node[data-industry]')?.getAttribute('data-industry') || '';
+    setTreeNodeExpanded(node, Boolean(industry && topic && topics.has(topicExpansionKey(industry, topic))));
+  });
+}
+
 (window as any).toggleTreeNode = function(nodeId: string) {
   const node = document.getElementById(nodeId);
-  const toggle = document.getElementById(`toggle-${nodeId}`);
   const parent = node?.closest('.tree-node');
-  
-  if (node && parent) {
-    const isExpanded = parent.classList.contains('expanded');
-    if (isExpanded) {
-      parent.classList.remove('expanded');
-      parent.setAttribute('aria-expanded', 'false');
-      if (toggle) toggle.classList.remove('expanded');
-      const header = parent.querySelector('.tree-node-header');
-      if (header) header.classList.remove('active');
-    } else {
-      parent.classList.add('expanded');
-      parent.setAttribute('aria-expanded', 'true');
-      if (toggle) toggle.classList.add('expanded');
-      const header = parent.querySelector('.tree-node-header');
-      if (header) header.classList.add('active');
-    }
-  }
+  if (!node || !parent) return;
+  setTreeNodeExpanded(parent, !parent.classList.contains('expanded'));
+  persistTreeExpansion();
 };
 
 // Keyboard: tree node header (industry/topic) - Enter/Space toggles
@@ -1285,11 +1311,9 @@ function loadResourceDetail(resource: any): void {
           ${resource.content ? wrapMarkdownDocument(resource.content, listResourceInfographics(resource)) : '<p style="margin: 0; color: var(--portal-text-secondary);">No content available</p>'}
         </div>
       </div>
-      <div class="resource-detail-actions">
-        ${buildResourceActionsHtml(resource, 'detail')}
-      </div>
     `;
   }
+  setResourceDetailActions(buildResourceActionsHtml(resource, 'detail'));
 }
 
 const PROPOSE_INDUSTRY_VALUE = '__propose__';
@@ -1494,12 +1518,12 @@ function openDetailEditMode(id: string): void {
         <label for="detail-edit-content">Content</label>
         <textarea id="detail-edit-content" class="form-control resource-detail-edit-content" rows="16">${escapeHtml(resource.content || '')}</textarea>
       </div>
-      <div class="resource-detail-actions" style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-        <button type="submit" class="btn btn-primary">Save changes</button>
-        <button type="button" class="btn btn-secondary" onclick="cancelDetailEdit()">Cancel</button>
-      </div>
     </form>
   `;
+  setResourceDetailActions(`
+    <button type="submit" class="btn btn-primary" form="detail-edit-form">Save changes</button>
+    <button type="button" class="btn btn-secondary" onclick="cancelDetailEdit()">Cancel</button>
+  `);
 
   document.getElementById('detail-edit-form')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -1526,7 +1550,7 @@ async function saveDetailEdit(id: string): Promise<void> {
   }
 
   const resource = getWorkspaceResourceById(id);
-  const submitBtn = document.querySelector('#detail-edit-form button[type="submit"]') as HTMLButtonElement;
+  const submitBtn = document.querySelector('#resource-detail-actions button[type="submit"], #detail-edit-form button[type="submit"]') as HTMLButtonElement;
   const originalText = submitBtn?.textContent;
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -1550,12 +1574,8 @@ async function saveDetailEdit(id: string): Promise<void> {
     if (response.ok && data.success) {
       showNotification('Resource updated successfully.', 'success');
       detailEditResourceId = null;
-      await loadResources();
-      const updated = getWorkspaceResourceById(id) || data.resource;
-      if (updated) {
-        selectedResourceId = id;
-        loadResourceDetail(updated);
-      }
+      selectedResourceId = id;
+      await applyResourceMutation(id, data.resource);
     } else {
       showNotification(`Failed to update resource: ${data.error || 'Unknown error'}`, 'error');
       if (submitBtn && originalText) {
@@ -1591,6 +1611,7 @@ async function saveDetailEdit(id: string): Promise<void> {
     emptyState.style.display = '';
   }
   if (detailPanel) detailPanel.classList.add('hidden');
+  setResourceDetailActions('');
   
   document.querySelectorAll('.tree-resource-item').forEach(item => {
     item.classList.remove('active');
@@ -1926,10 +1947,7 @@ function closeEditModal(): void {
             console.log('[Portal] Resource published successfully');
           }
           showNotification('Resource published successfully.', 'success');
-          setTimeout(() => {
-            loadResources();
-            loadDashboardData();
-          }, 300);
+          await applyResourceMutation(id, data.resource);
         } else {
           const errorMsg = data.error || 'Unknown error';
           console.error('[Portal] Failed to publish resource:', errorMsg);
@@ -1978,10 +1996,7 @@ function closeEditModal(): void {
         if (response.ok && data.success) {
           console.log('[Portal] Resource unpublished successfully');
           showNotification('Resource unpublished successfully.', 'success');
-          setTimeout(() => {
-            loadResources();
-            loadDashboardData();
-          }, 300);
+          await applyResourceMutation(id, data.resource);
         } else {
           const errorMsg = data.error || 'Unknown error';
           console.error('[Portal] Failed to unpublish resource:', errorMsg);
@@ -2020,10 +2035,7 @@ function closeEditModal(): void {
             console.log('[Portal] Resource archived successfully');
           }
           showNotification('Resource archived successfully.', 'success');
-          setTimeout(() => {
-            loadResources();
-            loadDashboardData();
-          }, 300);
+          await applyResourceMutation(id, data.resource);
         } else {
           const errorMsg = data.error || 'Unknown error';
           console.error('[Portal] Failed to archive resource:', errorMsg);
@@ -2060,10 +2072,7 @@ function closeEditModal(): void {
         if (response.ok && data.success) {
           console.log('[Portal] Resource unarchived successfully');
           showNotification('Resource unarchived successfully.', 'success');
-          setTimeout(() => {
-            loadResources();
-            loadDashboardData();
-          }, 300);
+          await applyResourceMutation(id, data.resource);
         } else {
           const errorMsg = data.error || 'Unknown error';
           console.error('[Portal] Failed to unarchive resource:', errorMsg);
@@ -2131,7 +2140,7 @@ document.getElementById('edit-resource-form')?.addEventListener('submit', async 
       console.log('[Portal] Resource updated successfully');
       showNotification('Resource updated successfully.', 'success');
       closeEditModal();
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 300);
+      await applyResourceMutation(id, data.resource);
     } else {
       const errorMsg = data.error || 'Unknown error';
       portalActionFailure('saveResource', new Error(errorMsg));
@@ -2260,10 +2269,7 @@ document.addEventListener('keydown', (e) => {
             showNotification(`Resource improved${inferenceMode}${modelHint}.${scoreText}${fidelity}`, 'success');
           }
           console.log('[Portal] Resource improved successfully');
-          setTimeout(() => {
-            loadResources();
-            loadDashboardData();
-          }, 500);
+          await applyResourceMutation(id, data.resource);
         } else {
           const errorMsg = data.error || 'Unknown error';
           console.error('[Portal] Failed to improve resource:', errorMsg);
@@ -2695,15 +2701,19 @@ document.getElementById('upload-resource-form')?.addEventListener('submit', asyn
         statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : 'info'}`;
       }
       showNotification(outcome.message, outcome.type);
+      rememberCreateFields({
+        industry: (document.getElementById('upload-industry') as HTMLSelectElement | null)?.value || '',
+        topic: (document.getElementById('upload-topic') as HTMLInputElement | null)?.value || '',
+      });
       form.reset();
-      // Refresh resources list and dashboard after a short delay to ensure server has saved
-      setTimeout(() => {
-        if (import.meta.env.MODE === 'development') {
-          console.log('[Portal] Refreshing resources after upload');
-        }
-        loadResources();
-        loadDashboardData();
-      }, 500);
+      restoreCreateFields();
+      const uploadedId = data.resource?.id as string | undefined;
+      if (uploadedId) {
+        await applyResourceMutation(uploadedId, data.resource);
+      } else {
+        await loadResources({ quiet: true });
+        void loadDashboardData();
+      }
     } else {
       const errorMsg = data.code === 'INSUFFICIENT_BALANCE'
         ? `${data.error || 'Insufficient tokens.'}${data.tokens?.required != null ? ` Need ${data.tokens.required}, you have ${data.tokens.balance ?? 0}.` : ''}`
@@ -2802,8 +2812,19 @@ document.getElementById('create-from-content-form')?.addEventListener('submit', 
         statusDiv.className = `status-message ${outcome.type === 'success' ? 'success' : 'info'}`;
       }
       showNotification(outcome.message, outcome.type);
+      rememberCreateFields({
+        industry: industry || '',
+        topic: topic || '',
+      });
       form.reset();
-      setTimeout(() => { loadResources(); loadDashboardData(); }, 500);
+      restoreCreateFields();
+      const createdId = data.resource?.id as string | undefined;
+      if (createdId) {
+        await applyResourceMutation(createdId, data.resource);
+      } else {
+        await loadResources({ quiet: true });
+        void loadDashboardData();
+      }
     } else {
       const errorMsg = data.error || 'Processing failed';
       if (statusDiv) { statusDiv.textContent = errorMsg; statusDiv.className = 'status-message error'; }
@@ -3088,7 +3109,7 @@ function closePreviewModal(): void {
           const typeEl = document.getElementById('resource-type-filter') as HTMLSelectElement | null;
           if (typeEl?.value === 'removed') typeEl.value = 'user';
           currentTreeStatusFilter = '';
-          await loadResources({ revealResourceId: id });
+          await applyResourceMutation(id, data.resource);
         } else {
           showNotification(data.error || 'Failed to restore resource.', 'error');
         }
@@ -3198,6 +3219,8 @@ document.getElementById('seed-resources-btn')?.addEventListener('click', async (
 
   setupResourceFilters();
   initializeCollapsibleSections();
+  bindCreateFieldMemory();
+  restoreCreateFields();
   initWorkspaceVoiceProfileSelect();
   void bindIndustryTagSelects();
 

@@ -26,7 +26,8 @@ export async function fetchResourceById(
 ): Promise<ResourceFetchResult> {
   const url = `${apiBase.replace(/\/+$/, '')}/resources/${encodeURIComponent(id)}`;
   const response = await workspaceFetch(url, {
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Cache-Control': 'no-cache' },
   });
 
   if (!response.ok) {

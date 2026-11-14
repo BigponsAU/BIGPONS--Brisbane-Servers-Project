@@ -6,6 +6,7 @@ import '../styles/brand-chroma.css';
 import '../styles/nav-mega-menu.css';
 import MarketingDecorStyles from '../components/MarketingDecorStyles.astro';
 import CookieConsent from '../components/CookieConsent.astro';
+import GoogleTag from '../components/GoogleTag.astro';
 import favicon from '../favicon.png';
 import {
   getPageDescriptor,
@@ -98,6 +99,7 @@ const siteBuildStamp =
       <meta http-equiv="refresh" content={`0;url=${immediateRedirectUrl}`} />
     )}
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
+    <GoogleTag />
     <meta name="theme-color" content="#0A74DA" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

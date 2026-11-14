@@ -4,7 +4,12 @@ import {
   findBillingAccountByUserId,
   isActiveSubscriptionStatus,
 } from '../../../lib/billing/billing-accounts';
-import { isStripeConfigured, STRIPE_SUBSCRIPTION_DAILY_BONUS } from '../../../lib/billing/stripe-config';
+import { billingOffer } from '../../../data/billing-offer';
+import {
+  getStripeAiBoostDisplayPrice,
+  isStripeConfigured,
+  STRIPE_SUBSCRIPTION_DAILY_BONUS,
+} from '../../../lib/billing/stripe-config';
 
 /**
  * Billing / subscription status for current user.
@@ -33,6 +38,11 @@ export const GET: APIRoute = async ({ request }) => {
           ? account?.dailyBonusUnits ?? STRIPE_SUBSCRIPTION_DAILY_BONUS
           : 0,
         stripeCustomerId: account?.stripeCustomerId ?? null,
+      },
+      offer: {
+        dailyBonusUnits: STRIPE_SUBSCRIPTION_DAILY_BONUS,
+        displayPrice: getStripeAiBoostDisplayPrice() || null,
+        name: billingOffer.boost.name,
       },
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }

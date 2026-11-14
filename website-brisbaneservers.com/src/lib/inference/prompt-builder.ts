@@ -1,5 +1,7 @@
 import type { VoiceProfile } from '@voice-framework/models/voice-profile';
 import { BRISBANE_PROFILE_NAME } from '../brisbane-profile';
+import { buildDocumentStructureSeed } from './article-structure-seed';
+import { articlePlanNotes, developPromptInstructions, type DevelopMode } from './article-develop';
 
 export function buildInferenceSystemPrompt(profile: VoiceProfile): string {
   const tone = profile.characteristics?.tone;
@@ -52,11 +54,22 @@ export function buildInferenceUserPrompt(params: {
   }
   parts.push(
     '',
+    'Suggested spine for THIS article only — change a heading if the brief needs it, keep importance and continuity:',
+    buildDocumentStructureSeed({
+      industry: params.industry,
+      topic: params.topic,
+      title: params.title,
+      brief: params.userBrief,
+    }),
+    '',
+    'Knowledge / brief (use only if on-topic):',
     params.seedText,
     '',
     `Write a complete resource article of about ${targetWords} words (aim for ${minWords}–${maxWords} words) suitable for a full Brisbane Servers resource library page.`,
-    'Use clear markdown headings and enough practical depth that the article stands alone as a full page — not a short stub.',
-    'If the seed includes markdown images (![...](...)), keep figures that are relevant to the topic; do not invent new image URLs.'
+    'Heading levels mark importance: one # title; ## only for the two or three load-bearing claims; ### for supporting points that follow from the claim above; #### for short asides. Do not make every heading the same weight.',
+    'Do not write heading then one equal paragraph then heading. The main claim needs more paragraphs and more refined explanation than asides.',
+    'Place :::diagram-here::: in the section that is the join for this topic — after a short reading of what to look at, then discuss what the picture shows. Never dump the figure at the end uncommented.',
+    'If the seed includes markdown images (![...](...)), keep figures that are relevant to the topic; do not invent new image URLs.',
   );
   return parts.filter(Boolean).join('\n');
 }
@@ -69,13 +82,22 @@ export function buildImproveUserPrompt(params: {
   ragContextText?: string;
   /** When false (default), ban design-system jargon unrelated to the industry topic. */
   allowDesignSystemJargon?: boolean;
+  develop?: { mode: DevelopMode; heading?: string };
 }): string {
   const parts = [
-    `Improve this resource article while preserving factual intent, industry focus, and structure.`,
+    params.develop
+      ? developPromptInstructions({
+          mode: params.develop.mode,
+          heading: params.develop.heading,
+          industry: params.industry,
+          topic: params.topic,
+        })
+      : `Improve this resource article while preserving factual intent, industry focus, and the headings that already work.`,
     `Title: ${params.title}`,
     `Industry: ${params.industry}`,
     `Topic: ${params.topic}`,
     `Stay on the ${params.industry} / ${params.topic} subject. Do not change the article into an unrelated technical domain.`,
+    articlePlanNotes(params.originalContent, params.industry, params.topic),
   ];
   if (!params.allowDesignSystemJargon) {
     parts.push(
@@ -87,11 +109,19 @@ export function buildImproveUserPrompt(params: {
   }
   parts.push(
     '',
+    'Do not replace this draft with a canned outline. Keep existing headings unless they are filler. Deepen the main claim; add ### only where a supporting distinction is necessary; add #### for a short aside.',
+    buildDocumentStructureSeed({
+      industry: params.industry,
+      topic: params.topic,
+      title: params.title,
+      existingMarkdown: params.originalContent,
+    }),
+    '',
     '---',
     'Current article:',
     params.originalContent,
     '',
-    'Return the full improved article (markdown body only). Add clarity, evidence-led framing, and actionable detail where supported by the context — do not invent statistics or citations. Prefer finishing incomplete sentences from the original over inventing new sections.'
+    'Return the full improved article (markdown body only). Mix ## / ### / #### by importance. Keep :::diagram-here::: next to the operating explanation and discuss the picture. Do not invent statistics or citations.'
   );
   return parts.join('\n');
 }

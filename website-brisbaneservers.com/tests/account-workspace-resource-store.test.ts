@@ -30,6 +30,17 @@ describe('workspace resource store', () => {
     });
   });
 
+  it('keeps a newer mutated resource when a stale list snapshot arrives', () => {
+    upsertWorkspaceResource({ id: 'doc-1', status: 'draft', title: 'Old', version: 1, content: 'before' });
+    upsertWorkspaceResource({ id: 'doc-1', status: 'draft', title: 'Improved', version: 2, content: 'after' });
+    setWorkspaceResources([{ id: 'doc-1', status: 'draft', title: 'Old', version: 1, content: 'before' }]);
+
+    expect(getWorkspaceResourceById<{ content: string; version: number }>('doc-1')).toMatchObject({
+      content: 'after',
+      version: 2,
+    });
+  });
+
   it('upserts a newly created resource before list reload', () => {
     upsertWorkspaceResource({ id: 'new-1', status: 'draft', title: 'Fresh' });
     expect(getWorkspaceResourceById<{ id: string; title: string }>('new-1')?.title).toBe('Fresh');

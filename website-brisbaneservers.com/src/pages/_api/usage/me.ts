@@ -4,7 +4,8 @@ import { getUserUsageSummary } from '../../../lib/inference/usage-ledger';
 import { getInferenceProvider } from '../../../lib/inference/inference-provider';
 import { isNvidiaConfigured, getNvidiaModelId } from '../../../lib/inference/nvidia-ai-client';
 import { isWorkersAIConfigured } from '../../../lib/inference/workers-ai-client';
-import { isStripeConfigured } from '../../../lib/billing/stripe-config';
+import { billingOffer } from '../../../data/billing-offer';
+import { getStripeAiBoostDisplayPrice, isStripeConfigured, STRIPE_SUBSCRIPTION_DAILY_BONUS } from '../../../lib/billing/stripe-config';
 import { findBillingAccountByUserId, isActiveSubscriptionStatus } from '../../../lib/billing/billing-accounts';
 
 /**
@@ -41,6 +42,11 @@ export const GET: APIRoute = async ({ request }) => {
           stripeCustomerId: billingAccount?.stripeCustomerId ?? null,
         },
         daily: summary,
+        offer: {
+          dailyBonusUnits: STRIPE_SUBSCRIPTION_DAILY_BONUS,
+          displayPrice: getStripeAiBoostDisplayPrice() || null,
+          name: billingOffer.boost.name,
+        },
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

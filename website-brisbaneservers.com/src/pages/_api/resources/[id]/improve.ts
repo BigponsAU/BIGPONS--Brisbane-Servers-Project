@@ -55,9 +55,9 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     const resources = await loadResources();
-    const resource = resources.find(r => r.id === id);
+    const stored = resources.find(r => r.id === id);
 
-    if (!resource) {
+    if (!stored) {
       return new Response(
         JSON.stringify({
           error: 'Resource not found',
@@ -69,6 +69,26 @@ export const POST: APIRoute = async ({ params, request }) => {
           headers: { 'Content-Type': 'application/json' }
         }
       );
+    }
+
+    let resource = stored;
+    let develop: { mode: 'expand' | 'support' | 'aside' | 'continue'; heading?: string } | undefined;
+    try {
+      const body = await request.json();
+      if (body && typeof body === 'object') {
+        if (typeof body.content === 'string' && body.content.trim().length > 40) {
+          resource = { ...resource, content: body.content };
+        }
+        const mode = body.develop || body.mode;
+        if (mode === 'expand' || mode === 'support' || mode === 'aside' || mode === 'continue') {
+          develop = {
+            mode,
+            heading: typeof body.heading === 'string' ? body.heading : undefined,
+          };
+        }
+      }
+    } catch {
+      /* Improve may be called with an empty body. */
     }
 
     const { profileManager, profileBuilder } = await getVoiceFramework();
@@ -104,6 +124,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       resolved,
       extrapolator,
       voiceMatcher,
+      develop,
     });
 
     const voiceValidation = voiceMatcher.validateVoice(improved.content);

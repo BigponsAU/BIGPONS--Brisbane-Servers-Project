@@ -175,6 +175,8 @@ const {
     function handleAccept(): void {
       setCookieConsent('accepted');
       hideCookieBanner();
+      const loadTag = (window as Window & { __bsLoadGoogleTag?: () => void }).__bsLoadGoogleTag;
+      loadTag?.();
     }
     
     function handleDecline(): void {

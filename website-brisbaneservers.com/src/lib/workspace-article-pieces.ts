@@ -1,6 +1,6 @@
 /** Insertable article pieces — the same compose model as diagrams. */
 
-export type ArticlePieceKind = 'paragraph' | 'heading' | 'subheading' | 'list' | 'quote';
+export type ArticlePieceKind = 'paragraph' | 'title' | 'heading' | 'subheading' | 'list' | 'quote';
 
 export type ArticlePieceNode = {
   type: string;
@@ -11,6 +11,8 @@ export type ArticlePieceNode = {
 
 export function articlePieceTemplate(kind: ArticlePieceKind): ArticlePieceNode {
   switch (kind) {
+    case 'title':
+      return { type: 'heading', attrs: { level: 1 } };
     case 'heading':
       return { type: 'heading', attrs: { level: 2 } };
     case 'subheading':
@@ -57,6 +59,28 @@ export function duplicatePiece(nodes: ArticlePieceNode[], index: number): Articl
   if (index < 0 || index >= nodes.length) return nodes;
   const next = nodes.slice();
   next.splice(index + 1, 0, structuredClone(nodes[index]));
+  return next;
+}
+
+export function changeHeadingLevel(
+  nodes: ArticlePieceNode[],
+  index: number,
+  delta: -1 | 1,
+): ArticlePieceNode[] {
+  const node = nodes[index];
+  if (!node) return nodes;
+  const next = nodes.slice();
+  if (node.type === 'heading') {
+    const level = Number(node.attrs?.level ?? 2);
+    next[index] = {
+      ...node,
+      attrs: { ...node.attrs, level: Math.min(4, Math.max(1, level + delta)) },
+    };
+    return next;
+  }
+  if (delta < 0) {
+    next[index] = { type: 'heading', attrs: { level: 2 }, content: node.content, text: node.text };
+  }
   return next;
 }
 

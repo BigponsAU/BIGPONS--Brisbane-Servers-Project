@@ -1,0 +1,39 @@
+<!-- Google Tag Manager — loads only after cookie consent is accepted. -->
+<script is:inline data-cfasync="false">
+  (function () {
+    var GTM_ID = 'GTM-M88HFRL3';
+    function analyticsAllowed() {
+      var fromCookie = null;
+      try {
+        var parts = document.cookie.split(';');
+        for (var i = 0; i < parts.length; i++) {
+          var part = parts[i].trim();
+          if (part.indexOf('cookie-consent=') === 0) {
+            fromCookie = decodeURIComponent(part.slice(15));
+            break;
+          }
+        }
+      } catch (e) {}
+      if (fromCookie === 'accepted') return true;
+      if (fromCookie === 'declined') return false;
+      try {
+        return localStorage.getItem('cookie-consent-preference') === 'accepted';
+      } catch (e2) {}
+      return false;
+    }
+    function loadGoogleTag() {
+      if (window.__bsGtmLoaded) return;
+      window.__bsGtmLoaded = true;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date());
+      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
+      document.head.appendChild(script);
+    }
+    window.__bsLoadGoogleTag = loadGoogleTag;
+    if (analyticsAllowed()) loadGoogleTag();
+  })();
+</script>

@@ -12,6 +12,7 @@ const ACCOUNT_SCRIPTS = [
   'account-admin-moderation.ts',
   'account-admin-ops.ts',
   'account-admin-billing.ts',
+  'account-billing.ts',
   'account-admin-users.ts',
   'workspace-markdown-field.ts',
   'workspace-modal.ts',
@@ -42,7 +43,7 @@ describe('dashboard production standards', () => {
   });
 
   it('admin moderation and growth use styled confirms', async () => {
-    for (const file of ['account-admin-moderation.ts', 'account-library-growth.ts', 'account-admin-ops.ts', 'account-admin-billing.ts']) {
+    for (const file of ['account-admin-moderation.ts', 'account-library-growth.ts', 'account-admin-ops.ts', 'account-admin-billing.ts', 'account-billing.ts']) {
       const source = await readFile(path.resolve('src/scripts', file), 'utf8');
       expect(source).toContain('showConfirmDialog');
     }
@@ -138,6 +139,50 @@ describe('dashboard production standards', () => {
     const afterShell = page.indexOf('</AccountWorkspaceShell>');
     expect(page.indexOf('id="portal-confirm-host"')).toBeGreaterThan(afterShell);
     expect(page.indexOf('<AccountResourceModals')).toBeGreaterThan(afterShell);
+  });
+
+  it('resource action buttons stay visible without hover and are not height-clipped', async () => {
+    const workspace = await readFile(path.resolve('src/styles/portal-workspace.css'), 'utf8');
+    const dashboard = await readFile(path.resolve('src/styles/portal-dashboard.css'), 'utf8');
+    expect(workspace).toContain('opacity: 1;\n    max-height: none;\n    overflow: visible;');
+    expect(workspace).not.toContain('max-height: 200px');
+    expect(dashboard).toContain('max-height: none !important');
+    expect(dashboard).toContain('100dvh');
+  });
+
+  it('restores the industry tree instead of always opening the first folder', async () => {
+    const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
+    expect(resources).toContain('restoreTreeExpansion');
+    expect(resources).toContain('persistTreeExpansion');
+    expect(resources).not.toContain('const firstIndustry');
+  });
+
+  it('refreshes the open resource after Improve instead of only reloading the list', async () => {
+    const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
+    expect(resources).toContain('applyResourceMutation');
+    expect(resources).toContain('refreshOpenResourceSurfaces');
+    expect(resources).toContain('await applyResourceMutation(id, data.resource)');
+    expect(resources).not.toMatch(/Resource improved[\s\S]{0,400}setTimeout\(\(\) => \{\s*loadResources\(\)/);
+  });
+
+  it('keeps confirm-dialog actions fully visible on desktop and mobile', async () => {
+    const dashboard = await readFile(path.resolve('src/styles/portal-dashboard.css'), 'utf8');
+    expect(dashboard).toContain('body > .modal.portal-confirm-modal .modal-footer .btn');
+    expect(dashboard).toContain('body > .modal.portal-confirm-modal .modal-content');
+    expect(dashboard).toContain('height: auto');
+    expect(dashboard).toContain('clip-path: none');
+  });
+
+  it('keeps resource actions on a sticky footer instead of a hover More menu', async () => {
+    const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
+    const panel = await readFile(path.resolve('src/components/account/AccountResourcesPanel.astro'), 'utf8');
+    const dashboard = await readFile(path.resolve('src/styles/portal-dashboard.css'), 'utf8');
+    expect(panel).toContain('id="resource-detail-actions"');
+    expect(resources).toContain('setResourceDetailActions');
+    expect(resources).toContain("buildResourceActionsHtml(resource, 'list')");
+    expect(resources).not.toContain('resource-actions-more');
+    expect(dashboard).toContain('#resource-detail-actions');
+    expect(dashboard).toContain('clip-path: none');
   });
 
   it('cookie consent offsets page content while the banner is open', async () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   articlePieceTemplate,
+  changeHeadingLevel,
   duplicatePiece,
   insertPieceAfter,
   movePiece,
@@ -36,8 +37,17 @@ describe('article pieces', () => {
   });
 
   it('builds templates for every insertable piece', () => {
+    expect(articlePieceTemplate('title').attrs?.level).toBe(1);
     expect(articlePieceTemplate('heading').attrs?.level).toBe(2);
     expect(articlePieceTemplate('subheading').attrs?.level).toBe(3);
     expect(articlePieceTemplate('quote').type).toBe('blockquote');
+  });
+
+  it('promotes and demotes heading pieces', () => {
+    const start = [articlePieceTemplate('heading')];
+    const smaller = changeHeadingLevel(start, 0, 1);
+    expect(smaller[0].attrs?.level).toBe(3);
+    const larger = changeHeadingLevel(smaller, 0, -1);
+    expect(larger[0].attrs?.level).toBe(2);
   });
 });

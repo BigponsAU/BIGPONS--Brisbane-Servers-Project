@@ -2,6 +2,7 @@
 import SectionIntro from '../SectionIntro.astro';
 import SectionConstellationLayer from '../SectionConstellationLayer.astro';
 import { accountWorkspace } from '../../data/account-workspace';
+import { billingOffer } from '../../data/billing-offer';
 import { portalVoiceRules } from '../../lib/portal-voice-framework';
 ---
               <div id="dashboard-panel" class="portal-panel panel-shell active" role="main" aria-label="Workspace overview">
@@ -83,21 +84,64 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                       </div>
                     </div>
 
-                    <div class="client-insights" aria-live="polite">
-                      <div id="client-ai-usage-card" class="insight-card client-ai-usage-card">
-                        <h3 class="insight-card__title">Daily AI usage</h3>
-                        <p id="client-ai-usage-summary" class="insight-card__body">Loading…</p>
-                        <p id="client-ai-usage-meta" class="form-hint"></p>
-                        <div class="insight-card__actions">
-                          <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary btn-sm" hidden>
-                            Upgrade AI cap (Stripe)
-                          </button>
-                          <button type="button" id="client-ai-manage-btn" class="btn btn-secondary btn-sm" hidden>
-                            Manage subscription
-                          </button>
+                    <section id="capacity" class="portal-wall portal-capacity-wall" aria-labelledby="capacity-heading">
+                      <p id="client-ai-billing-banner" class="portal-return-banner" hidden role="status"></p>
+                      <header class="portal-wall__header">
+                        <p class="portal-wall__eyebrow">{billingOffer.wallEyebrow}</p>
+                        <h3 id="capacity-heading" class="workspace-section-title">{billingOffer.wallTitle}</h3>
+                        <p class="portal-wall__byline">{billingOffer.wallByline}</p>
+                      </header>
+                      <div id="client-ai-usage-card" class="portal-meter-block client-ai-usage-card">
+                        <div class="portal-meter-block__copy">
+                          <p id="client-ai-usage-summary" class="insight-card__body">Loading…</p>
+                          <p id="client-ai-usage-meta" class="form-hint"></p>
+                        </div>
+                        <div id="client-ai-usage-bar-wrap" class="admin-ops-usage-bar portal-meter" hidden>
+                          <div id="client-ai-usage-bar-fill" class="admin-ops-usage-bar__fill"></div>
                         </div>
                         <p id="client-ai-billing-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
+                      <div class="portal-offer-grid">
+                        <article class="portal-offer" aria-labelledby="offer-included-title">
+                          <p class="portal-offer__kicker">{billingOffer.included.kicker}</p>
+                          <h4 id="offer-included-title" class="portal-offer__title">{billingOffer.included.name}</h4>
+                          <p class="portal-offer__outcome">{billingOffer.included.outcome}</p>
+                          <ul class="portal-offer__points">
+                            {billingOffer.included.points.map((point) => <li>{point}</li>)}
+                          </ul>
+                        </article>
+                        <article class="portal-offer portal-offer--featured" aria-labelledby="offer-boost-title">
+                          <p class="portal-offer__kicker">{billingOffer.boost.kicker}</p>
+                          <h4 id="offer-boost-title" class="portal-offer__title">{billingOffer.boost.name}</h4>
+                          <p id="offer-boost-price" class="portal-offer__price" hidden></p>
+                          <p class="portal-offer__outcome">{billingOffer.boost.outcome}</p>
+                          <ul class="portal-offer__points">
+                            {billingOffer.boost.points.map((point) => <li>{point}</li>)}
+                          </ul>
+                          <div class="insight-card__actions portal-offer__actions">
+                            <button type="button" id="client-ai-upgrade-btn" class="btn btn-primary" hidden>
+                              {billingOffer.boost.ctaSubscribe}
+                            </button>
+                            <button type="button" id="client-ai-manage-btn" class="btn btn-secondary" hidden>
+                              {billingOffer.boost.ctaManage}
+                            </button>
+                          </div>
+                        </article>
+                        <article class="portal-offer" aria-labelledby="offer-tokens-title">
+                          <p class="portal-offer__kicker">{billingOffer.tokens.kicker}</p>
+                          <h4 id="offer-tokens-title" class="portal-offer__title">{billingOffer.tokens.name}</h4>
+                          <p class="portal-offer__outcome">{billingOffer.tokens.outcome}</p>
+                          <ul class="portal-offer__points">
+                            {billingOffer.tokens.points.map((point) => <li>{point}</li>)}
+                          </ul>
+                        </article>
+                      </div>
+                      <ul class="portal-trust-row">
+                        {billingOffer.trust.map((item) => <li>{item}</li>)}
+                      </ul>
+                    </section>
+
+                    <div class="client-insights" aria-live="polite">
                       <div class="insight-card">
                         <h3 class="insight-card__title">Contribution tokens</h3>
                         <p class="client-token-balance">

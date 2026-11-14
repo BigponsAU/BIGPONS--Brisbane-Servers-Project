@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 
+import GoogleTag from '../components/GoogleTag.astro';
 import { resolvePublicSitePath } from '../lib/api-config';
 
 /** Static redirect page — edge `_redirects` also maps /portal → /account (301). */
@@ -15,6 +16,7 @@ const canonicalTarget = new URL(target, Astro.site ?? 'https://brisbaneservers.c
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <GoogleTag />
     <meta http-equiv="refresh" content={`0;url=${target}`} />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={canonicalTarget} />

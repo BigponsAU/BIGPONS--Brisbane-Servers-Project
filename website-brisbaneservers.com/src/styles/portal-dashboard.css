@@ -29,7 +29,14 @@ body > .modal[aria-hidden='false'] {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(1rem, 3vw, 2.25rem);
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding:
+    max(0.75rem, env(safe-area-inset-top, 0px))
+    max(0.75rem, env(safe-area-inset-right, 0px))
+    max(0.75rem, env(safe-area-inset-bottom, 0px))
+    max(0.75rem, env(safe-area-inset-left, 0px));
   box-sizing: border-box;
 }
 
@@ -46,6 +53,10 @@ body > .modal .modal-content {
   clip-path: none;
   width: min(52rem, 100%);
   max-height: min(88dvh, 920px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: 1.25rem;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.55) inset,
@@ -75,16 +86,46 @@ body > .modal .modal-footer {
 }
 
 body > .modal .modal-footer {
-  padding: 0.9rem 1.35rem 1.1rem;
+  padding: 0.9rem 1.35rem max(1.1rem, env(safe-area-inset-bottom, 0px));
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+body > .modal .modal-footer .btn {
+  min-height: 44px;
 }
 
 body > .modal.portal-confirm-modal .modal-content,
 body > .portal-confirm-modal .modal-content {
   width: min(28rem, calc(100vw - 2rem));
   max-width: min(28rem, calc(100vw - 2rem));
-  max-height: min(80dvh, 36rem);
+  max-height: min(90dvh, 36rem);
+  height: auto;
   overflow: visible;
   clip-path: none;
+}
+
+body > .modal.portal-confirm-modal .modal-content::before,
+body > .modal.portal-confirm-modal .modal-content::after,
+body > .portal-confirm-modal .modal-content::before,
+body > .portal-confirm-modal .modal-content::after {
+  display: none;
+}
+
+body > .modal.portal-confirm-modal .modal-footer,
+body > .portal-confirm-modal .modal-footer {
+  overflow: visible;
+  flex-shrink: 0;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
+}
+
+body > .modal.portal-confirm-modal .modal-footer .btn,
+body > .portal-confirm-modal .modal-footer .btn {
+  clip-path: none;
+  overflow: visible;
+  min-height: 44px;
+  min-width: 5.5rem;
 }
 
 .resource-reader {
@@ -143,10 +184,32 @@ body > .portal-confirm-modal .modal-content {
 
 .resource-reader__body h1,
 .resource-reader__body h2,
-.resource-reader__body h3 {
+.resource-reader__body h3,
+.resource-reader__body h4 {
   margin: 1.35rem 0 0.45rem;
   line-height: 1.25;
   letter-spacing: -0.02em;
+}
+
+.resource-reader__body h1 {
+  font-size: clamp(1.7rem, 2.1vw, 2.2rem);
+  font-weight: 700;
+}
+
+.resource-reader__body h2 {
+  font-size: clamp(1.35rem, 1.7vw, 1.7rem);
+  font-weight: 650;
+}
+
+.resource-reader__body h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.resource-reader__body h4 {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--portal-text-secondary, #5b6472);
 }
 
 .resource-reader__body h1:first-child {
@@ -4302,15 +4365,180 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   font-weight: var(--font-weight-semibold);
 }
 
-.account-workspace-shell .client-ai-usage-card .insight-card__actions {
+.account-workspace-shell .client-ai-usage-card .insight-card__actions,
+.account-workspace-shell .portal-offer__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
 }
 
 /* `.btn { display: inline-flex }` overrides the UA [hidden] rule — keep CTAs truly hidden. */
-.account-workspace-shell .client-ai-usage-card .insight-card__actions .btn[hidden] {
+.account-workspace-shell .client-ai-usage-card .insight-card__actions .btn[hidden],
+.account-workspace-shell .portal-offer__actions .btn[hidden] {
   display: none !important;
+}
+
+.account-workspace-shell .portal-wall,
+.site-shell--portal .portal-wall {
+  display: grid;
+  gap: var(--space-lg);
+  margin: 0 0 var(--space-xl);
+  padding: var(--space-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface-elevated);
+}
+
+.account-workspace-shell .portal-wall__header {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.account-workspace-shell .portal-wall__eyebrow {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .portal-wall__byline {
+  margin: 0;
+  max-width: 46rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.account-workspace-shell .portal-meter-block {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.account-workspace-shell .portal-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.account-workspace-shell .portal-offer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-height: 100%;
+  padding: var(--space-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface);
+}
+
+.account-workspace-shell .portal-offer--featured {
+  border-color: var(--workspace-accent, var(--primary-color));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--workspace-accent, var(--primary-color)) 35%, transparent);
+}
+
+.account-workspace-shell .portal-offer__kicker,
+.account-workspace-shell .portal-kpi__label {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .portal-offer__title {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.account-workspace-shell .portal-offer__price {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-workspace-shell .portal-offer__outcome {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .portal-offer__points {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.account-workspace-shell .portal-offer__actions {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+}
+
+.account-workspace-shell .portal-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.account-workspace-shell .portal-trust-row li::before {
+  content: '·';
+  margin-right: var(--space-xs);
+  color: var(--workspace-accent, var(--primary-color));
+}
+
+.account-workspace-shell .portal-return-banner {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.account-workspace-shell .portal-return-banner--success {
+  border-color: color-mix(in srgb, var(--workspace-accent, var(--primary-color)) 40%, var(--border));
+  background: rgba(var(--primary-color-rgb), 0.08);
+}
+
+.account-workspace-shell .portal-return-banner--info,
+.account-workspace-shell .portal-return-banner--warning {
+  background: var(--surface);
+}
+
+.account-workspace-shell .portal-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.account-workspace-shell .portal-kpi {
+  display: grid;
+  gap: 0.2rem;
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--site-panel-radius);
+  background: var(--surface-elevated);
+}
+
+.account-workspace-shell .portal-kpi strong {
+  font-size: var(--text-lg);
+}
+
+@media (max-width: 900px) {
+  .account-workspace-shell .portal-offer-grid,
+  .account-workspace-shell .portal-kpi-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .account-workspace-shell .admin-billing-workbench {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -4433,5 +4661,155 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   .account-workspace-shell .client-token-balance,
   .account-workspace-shell .markov-stat__value {
     font-size: clamp(1.125rem, 1.35rem, 1.75rem);
+  }
+}
+
+/* Action bars stay on-screen: no hover-only hide, no 200px max-height clip. */
+.account-workspace-shell .resource-item,
+.account-workspace-shell .resource-actions,
+.account-workspace-shell .resource-actions-more,
+.account-workspace-shell .resource-detail-actions,
+.account-workspace-shell .detail-actions,
+.account-workspace-shell .bulk-actions,
+.account-workspace-shell .profile-actions-bar,
+.account-workspace-shell .profiles-detail-actions,
+.account-workspace-shell .moderation-detail-actions,
+.account-workspace-shell .growth-proposal-actions,
+.account-workspace-shell .library-growth-actions,
+.account-workspace-shell .voice-lab-actions,
+.account-workspace-shell .section-actions,
+.account-workspace-shell .workspace-markdown-field__chrome,
+.account-workspace-shell .workspace-markdown-field__insert,
+.account-workspace-shell .workspace-markdown-field__develop,
+.account-workspace-shell .workspace-markdown-field__block-actions,
+.account-workspace-shell .portal-offer__actions,
+.account-workspace-shell .portal-kpi-strip,
+.account-workspace-shell .admin-billing-toolbar {
+  overflow: visible;
+}
+
+.account-workspace-shell .btn,
+body > .modal .btn {
+  clip-path: none;
+  overflow: visible;
+  white-space: normal;
+  text-align: center;
+}
+
+.account-workspace-shell .resource-actions {
+  opacity: 1 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.account-workspace-shell .resource-actions .btn,
+.account-workspace-shell .resource-detail-actions .btn,
+.account-workspace-shell .detail-actions .btn,
+.account-workspace-shell .profiles-detail-actions .btn,
+.account-workspace-shell .moderation-detail-actions .btn,
+.account-workspace-shell .profile-actions-bar .btn,
+.account-workspace-shell .section-actions .btn,
+.account-workspace-shell .growth-proposal-actions .btn,
+.account-workspace-shell .workspace-empty-actions .btn,
+.account-workspace-shell .bulk-buttons .btn {
+  min-height: 44px;
+  flex: 0 1 auto;
+  visibility: visible;
+  opacity: 1;
+}
+
+.account-workspace-shell .resource-detail-actions,
+.account-workspace-shell .detail-actions,
+.account-workspace-shell .admin-actions,
+.account-workspace-shell .workspace-toolbar-actions,
+.account-workspace-shell .profiles-toolbar-actions,
+.account-workspace-shell .section-actions,
+.account-workspace-shell .growth-proposal-actions,
+.account-workspace-shell .library-growth-actions,
+.account-workspace-shell .moderation-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.account-workspace-shell #resource-detail-actions,
+.account-workspace-shell .profiles-detail-actions,
+.account-workspace-shell .moderation-detail-actions {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  z-index: 4;
+  background: var(--surface-elevated, var(--portal-surface));
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom, 0px));
+}
+
+.account-workspace-shell #resource-detail-actions:empty,
+.account-workspace-shell #resource-detail-actions[hidden] {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  body > .modal[aria-hidden='false'] {
+    align-items: stretch;
+    justify-content: stretch;
+    padding:
+      env(safe-area-inset-top, 0px)
+      env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px)
+      env(safe-area-inset-left, 0px);
+  }
+
+  body > .modal .modal-content,
+  body > .modal .modal-content.modal-large,
+  body > .modal.modal-large .modal-content {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+  }
+
+  body > .modal .modal-footer .btn,
+  .account-workspace-shell .resource-actions .btn,
+  .account-workspace-shell .resource-detail-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .account-workspace-shell .resource-actions,
+  .account-workspace-shell .resource-actions-primary,
+  .account-workspace-shell .resource-detail-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  body > .modal.portal-confirm-modal[aria-hidden='false'] {
+    align-items: center;
+    justify-content: center;
+    padding:
+      max(1rem, env(safe-area-inset-top, 0px))
+      1rem
+      max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  body > .modal.portal-confirm-modal .modal-content,
+  body > .modal.portal-confirm-modal .modal-content.modal-large {
+    width: min(28rem, calc(100% - 1.5rem));
+    max-width: min(28rem, calc(100% - 1.5rem));
+    height: auto;
+    max-height: min(90dvh, 36rem);
+    border-radius: 1.25rem;
+  }
+
+  body > .modal.portal-confirm-modal .modal-footer .btn {
+    width: auto;
+    min-width: 5.5rem;
+    flex: 1 1 auto;
   }
 }

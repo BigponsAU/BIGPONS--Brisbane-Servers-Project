@@ -9,7 +9,7 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
       semanticKey="account-admin-billing"
       eyebrow="Platform"
       title={accountWorkspace.adminBillingLabel}
-      byline="Stripe AI Boost subscribers, today's usage caps, and PayID manual grants."
+      byline="One paid product (AI Boost), today’s caps, and PayID grants after money has cleared. Invoices stay on Stripe."
       titleId="admin-billing-heading"
       variant="primary-light"
     >
@@ -30,13 +30,20 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
     <section class="admin-section admin-section--in-band" aria-labelledby="admin-billing-heading">
 
       <details class="panel-guidance-details">
-        <summary>Billing overview</summary>
+        <summary>How money maps to capacity</summary>
         <div class="panel-guidance-details__body">
-          <p><strong>Stripe AI Boost</strong> adds +15 daily AI units while a subscription is active or trialing.</p>
-          <p><strong>PayID grants</strong> add bonus units for today (UTC) after manual payment clears.</p>
-          <p>Users manage invoices and cancellation via <strong>Manage subscription</strong> on Overview (Stripe Customer Portal).</p>
+          <p><strong>AI Boost</strong> is the only paid product. It adds +15 daily AI units while active or trialing.</p>
+          <p><strong>PayID grants</strong> add bonus units for today (UTC) after the payment has cleared — never before.</p>
+          <p>Customers manage invoices and cancellation on Overview → Manage billing (Stripe Customer Portal). This panel is the operator wall.</p>
         </div>
       </details>
+
+      <div id="admin-billing-kpi" class="portal-kpi-strip" aria-live="polite">
+        <div class="portal-kpi"><span class="portal-kpi__label">Stripe</span><strong id="admin-billing-kpi-stripe">…</strong></div>
+        <div class="portal-kpi"><span class="portal-kpi__label">Subscribers</span><strong id="admin-billing-kpi-subs">…</strong></div>
+        <div class="portal-kpi"><span class="portal-kpi__label">Used today</span><strong id="admin-billing-kpi-used">…</strong></div>
+        <div class="portal-kpi"><span class="portal-kpi__label">At cap</span><strong id="admin-billing-kpi-cap">…</strong></div>
+      </div>
 
       <div id="admin-billing-stripe-status" class="admin-billing-status-card" aria-live="polite" role="status">
         Loading billing configuration…
@@ -44,46 +51,52 @@ import AccountWorkspacePanelBand from './AccountWorkspacePanelBand.astro';
 
       <p id="admin-billing-summary" class="admin-queue-summary" role="status" aria-live="polite">Loading billing data…</p>
 
-      <h3 class="admin-billing-section-title">Subscribers</h3>
-      <div class="admin-billing-table-wrap" role="region" aria-label="Stripe subscribers table" tabindex="0">
-        <table class="admin-billing-table">
-          <thead>
-            <tr>
-              <th scope="col">Email</th>
-              <th scope="col">Status</th>
-              <th scope="col">Daily bonus</th>
-              <th scope="col">Stripe customer</th>
-              <th scope="col">Updated</th>
-            </tr>
-          </thead>
-          <tbody id="admin-billing-subscribers-tbody">
-            <tr><td colspan="5">Loading…</td></tr>
-          </tbody>
-        </table>
+      <div class="admin-ops-workbench admin-billing-workbench">
+        <section class="admin-ops-work-block" aria-labelledby="admin-billing-subscribers-heading">
+          <h3 id="admin-billing-subscribers-heading" class="admin-billing-section-title">Subscribers</h3>
+          <div class="admin-billing-table-wrap" role="region" aria-label="Stripe subscribers table" tabindex="0">
+            <table class="admin-billing-table">
+              <thead>
+                <tr>
+                  <th scope="col">Email</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Daily bonus</th>
+                  <th scope="col">Stripe customer</th>
+                  <th scope="col">Updated</th>
+                </tr>
+              </thead>
+              <tbody id="admin-billing-subscribers-tbody">
+                <tr><td colspan="5">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-ops-work-block" aria-labelledby="admin-billing-usage-heading">
+          <h3 id="admin-billing-usage-heading" class="admin-billing-section-title">Today's usage</h3>
+          <div class="admin-billing-table-wrap" role="region" aria-label="Daily AI usage by user" tabindex="0">
+            <table class="admin-billing-table">
+              <thead>
+                <tr>
+                  <th scope="col">Email</th>
+                  <th scope="col">Used / cap</th>
+                  <th scope="col">Remaining</th>
+                  <th scope="col">Bonuses</th>
+                  <th scope="col">Subscription</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-billing-usage-tbody">
+                <tr><td colspan="6">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <h3 class="admin-billing-section-title">Today's usage</h3>
-      <div class="admin-billing-table-wrap" role="region" aria-label="Daily AI usage by user" tabindex="0">
-        <table class="admin-billing-table">
-          <thead>
-            <tr>
-              <th scope="col">Email</th>
-              <th scope="col">Used / cap</th>
-              <th scope="col">Remaining</th>
-              <th scope="col">Bonuses</th>
-              <th scope="col">Subscription</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-billing-usage-tbody">
-            <tr><td colspan="6">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div id="admin-billing-grant-card" class="card admin-billing-grant-card">
+      <div id="admin-billing-grant-card" class="card admin-billing-grant-card portal-wall">
         <h3 class="card-title">PayID manual grant</h3>
-        <p class="form-hint">Add bonus AI units for today (UTC) after PayID payment clears.</p>
+        <p class="form-hint">Add bonus AI units for today (UTC) only after PayID has cleared. This is an operator action, not a storefront.</p>
         <form id="admin-billing-grant-form" class="admin-usage-grant-form">
           <label class="form-label" for="admin-billing-grant-email">User email</label>
           <input id="admin-billing-grant-email" class="form-input" type="email" required autocomplete="off" />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { wrapMarkdownDocument } from '../src/lib/markdown-render';
-import { appendDiagramMarker, diagramMarker } from '../src/lib/resource-infographics';
+import { appendDiagramMarker, diagramMarker, insertDiagramAtRelevantPosition } from '../src/lib/resource-infographics';
 import { buildFallbackInfographic } from '../src/lib/resource-infographic';
 
 describe('markdown diagrams', () => {
@@ -21,5 +21,32 @@ describe('markdown diagrams', () => {
     const twice = appendDiagramMarker(once, 'wiring-1');
     expect(once).toContain(diagramMarker('wiring-1'));
     expect(twice).toBe(once);
+  });
+
+  it('places the diagram after the operating-sequence heading', () => {
+    const article = [
+      '# Title',
+      '',
+      'Intro paragraph.',
+      '',
+      '## Why this matters',
+      '',
+      'Context.',
+      '',
+      '## How work actually runs',
+      '',
+      'Sequence on the floor.',
+      '',
+      '## Risks if you leave it loose',
+      '',
+      'Close.',
+    ].join('\n');
+    const placed = insertDiagramAtRelevantPosition(article, 'flow-1');
+    const how = placed.indexOf('## How work actually runs');
+    const marker = placed.indexOf(diagramMarker('flow-1'));
+    const risks = placed.indexOf('## Risks if you leave it loose');
+    expect(marker).toBeGreaterThan(how);
+    expect(marker).toBeLessThan(risks);
+    expect(placed.slice(how, marker)).toMatch(/picture|sequence|figure/i);
   });
 });

@@ -28,6 +28,7 @@ import {
   appendDiagramMarker,
   infographicsMetadata,
   listResourceInfographics,
+  stripDiagramSlot,
 } from '../../../lib/resource-infographics';
 import { isAdminRole } from '../../../lib/workspace-roles';
 import { prepareIndustryForResourceWrite } from '../../../lib/resource-tags';
@@ -239,6 +240,8 @@ export const POST: APIRoute = async ({ request }) => {
           ...existingResource.metadata,
           ...infographicsMetadata([infographicForMeta.spec, ...existingDiagrams]),
         };
+      } else {
+        existingResource.content = stripDiagramSlot(existingResource.content || '');
       }
 
       await saveResources(resources);
@@ -327,6 +330,8 @@ export const POST: APIRoute = async ({ request }) => {
     };
     if (infographicForMeta) {
       resource.content = appendDiagramMarker(resource.content, infographicForMeta.spec.id);
+    } else {
+      resource.content = stripDiagramSlot(resource.content);
     }
 
     resources.push(resource);

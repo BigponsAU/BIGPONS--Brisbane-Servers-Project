@@ -17,9 +17,19 @@ function resourceIdOf(resource: unknown): string | null {
   return typeof id === 'string' && id ? id : null;
 }
 
+function resourceVersionOf(resource: unknown): number {
+  if (!resource || typeof resource !== 'object') return 0;
+  const version = (resource as { version?: unknown }).version;
+  return typeof version === 'number' && Number.isFinite(version) ? version : 0;
+}
+
 function indexResource(resource: unknown): void {
   const id = resourceIdOf(resource);
   if (!id) return;
+  const existing = workspaceResourceById.get(id);
+  if (existing && resourceVersionOf(resource) < resourceVersionOf(existing)) {
+    return;
+  }
   workspaceResourceById.set(id, resource);
 }
 
@@ -67,14 +77,19 @@ export function setWorkspaceResources(resources: unknown[]): void {
 export function upsertWorkspaceResource(resource: unknown): void {
   const id = resourceIdOf(resource);
   if (!id) return;
+  const existing = workspaceResourceById.get(id);
+  if (existing && resourceVersionOf(resource) < resourceVersionOf(existing)) {
+    return;
+  }
   indexResource(resource);
+  const indexed = workspaceResourceById.get(id) ?? resource;
   const idx = workspaceResources.findIndex((r) => resourceIdOf(r) === id);
   if (idx >= 0) {
-    workspaceResources[idx] = resource;
+    workspaceResources[idx] = indexed;
   } else {
-    workspaceResources = [...workspaceResources, resource];
+    workspaceResources = [...workspaceResources, indexed];
   }
-  syncMarkovFromResources([resource]);
+  syncMarkovFromResources([indexed]);
 }
 
 export function removeWorkspaceResource(id: string): void {

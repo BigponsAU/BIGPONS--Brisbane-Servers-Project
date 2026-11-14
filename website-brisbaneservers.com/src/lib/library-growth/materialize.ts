@@ -22,6 +22,8 @@ import {
 import { getGrowthMaterializeBlockReason } from './dedup';
 import type { GrowthProposal } from './types';
 import { generateResourceBody } from '~/lib/inference/resource-generate';
+import { ensureArticleWordBand } from '~/lib/inference/on-topic-article';
+import { resolveGenerateLength } from '~/lib/generate-length';
 import { mergeInferenceMetadata } from '~/lib/inference/inference-metadata';
 import { containsDesignSystemJargon } from '~/lib/inference/topic-fidelity';
 import {
@@ -81,6 +83,7 @@ export async function materializeGrowthProposal(
     ? `Knowledge base context:\n${rag.contextText}\n\n---\n${seedPrefix} Topic: ${proposal.topic}. Industry: ${proposal.industry}. ${proposal.rationale}`
     : `${seedPrefix} Topic: ${proposal.topic}. Industry: ${proposal.industry}.`;
 
+  const lengthPlan = resolveGenerateLength('long');
   const generated = await generateResourceBody({
     seedText,
     industry: proposal.industry,
@@ -93,9 +96,16 @@ export async function materializeGrowthProposal(
     extrapolator,
     voiceMatcher,
     reason: 'inference_generate',
+    options: { wordCount: lengthPlan.targetWords },
   });
 
-  const body = generated.content;
+  const body = ensureArticleWordBand(generated.content, {
+    industry: proposal.industry,
+    topic: proposal.topic,
+    title: proposal.title,
+    minWords: lengthPlan.minWords,
+    maxWords: lengthPlan.maxWords,
+  });
   const voiceScore = generated.voiceScore;
   const topicFidelity = generated.topicFidelity;
 

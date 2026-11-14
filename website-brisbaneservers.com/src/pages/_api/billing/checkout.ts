@@ -11,6 +11,7 @@ import {
   getBillingSiteOrigin,
   getBillingSuccessUrl,
 } from '../../../lib/billing/stripe-config';
+import { billingOffer } from '../../../data/billing-offer';
 import { getStripeClient } from '../../../lib/billing/stripe-client';
 import { upsertBillingAccount } from '../../../lib/billing/billing-accounts';
 
@@ -81,9 +82,16 @@ export const POST: APIRoute = async ({ request, url }) => {
       success_url: getBillingSuccessUrl(origin),
       cancel_url: getBillingCancelUrl(origin),
       client_reference_id: user.id,
-      metadata: { userId: user.id },
+      metadata: { userId: user.id, product: 'ai-boost' },
+      allow_promotion_codes: true,
+      billing_address_collection: 'auto',
+      locale: 'auto',
+      custom_text: {
+        submit: { message: billingOffer.boost.confirmMessage },
+      },
       subscription_data: {
-        metadata: { userId: user.id },
+        metadata: { userId: user.id, product: 'ai-boost' },
+        description: `AI Boost — +${STRIPE_SUBSCRIPTION_DAILY_BONUS} daily AI units`,
       },
     });
 

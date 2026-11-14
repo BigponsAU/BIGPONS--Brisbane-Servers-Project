@@ -78,7 +78,7 @@ export const accountWorkspace = {
   productNameShort: 'Workspace',
   overviewLabel: 'Overview',
   overviewDescription:
-    'Your activity, resources, contributions, and quick actions in one place.',
+    'Capacity, resources, contributions, and the next useful action — in one professional wall.',
   libraryGrowthLabel: 'Library growth',
   libraryGrowthDescription:
     'Automates new guides, resources, and case study materials — not voice profiles. You create profiles in Voice profiles; growth writes content using your default site voice after you approve each proposal.',
@@ -97,7 +97,7 @@ export const accountWorkspace = {
   adminOpsLabel: 'Ops',
   adminOpsDescription: 'Usage, search corpus, perk queue',
   adminBillingLabel: 'Billing',
-  adminBillingDescription: 'Subscriptions, usage caps, PayID',
+  adminBillingDescription: 'AI Boost subscribers, daily caps, PayID grants',
 } as const;
 
 /** Display name for the site default voice profile (every account). */

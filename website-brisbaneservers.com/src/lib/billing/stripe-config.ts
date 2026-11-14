@@ -1,7 +1,12 @@
+import { AI_BOOST_DAILY_UNITS } from '../../data/billing-offer';
 import { getRuntimeEnv } from '../../utils/runtime-env';
 
 /** Extra daily AI units while Stripe subscription is active. */
-export const STRIPE_SUBSCRIPTION_DAILY_BONUS = 15;
+export const STRIPE_SUBSCRIPTION_DAILY_BONUS = AI_BOOST_DAILY_UNITS;
+
+export function getStripeAiBoostDisplayPrice(): string {
+  return (getRuntimeEnv('STRIPE_AI_BOOST_DISPLAY') || '').trim();
+}
 
 export function getStripeSecretKey(): string | undefined {
   return getRuntimeEnv('STRIPE_SECRET_KEY');
@@ -29,15 +34,15 @@ export function getBillingSiteOrigin(requestOrigin?: string): string {
 
 export function getBillingSuccessUrl(siteOrigin: string): string {
   const base = siteOrigin.replace(/\/+$/, '');
-  return `${base}/account/?billing=success`;
+  return `${base}/account/?billing=success#capacity`;
 }
 
 export function getBillingCancelUrl(siteOrigin: string): string {
   const base = siteOrigin.replace(/\/+$/, '');
-  return `${base}/account/?billing=cancel`;
+  return `${base}/account/?billing=cancel#capacity`;
 }
 
 export function getBillingPortalReturnUrl(siteOrigin: string): string {
   const base = siteOrigin.replace(/\/+$/, '');
-  return `${base}/account/?billing=portal-return`;
+  return `${base}/account/?billing=portal-return#capacity`;
 }

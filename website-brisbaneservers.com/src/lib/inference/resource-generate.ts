@@ -178,6 +178,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
               user: [
                 `Continue the same ${params.industry} / ${params.topic} article.`,
                 `You have ${countWords(article)} words; write until you reach about ${length.targetWords} (at least ${length.minWords}).`,
+                'Deepen the main claim. Add ### only if a supporting distinction is necessary. Do not clone equal heading/paragraph blocks.',
                 'Do not restart. No preamble. Markdown only.',
                 '',
                 article.slice(-1800),
