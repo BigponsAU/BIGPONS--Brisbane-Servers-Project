@@ -4369,20 +4369,26 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 }
 
 .account-workspace-shell .sidebar-voice-profile {
-  margin: 0 0 var(--space-sm);
+  margin: 0;
 }
 
 .account-workspace-shell .sidebar-voice-profile__label {
   display: block;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.35rem;
   font-size: var(--text-xs, 0.75rem);
-  color: var(--text-secondary);
+  color: #d5e4f4;
 }
 
 .account-workspace-shell .sidebar-voice-profile__select {
   width: 100%;
-  min-height: 2rem;
-  font-size: var(--text-sm);
+  max-width: 100%;
+  min-height: 2.35rem;
+  font-size: 0.8125rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 0.7rem;
+  padding: 0.4rem 0.55rem;
 }
 
 .account-workspace-shell .sidebar-user-email {
@@ -4927,7 +4933,10 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 }
 
 .account-workspace-shell .sidebar-footer {
-  padding: 0.65rem 0.35rem 0.2rem;
+  padding: 0.75rem 0.4rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
 .account-workspace-shell .sidebar-nav-tracks .nav-section-label {
@@ -5108,6 +5117,208 @@ body > .modal .btn {
 .account-workspace-shell #resource-detail-actions:empty,
 .account-workspace-shell #resource-detail-actions[hidden] {
   display: none;
+}
+
+/* Status chips: readable colour, no tartan crop */
+.account-workspace-shell .badge,
+.account-workspace-shell .activity-badge,
+.account-workspace-shell .preview-card-badge,
+.account-workspace-shell .profile-item-badge,
+body > .modal .badge {
+  overflow: visible;
+  clip-path: none;
+  border-radius: 999px;
+  padding: 0.28rem 0.72rem;
+  min-height: 1.55rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.account-workspace-shell .badge::before,
+.account-workspace-shell .badge::after,
+.account-workspace-shell .activity-badge::before,
+.account-workspace-shell .activity-badge::after,
+.account-workspace-shell .preview-card-badge::before,
+.account-workspace-shell .preview-card-badge::after,
+body > .modal .badge::before,
+body > .modal .badge::after {
+  display: none;
+}
+
+.account-workspace-shell .badge-draft,
+.account-workspace-shell .activity-badge.badge-draft,
+.account-workspace-shell .preview-card-badge.badge-draft,
+.account-workspace-shell .profile-item-badge.badge-draft,
+body > .modal .badge-draft {
+  background: #fff4cc;
+  color: #92400e;
+  border: 1px solid #f0b429;
+}
+
+.account-workspace-shell .badge-published,
+.account-workspace-shell .activity-badge.badge-published,
+.account-workspace-shell .preview-card-badge.badge-published,
+.account-workspace-shell .profile-item-badge.badge-published,
+body > .modal .badge-published {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #34d399;
+}
+
+.account-workspace-shell .badge-archived,
+.account-workspace-shell .activity-badge.badge-archived,
+.account-workspace-shell .preview-card-badge.badge-archived,
+body > .modal .badge-archived {
+  background: #e8eef6;
+  color: #334155;
+  border: 1px solid #94a3b8;
+}
+
+.account-workspace-shell .badge-starter,
+body > .modal .badge-starter {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #60a5fa;
+}
+
+/* Toasts and dialogs — same rounded, unclipped, coloured language */
+.account-workspace-shell .notification,
+.notification-container .notification {
+  clip-path: none;
+  overflow: visible;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  box-shadow: 0 12px 32px rgba(8, 27, 54, 0.16);
+  padding: 0.85rem 1rem;
+}
+
+.account-workspace-shell .notification::before,
+.account-workspace-shell .notification::after,
+.notification-container .notification::before,
+.notification-container .notification::after {
+  display: none;
+}
+
+.notification-container .notification.success,
+.account-workspace-shell .notification.success {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  border-left-color: #059669;
+  color: #065f46;
+}
+
+.notification-container .notification.error,
+.account-workspace-shell .notification.error {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  border-left-color: #dc2626;
+  color: #991b1b;
+}
+
+.notification-container .notification.warning,
+.account-workspace-shell .notification.warning {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  border-left-color: #d97706;
+  color: #92400e;
+}
+
+.notification-container .notification.info,
+.account-workspace-shell .notification.info {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  border-left-color: #0a74da;
+  color: #1e3a8a;
+}
+
+body > .modal .modal-content {
+  background: #fff;
+  border: 1px solid #b4c7dc;
+}
+
+body > .modal .modal-header {
+  background: linear-gradient(180deg, #d7e9fb 0%, #fff 88%);
+  border-bottom: 1px solid #c5d8ec;
+}
+
+body > .modal .modal-header h2 {
+  padding-left: 0;
+  color: #082445;
+}
+
+body > .modal .modal-header h2::before,
+body > .modal .modal-footer::before,
+body > .modal .modal-footer::after,
+body > .modal .modal-content::before,
+body > .modal .modal-content::after {
+  display: none;
+}
+
+body > .modal .modal-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: rgba(10, 116, 218, 0.12);
+  color: #0a5cb0;
+}
+
+body > .modal .modal-body {
+  background: #fff;
+}
+
+body > .modal .modal-footer {
+  background: #eef5fc;
+  border-top: 1px solid #c5d8ec;
+  overflow: visible;
+}
+
+body > .modal .btn,
+body > .modal .modal-footer .btn {
+  clip-path: none;
+  overflow: visible;
+  border-radius: 0.75rem;
+}
+
+body > .modal .btn-primary {
+  background: #0a74da;
+  border-color: transparent;
+  color: #fff;
+}
+
+body > .modal .btn-secondary {
+  background: #fff;
+  border: 1px solid #8eb4d8;
+  color: #0a3d6e;
+}
+
+body > .modal .btn-danger {
+  background: #dc2626;
+  border-color: transparent;
+  color: #fff;
+}
+
+body > .modal input:not([type='checkbox']):not([type='radio']),
+body > .modal select,
+body > .modal textarea,
+body > .modal .portal-prompt-input {
+  width: 100%;
+  min-height: 2.6rem;
+  border-radius: 0.75rem;
+  border: 1px solid #b4c7dc;
+  background: #f7fbff;
+  color: #082445;
+  padding: 0.55rem 0.75rem;
+  box-sizing: border-box;
+}
+
+body > .modal.portal-confirm-modal .modal-content {
+  background:
+    linear-gradient(180deg, rgba(10, 116, 218, 0.1), #fff 28%);
+  padding: 0;
 }
 
 @media (max-width: 47.99rem) {

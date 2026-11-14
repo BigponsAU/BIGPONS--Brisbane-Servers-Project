@@ -173,6 +173,14 @@ describe('dashboard production standards', () => {
     expect(dashboard).toContain('clip-path: none');
   });
 
+  it('keeps status chips and toasts unclipped with distinct draft/published colour', async () => {
+    const dashboard = await readFile(path.resolve('src/styles/portal-dashboard.css'), 'utf8');
+    expect(dashboard).toContain('.preview-card-badge.badge-draft');
+    expect(dashboard).toContain('#fff4cc');
+    expect(dashboard).toContain('.notification.success');
+    expect(dashboard).toContain('body > .modal .btn-danger');
+  });
+
   it('keeps resource actions on a sticky footer instead of a hover More menu', async () => {
     const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
     const panel = await readFile(path.resolve('src/components/account/AccountResourcesPanel.astro'), 'utf8');
