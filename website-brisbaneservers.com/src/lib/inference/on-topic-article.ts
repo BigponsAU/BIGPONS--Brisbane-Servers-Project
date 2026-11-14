@@ -118,7 +118,10 @@ export function rewriteFillerHeadings(markdown: string, topic: string, industry:
   });
 }
 
-function overflowNotes(topicLabel: string, industryLabel: string): SubSection[] {
+function overflowNotes(
+  topicLabel: string,
+  industryLabel: string,
+): Array<{ title: string; body: string }> {
   return [
     {
       title: 'Handover completeness',
