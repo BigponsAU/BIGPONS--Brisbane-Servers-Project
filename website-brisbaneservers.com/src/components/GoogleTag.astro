@@ -17,9 +17,21 @@
       window.gtag('event', 'sign_up');
       window.gtag('event', 'conversion', { send_to: SIGNUP_CONVERSION });
     };
+    var ENQUIRY_CONVERSION = 'AW-11084394791/X5x7CP7Fy7gdEKfiuaUp';
+    window.gtag_report_conversion = function (url) {
+      var callback = function () {
+        if (typeof url != 'undefined') {
+          window.location = url;
+        }
+      };
+      window.gtag('event', 'conversion', {
+        send_to: ENQUIRY_CONVERSION,
+        event_callback: callback,
+      });
+      return false;
+    };
     window.__bsTrackEnquiryConversion = function () {
-      window.gtag('event', 'enquiry');
-      window.gtag('event', 'generate_lead');
+      window.gtag_report_conversion();
     };
   })();
 </script>

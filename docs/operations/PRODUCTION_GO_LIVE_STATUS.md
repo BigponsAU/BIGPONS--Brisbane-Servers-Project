@@ -2,18 +2,15 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-11-15 — enquiry and sign-up events fire from the forms
+**Last synced:** 2026-11-15 — enquiry conversion uses the Enquire Ads label
 
-### 2026-11-15 — Enquiry and sign-up events
+### 2026-11-15 — Enquire conversion label
 
-- **Site** — A successful enquiry calls `enquiry` and `generate_lead`. A created account still sends `sign_up` and Ads conversion `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp`.
-- **Note** — The published container has no separate enquiry `send_to` label. Paste that snippet if the enquiry conversion should use its own Ads label.
+- **Site** — A successful enquiry calls `gtag_report_conversion`, which sends `AW-11084394791/X5x7CP7Fy7gdEKfiuaUp`. A created account still sends `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp`.
 
 ### 2026-11-15 — Google Tag is not held for consent
 
 - **Site** — `GTM-M88HFRL3` loads in the page head on every visit. The cookie banner no longer delays or blocks the tag. Sign-up still sends `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp` when an account is created.
-
-### 2026-11-14 — Google Tag and sign-up conversion
 
 ### 2026-11-14 — Google Tag and sign-up conversion
 
