@@ -400,13 +400,24 @@ async function loadResources(options?: { revealResourceId?: string; quiet?: bool
       console.log('[Portal] Session active:', sessionActive);
     }
 
-    const response = await workspaceFetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
+    let response: Response;
+    try {
+      response = await workspaceFetch(url, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+    } catch (firstError) {
+      // One retry for a dropped connection / failed CORS preflight.
+      await new Promise((resolve) => window.setTimeout(resolve, 350));
+      try {
+        response = await workspaceFetch(url, {
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+      } catch {
+        throw firstError;
       }
-    });
+    }
 
     console.log('[Portal] Response status:', response.status, response.statusText);
 
@@ -427,21 +438,19 @@ async function loadResources(options?: { revealResourceId?: string; quiet?: bool
       }
 
       const errorHtml = `
-        <div class="loading-message" style="color: var(--error-color, #dc3545);">
-          <p><strong>Error loading resources:</strong> ${escapeHtml(errorMessage)}</p>
-          <p style="margin-top: var(--space-md); font-size: var(--text-sm);">
-            Please check your connection and try again. If the problem persists, check the browser console for details.
-          </p>
-          <button class="btn btn-secondary" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+        <div class="loading-message tree-load-error">
+          <p><strong>Could not load resources:</strong> ${escapeHtml(errorMessage)}</p>
+          <p class="form-hint">Check the connection to the account API, then retry.</p>
+          <button class="btn btn-secondary" onclick="loadResources()">Retry</button>
         </div>
       `;
       
       if (listDiv) listDiv.innerHTML = errorHtml;
       if (treeContainer) {
         treeContainer.innerHTML = `
-          <div class="tree-loading" style="color: var(--error-color, #dc3545);">
-            <p><strong>Error loading tree:</strong> ${escapeHtml(errorMessage)}</p>
-            <button class="btn btn-secondary btn-sm" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+          <div class="tree-loading tree-load-error">
+            <p><strong>Could not load the tree:</strong> ${escapeHtml(errorMessage)}</p>
+            <button class="btn btn-secondary btn-sm" onclick="loadResources()">Retry</button>
           </div>
         `;
       }
@@ -711,19 +720,12 @@ async function loadResources(options?: { revealResourceId?: string; quiet?: bool
     }
   } catch (error) {
     console.error('[Portal] Error loading resources:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = workspaceErrorMessage(error);
     const errorHtml = `
-      <div class="loading-message" style="color: var(--error-color, #dc3545);">
+      <div class="loading-message tree-load-error">
         <p><strong>Connection error:</strong> ${escapeHtml(errorMessage)}</p>
-        <p style="margin-top: var(--space-md); font-size: var(--text-sm);">
-          Please check:
-          <ul style="text-align: left; display: inline-block; margin-top: var(--space-sm);">
-            <li>Your internet connection</li>
-            <li>That the API server is running</li>
-            <li>The browser console for more details</li>
-          </ul>
-        </p>
-        <button class="btn btn-secondary" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+        <p class="form-hint">The account API did not respond. Retry in a moment; if it persists, refresh the page.</p>
+        <button class="btn btn-secondary" onclick="loadResources()">Retry</button>
       </div>
     `;
     
@@ -734,9 +736,9 @@ async function loadResources(options?: { revealResourceId?: string; quiet?: bool
     const treeContainer = document.getElementById('resource-tree');
     if (treeContainer) {
       treeContainer.innerHTML = `
-        <div class="tree-loading" style="color: var(--error-color, #dc3545);">
-          <p><strong>Error loading tree:</strong> ${escapeHtml(errorMessage)}</p>
-          <button class="btn btn-secondary btn-sm" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+        <div class="tree-loading tree-load-error">
+          <p><strong>Could not load the tree:</strong> ${escapeHtml(errorMessage)}</p>
+          <button class="btn btn-secondary btn-sm" onclick="loadResources()">Retry</button>
         </div>
       `;
     }
@@ -790,9 +792,9 @@ function getTreeResourcesForDisplay(resources: any[] = getWorkspaceResources()):
 
 function showResourceTreeError(treeContainer: HTMLElement, message: string): void {
   treeContainer.innerHTML = `
-    <div class="tree-loading" style="color: var(--error-color, #dc3545);">
-      <p><strong>Error loading tree:</strong> ${escapeHtml(message)}</p>
-      <button class="btn btn-secondary btn-sm" onclick="loadResources()" style="margin-top: var(--space-md);">Retry</button>
+    <div class="tree-loading tree-load-error">
+      <p><strong>Could not load the tree:</strong> ${escapeHtml(workspaceErrorMessage(message))}</p>
+      <button class="btn btn-secondary btn-sm" onclick="loadResources()">Retry</button>
     </div>
   `;
 }

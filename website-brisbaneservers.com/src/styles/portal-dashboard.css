@@ -531,9 +531,10 @@ body > .portal-confirm-modal .modal-footer .btn {
 
 .site-shell--marketing .account-workspace-shell .sidebar-nav-item.active,
 .site-shell--portal .sidebar-nav-item.active {
-  background: rgba(var(--primary-color-rgb), 0.12);
-  border-color: rgba(var(--primary-color-rgb), 0.28);
+  background: linear-gradient(90deg, rgba(10, 116, 218, 0.16), rgba(139, 92, 246, 0.1));
+  border-color: rgba(var(--primary-color-rgb), 0.34);
   color: var(--primary-ink, var(--text-primary));
+  border-radius: var(--workspace-radius-sm, 0.75rem);
 }
 
 .site-shell--marketing .account-workspace-shell .sidebar-nav-item.active .nav-label,
@@ -704,14 +705,94 @@ body > .portal-confirm-modal .modal-footer .btn {
 .account-workspace-shell {
   --workspace-accent: var(--primary-color);
   --workspace-accent-soft: var(--primary-light);
+  --workspace-radius: 1rem;
+  --workspace-radius-sm: 0.75rem;
+  --workspace-tint: rgba(10, 116, 218, 0.12);
+  --workspace-tint-strong: rgba(10, 116, 218, 0.22);
+  --workspace-canvas: #cddceb;
+  --workspace-sidebar: #081b36;
+  --workspace-sidebar-text: #e8eef6;
+  --portal-surface: #e7eef8;
+  --portal-surface-elevated: #ffffff;
+  --portal-surface-subtle: #d4e2f2;
+  --portal-border: #b4c7dc;
+  --portal-border-light: #c9d8ea;
+  --surface: #e7eef8;
+  --surface-elevated: #ffffff;
+  --border: #b4c7dc;
+}
+
+.account-workspace-shell .stat-card,
+.account-workspace-shell .insight-card,
+.account-workspace-shell .portal-wall,
+.account-workspace-shell .portal-offer,
+.account-workspace-shell .portal-kpi,
+.account-workspace-shell .resource-tree-panel,
+.account-workspace-shell .resource-workspace-content,
+.account-workspace-shell .admin-ops-work-block,
+.account-workspace-shell .admin-billing-status-card {
+  border-radius: var(--workspace-radius);
+}
+
+.account-workspace-shell .btn,
+.account-workspace-shell .filter-btn,
+.account-workspace-shell .tree-filters .filter-btn,
+.account-workspace-shell .form-input,
+.account-workspace-shell .form-control,
+.account-workspace-shell .tree-search-input {
+  border-radius: var(--workspace-radius-sm);
+}
+
+.account-workspace-shell .stat-card {
+  background:
+    linear-gradient(180deg, var(--workspace-tint) 0%, var(--surface-elevated) 58%);
+  border-color: rgba(var(--primary-color-rgb), 0.16);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+.account-workspace-shell .insight-card,
+.account-workspace-shell .portal-wall,
+.account-workspace-shell .portal-offer {
+  border-color: rgba(var(--primary-color-rgb), 0.14);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.account-workspace-shell .portal-offer--featured {
+  background:
+    linear-gradient(180deg, rgba(139, 92, 246, 0.08), var(--surface) 42%);
+}
+
+.account-workspace-shell .resource-tree-panel {
+  background:
+    linear-gradient(180deg, rgba(10, 116, 218, 0.09) 0%, var(--surface-elevated) 7.5rem);
+  border-color: rgba(var(--primary-color-rgb), 0.18);
+}
+
+.account-workspace-shell .resource-workspace-content {
+  border: 1px solid rgba(var(--primary-color-rgb), 0.12);
+  background:
+    linear-gradient(180deg, rgba(20, 184, 166, 0.06), var(--surface-elevated) 9rem);
+}
+
+.account-workspace-shell .tree-load-error {
+  color: var(--portal-error-dark, #991b1b);
+  padding: var(--space-md);
+  border-radius: var(--workspace-radius-sm);
+  background: #fef2f2;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.account-workspace-shell .tree-load-error .btn {
+  margin-top: var(--space-sm);
 }
 
 .site-shell--marketing .account-workspace-shell .stat-card,
 .site-shell--portal .stat-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--site-panel-radius);
-  box-shadow: none;
+  background:
+    linear-gradient(180deg, var(--workspace-tint, rgba(10, 116, 218, 0.07)) 0%, var(--surface-elevated) 58%);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.16);
+  border-radius: var(--workspace-radius, var(--site-panel-radius));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
 }
 
 .site-shell--marketing .account-workspace-shell .stat-card::before,
@@ -748,9 +829,10 @@ body > .portal-confirm-modal .modal-footer .btn {
   gap: var(--space-sm);
   min-height: 0;
   background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--site-panel-radius);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  border-radius: var(--workspace-radius, var(--site-panel-radius));
   padding: var(--space-lg);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
 }
 
 .site-shell--marketing .account-workspace-shell .insight-card .status-message:empty,
@@ -1955,6 +2037,8 @@ body[data-page-id='account'] .site-shell--marketing > footer {
 .account-workspace-shell .sidebar-footer {
   flex-shrink: 0;
   margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d7e2ef;
 }
 
 .account-workspace-shell #workspace-mode-switcher {
@@ -3514,9 +3598,6 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   flex-direction: row;
   gap: var(--space-md);
   padding: var(--space-lg);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--site-panel-radius);
 }
 
 .account-workspace-shell .stats-grid .stat-card h3 {
@@ -3537,10 +3618,11 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .account-workspace-shell .quick-action-card,
 .account-workspace-shell .quick-link-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--site-panel-radius);
-  box-shadow: none;
+  background:
+    linear-gradient(180deg, rgba(10, 116, 218, 0.06), var(--surface-elevated) 70%);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.14);
+  border-radius: var(--workspace-radius, var(--site-panel-radius));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
   padding: var(--space-lg);
   color: var(--text-primary);
   text-decoration: none;
@@ -4662,6 +4744,134 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   .account-workspace-shell .markov-stat__value {
     font-size: clamp(1.125rem, 1.35rem, 1.75rem);
   }
+}
+
+/* Contrast against the former all-white portal: ink sidebar, cool canvas, white cards. */
+.site-shell--marketing .account-workspace-shell .admin-portal,
+.site-shell--portal .admin-portal,
+.account-workspace-shell .account-workspace-root {
+  background: linear-gradient(180deg, #b9d0ea 0%, #d2e0f0 42%, #e4eaf3 100%);
+}
+
+.site-shell--marketing .account-workspace-shell .portal-sidebar,
+.site-shell--portal .portal-sidebar {
+  background: var(--workspace-sidebar, #081b36);
+  border-color: #0d3a6c;
+  color: var(--workspace-sidebar-text, #e8eef6);
+  box-shadow: 0 18px 40px rgba(8, 27, 54, 0.22);
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-header,
+.site-shell--portal .sidebar-header {
+  background: #061428;
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-logo,
+.site-shell--portal .sidebar-logo,
+.account-workspace-shell .sidebar-workspace-title,
+.site-shell--marketing .account-workspace-shell .sidebar-subtitle,
+.site-shell--portal .sidebar-subtitle,
+.account-workspace-shell .sidebar-mode-subtitle {
+  color: #f4f7fb;
+  opacity: 1;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-subtitle,
+.site-shell--portal .sidebar-subtitle,
+.account-workspace-shell .sidebar-mode-subtitle {
+  color: #b7c6d9;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-toggle,
+.site-shell--portal .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item,
+.site-shell--portal .sidebar-nav-item {
+  color: #d7e2ef;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-label,
+.site-shell--portal .sidebar-nav-item .nav-label {
+  color: #f3f7fb;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-description,
+.site-shell--portal .sidebar-nav-item .nav-description {
+  color: #9fb3c9;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-icon,
+.site-shell--portal .sidebar-nav-item .nav-icon {
+  color: #7eb6f0;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item:hover,
+.site-shell--portal .sidebar-nav-item:hover,
+.account-workspace-shell .sidebar-nav-item--featured:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(126, 182, 240, 0.35);
+  color: #fff;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item:hover .nav-label,
+.site-shell--portal .sidebar-nav-item:hover .nav-label,
+.account-workspace-shell .sidebar-nav-item--featured:hover .nav-label,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item:hover .nav-description,
+.site-shell--portal .sidebar-nav-item:hover .nav-description {
+  color: #fff;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active,
+.site-shell--portal .sidebar-nav-item.active {
+  background: linear-gradient(90deg, #0a74da, #3d5bd9);
+  border-color: transparent;
+  color: #fff;
+}
+
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active .nav-label,
+.site-shell--portal .sidebar-nav-item.active .nav-label,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active .nav-description,
+.site-shell--portal .sidebar-nav-item.active .nav-description,
+.site-shell--marketing .account-workspace-shell .sidebar-nav-item.active .nav-icon,
+.site-shell--portal .sidebar-nav-item.active .nav-icon {
+  color: #fff;
+}
+
+.account-workspace-shell .sidebar-command-band {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.account-workspace-shell .account-workspace-panel-section,
+.account-workspace-shell .section-home-band--surface,
+.account-workspace-shell .section-home-band--primary-light {
+  background: #fff;
+  border: 1px solid #b4c7dc;
+  border-radius: var(--workspace-radius, 1rem);
+  box-shadow: 0 10px 28px rgba(8, 27, 54, 0.08);
+}
+
+.account-workspace-shell .resource-tree-panel {
+  background: linear-gradient(180deg, #c5daf0 0%, #eef4fb 8rem);
+  border-color: #8eafd0;
+}
+
+.account-workspace-shell .resource-workspace-content {
+  background: #fff;
+  border-color: #8eafd0;
+}
+
+.account-workspace-shell .portal-header {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #b4c7dc;
+  border-radius: var(--workspace-radius, 1rem);
 }
 
 /* Action bars stay on-screen: no hover-only hide, no 200px max-height clip. */

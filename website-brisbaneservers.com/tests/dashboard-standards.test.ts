@@ -210,4 +210,14 @@ describe('dashboard production standards', () => {
     expect(extensions).not.toContain('loginWithPasskey');
     expect(extensions).toContain('passkey-register-btn');
   });
+
+  it('loads the resource tree without CORS-unsafe GET headers', async () => {
+    const resources = await readFile(path.resolve('src/scripts/account-workspace-resources.ts'), 'utf8');
+    const api = await readFile(path.resolve('src/scripts/account-workspace-resource-api.ts'), 'utf8');
+    const cors = await readFile(path.resolve('workers/api/src/handlers.ts'), 'utf8');
+    expect(resources).not.toMatch(/Cache-Control': 'no-cache'/);
+    expect(api).not.toMatch(/Cache-Control': 'no-cache'/);
+    expect(cors).toContain('Cache-Control');
+    expect(cors).toContain("Access-Control-Allow-Headers");
+  });
 });

@@ -27,7 +27,7 @@ export async function fetchResourceById(
   const url = `${apiBase.replace(/\/+$/, '')}/resources/${encodeURIComponent(id)}`;
   const response = await workspaceFetch(url, {
     cache: 'no-store',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'Cache-Control': 'no-cache' },
+    headers: { Accept: 'application/json' },
   });
 
   if (!response.ok) {
@@ -64,7 +64,8 @@ export async function fetchAuthenticatedResources(
   const url = `${apiBase.replace(/\/+$/, '')}/resources${qs ? `?${qs}` : ''}`;
 
   const response = await workspaceFetch(url, {
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    cache: 'no-store',
+    headers: { Accept: 'application/json' },
   });
 
   if (!response.ok) {
@@ -92,7 +93,8 @@ export async function fetchAuthenticatedResources(
 export async function fetchStarterBlocks(apiBase: string): Promise<unknown[]> {
   const base = apiBase.replace(/\/+$/, '');
   const starterRes = await workspaceFetch(`${base}/resources/starter-blocks`, {
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    cache: 'no-store',
+    headers: { Accept: 'application/json' },
   });
 
   if (starterRes.ok) {
