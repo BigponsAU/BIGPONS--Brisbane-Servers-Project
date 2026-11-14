@@ -1715,8 +1715,35 @@ body[data-page-id='account'] .site-shell--marketing > footer {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #6aa8e6 transparent;
+  scrollbar-gutter: auto;
+  padding-right: 0.2rem;
+}
+
+.account-workspace-shell .sidebar-nav-viewport::-webkit-scrollbar {
+  width: 0.55rem;
+}
+
+.account-workspace-shell .sidebar-nav-viewport::-webkit-scrollbar-track {
+  background: rgba(8, 27, 54, 0.35);
+  border-radius: 999px;
+  margin-block: 0.4rem;
+}
+
+.account-workspace-shell .sidebar-nav-viewport::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #7eb6f0, #3d6ea8);
+  border-radius: 999px;
+  border: 2px solid #081b36;
+  background-clip: padding-box;
+}
+
+.account-workspace-shell .sidebar-nav-viewport::-webkit-scrollbar-thumb:hover {
+  background: #9cc9f5;
+  border: 2px solid #081b36;
 }
 
 .account-workspace-shell .sidebar-nav-tracks {
@@ -4376,7 +4403,8 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   display: block;
   margin: 0 0 0.35rem;
   font-size: var(--text-xs, 0.75rem);
-  color: #d5e4f4;
+  color: #f4f8fd;
+  font-weight: 600;
 }
 
 .account-workspace-shell .sidebar-voice-profile__select {
@@ -4850,7 +4878,7 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 .site-shell--marketing .account-workspace-shell .sidebar-subtitle,
 .site-shell--portal .sidebar-subtitle,
 .account-workspace-shell .sidebar-mode-subtitle {
-  color: #b7c6d9;
+  color: #e4eef8;
 }
 
 .site-shell--marketing .account-workspace-shell .sidebar-toggle,
@@ -4872,7 +4900,7 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
 
 .site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-description,
 .site-shell--portal .sidebar-nav-item .nav-description {
-  color: #9fb3c9;
+  color: #d5e4f4;
 }
 
 .site-shell--marketing .account-workspace-shell .sidebar-nav-item .nav-icon,
@@ -4937,22 +4965,36 @@ body[data-page-id='account'].account-workspace-dashboard-active .site-shell--mar
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  background: #061428;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.85rem;
 }
 
 .account-workspace-shell .sidebar-nav-tracks .nav-section-label {
-  color: #9eb4cc;
+  color: #e8f1fb;
+}
+
+.account-workspace-shell .sidebar-footer,
+.account-workspace-shell .sidebar-footer .sidebar-user,
+.account-workspace-shell .sidebar-voice-profile__label,
+.account-workspace-shell .sidebar-user-email,
+.account-workspace-shell .sidebar-footer .form-hint {
+  color: #f4f8fd;
+  opacity: 1;
+}
+
+.account-workspace-shell .sidebar-voice-profile__select {
+  color: #fff;
+  background: #14375f;
+  border-color: #7eb6f0;
 }
 
 .account-workspace-shell .sidebar-footer .btn-secondary,
 .account-workspace-shell #sidebar-logout-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.account-workspace-shell .sidebar-voice-profile__label,
-.account-workspace-shell .sidebar-user-email {
-  color: #c5d4e6;
+  background: #fff;
+  border-color: transparent;
+  color: #081b36;
+  font-weight: 650;
 }
 
 .account-workspace-shell .sidebar-nav-item--featured,
