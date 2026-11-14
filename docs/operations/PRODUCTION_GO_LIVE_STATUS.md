@@ -2,7 +2,13 @@
 
 Living tracker. **Hosting map:** [HOSTING_MCP_WORKSPACE.md](HOSTING_MCP_WORKSPACE.md).
 
-**Last synced:** 2026-11-14 — Google Tag and sign-up conversion live
+**Last synced:** 2026-11-15 — Google Tag loads without waiting for the cookie banner
+
+### 2026-11-15 — Google Tag is not held for consent
+
+- **Site** — `GTM-M88HFRL3` loads in the page head on every visit. The cookie banner no longer delays or blocks the tag. Sign-up still sends `AW-11084394791/y8sYCN_Jl7gdEKfiuaUp` when an account is created.
+
+### 2026-11-14 — Google Tag and sign-up conversion
 
 ### 2026-11-14 — Google Tag and sign-up conversion
 

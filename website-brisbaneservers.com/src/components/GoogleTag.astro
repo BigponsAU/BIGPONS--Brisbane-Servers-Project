@@ -1,61 +1,20 @@
-<!-- Google Tag Manager — loads only after cookie consent is accepted. -->
+<!-- Google Tag Manager. Loads with the page; the cookie banner does not delay it. -->
 <script is:inline data-cfasync="false">
   (function () {
     var GTM_ID = 'GTM-M88HFRL3';
     var SIGNUP_CONVERSION = 'AW-11084394791/y8sYCN_Jl7gdEKfiuaUp';
-    var SIGNUP_CONVERSION_KEY = 'bs.signupConversion';
-    function consentState() {
-      var fromCookie = null;
-      try {
-        var parts = document.cookie.split(';');
-        for (var i = 0; i < parts.length; i++) {
-          var part = parts[i].trim();
-          if (part.indexOf('cookie-consent=') === 0) {
-            fromCookie = decodeURIComponent(part.slice(15));
-            break;
-          }
-        }
-      } catch (e) {}
-      if (fromCookie === 'accepted' || fromCookie === 'declined') return fromCookie;
-      try {
-        var stored = localStorage.getItem('cookie-consent-preference');
-        if (stored === 'accepted' || stored === 'declined') return stored;
-      } catch (e2) {}
-      return 'unknown';
-    }
-    function pushSignupConversion() {
-      window.gtag('event', 'conversion', { send_to: SIGNUP_CONVERSION });
-    }
-    function loadGoogleTag() {
-      if (window.__bsGtmLoaded) return;
-      window.__bsGtmLoaded = true;
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function () { window.dataLayer.push(arguments); };
-      window.gtag('js', new Date());
-      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      try {
-        if (sessionStorage.getItem(SIGNUP_CONVERSION_KEY) === '1') {
-          sessionStorage.removeItem(SIGNUP_CONVERSION_KEY);
-          pushSignupConversion();
-        }
-      } catch (e3) {}
-      var script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
-      document.head.appendChild(script);
-    }
-    window.__bsLoadGoogleTag = loadGoogleTag;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
+    document.head.appendChild(script);
+    window.__bsGtmLoaded = true;
+    window.__bsLoadGoogleTag = function () {};
     window.__bsTrackSignupConversion = function () {
-      var consent = consentState();
-      if (consent === 'declined') return;
-      if (consent !== 'accepted') {
-        try { sessionStorage.setItem(SIGNUP_CONVERSION_KEY, '1'); } catch (e4) {}
-        return;
-      }
-      try { sessionStorage.removeItem(SIGNUP_CONVERSION_KEY); } catch (e5) {}
-      loadGoogleTag();
-      pushSignupConversion();
+      window.gtag('event', 'conversion', { send_to: SIGNUP_CONVERSION });
     };
-    if (consentState() === 'accepted') loadGoogleTag();
   })();
 </script>
