@@ -99,15 +99,20 @@ const USAGE_FETCH_TIMEOUT_MS = 12000;
 function renderMeter(used: number, cap: number, remaining: number): void {
   const wrap = document.getElementById('client-ai-usage-bar-wrap');
   const fill = document.getElementById('client-ai-usage-bar-fill');
-  if (!wrap || !fill || cap <= 0) {
-    wrap?.setAttribute('hidden', '');
-    return;
-  }
+  const remainingEl = document.getElementById('client-ai-usage-remaining');
+  const capLabel = document.getElementById('client-ai-usage-cap-label');
+  if (remainingEl) remainingEl.textContent = Number.isFinite(remaining) ? String(remaining) : '—';
+  if (capLabel && cap > 0) capLabel.textContent = `of ${cap} today`;
+  if (!wrap || !fill) return;
   wrap.removeAttribute('hidden');
-  const pct = Math.max(0, Math.min(100, Math.round((used / cap) * 100)));
+  const safeCap = cap > 0 ? cap : 1;
+  const pct = Math.max(0, Math.min(100, Math.round((used / safeCap) * 100)));
   fill.style.width = `${pct}%`;
-  const level = remaining === 0 ? 'critical' : remaining / cap <= 0.25 ? 'warning' : 'ok';
+  const level = remaining === 0 ? 'critical' : remaining / safeCap <= 0.25 ? 'warning' : 'ok';
   wrap.setAttribute('data-level', level);
+  wrap.setAttribute('aria-valuenow', String(used));
+  wrap.setAttribute('aria-valuemax', String(cap > 0 ? cap : 0));
+  wrap.setAttribute('aria-valuetext', `${used} of ${cap} AI units used, ${remaining} remaining`);
 }
 
 export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<void> {
@@ -122,6 +127,8 @@ export async function loadOverviewAiBilling(ctx: PortalAccountContext): Promise<
   if (!hasSession(ctx)) {
     summaryEl.textContent = 'Sign in to view daily AI capacity.';
     if (metaEl) metaEl.textContent = '';
+    const remainingEl = document.getElementById('client-ai-usage-remaining');
+    if (remainingEl) remainingEl.textContent = '—';
     setBillingButtonVisibility(upgradeBtn, false);
     setBillingButtonVisibility(manageBtn, false);
     return;
@@ -203,6 +210,9 @@ function clearBillingQueryParam(): void {
   window.history.replaceState({}, '', next);
 }
 
+let usagePollId: number | null = null;
+let liveMeterBound = false;
+
 export function bindOverviewBilling(resolveCtx: () => PortalAccountContext): void {
   document.getElementById('client-ai-upgrade-btn')?.addEventListener('click', () => {
     void startStripeCheckout(resolveCtx());
@@ -211,6 +221,17 @@ export function bindOverviewBilling(resolveCtx: () => PortalAccountContext): voi
   document.getElementById('client-ai-manage-btn')?.addEventListener('click', () => {
     void startBillingPortal(resolveCtx());
   });
+
+  if (!liveMeterBound) {
+    liveMeterBound = true;
+    const refresh = () => {
+      if (document.hidden) return;
+      void loadOverviewAiBilling(resolveCtx());
+    };
+    if (usagePollId != null) window.clearInterval(usagePollId);
+    usagePollId = window.setInterval(refresh, 20000);
+    document.addEventListener('visibilitychange', refresh);
+  }
 
   const params = new URLSearchParams(window.location.search);
   const billing = params.get('billing');

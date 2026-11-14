@@ -173,6 +173,15 @@ describe('dashboard production standards', () => {
     expect(dashboard).toContain('clip-path: none');
   });
 
+  it('overview capacity wall exposes a live remaining meter', async () => {
+    const panel = await readFile(path.resolve('src/components/account/AccountOverviewPanel.astro'), 'utf8');
+    const billing = await readFile(path.resolve('src/scripts/account-billing.ts'), 'utf8');
+    expect(panel).toContain('portal-live-meter');
+    expect(panel).toContain('id="client-ai-usage-remaining"');
+    expect(billing).toContain('client-ai-usage-remaining');
+    expect(billing).toContain('setInterval');
+  });
+
   it('keeps status chips and toasts unclipped with distinct draft/published colour', async () => {
     const dashboard = await readFile(path.resolve('src/styles/portal-dashboard.css'), 'utf8');
     expect(dashboard).toContain('.preview-card-badge.badge-draft');

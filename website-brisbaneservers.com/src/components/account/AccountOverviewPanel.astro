@@ -91,14 +91,31 @@ import { portalVoiceRules } from '../../lib/portal-voice-framework';
                         <h3 id="capacity-heading" class="workspace-section-title">{billingOffer.wallTitle}</h3>
                         <p class="portal-wall__byline">{billingOffer.wallByline}</p>
                       </header>
-                      <div id="client-ai-usage-card" class="portal-meter-block client-ai-usage-card">
-                        <div class="portal-meter-block__copy">
-                          <p id="client-ai-usage-summary" class="insight-card__body">Loading…</p>
-                          <p id="client-ai-usage-meta" class="form-hint"></p>
+                      <div id="client-ai-usage-card" class="portal-meter-block client-ai-usage-card portal-live-meter">
+                        <div class="portal-live-meter__hero">
+                          <p class="portal-live-meter__figure">
+                            <span id="client-ai-usage-remaining" class="portal-live-meter__value">—</span>
+                            <span class="portal-live-meter__unit">units left today</span>
+                          </p>
+                          <span class="portal-live-meter__live">Live</span>
                         </div>
-                        <div id="client-ai-usage-bar-wrap" class="admin-ops-usage-bar portal-meter" hidden>
-                          <div id="client-ai-usage-bar-fill" class="admin-ops-usage-bar__fill"></div>
+                        <div
+                          id="client-ai-usage-bar-wrap"
+                          class="admin-ops-usage-bar portal-meter portal-live-meter__track"
+                          role="progressbar"
+                          aria-label="Daily AI capacity used"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                          aria-valuenow="0"
+                        >
+                          <div id="client-ai-usage-bar-fill" class="admin-ops-usage-bar__fill portal-live-meter__fill"></div>
                         </div>
+                        <div class="portal-live-meter__scale" aria-hidden="true">
+                          <span>0 used</span>
+                          <span id="client-ai-usage-cap-label">today’s cap</span>
+                        </div>
+                        <p id="client-ai-usage-summary" class="insight-card__body portal-live-meter__summary">Loading daily AI capacity…</p>
+                        <p id="client-ai-usage-meta" class="form-hint"></p>
                         <p id="client-ai-billing-status" class="status-message" role="status" aria-live="polite"></p>
                       </div>
                       <div class="portal-offer-grid">
