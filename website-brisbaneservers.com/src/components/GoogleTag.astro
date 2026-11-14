@@ -2,7 +2,9 @@
 <script is:inline data-cfasync="false">
   (function () {
     var GTM_ID = 'GTM-M88HFRL3';
-    function analyticsAllowed() {
+    var SIGNUP_CONVERSION = 'AW-11084394791/y8sYCN_Jl7gdEKfiuaUp';
+    var SIGNUP_CONVERSION_KEY = 'bs.signupConversion';
+    function consentState() {
       var fromCookie = null;
       try {
         var parts = document.cookie.split(';');
@@ -14,12 +16,15 @@
           }
         }
       } catch (e) {}
-      if (fromCookie === 'accepted') return true;
-      if (fromCookie === 'declined') return false;
+      if (fromCookie === 'accepted' || fromCookie === 'declined') return fromCookie;
       try {
-        return localStorage.getItem('cookie-consent-preference') === 'accepted';
+        var stored = localStorage.getItem('cookie-consent-preference');
+        if (stored === 'accepted' || stored === 'declined') return stored;
       } catch (e2) {}
-      return false;
+      return 'unknown';
+    }
+    function pushSignupConversion() {
+      window.gtag('event', 'conversion', { send_to: SIGNUP_CONVERSION });
     }
     function loadGoogleTag() {
       if (window.__bsGtmLoaded) return;
@@ -28,12 +33,29 @@
       window.gtag = function () { window.dataLayer.push(arguments); };
       window.gtag('js', new Date());
       window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      try {
+        if (sessionStorage.getItem(SIGNUP_CONVERSION_KEY) === '1') {
+          sessionStorage.removeItem(SIGNUP_CONVERSION_KEY);
+          pushSignupConversion();
+        }
+      } catch (e3) {}
       var script = document.createElement('script');
       script.async = true;
       script.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
       document.head.appendChild(script);
     }
     window.__bsLoadGoogleTag = loadGoogleTag;
-    if (analyticsAllowed()) loadGoogleTag();
+    window.__bsTrackSignupConversion = function () {
+      var consent = consentState();
+      if (consent === 'declined') return;
+      if (consent !== 'accepted') {
+        try { sessionStorage.setItem(SIGNUP_CONVERSION_KEY, '1'); } catch (e4) {}
+        return;
+      }
+      try { sessionStorage.removeItem(SIGNUP_CONVERSION_KEY); } catch (e5) {}
+      loadGoogleTag();
+      pushSignupConversion();
+    };
+    if (consentState() === 'accepted') loadGoogleTag();
   })();
 </script>

@@ -607,6 +607,7 @@ function bindAuthForms(): void {
 
       if (response.ok && data.success) {
         form.reset();
+        (window as Window & { __bsTrackSignupConversion?: () => void }).__bsTrackSignupConversion?.();
         showRegisterSuccessPanel(email, false);
         showAuthBanner(
           maybeAppendPreviewLink(
@@ -617,6 +618,7 @@ function bindAuthForms(): void {
         );
       } else if (data.code === 'VERIFICATION_EMAIL_FAILED' && data.accountCreated) {
         form.reset();
+        (window as Window & { __bsTrackSignupConversion?: () => void }).__bsTrackSignupConversion?.();
         showRegisterSuccessPanel(email, true);
         showAuthBanner(
           maybeAppendPreviewLink(

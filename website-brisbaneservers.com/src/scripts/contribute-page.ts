@@ -82,8 +82,13 @@ function bindForms(config: ContributePageConfig): void {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
+      if (!res.ok && !data.accountCreated) {
         setAuthStatus(registerStatus, data.error || 'Registration failed', true);
+        return;
+      }
+      (window as Window & { __bsTrackSignupConversion?: () => void }).__bsTrackSignupConversion?.();
+      if (!res.ok) {
+        setAuthStatus(registerStatus, data.message || data.error || 'Account created, but the verification email could not be sent.', true);
         return;
       }
       setAuthStatus(registerStatus, 'Account created.');
