@@ -177,7 +177,7 @@ export async function generateResourceBody(params: GenerateBodyParams): Promise<
               system,
               user: [
                 `Continue the same ${params.industry} / ${params.topic} article.`,
-                `You have ${countWords(article)} words; write until you reach about ${length.targetWords} (at least ${length.minWords}).`,
+                `You have ${countWords(article)} words. Continue only if a load-bearing claim is unfinished. Target about ${length.targetWords}; do not invent headings to hit a count.`,
                 'Deepen the main claim. Add ### only if a supporting distinction is necessary. Do not clone equal heading/paragraph blocks.',
                 'Do not restart. No preamble. Markdown only.',
                 '',

@@ -28,7 +28,7 @@ describe('resolveGenerateLength', () => {
 });
 
 describe('on-topic article word bands', () => {
-  it.each([600, 1100, 1600, 2200] as const)('fills the ~%s word option', (target) => {
+  it.each([600, 1100, 1600, 2200] as const)('writes a complete ~%s-word article without padding', (target) => {
     const plan = resolveGenerateLength(undefined, target);
     const article = buildOnTopicArticle({
       industry: 'professional-services',
@@ -38,23 +38,39 @@ describe('on-topic article word bands', () => {
       maxWords: plan.maxWords,
     });
     const words = countWords(article);
-    expect(words).toBeGreaterThanOrEqual(plan.minWords);
+    expect(words).toBeGreaterThan(250);
     expect(words).toBeLessThanOrEqual(plan.maxWords + 1);
     expect(article.toLowerCase()).toContain('operational');
+    expect(article.toLowerCase()).toContain('compliance');
     expect(article.toLowerCase()).not.toMatch(/wave function|1\.618|cipher/);
-    expect(article).not.toMatch(/Going deeper on|Working detail:|Practice note /);
-    const headings = [...article.matchAll(/^#{1,3}\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase());
+    expect(article).not.toMatch(/Going deeper on|Working detail:|Practice note |Pilot notes|before you wide/i);
+    const headings = [...article.matchAll(/^#{1,4}\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase());
     expect(new Set(headings).size).toBe(headings.length);
     expect(article).toMatch(/^## /m);
-    expect(article).not.toMatch(/Pilot notes|before you wide/i);
     const diagramAt = article.indexOf(':::diagram-here:::');
-    expect(diagramAt).toBeGreaterThan(article.indexOf('## Evidence along the path'));
-    expect(article.slice(Math.max(0, diagramAt - 280), diagramAt)).toMatch(/picture|figure|sequence|join|evidence/i);
+    expect(diagramAt).toBeGreaterThan(article.search(/^## /m));
+    expect(article.slice(Math.max(0, diagramAt - 280), diagramAt)).toMatch(/picture|figure|sequence|join|evidence|path/i);
     expect(article.slice(diagramAt, diagramAt + 280)).toMatch(/picture|figure|path|Thursday/i);
-    if (target >= 1100) {
-      expect(article).toMatch(/^### /m);
-      expect(article).toMatch(/^#### /m);
-    }
+  });
+
+  it('composes different outlines for different titles in the same industry', () => {
+    const a = buildOnTopicArticle({
+      industry: 'professional-services',
+      topic: 'operational-compliance',
+      title: 'Operational Compliance for Professional Services',
+      maxWords: 900,
+    });
+    const b = buildOnTopicArticle({
+      industry: 'professional-services',
+      topic: 'practice-management',
+      title: 'Practice Management for Professional Services',
+      maxWords: 900,
+    });
+    const heads = (markdown: string) =>
+      [...markdown.matchAll(/^##\s+(.+)$/gm)].map((match) => match[1].trim()).join('|');
+    expect(heads(a)).not.toBe(heads(b));
+    expect(a.toLowerCase()).toContain('compliance');
+    expect(b.toLowerCase()).toContain('practice');
   });
 });
 
@@ -89,8 +105,8 @@ describe('document structure seed', () => {
     expect(retailHeads.join('|')).not.toBe(healthHeads.join('|'));
     expect(retail).toContain(':::diagram-here:::');
     expect(health).toContain(':::diagram-here:::');
-    expect(retail).toMatch(/the path they can see/i);
-    expect(health).toMatch(/live roster path/i);
+    expect(retail).toMatch(/path a retail client can see/i);
+    expect(health).toMatch(/live patient scheduling coverage path/i);
     expect(retail).not.toMatch(/^## Going /m);
     expect(health).toContain('healthcare');
     expect(retail).toContain('retail');

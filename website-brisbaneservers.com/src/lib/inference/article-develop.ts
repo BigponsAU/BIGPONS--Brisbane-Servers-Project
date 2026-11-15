@@ -166,15 +166,6 @@ export function developArticle(params: {
   );
 }
 
-function fillAsidesFor(topic: string, industry: string): Array<[string, string]> {
-  const plan = planArticleStructure({ topic, industry });
-  const fromPlan = plan.sections
-    .filter((section) => section.role === 'aside' || section.weight === 1)
-    .map((section) => [section.title, `This aside only exists because the main ${topic} claim is true in ${industry}.`] as [string, string]);
-  if (fromPlan.length) return fromPlan;
-  return [[`A short ${topic} check`, `If this detail is not used in a ${industry} decision this month, hide it.`]];
-}
-
 export function fillArticleToBand(
   content: string,
   params: {
@@ -189,32 +180,20 @@ export function fillArticleToBand(
   const topic = humanizeLabel(params.topic) || 'this work';
   const industry = humanizeLabel(params.industry) || 'this industry';
   let guard = 0;
-  while (countWords(next) < params.minWords && guard < 24) {
+  while (countWords(next) < params.minWords && guard < 8) {
     const chunks = splitArticleChunks(next);
     const cores = chunks.filter((chunk) => chunk.level === 2);
-    const mode: DevelopMode = guard % 3 === 1 ? 'support' : guard % 3 === 2 ? 'aside' : 'continue';
-    if (mode === 'aside' && guard > 2) {
-      const used = usedHeadings(chunks);
-      const pick = fillAsidesFor(topic, industry)[guard % fillAsidesFor(topic, industry).length];
-      const title = uniqueTitle(pick[0], used);
-      next = joinArticleChunks([
-        ...chunks,
-        {
-          heading: title,
-          level: 4,
-          body: `${pick[1]} ${industry} still has to do this for ${topic} without a second folder.`,
-        },
-      ]);
-    } else {
-      next = developArticle({
-        content: next,
-        industry,
-        topic,
-        title: params.title,
-        mode,
-        heading: cores[0]?.heading || undefined,
-      });
-    }
+    const mode: DevelopMode = guard % 2 === 0 ? 'continue' : 'support';
+    const before = countWords(next);
+    next = developArticle({
+      content: next,
+      industry,
+      topic,
+      title: params.title,
+      mode,
+      heading: cores[guard % Math.max(1, cores.length)]?.heading || cores[0]?.heading,
+    });
+    if (countWords(next) <= before) break;
     guard += 1;
   }
   const words = next.trim().split(/\s+/).filter(Boolean);
@@ -249,9 +228,9 @@ export function articlePlanNotes(content: string, industry: string, topic: strin
   const plan = planArticleStructure({ industry, topic, existingMarkdown: content });
   const diagram = plan.sections.find((section) => section.diagram);
   return [
-    `Article shape: ${plan.shape}. ${plan.thesis}`,
+    `Facets: ${plan.facets.join(', ')}. Dominant lens: ${plan.shape}. ${plan.thesis}`,
     `Diagram belongs with: ${diagram?.title || 'the operating-join section'}.`,
-    'Heading levels already in the draft mark importance. Raise or lower a heading only if the claim’s priority changed.',
+    'Heading levels already in the draft mark importance. Raise or lower a heading only if the claim’s priority changed. Do not add sections to hit a word count.',
   ].join('\n');
 }
 

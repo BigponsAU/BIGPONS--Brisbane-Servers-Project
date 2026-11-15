@@ -89,12 +89,10 @@ function acceptCandidate(
 }
 
 function needsDocumentSeed(content: string): boolean {
-  const headings = [...content.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase());
-  const unique = new Set(headings);
+  const hasMajorHeading = /^##\s+/m.test(content);
   return (
-    /Going deeper|Working detail:|Practice note\s+\d+/i.test(content) ||
-    countWords(content) < 400 ||
-    unique.size < 3
+    /Going deeper|Working detail:|Practice note\s+\d+|Pilot notes|before you wide/i.test(content) ||
+    !hasMajorHeading
   );
 }
 
